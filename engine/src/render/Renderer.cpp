@@ -160,6 +160,9 @@ namespace engine {
             return false;
         }
 
+        init_line_resources();
+        init_grid_resources();
+
         camera_ = std::make_unique<Camera>();
         camera_->apply_default_view();
 
@@ -168,6 +171,9 @@ namespace engine {
 
     void Renderer::shutdown() {
         camera_ = nullptr;
+
+        cleanup_line_resources();
+        cleanup_grid_resources();
 
         if (shader_program_ != 0) {
             glDeleteProgram(shader_program_);
@@ -184,37 +190,42 @@ namespace engine {
     void Renderer::begin_frame() {
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        render_editor_overlays();
     }
 
-    void Renderer::draw() {
-        if (show_grid_) {
-            render_grid();
-        }
-        if (show_gizmo_) {
-            render_gizmo();
-        }
+    void Renderer::end_frame(const float delta_time) {
+        this->flush_lines();
 
         // ----------------------
         // Debug panel
         // ----------------------
         if (show_debug_panel_) {
+            static float timer = 0.0f;
+            static float fps_display = 0.0f;
+
+            timer += delta_time;
+            if (timer >= setting::video::FPS_REFRESH_RATE_IN_SECONDS || fps_display == 0.0f) {
+                fps_display = ImGui::GetIO().Framerate;
+                timer = 0.0f;
+            }
+
             ImGui::SetNextWindowSize(ImVec2(400, 500), ImGuiCond_FirstUseEver);
             ImGui::Begin("Debug panel");
-            const float fps = ImGui::GetIO().Framerate;
-            const float frame_time_ms = 1000.0f / fps;
 
             ImGui::Text("Performance");
-            ImGui::Text("  FPS: %.1f", fps);
-            ImGui::Text("  Frame Time: %.2f ms", frame_time_ms);
+            ImGui::Text("  FPS: %.1f", fps_display);
+            ImGui::Text("  Frame Time: %.2f ms", 1000.0f / (fps_display > 0.0f ? fps_display : 1.0f));
 
             ImGui::Separator();
             ImGui::Text("Video");
-            static bool vsync_enabled = false;
+            static bool vsync_enabled = setting::video::VSYNC_ENABLED;
             if (ImGui::Checkbox("V-Sync", &vsync_enabled)) {
                 glfwSwapInterval(vsync_enabled ? 1 : 0);
             }
-            ImGui::Text("FPS Limit: %s", setting::get_target_fps_str().c_str());
-            ImGui::SliderInt("##", &setting::target_fps_index, 0, setting::num_presets - 1, setting::get_target_fps_str().c_str());
+            ImGui::Text("FPS Limit: %s", setting::video::get_target_fps_str().c_str());
+            ImGui::SetNextItemWidth(-1.0f);
+            ImGui::SliderInt("##", &setting::video::target_fps_index, 0, setting::video::num_presets - 1, setting::video::get_target_fps_str().c_str());
 
             ImGui::Separator();
             ImGui::Text("Editor");
@@ -229,9 +240,6 @@ namespace engine {
             }
             ImGui::End();
         }
-    }
-
-    void Renderer::end_frame() {
     }
 
     Mesh Renderer::upload_mesh(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices) {
@@ -282,66 +290,93 @@ namespace engine {
         glBindVertexArray(0);
     }
 
-    void Renderer::draw_line(const glm::vec3& from, const glm::vec3& to, const glm::vec3& color) const {
-        if (camera_ == nullptr) return;
+    void Renderer::draw_line(const glm::vec3& from, const glm::vec3& to, const glm::vec3& color) {
+        line_batch_buffer_.emplace_back(from, color);
+        line_batch_buffer_.emplace_back(to, color);
+    }
 
-        static unsigned int line_shader = 0;
-        static int u_view = -1, u_proj = -1, u_color = -1;
-        if (line_shader == 0) {
-            constexpr auto vsrc = R"(
-                #version 450 core
-                layout(location = 0) in vec3 a_position;
-                uniform mat4 u_view;
-                uniform mat4 u_projection;
-                void main() {
-                    gl_Position = u_projection * u_view * vec4(a_position, 1.0);
-                }
-            )";
-            constexpr auto fsrc = R"(
-                #version 450 core
-                uniform vec3 u_color;
-                out vec4 frag_color;
-                void main() {
-                    frag_color = vec4(u_color, 1.0);
-                }
-            )";
-            const unsigned int vs = glCreateShader(GL_VERTEX_SHADER);
-            glShaderSource(vs, 1, &vsrc, nullptr);
-            glCompileShader(vs);
-            const unsigned int fs = glCreateShader(GL_FRAGMENT_SHADER);
-            glShaderSource(fs, 1, &fsrc, nullptr);
-            glCompileShader(fs);
-            line_shader = glCreateProgram();
-            glAttachShader(line_shader, vs);
-            glAttachShader(line_shader, fs);
-            glLinkProgram(line_shader);
-            glDeleteShader(vs);
-            glDeleteShader(fs);
-            u_view = glGetUniformLocation(line_shader, "u_view");
-            u_proj = glGetUniformLocation(line_shader, "u_projection");
-            u_color = glGetUniformLocation(line_shader, "u_color");
+    void Renderer::draw_box(const glm::vec3& min, const glm::vec3& max, const glm::vec3& color) {
+        glm::vec3 p1 = min;
+        glm::vec3 p2 = {max.x, min.y, min.z};
+        glm::vec3 p3 = {max.x, min.y, max.z};
+        glm::vec3 p4 = {min.x, min.y, max.z};
+
+        glm::vec3 p5 = {min.x, max.y, min.z};
+        glm::vec3 p6 = {max.x, max.y, min.z};
+        glm::vec3 p7 = max;
+        glm::vec3 p8 = {min.x, max.y, max.z};
+
+        draw_line(p1, p2, color);
+        draw_line(p2, p3, color);
+        draw_line(p3, p4, color);
+        draw_line(p4, p1, color);
+
+        draw_line(p5, p6, color);
+        draw_line(p6, p7, color);
+        draw_line(p7, p8, color);
+        draw_line(p8, p5, color);
+
+        draw_line(p1, p5, color);
+        draw_line(p2, p6, color);
+        draw_line(p3, p7, color);
+        draw_line(p4, p8, color);
+    }
+
+    void Renderer::draw_circle(const glm::vec3& center, const float radius, const glm::vec3& normal, const glm::vec3& color, const int segments) {
+        const glm::vec3 n = glm::normalize(normal);
+
+        const glm::vec3 helper = std::abs(n.z) < 0.999f ? glm::vec3(0, 0, 1) : glm::vec3(1, 0, 0);
+        const glm::vec3 u = glm::normalize(glm::cross(helper, n));
+        const glm::vec3 v = glm::cross(n, u);
+
+        const float angle_step = glm::two_pi<float>() / static_cast<float>(segments);
+
+        for (int i = 0; i < segments; ++i) {
+            const float a1 = static_cast<float>(i) * angle_step;
+            const float a2 = static_cast<float>(i + 1) * angle_step;
+
+            glm::vec3 p1 = center + (u * std::cos(a1) + v * std::sin(a1)) * radius;
+            glm::vec3 p2 = center + (u * std::cos(a2) + v * std::sin(a2)) * radius;
+
+            draw_line(p1, p2, color);
         }
-        const float vertices[6] = {
-            from.x, from.y, from.z,
-            to.x, to.y, to.z
-        };
-        unsigned int vbo = 0, vao = 0;
-        glGenVertexArrays(1, &vao);
-        glGenBuffers(1, &vbo);
-        glBindVertexArray(vao);
-        glBindBuffer(GL_ARRAY_BUFFER, vbo);
-        glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), nullptr);
-        glEnableVertexAttribArray(0);
-        glUseProgram(line_shader);
-        glUniformMatrix4fv(u_view, 1, GL_FALSE, glm::value_ptr(camera_->get_view_matrix()));
-        glUniformMatrix4fv(u_proj, 1, GL_FALSE, glm::value_ptr(camera_->get_projection_matrix()));
+    }
 
-        glUniform3fv(u_color, 1, &color[0]);
-        glDrawArrays(GL_LINES, 0, 2);
+    void Renderer::draw_sphere(const glm::vec3& center, const float radius, const glm::vec3& color, const int segments) {
+        draw_circle(center, radius, {1, 0, 0}, color, segments);
+        draw_circle(center, radius, {0, 1, 0}, color, segments);
+        draw_circle(center, radius, {0, 0, 1}, color, segments);
+    }
+
+    void Renderer::flush_lines() {
+        if (line_batch_buffer_.empty() || camera_ == nullptr) return;
+
+        const size_t bytes_needed = line_batch_buffer_.size() * sizeof(LineVertex);
+
+        glBindVertexArray(line_vao_);
+        glBindBuffer(GL_ARRAY_BUFFER, line_vbo_);
+
+        if (bytes_needed > line_vbo_capacity_bytes_) {
+            line_vbo_capacity_bytes_ = bytes_needed * 2;
+            glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(line_vbo_capacity_bytes_), nullptr, GL_DYNAMIC_DRAW);
+            glBufferSubData(GL_ARRAY_BUFFER, 0, static_cast<GLsizeiptr>(bytes_needed), line_batch_buffer_.data());
+        }
+        else {
+            glBufferSubData(GL_ARRAY_BUFFER, 0, static_cast<GLsizeiptr>(bytes_needed), line_batch_buffer_.data());
+        }
+
+        glUseProgram(line_shader_);
+        glUniformMatrix4fv(line_u_view_loc_, 1, GL_FALSE, glm::value_ptr(camera_->get_view_matrix()));
+        glUniformMatrix4fv(line_u_proj_loc_, 1, GL_FALSE, glm::value_ptr(camera_->get_projection_matrix()));
+
+        glDepthMask(GL_FALSE);
+
+        glDrawArrays(GL_LINES, 0, static_cast<GLsizei>(line_batch_buffer_.size()));
+
+        glDepthMask(GL_TRUE);
         glBindVertexArray(0);
-        glDeleteBuffers(1, &vbo);
-        glDeleteVertexArrays(1, &vao);
+
+        line_batch_buffer_.clear();
     }
 
     Camera& Renderer::get_camera() const {
@@ -401,55 +436,152 @@ namespace engine {
         return program;
     }
 
-    void Renderer::render_grid() const {
-        if (camera_ == nullptr) return;
-
-        static unsigned int grid_shader = 0;
-        static unsigned int dummy_vao = 0;
-        static int u_view = -1, u_proj = -1;
-
-        if (grid_shader == 0) {
-            const unsigned int vs = glCreateShader(GL_VERTEX_SHADER);
-            glShaderSource(vs, 1, &grid_vertex_shader, nullptr);
-            glCompileShader(vs);
-
-            const unsigned int fs = glCreateShader(GL_FRAGMENT_SHADER);
-            glShaderSource(fs, 1, &grid_fragment_shader, nullptr);
-            glCompileShader(fs);
-
-            grid_shader = glCreateProgram();
-            glAttachShader(grid_shader, vs);
-            glAttachShader(grid_shader, fs);
-            glLinkProgram(grid_shader);
-
-            glDeleteShader(vs);
-            glDeleteShader(fs);
-
-            u_view = glGetUniformLocation(grid_shader, "u_view");
-            u_proj = glGetUniformLocation(grid_shader, "u_projection");
-
-            // Dummy VAO required by Core Profile when rendering with gl_VertexID
-            glGenVertexArrays(1, &dummy_vao);
+    void Renderer::render_editor_overlays() {
+        if (show_grid_) {
+            render_grid();
         }
+        if (show_gizmo_) {
+            render_gizmo();
+        }
+    }
+
+    void Renderer::render_grid() const {
+        if (camera_ == nullptr || grid_shader_ == 0) return;
 
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-        glUseProgram(grid_shader);
-        glUniformMatrix4fv(u_view, 1, GL_FALSE, glm::value_ptr(camera_->get_view_matrix()));
-        glUniformMatrix4fv(u_proj, 1, GL_FALSE, glm::value_ptr(camera_->get_projection_matrix()));
+        glUseProgram(grid_shader_);
+        glUniformMatrix4fv(grid_u_view_loc_, 1, GL_FALSE, glm::value_ptr(camera_->get_view_matrix()));
+        glUniformMatrix4fv(grid_u_proj_loc_, 1, GL_FALSE, glm::value_ptr(camera_->get_projection_matrix()));
 
-        glBindVertexArray(dummy_vao);
+        glBindVertexArray(grid_vao_);
         glDrawArrays(GL_TRIANGLES, 0, 6); // Draw fullscreen quad (6 vertices)
         glBindVertexArray(0);
 
         glDisable(GL_BLEND);
     }
 
-    void Renderer::render_gizmo() const {
+    void Renderer::render_gizmo() {
         // World Origin Gizmo (X = Red, Y = Green, Z = Blue)
         draw_line({0, 0, 0}, {2, 0, 0}, {1, 0, 0});
         draw_line({0, 0, 0}, {0, 2, 0}, {0, 1, 0});
         draw_line({0, 0, 0}, {0, 0, 2}, {0, 0, 1});
+    }
+
+    void Renderer::init_line_resources() {
+        constexpr auto line_vsrc = R"(
+            #version 450 core
+            layout(location = 0) in vec3 a_position;
+            layout(location = 1) in vec3 a_color;
+
+            uniform mat4 u_view;
+            uniform mat4 u_projection;
+
+            out vec3 v_color;
+
+            void main() {
+                v_color = a_color;
+                gl_Position = u_projection * u_view * vec4(a_position, 1.0);
+            }
+        )";
+
+        constexpr auto line_fsrc = R"(
+        #version 450 core
+        in vec3 v_color;
+        out vec4 frag_color;
+
+        void main() {
+            frag_color = vec4(v_color, 1.0);
+        }
+        )";
+
+        const unsigned int vs = glCreateShader(GL_VERTEX_SHADER);
+        glShaderSource(vs, 1, &line_vsrc, nullptr);
+        glCompileShader(vs);
+
+        const unsigned int fs = glCreateShader(GL_FRAGMENT_SHADER);
+        glShaderSource(fs, 1, &line_fsrc, nullptr);
+        glCompileShader(fs);
+
+        line_shader_ = glCreateProgram();
+        glAttachShader(line_shader_, vs);
+        glAttachShader(line_shader_, fs);
+        glLinkProgram(line_shader_);
+
+        glDeleteShader(vs);
+        glDeleteShader(fs);
+
+        line_u_view_loc_ = glGetUniformLocation(line_shader_, "u_view");
+        line_u_proj_loc_ = glGetUniformLocation(line_shader_, "u_projection");
+
+        glGenVertexArrays(1, &line_vao_);
+        glGenBuffers(1, &line_vbo_);
+
+        glBindVertexArray(line_vao_);
+        glBindBuffer(GL_ARRAY_BUFFER, line_vbo_);
+
+        line_vbo_capacity_bytes_ = 2000 * sizeof(LineVertex);
+        glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(line_vbo_capacity_bytes_), nullptr, GL_DYNAMIC_DRAW);
+
+        glEnableVertexAttribArray(0);
+        glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(LineVertex), reinterpret_cast<void*>(offsetof(LineVertex, position)));
+
+        glEnableVertexAttribArray(1);
+        glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(LineVertex), reinterpret_cast<void*>(offsetof(LineVertex, color)));
+
+        glBindVertexArray(0);
+        glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+        line_batch_buffer_.reserve(2000);
+    }
+
+    void Renderer::init_grid_resources() {
+        const unsigned int vs = glCreateShader(GL_VERTEX_SHADER);
+        glShaderSource(vs, 1, &grid_vertex_shader, nullptr);
+        glCompileShader(vs);
+
+        const unsigned int fs = glCreateShader(GL_FRAGMENT_SHADER);
+        glShaderSource(fs, 1, &grid_fragment_shader, nullptr);
+        glCompileShader(fs);
+
+        grid_shader_ = glCreateProgram();
+        glAttachShader(grid_shader_, vs);
+        glAttachShader(grid_shader_, fs);
+        glLinkProgram(grid_shader_);
+
+        glDeleteShader(vs);
+        glDeleteShader(fs);
+
+        grid_u_view_loc_ = glGetUniformLocation(grid_shader_, "u_view");
+        grid_u_proj_loc_ = glGetUniformLocation(grid_shader_, "u_projection");
+
+        glGenVertexArrays(1, &grid_vao_);
+    }
+
+    void Renderer::cleanup_line_resources() {
+        if (line_vbo_ != 0) {
+            glDeleteBuffers(1, &line_vbo_);
+            line_vbo_ = 0;
+        }
+        if (line_vao_ != 0) {
+            glDeleteVertexArrays(1, &line_vao_);
+            line_vao_ = 0;
+        }
+        if (line_shader_ != 0) {
+            glDeleteProgram(line_shader_);
+            line_shader_ = 0;
+        }
+    }
+
+    void Renderer::cleanup_grid_resources() {
+        if (grid_vao_ != 0) {
+            glDeleteVertexArrays(1, &grid_vao_);
+            grid_vao_ = 0;
+        }
+        if (grid_shader_ != 0) {
+            glDeleteProgram(grid_shader_);
+            grid_shader_ = 0;
+        }
     }
 }

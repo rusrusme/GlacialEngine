@@ -15,12 +15,38 @@
 #include <render/Camera.hpp>
 #include <render/Frame.hpp>
 
+// --------------------------------------------------------------------
 #if defined(_WIN32)
 #include <windows.h>
 // ReSharper disable once CppWrongIncludesOrder
 #include <timeapi.h>
 #pragma comment(lib, "winmm.lib")
+namespace {
+    HANDLE create_high_res_timer() {
+        #ifndef CREATE_WAITABLE_TIMER_HIGH_RESOLUTION
+        #define CREATE_WAITABLE_TIMER_HIGH_RESOLUTION 0x00000002
+        #endif
+
+        HANDLE timer = CreateWaitableTimerExW(nullptr, nullptr, CREATE_WAITABLE_TIMER_HIGH_RESOLUTION, TIMER_ALL_ACCESS);
+        if (!timer) {
+            timer = CreateWaitableTimerW(nullptr, FALSE, nullptr);
+        }
+        return timer;
+    }
+
+    void wait_high_res(HANDLE timer, double seconds) {
+        if (!timer || seconds <= 0.0) return;
+
+        LARGE_INTEGER due_time;
+        due_time.QuadPart = -static_cast<LONGLONG>(seconds * 10'000'000.0);
+
+        if (SetWaitableTimer(timer, &due_time, 0, nullptr, nullptr, FALSE)) {
+            WaitForSingleObject(timer, INFINITE);
+        }
+    }
+}
 #endif
+// --------------------------------------------------------------------
 
 namespace engine {
     namespace {
@@ -63,8 +89,8 @@ namespace engine {
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
         GLFWwindow* window = glfwCreateWindow(
-            setting::MONITOR_RESOLUTION_WIDTH,
-            setting::MONITOR_RESOLUTION_HEIGHT,
+            setting::video::MONITOR_RESOLUTION_WIDTH,
+            setting::video::MONITOR_RESOLUTION_HEIGHT,
             setting::FRAME_TITLE, nullptr, nullptr);
         if (!window) {
             std::cerr << "Engine error: application: failed to create window" << std::endl;
@@ -72,9 +98,9 @@ namespace engine {
 
         glfwMakeContextCurrent(window);
 
-        // --------------------------------
+        // ----------------------------------
         // Initialize frame
-        // --------------------------------
+        // ----------------------------------
         Frame::init(window);
 
         Renderer renderer;
@@ -102,26 +128,28 @@ namespace engine {
         }
         renderer.get_camera().set_projection_params(45.0f, 0.1f, 10000.0f);
 
-        // --------------------------------
+        // ----------------------------------
         // Game logic
-        // --------------------------------
-        setting::config::load();
+        // ----------------------------------
+        setting::configuration::load();
         init(renderer);
 
-#if defined(_WIN32)
+        // ----------------------------------
+        #if defined(_WIN32)
         timeBeginPeriod(1);
-#endif
+        HANDLE fps_timer = create_high_res_timer();
+        #endif
+        // ----------------------------------
 
         double last_frame_time = glfwGetTime();
+        double next_frame_time = glfwGetTime();
 
         while (!glfwWindowShouldClose(window)) {
-            const double frame_start_time = glfwGetTime();
-
             // ----------------------------------
             // Delta timer
             // ----------------------------------
-            const double current_time = static_cast<float>(glfwGetTime());
-            if (last_frame_time == 0.0f) {
+            const double current_time = glfwGetTime();
+            if (last_frame_time == 0.0) {
                 last_frame_time = current_time;
             }
             const auto delta_time = static_cast<float>(current_time - last_frame_time);
@@ -148,12 +176,10 @@ namespace engine {
             // Render pass
             // ----------------------------------
             renderer.begin_frame();
-            renderer.draw();
             render(renderer);
 
+            renderer.end_frame(delta_time);
             Frame::end_frame();
-
-            renderer.end_frame();
 
             glfwSwapBuffers(window);
             glfwPollEvents();
@@ -161,28 +187,41 @@ namespace engine {
             // ----------------------------------
             // Frame rate limiter
             // ----------------------------------
-            const int target_fps = setting::get_target_fps();
+            const int target_fps = setting::video::get_target_fps();
             if (target_fps > 0 && target_fps < INT32_MAX) {
                 const double target_frame_time = 1.0 / static_cast<double>(target_fps);
-                while (glfwGetTime() - frame_start_time < target_frame_time) {
-                    const double time_remaining = target_frame_time - (glfwGetTime() - frame_start_time);
-                    if (time_remaining > 0.002) {
-                        std::this_thread::sleep_for(std::chrono::milliseconds(1));
-                    }
+                next_frame_time += target_frame_time;
+
+                const double now = glfwGetTime();
+                const double time_remaining = next_frame_time - now;
+
+                if (time_remaining > 0.0) {
+                    #if defined(_WIN32)
+                    wait_high_res(fps_timer, time_remaining);
+                    #else
+                    std::this_thread::sleep_for(std::chrono::duration<double>(time_remaining));
+                    #endif
+                }
+                else {
+                    next_frame_time = now;
                 }
             }
         }
-
-#if defined(_WIN32)
+        // ----------------------------------
+        #if defined(_WIN32)
+        if (fps_timer) {
+            CloseHandle(fps_timer);
+        }
         timeEndPeriod(1);
-#endif
+        #endif
+        // ----------------------------------
 
         shutdown(renderer, window);
         return 0;
     }
 
     void Application::shutdown(Renderer& renderer, GLFWwindow* window) {
-        setting::config::save();
+        setting::configuration::save();
 
         Frame::shutdown();
         renderer.shutdown();

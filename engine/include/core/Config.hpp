@@ -12,26 +12,32 @@
 namespace engine::setting {
     constexpr auto FRAME_TITLE = "Engine";
 
-    constexpr int MONITOR_RESOLUTION_WIDTH = 1920;
-    constexpr int MONITOR_RESOLUTION_HEIGHT = 1080;
+    namespace video {
+        constexpr int MONITOR_RESOLUTION_WIDTH = 1920;
+        constexpr int MONITOR_RESOLUTION_HEIGHT = 1080;
 
-    inline int target_fps_index = 7;
-    inline const int fps_presets[] = {30, 60, 90, 120, 144, 165, 240, INT32_MAX};
-    inline constexpr int num_presets = std::size(fps_presets);
+        constexpr bool VSYNC_ENABLED = false;
 
-    inline int get_target_fps() {
-        return fps_presets[target_fps_index];
-    }
+        constexpr float FPS_REFRESH_RATE_IN_SECONDS = 0.5f;
 
-    inline std::string get_target_fps_str() {
-        const int fps = get_target_fps();
-        if (fps == INT32_MAX) {
-            return "INF";
+        inline int target_fps_index = 7;
+        const int fps_presets[] = {30, 60, 90, 120, 144, 165, 240, INT32_MAX};
+        constexpr int num_presets = std::size(fps_presets);
+
+        inline int get_target_fps() {
+            return fps_presets[target_fps_index];
         }
-        return std::to_string(fps);
+
+        inline std::string get_target_fps_str() {
+            const int fps = get_target_fps();
+            if (fps == INT32_MAX) {
+                return "INF";
+            }
+            return std::to_string(fps);
+        }
     }
 
-    namespace config {
+    namespace configuration {
         constexpr auto CONFIG_FILE_PATH = "config.ini";
 
         inline void load() {
@@ -43,8 +49,8 @@ namespace engine::setting {
             int value;
             while (file >> key >> value) {
                 if (key == "target_fps_index") {
-                    if (value >= 0 && value < num_presets) {
-                        target_fps_index = value;
+                    if (value >= 0 && value < video::num_presets) {
+                        video::target_fps_index = value;
                     }
                 }
             }
@@ -56,7 +62,7 @@ namespace engine::setting {
                 std::cerr << "Engine error: save config: failed to open " << CONFIG_FILE_PATH << " for writing." << std::endl;
                 return;
             }
-            file << "target_fps_index " << target_fps_index << "\n";
+            file << "target_fps_index " << video::target_fps_index << "\n";
         }
     }
 
