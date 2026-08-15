@@ -28,3 +28,8 @@
    ```bash
    git clone https://github.com/rusrusme/CoreEngine.git
     ```
+   
+2. For the distribution build use: 
+   ```bash
+   -DDIST_BUILD=1
+   ```

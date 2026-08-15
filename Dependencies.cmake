@@ -26,29 +26,67 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(entt)
 # ----------------------------------------------------------------------------
-# Fetch ImGui
+# Fetch FreeType (Dependency of RmlUi)
+set(FT_DISABLE_ZLIB ON CACHE BOOL "" FORCE)
+set(FT_DISABLE_PNG ON CACHE BOOL "" FORCE)
+set(FT_DISABLE_HARFBUZZ ON CACHE BOOL "" FORCE)
+set(FT_DISABLE_BROTLI ON CACHE BOOL "" FORCE)
+set(FT_DISABLE_BZIP2 ON CACHE BOOL "" FORCE)
 FetchContent_Declare(
-        imgui
-        GIT_REPOSITORY https://github.com/ocornut/imgui.git
-        GIT_TAG v1.92.9b-docking
+        freetype
+        GIT_REPOSITORY https://github.com/freetype/freetype.git
+        GIT_TAG VER-2-14-3
 )
-FetchContent_MakeAvailable(imgui)
-if (NOT TARGET imgui)
-    add_library(imgui STATIC
-                ${imgui_SOURCE_DIR}/imgui.cpp
-                ${imgui_SOURCE_DIR}/imgui_draw.cpp
-                ${imgui_SOURCE_DIR}/imgui_tables.cpp
-                ${imgui_SOURCE_DIR}/imgui_widgets.cpp
-                ${imgui_SOURCE_DIR}/backends/imgui_impl_glfw.cpp
-                ${imgui_SOURCE_DIR}/backends/imgui_impl_opengl3.cpp
+FetchContent_MakeAvailable(freetype)
+if (TARGET freetype AND NOT TARGET Freetype::Freetype)
+    add_library(Freetype::Freetype ALIAS freetype)
+endif ()
+# ----------------------------------------------------------------------------
+# Fetch RmlUi
+set(RMLUI_ENABLE_SAMPLES OFF CACHE BOOL "" FORCE)
+set(RMLUI_ENABLE_TESTS OFF CACHE BOOL "" FORCE)
+FetchContent_Declare(
+        rmlui
+        GIT_REPOSITORY https://github.com/mikke89/RmlUi.git
+        GIT_TAG 6.2
+)
+FetchContent_MakeAvailable(rmlui)
+# ----------------------------------------------------------------------------
+# Fetch spdlog
+if (NOT DIST_BUILD)
+    FetchContent_Declare(
+            spdlog
+            GIT_REPOSITORY https://github.com/gabime/spdlog.git
+            GIT_TAG v1.17.0
     )
-
-    target_include_directories(imgui PUBLIC
-                               ${imgui_SOURCE_DIR}
-                               ${imgui_SOURCE_DIR}/backends
+    FetchContent_MakeAvailable(spdlog)
+endif ()
+# ----------------------------------------------------------------------------
+# Fetch ImGui
+if (ENABLE_IMGUI)
+    FetchContent_Declare(
+            imgui
+            GIT_REPOSITORY https://github.com/ocornut/imgui.git
+            GIT_TAG v1.92.9b-docking
     )
+    FetchContent_MakeAvailable(imgui)
+    if (NOT TARGET imgui)
+        add_library(imgui STATIC
+                    ${imgui_SOURCE_DIR}/imgui.cpp
+                    ${imgui_SOURCE_DIR}/imgui_draw.cpp
+                    ${imgui_SOURCE_DIR}/imgui_tables.cpp
+                    ${imgui_SOURCE_DIR}/imgui_widgets.cpp
+                    ${imgui_SOURCE_DIR}/backends/imgui_impl_glfw.cpp
+                    ${imgui_SOURCE_DIR}/backends/imgui_impl_opengl3.cpp
+        )
 
-    target_link_libraries(imgui PUBLIC glfw)
+        target_include_directories(imgui PUBLIC
+                                   ${imgui_SOURCE_DIR}
+                                   ${imgui_SOURCE_DIR}/backends
+        )
+
+        target_link_libraries(imgui PUBLIC glfw)
+    endif ()
 endif ()
 # ----------------------------------------------------------------------------
 # Fetch cgltf

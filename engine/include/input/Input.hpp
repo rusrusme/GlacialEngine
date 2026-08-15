@@ -4,20 +4,28 @@
 //
 
 #pragma once
+
+#ifdef ENABLE_IMGUI
 #include <imgui.h>
+#endif
 
 namespace engine {
     class Input {
     public:
         static bool is_mouse_captured() {
-            // Currently in debug mode (ImGui)
+            #ifdef ENABLE_IMGUI
             return ImGui::GetIO().WantCaptureMouse;
-
-            // Todo: Implement game mouse event handling
+            #endif
+            // Todo: Implement game event handling
+            return false;
         }
 
         static bool is_keyboard_captured() {
+            #ifdef ENABLE_IMGUI
             return ImGui::GetIO().WantTextInput;
+            #endif
+            // Todo: Implement game event handling
+            return false;
         }
 
         static bool is_key_pressed_once(GLFWwindow* window, const int key) {

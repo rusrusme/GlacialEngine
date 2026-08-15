@@ -7,6 +7,8 @@
 
 #include <glm/vec4.hpp>
 #include <glm/gtc/matrix_inverse.hpp>
+
+#include "../../include/math/Ray.hpp"
 #include "render/Camera.hpp"
 
 namespace engine {

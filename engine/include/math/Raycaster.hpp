@@ -6,7 +6,7 @@
 #pragma once
 
 #include <glm/vec2.hpp>
-#include <math/Ray.hpp>
+#include "math/Ray.hpp"
 
 namespace engine {
     class Camera;

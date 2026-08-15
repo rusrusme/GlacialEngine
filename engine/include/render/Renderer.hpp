@@ -28,11 +28,11 @@ namespace engine {
         Renderer();
         ~Renderer();
 
-        bool init(GLFWwindow* window);
+        bool on_init(GLFWwindow* window);
 
-        void shutdown();
+        void on_shutdown();
 
-        void resize(int width, int height);
+        void on_resize(int width, int height);
 
         // -------------------------
         // Frames
@@ -61,18 +61,8 @@ namespace engine {
         /** @brief Draws all lines at the end of the frame */
         void flush_lines();
 
-        // -------------------------
-        // Debug controls
-        // -------------------------
-        void set_grid_enabled(const bool toggle) { show_grid_ = toggle; }
-        [[nodiscard]] bool is_grid_enabled() const { return show_grid_; }
-
-        void set_gizmo_enabled(const bool toggle) { show_gizmo_ = toggle; }
-        [[nodiscard]] bool is_gizmo_enabled() const { return show_gizmo_; }
-
-        [[nodiscard]] bool is_debug_panel_enabled() const { return show_debug_panel_; }
-        void set_debug_panel_enabled(const bool enabled) { show_debug_panel_ = enabled; }
-        void toggle_debug_panel() { show_debug_panel_ = !show_debug_panel_; }
+         /** @brief Renders the editor grid */
+        void render_grid() const;
         // -------------------------
 
         [[nodiscard]] Camera& get_camera() const;
@@ -87,18 +77,6 @@ namespace engine {
         int framebuffer_height_ = 1;
 
         std::unique_ptr<Camera> camera_ = nullptr;
-
-        // -----------------------------------------
-        // Editor overlays
-        // -----------------------------------------
-        void render_editor_overlays();
-
-        bool show_grid_ = true;
-        bool show_gizmo_ = true;
-        bool show_debug_panel_ = true;
-
-        void render_grid() const;
-        void render_gizmo();
 
         // -----------------------------------------
         // Line rendering
@@ -123,6 +101,5 @@ namespace engine {
 
         void cleanup_line_resources();
         void cleanup_grid_resources();
-
     };
 }

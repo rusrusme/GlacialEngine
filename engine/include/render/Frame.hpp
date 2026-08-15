@@ -4,14 +4,15 @@
 //
 
 #pragma once
+
 #include <GLFW/glfw3.h>
 
 namespace engine {
     class Frame {
     public:
-        static void init(GLFWwindow* window, const char* glsl_version = "#version 450");
+        static void on_init(GLFWwindow* window);
 
-        static void shutdown();
+        static void on_shutdown();
 
         static void begin_frame();
 

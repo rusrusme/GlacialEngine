@@ -1,0 +1,64 @@
+//
+// Copyright (c) 2026 rusrusme 
+// All rights reserved.
+//
+
+#pragma once
+
+#include <entt/entt.hpp>
+
+#include "Scene.hpp"
+
+namespace engine {
+    // Todo: Global UUID system
+    class Entity {
+    public:
+        Entity() = default;
+        Entity(entt::entity handle, Scene* scene);
+
+        template <typename T, typename... Args>
+        T& add_component(Args&&... args) {
+            if (has_component<T>()) {
+                throw std::runtime_error("Engine error: scene: entity already has component of this type");
+            }
+            T& component = scene_->registry_.emplace<T>(entity_handle_, std::forward<Args>(args)...);
+            return component;
+        }
+
+        template <typename T>
+        void remove_component() {
+            if (!has_component<T>()) {
+                throw std::runtime_error("Engine error: scene: entity does not have component of this type");
+            }
+            scene_->registry_.remove<T>(entity_handle_);
+        }
+
+        template <typename T>
+        [[nodiscard]] T& get_component() {
+            if (!has_component<T>()) {
+                throw std::runtime_error("Engine error: scene: entity does not have component of this type");
+            }
+            return scene_->registry_.get<T>(entity_handle_);
+        }
+
+        template <typename T>
+        [[nodiscard]] bool has_component() const {
+            return scene_->registry_.all_of<T>(entity_handle_);
+        }
+
+        UUID uuid() { return get_component<IDComponent>().id; }
+
+        const std::string& name() {
+            return get_component<LabelComponent>().tag;
+        }
+
+        operator entt::entity() const { return entity_handle_; }
+        operator uint32_t() const { return static_cast<uint32_t>(entity_handle_); }
+
+    private:
+        entt::entity entity_handle_ = entt::null;
+
+        // Todo: Consider using weak ptr,
+        Scene* scene_ = nullptr;
+    };
+}

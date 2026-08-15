@@ -9,6 +9,7 @@
 #include <iostream>
 #include <thread>
 #include <core/Config.hpp>
+#include <core/Log.hpp>
 #include <GLFW/glfw3.h>
 #include <input/CameraController.hpp>
 #include <input/Input.hpp>
@@ -34,7 +35,7 @@ namespace {
         return timer;
     }
 
-    void wait_high_res(HANDLE timer, double seconds) {
+    void wait_high_res(HANDLE timer, const double seconds) {
         if (!timer || seconds <= 0.0) return;
 
         LARGE_INTEGER due_time;
@@ -58,7 +59,7 @@ namespace engine {
         void framebuffer_size_callback(GLFWwindow* window, const int width, const int height) {
             const auto* context = static_cast<ApplicationContext*>(glfwGetWindowUserPointer(window));
             if (context != nullptr && context->renderer != nullptr) {
-                context->renderer->resize(width, height);
+                context->renderer->on_resize(width, height);
 
                 if (height > 0) {
                     const float aspect = static_cast<float>(width) / static_cast<float>(height);
@@ -94,14 +95,21 @@ namespace engine {
             setting::FRAME_TITLE, nullptr, nullptr);
         if (!window) {
             std::cerr << "Engine error: application: failed to create window" << std::endl;
+            glfwTerminate();
+            return 1;
         }
 
         glfwMakeContextCurrent(window);
 
         // ----------------------------------
+        // Initialize logger
+        // ----------------------------------
+        Log::init();
+
+        // ----------------------------------
         // Initialize frame
         // ----------------------------------
-        Frame::init(window);
+        Frame::on_init(window);
 
         Renderer renderer;
         CameraController camera_controller;
@@ -109,7 +117,7 @@ namespace engine {
         context.renderer = &renderer;
         context.camera_controller = &camera_controller;
 
-        if (!renderer.init(window)) {
+        if (!renderer.on_init(window)) {
             std::cerr << "Engine error: application: failed to initialize renderer" << std::endl;
             glfwDestroyWindow(window);
             glfwTerminate();
@@ -123,6 +131,9 @@ namespace engine {
         int width, height;
         glfwGetFramebufferSize(window, &width, &height);
 
+        for (const auto& layer : layers_) {
+            layer->on_attach(renderer);
+        }
         if (height > 0) {
             renderer.get_camera().set_aspect_ratio(static_cast<float>(width) / static_cast<float>(height));
         }
@@ -132,7 +143,7 @@ namespace engine {
         // Game logic
         // ----------------------------------
         setting::configuration::load();
-        init(renderer);
+        this->on_init(renderer);
 
         // ----------------------------------
         #if defined(_WIN32)
@@ -165,18 +176,25 @@ namespace engine {
             else {
                 camera_controller.reset_mouse_state();
             }
-
-            if (Input::is_key_pressed_once(window, GLFW_KEY_F3)) {
-                renderer.toggle_debug_panel();
+            for (const auto& layer : layers_) {
+                layer->on_update(renderer, window, camera_controller, delta_time);
             }
-
-            update(renderer, window, camera_controller, delta_time);
+            this->on_update(renderer, window, camera_controller, delta_time);
 
             // ----------------------------------
             // Render pass
             // ----------------------------------
             renderer.begin_frame();
-            render(renderer);
+            for (const auto& layer : layers_) {
+                layer->on_render(renderer);
+            }
+            this->on_render(renderer);
+
+            #ifdef ENABLE_IMGUI
+            for (const auto& layer : layers_) {
+                layer->on_imGuiRender(delta_time);
+            }
+            #endif
 
             renderer.end_frame(delta_time);
             Frame::end_frame();
@@ -216,18 +234,30 @@ namespace engine {
         #endif
         // ----------------------------------
 
-        shutdown(renderer, window);
+        for (auto it = layers_.rbegin(); it != layers_.rend(); ++it) {
+            (*it)->on_detach();
+        }
+
+        this->on_shutdown(renderer, window);
         return 0;
     }
 
-    void Application::shutdown(Renderer& renderer, GLFWwindow* window) {
+    void Application::on_shutdown(Renderer& renderer, GLFWwindow* window) {
         setting::configuration::save();
 
-        Frame::shutdown();
-        renderer.shutdown();
+        Frame::on_shutdown();
+        renderer.on_shutdown();
         if (window != nullptr) {
             glfwDestroyWindow(window);
         }
         glfwTerminate();
+    }
+
+    void Application::push_layer(Layer* layer) {
+        layers_.push_layer(layer);
+    }
+
+    void Application::push_overlay(Layer* overlay) {
+        layers_.push_overlay(overlay);
     }
 }

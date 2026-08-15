@@ -5,7 +5,10 @@
 
 #include "render/Renderer.hpp"
 
+#ifdef ENABLE_IMGUI
 #include <imgui.h>
+#endif
+
 #include <iostream>
 #include <memory>
 #include <core/Config.hpp>
@@ -138,7 +141,7 @@ namespace engine {
     Renderer::Renderer() = default;
     Renderer::~Renderer() = default;
 
-    bool Renderer::init(GLFWwindow* window) {
+    bool Renderer::on_init(GLFWwindow* window) {
         window_ = window;
 
         if (window_ == nullptr) {
@@ -169,7 +172,7 @@ namespace engine {
         return true;
     }
 
-    void Renderer::shutdown() {
+    void Renderer::on_shutdown() {
         camera_ = nullptr;
 
         cleanup_line_resources();
@@ -181,7 +184,7 @@ namespace engine {
         }
     }
 
-    void Renderer::resize(const int width, const int height) {
+    void Renderer::on_resize(const int width, const int height) {
         framebuffer_width_ = width;
         framebuffer_height_ = height;
         glViewport(0, 0, framebuffer_width_, framebuffer_height_);
@@ -190,56 +193,10 @@ namespace engine {
     void Renderer::begin_frame() {
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-        render_editor_overlays();
     }
 
     void Renderer::end_frame(const float delta_time) {
         this->flush_lines();
-
-        // ----------------------
-        // Debug panel
-        // ----------------------
-        if (show_debug_panel_) {
-            static float timer = 0.0f;
-            static float fps_display = 0.0f;
-
-            timer += delta_time;
-            if (timer >= setting::video::FPS_REFRESH_RATE_IN_SECONDS || fps_display == 0.0f) {
-                fps_display = ImGui::GetIO().Framerate;
-                timer = 0.0f;
-            }
-
-            ImGui::SetNextWindowSize(ImVec2(400, 500), ImGuiCond_FirstUseEver);
-            ImGui::Begin("Debug panel");
-
-            ImGui::Text("Performance");
-            ImGui::Text("  FPS: %.1f", fps_display);
-            ImGui::Text("  Frame Time: %.2f ms", 1000.0f / (fps_display > 0.0f ? fps_display : 1.0f));
-
-            ImGui::Separator();
-            ImGui::Text("Video");
-            static bool vsync_enabled = setting::video::VSYNC_ENABLED;
-            if (ImGui::Checkbox("V-Sync", &vsync_enabled)) {
-                glfwSwapInterval(vsync_enabled ? 1 : 0);
-            }
-            ImGui::Text("FPS Limit: %s", setting::video::get_target_fps_str().c_str());
-            ImGui::SetNextItemWidth(-1.0f);
-            ImGui::SliderInt("##", &setting::video::target_fps_index, 0, setting::video::num_presets - 1, setting::video::get_target_fps_str().c_str());
-
-            ImGui::Separator();
-            ImGui::Text("Editor");
-            bool grid_active = is_grid_enabled();
-            if (ImGui::Checkbox("Show World Grid", &grid_active)) {
-                set_grid_enabled(grid_active);
-            }
-
-            bool gizmo_active = is_gizmo_enabled();
-            if (ImGui::Checkbox("Show Axis Gizmo", &gizmo_active)) {
-                set_gizmo_enabled(gizmo_active);
-            }
-            ImGui::End();
-        }
     }
 
     Mesh Renderer::upload_mesh(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices) {
@@ -436,15 +393,6 @@ namespace engine {
         return program;
     }
 
-    void Renderer::render_editor_overlays() {
-        if (show_grid_) {
-            render_grid();
-        }
-        if (show_gizmo_) {
-            render_gizmo();
-        }
-    }
-
     void Renderer::render_grid() const {
         if (camera_ == nullptr || grid_shader_ == 0) return;
 
@@ -460,13 +408,6 @@ namespace engine {
         glBindVertexArray(0);
 
         glDisable(GL_BLEND);
-    }
-
-    void Renderer::render_gizmo() {
-        // World Origin Gizmo (X = Red, Y = Green, Z = Blue)
-        draw_line({0, 0, 0}, {2, 0, 0}, {1, 0, 0});
-        draw_line({0, 0, 0}, {0, 2, 0}, {0, 1, 0});
-        draw_line({0, 0, 0}, {0, 0, 2}, {0, 0, 1});
     }
 
     void Renderer::init_line_resources() {
