@@ -7,6 +7,7 @@
 #include <cstdint>
 
 namespace engine {
+    // Todo: Move mesh entity logic to component (?)
     struct Mesh {
         unsigned int vao = 0;
         unsigned int vbo = 0;

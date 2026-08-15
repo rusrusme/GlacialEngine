@@ -61,6 +61,7 @@ namespace engine {
         /** @brief Draws all lines at the end of the frame */
         void flush_lines();
 
+        // Todo: Refactor to editor
          /** @brief Renders the editor grid */
         void render_grid() const;
         // -------------------------
@@ -76,6 +77,7 @@ namespace engine {
         int framebuffer_width_ = 1;
         int framebuffer_height_ = 1;
 
+        // Todo: Move camera OR camera component to  scene
         std::unique_ptr<Camera> camera_ = nullptr;
 
         // -----------------------------------------

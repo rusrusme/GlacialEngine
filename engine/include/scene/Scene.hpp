@@ -31,6 +31,7 @@ namespace engine {
 
         entt::registry registry_;
 
+        // Todo: Rethink architectural design (component vs member)
         std::unique_ptr<Camera> camera_ = nullptr;
     };
 }

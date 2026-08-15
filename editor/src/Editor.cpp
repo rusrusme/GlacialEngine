@@ -10,6 +10,8 @@
 namespace editor {
     void Editor::on_init(engine::Renderer& renderer) {
         editor_layer_.on_attach(renderer);
+        ImGuiIO& io = ImGui::GetIO();
+        io.FontGlobalScale = 1.5f;
     }
 
     void Editor::on_update(engine::Renderer& renderer, GLFWwindow* window, engine::CameraController& camera_controller, const float delta_time) {
@@ -27,7 +29,7 @@ namespace editor {
         // --------------------------------
         // 1. Big cube grid test
         // --------------------------------
-        // cube_grid(renderer);
+        cube_grid(renderer);
 
         // --------------------------------
         // 2. Orbiting spheres test

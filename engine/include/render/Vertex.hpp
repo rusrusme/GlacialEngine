@@ -8,6 +8,7 @@
 #include <glm/vec3.hpp>
 
 namespace engine {
+    // Todo: Same with vertex (see Mesh.hpp)
     struct Vertex {
         glm::vec3 position;
         glm::vec3 normal;

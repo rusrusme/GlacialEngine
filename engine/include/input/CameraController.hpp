@@ -9,6 +9,7 @@
 #include <render/Camera.hpp>
 
 namespace engine {
+    // Todo: Decouple controller like camera to components (?)
     class CameraController {
     public:
         void reset_mouse_state();
