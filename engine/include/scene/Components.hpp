@@ -59,6 +59,7 @@ namespace engine {
 
     struct CameraComponent {
         Camera camera;
+        bool is_primary = true;
 
         CameraComponent() = default;
         CameraComponent(const Camera& camera) : camera(camera) {}

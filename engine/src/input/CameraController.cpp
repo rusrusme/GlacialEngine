@@ -19,32 +19,6 @@ namespace engine {
         update_keyboard(window, camera, delta_time);
     }
 
-    void CameraController::update_mouse(GLFWwindow* window, Camera& camera) {
-        double mouse_x = 0.0;
-        double mouse_y = 0.0;
-        glfwGetCursorPos(window, &mouse_x, &mouse_y);
-
-        if (is_first_frame_) {
-            last_x_ = mouse_x;
-            last_y_ = mouse_y;
-            is_first_frame_ = false;
-            return;
-        }
-
-        const double delta_x = mouse_x - last_x_;
-        const double delta_y = mouse_y - last_y_;
-
-        last_x_ = mouse_x;
-        last_y_ = mouse_y;
-
-        if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE) == GLFW_PRESS) {
-            camera.orbit(
-                static_cast<float>(+delta_x) * setting::camera_controller::ORBIT_SENSITIVITY,
-                static_cast<float>(+delta_y) * setting::camera_controller::ORBIT_SENSITIVITY
-            );
-        }
-    }
-
     void CameraController::update_keyboard(GLFWwindow* window, Camera& camera, const float delta_time) {
         if (Input::is_keyboard_captured()) {
             return;
@@ -70,6 +44,32 @@ namespace engine {
             const float delta_right = input_x * dynamic_pan_speed * delta_time;
             const float delta_forward = input_z * dynamic_pan_speed * delta_time;
             camera.pan(delta_right, delta_forward);
+        }
+    }
+
+    void CameraController::update_mouse(GLFWwindow* window, Camera& camera) {
+        double mouse_x = 0.0;
+        double mouse_y = 0.0;
+        glfwGetCursorPos(window, &mouse_x, &mouse_y);
+
+        if (is_first_frame_) {
+            last_x_ = mouse_x;
+            last_y_ = mouse_y;
+            is_first_frame_ = false;
+            return;
+        }
+
+        const double delta_x = mouse_x - last_x_;
+        const double delta_y = mouse_y - last_y_;
+
+        last_x_ = mouse_x;
+        last_y_ = mouse_y;
+
+        if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE) == GLFW_PRESS) {
+            camera.orbit(
+                static_cast<float>(+delta_x) * setting::camera_controller::ORBIT_SENSITIVITY,
+                static_cast<float>(+delta_y) * setting::camera_controller::ORBIT_SENSITIVITY
+            );
         }
     }
 
