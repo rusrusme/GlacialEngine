@@ -7,40 +7,39 @@
 
 namespace engine {
     // LayerStack calls on_detach() for every layer in its destructor, but Application::run() also explicitly detaches layers before shutdown. This can result in on_detach() being called twice (and potentially double-freeing resources). Consider removing detach logic from the LayerStack destructor (let Application own detach ordering), or ensure detach only happens in one place.
-    LayerStack::~LayerStack() {
-        for (auto& layer : layers_) {
-            layer->on_detach();
-        }
-        layers_.clear();
+    LayerStack::~LayerStack() = default;
+
+    void LayerStack::push_layer(std::unique_ptr<Layer> layer) {
+        layers_.emplace(layers_.begin() + layer_insert_index_, std::move(layer));
+        layer_insert_index_++;
     }
 
-    void LayerStack::push_layer(Layer* layer) {
-        layers_.emplace(layers_.begin() + layer_insert_index, layer);
-        layer_insert_index++;
+    void LayerStack::push_overlay(std::unique_ptr<Layer> overlay) {
+        layers_.emplace_back(std::move(overlay));
     }
 
-    void LayerStack::push_overlay(Layer* overlay) {
-        layers_.emplace_back(overlay);
-    }
+    std::unique_ptr<Layer> LayerStack::pop_layer(Layer* layer) {
+        auto it = std::find_if(layers_.begin(), layers_.begin() + layer_insert_index_, [layer](const std::unique_ptr<Layer>& ptr) { return ptr.get() == layer; });
 
-    void LayerStack::pop_layer(Layer* layer) {
-        const auto it = std::find_if(layers_.begin(), layers_.begin() + layer_insert_index,
-            [layer](const std::unique_ptr<Layer>& ptr) { return ptr.get() == layer; });
-
-        if (it != layers_.begin() + layer_insert_index) {
-            layer->on_detach();
+        if (it != layers_.begin() + layer_insert_index_) {
+            (*it)->on_detach();
+            std::unique_ptr<Layer> removed = std::move(*it);
             layers_.erase(it);
-            layer_insert_index--;
+            layer_insert_index_--;
+            return removed;
         }
+        return nullptr;
     }
 
-    void LayerStack::pop_overlay(Layer* overlay) {
-        const auto it = std::find_if(layers_.begin() + layer_insert_index, layers_.end(),
-            [overlay](const std::unique_ptr<Layer>& ptr) { return ptr.get() == overlay; });
+    std::unique_ptr<Layer> LayerStack::pop_overlay(Layer* overlay) {
+        auto it = std::find_if(layers_.begin() + layer_insert_index_, layers_.end(), [overlay](const std::unique_ptr<Layer>& ptr) { return ptr.get() == overlay; });
 
         if (it != layers_.end()) {
-            overlay->on_detach();
+            (*it)->on_detach();
+            std::unique_ptr<Layer> removed = std::move(*it);
             layers_.erase(it);
+            return removed;
         }
+        return nullptr;
     }
 }

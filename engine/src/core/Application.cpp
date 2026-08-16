@@ -234,6 +234,7 @@ namespace engine {
         #endif
         // ----------------------------------
 
+        // In reverse
         for (auto it = layers_.rbegin(); it != layers_.rend(); ++it) {
             (*it)->on_detach();
         }
@@ -253,11 +254,11 @@ namespace engine {
         glfwTerminate();
     }
 
-    void Application::push_layer(Layer* layer) {
-        layers_.push_layer(layer);
+    void Application::push_layer(std::unique_ptr<Layer> layer) {
+        layers_.push_layer(std::move(layer));
     }
 
-    void Application::push_overlay(Layer* overlay) {
-        layers_.push_overlay(overlay);
+    void Application::push_overlay(std::unique_ptr<Layer> overlay) {
+        layers_.push_overlay(std::move(overlay));
     }
 }

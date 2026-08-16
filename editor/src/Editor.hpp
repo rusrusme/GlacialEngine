@@ -18,8 +18,6 @@ namespace editor {
         void on_render(engine::Renderer& renderer) override;
 
     private:
-        EditorLayer editor_layer_;
-
         float total_time_ = 0.0f;
 
         void cube_grid(engine::Renderer& renderer) const;

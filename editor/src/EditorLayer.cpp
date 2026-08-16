@@ -13,9 +13,6 @@ namespace editor {
     void EditorLayer::on_attach(engine::Renderer& renderer) {
         active_scene_ = std::make_shared<engine::Scene>();
         active_scene_->on_init(renderer);
-
-
-        auto entity = active_scene_->create_entity();
     }
 
     void EditorLayer::on_detach() {

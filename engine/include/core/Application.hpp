@@ -25,8 +25,8 @@ namespace engine {
 
         void on_shutdown(Renderer& renderer, GLFWwindow* window);
 
-        void push_layer(Layer* layer);
-        void push_overlay(Layer* overlay);
+        void push_layer(std::unique_ptr<Layer> layer);
+        void push_overlay(std::unique_ptr<Layer> overlay);
 
     private:
         LayerStack layers_;

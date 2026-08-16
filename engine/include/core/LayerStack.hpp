@@ -13,13 +13,13 @@ namespace engine {
         LayerStack() = default;
         ~LayerStack();
 
-        void push_layer(Layer* layer);
+        void push_layer(std::unique_ptr<Layer> layer);
 
-        void push_overlay(Layer* overlay);
+        void push_overlay(std::unique_ptr<Layer> overlay);
 
-        void pop_layer(Layer* layer);
+        std::unique_ptr<Layer> pop_layer(Layer* layer);
 
-        void pop_overlay(Layer* overlay);
+        std::unique_ptr<Layer> pop_overlay(Layer* overlay);
 
         std::vector<std::unique_ptr<Layer>>::iterator begin() { return layers_.begin(); }
         std::vector<std::unique_ptr<Layer>>::iterator end() { return layers_.end(); }
@@ -33,6 +33,6 @@ namespace engine {
 
     private:
         std::vector<std::unique_ptr<Layer>> layers_;
-        uint32_t layer_insert_index = 0;
+        uint32_t layer_insert_index_ = 0;
     };
 }
