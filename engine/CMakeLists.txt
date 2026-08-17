@@ -41,6 +41,7 @@ add_library(Engine STATIC
             include/event/Event.hpp
             include/event/WindowResizedEvent.hpp
             include/event/MouseScrolledEvent.hpp
+            src/core/Window.cpp
 )
 # ----------------------------------------------------------------------------
 target_include_directories(Engine

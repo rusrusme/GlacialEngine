@@ -19,7 +19,7 @@ namespace engine {
         /** @brief Entry point for running the application */
         int run();
 
-        void shutdown(Renderer& renderer);
+        void shutdown();
 
         /** @brief Central resize handler dispatching to Window, Renderer, and Layers */
         void on_event(Event& event);

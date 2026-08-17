@@ -61,17 +61,17 @@ namespace editor {
         // --------------------------------
         // 1. Big cube grid test
         // --------------------------------
-        // cube_grid(renderer);
+        cube_grid(renderer);
 
         // --------------------------------
         // 2. Orbiting spheres test
         // --------------------------------
-        orbiting_spheres(renderer);
+        // orbiting_spheres(renderer);
 
         // --------------------------------
         // 3. Dynamic rotating ring test
         // --------------------------------
-        dynamic_ring(renderer);
+        // dynamic_ring(renderer);
     }
 
     void EditorLayer::on_imGuiRender(const float delta_time) {

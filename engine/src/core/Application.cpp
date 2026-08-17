@@ -16,24 +16,6 @@
 #include <render/Frame.hpp>
 
 namespace engine {
-    namespace {
-        void framebuffer_size_callback(GLFWwindow* window_, const int width, const int height) {
-            auto* app = static_cast<Application*>(glfwGetWindowUserPointer(window_));
-            if (app) {
-                WindowResizedEvent event(width, height);
-                app->on_event(event);
-            }
-        }
-
-        void scroll_callback(GLFWwindow* window, const double x_offset, const double y_offset) {
-            auto* app = static_cast<Application*>(glfwGetWindowUserPointer(window));
-            if (app) {
-                MouseScrolledEvent event(static_cast<float>(x_offset), static_cast<float>(y_offset));
-                app->on_event(event);
-            }
-        }
-    }
-
     Application::Application() {
         instance_ = this;
     }
@@ -57,11 +39,10 @@ namespace engine {
             glfwTerminate();
             return 1;
         }
-
         glfwMakeContextCurrent(raw_window);
 
-        // Initialize window
         window_ = std::make_unique<Window>(raw_window);
+        window_->set_event_callback([this](Event& event) { on_event(event); });
 
         // ----------------------------------
         // Initialize core systems
@@ -75,11 +56,6 @@ namespace engine {
             glfwTerminate();
             return 1;
         }
-
-        glfwSetWindowUserPointer(window_->native(), this);
-        glfwSetFramebufferSizeCallback(window_->native(), framebuffer_size_callback);
-        // Todo: move to separate on_event() method or EventDispatcher class
-        glfwSetScrollCallback(window_->native(), scroll_callback);
 
         for (const auto& layer : layers_) {
             layer->on_attach(renderer_);
@@ -120,11 +96,11 @@ namespace engine {
             (*it)->on_detach();
         }
 
-        shutdown(renderer_);
+        shutdown();
         return 0;
     }
 
-    void Application::shutdown(Renderer& renderer) {
+    void Application::shutdown() {
         setting::configuration::save();
 
         Frame::shutdown();
@@ -137,10 +113,10 @@ namespace engine {
 
     void Application::on_event(Event& event) {
         EventDispatcher dispatcher(event);
-        dispatcher.dispatch<WindowResizedEvent>([this](WindowResizedEvent& e) {
+        dispatcher.dispatch<WindowResizedEvent>([this](const WindowResizedEvent& e) {
             window_->on_resize(e.width(), e.height());
             renderer_.on_resize(e.width(), e.height());
-            return false; // Weiterleiten an Layer!
+            return false; // Forward to layer
         });
 
         // From top to bottom
