@@ -52,6 +52,7 @@ add_library(Engine STATIC
             include/render/Shader.hpp
             src/render/UniformBuffer.cpp
             include/render/UniformBuffer.hpp
+            include/util/FileIo.hpp
 )
 # ----------------------------------------------------------------------------
 target_include_directories(Engine

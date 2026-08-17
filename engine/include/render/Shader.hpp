@@ -6,6 +6,7 @@
 #pragma once
 
 #include <cstdint>
+#include <memory>
 #include <string>
 #include <unordered_map>
 #include <glm/glm.hpp>
@@ -21,6 +22,8 @@ namespace engine {
 
         Shader(Shader&& other) noexcept;
         Shader& operator=(Shader&& other) noexcept;
+
+        static std::unique_ptr<Shader> from_file(const std::string& vertex_path, const std::string& fragment_path);
 
         void bind() const;
         void unbind() const;

@@ -1,5 +1,9 @@
+# IDE & Build
 /.idea/
 /.vscode/
 /cmake-build-debug/
 /cmake-build-dist/
 /cmake-build-release/
+
+# Runtime
+*.ini

@@ -64,52 +64,35 @@ namespace engine {
         [[deprecated]] void render_grid() const;
         // -------------------------
 
-        // struct CameraData {
-            // glm::mat4 view;
-            // glm::mat4 projection;
-        // };
+        struct CameraData {
+            glm::mat4 view;
+            glm::mat4 projection;
+        };
 
     private:
-        // std::unique_ptr<Shader> mesh_shader_;
-        // std::unique_ptr<Shader> line_shader_;
-        // std::unique_ptr<Shader> grid_shader_;
-        //
-        // std::unique_ptr<UniformBuffer> camera_ubo_;
+        std::unique_ptr<Shader> mesh_shader_;
+        std::unique_ptr<Shader> line_shader_;
+        std::unique_ptr<Shader> grid_shader_;
 
-        static unsigned int build_shader_program();
+        std::unique_ptr<UniformBuffer> camera_ubo_;
 
         GLFWwindow* window_ = nullptr;
-        unsigned int shader_program_ = 0;
 
         int framebuffer_width_ = 1;
         int framebuffer_height_ = 1;
 
-        // Frame-bound camera settings
-        glm::mat4 view_matrix_{1.0f};
-        glm::mat4 projection_matrix_{1.0f};
-
         // -----------------------------------------
-        // Line rendering
+        // Line & Grid Rendering Resources
         // -----------------------------------------
         std::vector<LineVertex> line_batch_buffer_;
-
         size_t line_vbo_capacity_bytes_ = 0;
 
-        unsigned int line_shader_ = 0;
-        unsigned int line_vao_ = 0;
-        unsigned int line_vbo_ = 0;
-        int line_u_view_loc_ = -1;
-        int line_u_proj_loc_ = -1;
+        std::unique_ptr<VertexArray> line_vao_;
+        std::shared_ptr<VertexBuffer> line_vbo_;
 
-        unsigned int grid_shader_ = 0;
-        unsigned int grid_vao_ = 0;
-        int grid_u_view_loc_ = -1;
-        int grid_u_proj_loc_ = -1;
+        std::unique_ptr<VertexArray> grid_vao_;
 
         void init_line_resources();
         void init_grid_resources();
-
-        void cleanup_line_resources();
-        void cleanup_grid_resources();
     };
 }

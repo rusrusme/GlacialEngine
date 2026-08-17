@@ -9,6 +9,7 @@
 #include <glm/gtc/type_ptr.hpp>
 #include <iostream>
 #include <utility>
+#include <util/FileIO.hpp>
 
 namespace engine {
     Shader::Shader(const std::string& vertex_src, const std::string& fragment_src) {
@@ -56,6 +57,18 @@ namespace engine {
             uniform_location_cache_ = std::move(other.uniform_location_cache_);
         }
         return *this;
+    }
+
+    std::unique_ptr<Shader> Shader::from_file(const std::string& vertex_path, const std::string& fragment_path) {
+        const std::string vs_code = util::read_file_to_string(vertex_path);
+        const std::string fs_code = util::read_file_to_string(fragment_path);
+
+        if (vs_code.empty() || fs_code.empty()) {
+            std::cerr << "Engine error: failed to load shader sources from files!" << std::endl;
+            return nullptr;
+        }
+
+        return std::make_unique<Shader>(vs_code, fs_code);
     }
 
     void Shader::bind() const {
