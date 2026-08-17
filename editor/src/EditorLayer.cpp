@@ -7,6 +7,8 @@
 
 #include <core/Config.hpp>
 #include <core/Keys.hpp>
+#include <event/MouseScrolledEvent.hpp>
+#include <event/WindowResizedEvent.hpp>
 #include <input/Input.hpp>
 #include <scene/Entity.hpp>
 
@@ -120,10 +122,23 @@ namespace editor {
         #endif
     }
 
-    void EditorLayer::on_resize(const int width, const int height) {
-        if (height > 0) {
-            camera_.set_aspect_ratio(static_cast<float>(width) / static_cast<float>(height));
-        }
+    void EditorLayer::on_event(engine::Event& event) {
+        engine::EventDispatcher dispatcher(event);
+
+        dispatcher.dispatch<engine::WindowResizedEvent>([this](const engine::WindowResizedEvent& e) {
+            if (e.height() > 0) {
+                camera_.set_aspect_ratio(static_cast<float>(e.width()) / static_cast<float>(e.height()));
+            }
+            return false;
+        });
+
+        dispatcher.dispatch<engine::MouseScrolledEvent>([this](const engine::MouseScrolledEvent& e) {
+            if (!engine::Input::is_mouse_captured()) {
+                engine::CameraController::on_scroll(camera_, e.y_offset());
+                return true;
+            }
+            return false;
+        });
     }
 
     void EditorLayer::render_grid(engine::Renderer& renderer) {

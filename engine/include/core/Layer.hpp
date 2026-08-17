@@ -6,6 +6,7 @@
 #pragma once
 
 #include <string>
+#include <event/Event.hpp>
 #include <render/Renderer.hpp>
 
 namespace engine {
@@ -20,7 +21,7 @@ namespace engine {
         virtual void on_render(Renderer& renderer, float delta_time) {}
         virtual void on_imGuiRender(float delta_time) {}
 
-        virtual void on_resize(int width, int height) {}
+        virtual void on_event(Event& event) {}
 
     protected:
         std::string debug_name_;

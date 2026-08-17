@@ -38,8 +38,9 @@ add_library(Engine STATIC
             include/scene/CameraSystem.hpp
             include/core/Keys.hpp
             include/core/Window.hpp
-            include/event/Event.cpp
             include/event/Event.hpp
+            include/event/WindowResizedEvent.hpp
+            include/event/MouseScrolledEvent.hpp
 )
 # ----------------------------------------------------------------------------
 target_include_directories(Engine

@@ -22,7 +22,7 @@ namespace engine {
         void shutdown(Renderer& renderer);
 
         /** @brief Central resize handler dispatching to Window, Renderer, and Layers */
-        void on_resize(int width, int height);
+        void on_event(Event& event);
 
         static Application& get() { return *instance_; }
         [[nodiscard]] Window& window() const { return *window_; }
