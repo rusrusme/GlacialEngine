@@ -79,6 +79,10 @@ namespace engine {
         }
     }
 
+    Application::Application() {
+        instance = this;
+    }
+
     int Application::run() {
         if (!glfwInit()) {
             std::cerr << "Engine error: application: failed to initialize GLFW" << std::endl;
@@ -143,7 +147,6 @@ namespace engine {
         // Game logic
         // ----------------------------------
         setting::configuration::load();
-        this->on_init(renderer);
 
         // ----------------------------------
         #if defined(_WIN32)
@@ -179,7 +182,6 @@ namespace engine {
             for (const auto& layer : layers_) {
                 layer->on_update(renderer, window, camera_controller, delta_time);
             }
-            this->on_update(renderer, window, camera_controller, delta_time);
 
             // ----------------------------------
             // Render pass
@@ -188,7 +190,6 @@ namespace engine {
             for (const auto& layer : layers_) {
                 layer->on_render(renderer);
             }
-            this->on_render(renderer);
 
             #ifdef ENABLE_IMGUI
             for (const auto& layer : layers_) {
@@ -239,11 +240,11 @@ namespace engine {
             (*it)->on_detach();
         }
 
-        this->on_shutdown(renderer, window);
+        shutdown(renderer, window);
         return 0;
     }
 
-    void Application::on_shutdown(Renderer& renderer, GLFWwindow* window) {
+    void Application::shutdown(Renderer& renderer, GLFWwindow* window) {
         setting::configuration::save();
 
         Frame::on_shutdown();
@@ -261,4 +262,6 @@ namespace engine {
     void Application::push_overlay(std::unique_ptr<Layer> overlay) {
         layers_.push_overlay(std::move(overlay));
     }
+
+    Application* Application::instance = nullptr;
 }

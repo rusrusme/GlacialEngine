@@ -7,7 +7,6 @@
 
 // Core
 #include "core/Application.hpp"
-#include "core/Assertions.hpp"
 #include "core/Config.hpp"
 #include "core/Layer.hpp"
 #include "core/Log.hpp"

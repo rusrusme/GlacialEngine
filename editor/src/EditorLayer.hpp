@@ -49,5 +49,14 @@ namespace editor {
         [[nodiscard]] bool is_debug_panel_enabled() const { return show_debug_panel_; }
         void set_debug_panel_enabled(const bool enabled) { show_debug_panel_ = enabled; }
         void toggle_debug_panel() { show_debug_panel_ = !show_debug_panel_; }
+
+        // -------------------------
+        float total_time_ = 0.0f;
+
+        void cube_grid(engine::Renderer& renderer) const;
+
+        void orbiting_spheres(engine::Renderer& renderer) const;
+
+        void dynamic_ring(engine::Renderer& renderer) const;
     };
 }

@@ -6,29 +6,30 @@
 #pragma once
 
 #include <core/LayerStack.hpp>
-#include <input/CameraController.hpp>
 #include <render/Renderer.hpp>
 
 namespace engine {
     class Application {
     public:
+        Application();
         virtual ~Application() = default;
 
         /** @brief Entry point for running the application */
         int run();
 
-        virtual void on_init(Renderer& renderer) = 0;
+        void shutdown(Renderer& renderer, GLFWwindow* window);
 
-        virtual void on_update(Renderer& renderer, GLFWwindow* window, CameraController& camera_controller, float delta_time) = 0;
+        static Application& get() { return *instance; }
+        GLFWwindow& get_window() { return *window_; }
 
-        virtual void on_render(Renderer& renderer) = 0;
-
-        void on_shutdown(Renderer& renderer, GLFWwindow* window);
-
+    protected:
         void push_layer(std::unique_ptr<Layer> layer);
         void push_overlay(std::unique_ptr<Layer> overlay);
 
     private:
+        static Application* instance;
+        GLFWwindow* window_;
+        Renderer renderer_;
         LayerStack layers_;
     };
 }
