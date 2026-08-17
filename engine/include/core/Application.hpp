@@ -8,6 +8,8 @@
 #include <core/LayerStack.hpp>
 #include <render/Renderer.hpp>
 
+#include "Window.hpp"
+
 namespace engine {
     class Application {
     public:
@@ -17,10 +19,13 @@ namespace engine {
         /** @brief Entry point for running the application */
         int run();
 
-        void shutdown(Renderer& renderer) const;
+        void shutdown(Renderer& renderer);
+
+        /** @brief Central resize handler dispatching to Window, Renderer, and Layers */
+        void on_resize(int width, int height);
 
         static Application& get() { return *instance_; }
-        [[nodiscard]] GLFWwindow* get_window() const { return window_; }
+        [[nodiscard]] Window& window() const { return *window_; }
 
     protected:
         void push_layer(std::unique_ptr<Layer> layer);
@@ -28,7 +33,7 @@ namespace engine {
 
     private:
         static Application* instance_;
-        GLFWwindow* window_ = nullptr;
+        std::unique_ptr<Window> window_;
         Renderer renderer_;
         LayerStack layers_;
     };

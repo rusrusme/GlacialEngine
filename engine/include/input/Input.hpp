@@ -31,7 +31,7 @@ namespace engine {
 
         static bool is_key_pressed_once(const int key) {
             static std::unordered_map<int, bool> key_states;
-            GLFWwindow* window = Application::get().get_window();
+            GLFWwindow* window = Application::get().window().native();
             if (!window) return false;
 
             const bool is_pressed = glfwGetKey(window, key) == GLFW_PRESS;

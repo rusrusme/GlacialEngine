@@ -37,6 +37,9 @@ add_library(Engine STATIC
             src/scene/CameraSystem.cpp
             include/scene/CameraSystem.hpp
             include/core/Keys.hpp
+            include/core/Window.hpp
+            include/event/Event.cpp
+            include/event/Event.hpp
 )
 # ----------------------------------------------------------------------------
 target_include_directories(Engine

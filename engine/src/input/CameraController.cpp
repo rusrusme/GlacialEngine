@@ -15,7 +15,7 @@ namespace engine {
     }
 
     void CameraController::update(Camera& camera, const float delta_time) {
-        GLFWwindow* window = Application::get().get_window();
+        GLFWwindow* window = Application::get().window().native();
         if (!window) return;
 
         update_mouse(camera);
@@ -23,7 +23,7 @@ namespace engine {
     }
 
     void CameraController::update_keyboard(Camera& camera, const float delta_time) {
-        GLFWwindow* window = Application::get().get_window();
+        GLFWwindow* window = Application::get().window().native();
         if (!window) return;
 
         if (Input::is_keyboard_captured()) {
@@ -54,7 +54,7 @@ namespace engine {
     }
 
     void CameraController::update_mouse(Camera& camera) {
-        GLFWwindow* window = Application::get().get_window();
+        GLFWwindow* window = Application::get().window().native();
         if (!window) return;
 
         double mouse_x = 0.0;

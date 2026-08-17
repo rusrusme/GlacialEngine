@@ -24,6 +24,8 @@ namespace editor {
         void on_render(engine::Renderer& renderer, float delta_time) override;
         void on_imGuiRender(float delta_time) override;
 
+        void on_resize(int width, int height) override;
+
     private:
         std::shared_ptr<engine::Scene> active_scene_;
         engine::Camera camera_;

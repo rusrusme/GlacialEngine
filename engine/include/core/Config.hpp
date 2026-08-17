@@ -4,6 +4,7 @@
 //
 
 #pragma once
+
 #include <fstream>
 #include <iostream>
 #include <iterator>
@@ -15,8 +16,6 @@ namespace engine::setting {
     namespace video {
         constexpr int MONITOR_RESOLUTION_WIDTH = 1920;
         constexpr int MONITOR_RESOLUTION_HEIGHT = 1080;
-
-        constexpr bool VSYNC_ENABLED = false;
 
         constexpr float FPS_REFRESH_RATE_IN_SECONDS = 0.5f;
 

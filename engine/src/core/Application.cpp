@@ -11,36 +11,14 @@
 #include <core/Config.hpp>
 #include <core/Log.hpp>
 #include <GLFW/glfw3.h>
-#include <input/CameraController.hpp>
-#include <input/Input.hpp>
 #include <render/Frame.hpp>
 
 namespace engine {
     namespace {
-        struct ApplicationContext {
-            Renderer* renderer = nullptr;
-            CameraController* camera_controller = nullptr;
-        };
-
         void framebuffer_size_callback(GLFWwindow* window_, const int width, const int height) {
-            const auto* context = static_cast<ApplicationContext*>(glfwGetWindowUserPointer(window_));
-            if (context != nullptr && context->renderer != nullptr) {
-                context->renderer->on_resize(width, height);
-
-                if (height > 0) {
-                    const float aspect = static_cast<float>(width) / static_cast<float>(height);
-                    // context->renderer->get_camera().set_aspect_ratio(aspect);
-                }
-            }
-        }
-
-        void scroll_callback(GLFWwindow* window_, double /*x_offset*/, const double y_offset) {
-            if (Input::is_mouse_captured()) {
-                return;
-            }
-            const auto* context = static_cast<ApplicationContext*>(glfwGetWindowUserPointer(window_));
-            if (context != nullptr && context->renderer != nullptr && context->camera_controller != nullptr) {
-                // CameraController::on_scroll(context->renderer->get_camera(), y_offset);
+            auto* app = static_cast<Application*>(glfwGetWindowUserPointer(window_));
+            if (app) {
+                app->on_resize(width, height);
             }
         }
     }
@@ -59,67 +37,50 @@ namespace engine {
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-        window_ = glfwCreateWindow(
+        GLFWwindow* raw_window = glfwCreateWindow(
             setting::video::MONITOR_RESOLUTION_WIDTH,
             setting::video::MONITOR_RESOLUTION_HEIGHT,
             setting::FRAME_TITLE, nullptr, nullptr);
-        if (!window_) {
+        if (!raw_window) {
             std::cerr << "Engine error: application: failed to create window_" << std::endl;
             glfwTerminate();
             return 1;
         }
 
-        glfwMakeContextCurrent(window_);
+        glfwMakeContextCurrent(raw_window);
+
+        // Initialize window
+        window_ = std::make_unique<Window>(raw_window);
 
         // ----------------------------------
         // Initialize core systems
         // ----------------------------------
         Log::init();
-        Frame::init(window_);
+        Frame::init(window_->native());
 
-        Renderer renderer;
-        CameraController camera_controller;
-        ApplicationContext context;
-        context.renderer = &renderer;
-        context.camera_controller = &camera_controller;
-
-        if (!renderer.on_init(window_)) {
+        if (!renderer_.on_init(window_->native())) {
             std::cerr << "Engine error: application: failed to initialize renderer" << std::endl;
-            glfwDestroyWindow(window_);
+            glfwDestroyWindow(window_->native());
             glfwTerminate();
             return 1;
         }
 
-        glfwSetWindowUserPointer(window_, &context);
-        glfwSetFramebufferSizeCallback(window_, framebuffer_size_callback);
-        glfwSetScrollCallback(window_, scroll_callback);
-
-        int width, height;
-        glfwGetFramebufferSize(window_, &width, &height);
+        glfwSetWindowUserPointer(window_->native(), this);
+        glfwSetFramebufferSizeCallback(window_->native(), framebuffer_size_callback);
+        // Todo: move to separate on_event() method or EventDispatcher class
+        // glfwSetScrollCallback(window_, scroll_callback);
 
         for (const auto& layer : layers_) {
-            layer->on_attach(renderer);
+            layer->on_attach(renderer_);
         }
-        // if (height > 0) {
-            // renderer.get_camera().set_aspect_ratio(static_cast<float>(width) / static_cast<float>(height));
-        // }
-        // renderer.get_camera().set_projection_params(45.0f, 0.1f, 10000.0f);
 
         // ----------------------------------
         // Run core loop
         // ----------------------------------
         setting::configuration::load();
 
-        while (!glfwWindowShouldClose(window_)) {
+        while (!glfwWindowShouldClose(window_->native())) {
             const float delta_time = Frame::begin_frame();
-
-            // Todo: remove this
-            // if (!Input::is_mouse_captured()) {
-            //     // camera_controller.update(window_, renderer.get_camera(), delta_time);
-            // }
-            // else {
-            //     camera_controller.reset_mouse_state();
-            // }
 
             // ----------------------------------
             // Update pass
@@ -132,7 +93,7 @@ namespace engine {
             // Render pass
             // ----------------------------------
             for (const auto& layer : layers_) {
-                layer->on_render(renderer, delta_time);
+                layer->on_render(renderer_, delta_time);
             }
             #ifdef ENABLE_IMGUI
             for (const auto& layer : layers_) {
@@ -148,19 +109,28 @@ namespace engine {
             (*it)->on_detach();
         }
 
-        shutdown(renderer);
+        shutdown(renderer_);
         return 0;
     }
 
-    void Application::shutdown(Renderer& renderer) const {
+    void Application::shutdown(Renderer& renderer) {
         setting::configuration::save();
 
         Frame::shutdown();
-        renderer.on_shutdown();
+        renderer_.on_shutdown();
         if (window_ != nullptr) {
-            glfwDestroyWindow(window_);
+            glfwDestroyWindow(window_->native());
         }
         glfwTerminate();
+    }
+
+    void Application::on_resize(const int width, const int height) {
+        window_->on_resize(width, height);
+        renderer_.on_resize(width, height);
+
+        for (const auto& layer : layers_) {
+            layer->on_resize(width, height);
+        }
     }
 
     void Application::push_layer(std::unique_ptr<Layer> layer) {

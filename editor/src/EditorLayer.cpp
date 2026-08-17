@@ -17,6 +17,11 @@ namespace editor {
 
         camera_.apply_default_view();
         camera_controller_.reset_mouse_state();
+
+        const uint32_t width = engine::Application::get().window().get_width();
+        const uint32_t height = engine::Application::get().window().get_height();
+        camera_.set_aspect_ratio(static_cast<float>(width) / static_cast<float>(height));
+        camera_.set_projection_params(45.0f, 1.0f, 10000.0f);
     }
 
     void EditorLayer::on_detach() {
@@ -27,10 +32,16 @@ namespace editor {
 
     void EditorLayer::on_update(const float delta_time) {
         if (engine::Input::is_key_pressed_once(engine::Key::F3)) {
-        show_debug_panel_ = !show_debug_panel_;
+            show_debug_panel_ = !show_debug_panel_;
         }
         if (active_scene_) {
             active_scene_->on_update(delta_time);
+        }
+        if (!engine::Input::is_mouse_captured()) {
+            camera_controller_.update(camera_, delta_time);
+        }
+        else {
+            camera_controller_.reset_mouse_state();
         }
         total_time_ += delta_time;
     }
@@ -85,7 +96,7 @@ namespace editor {
 
             ImGui::Separator();
             ImGui::Text("Video");
-            static bool vsync_enabled = engine::setting::video::VSYNC_ENABLED;
+            static bool vsync_enabled = engine::Application::get().window().is_vsync();
             if (ImGui::Checkbox("V-Sync", &vsync_enabled)) {
                 glfwSwapInterval(vsync_enabled ? 1 : 0);
             }
@@ -107,6 +118,12 @@ namespace editor {
             ImGui::End();
         }
         #endif
+    }
+
+    void EditorLayer::on_resize(const int width, const int height) {
+        if (height > 0) {
+            camera_.set_aspect_ratio(static_cast<float>(width) / static_cast<float>(height));
+        }
     }
 
     void EditorLayer::render_grid(engine::Renderer& renderer) {
