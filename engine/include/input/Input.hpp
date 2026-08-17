@@ -8,6 +8,7 @@
 #ifdef ENABLE_IMGUI
 #include <imgui.h>
 #endif
+#include <core/Application.hpp>
 
 namespace engine {
     class Input {
@@ -28,8 +29,10 @@ namespace engine {
             return false;
         }
 
-        static bool is_key_pressed_once(GLFWwindow* window, const int key) {
+        static bool is_key_pressed_once(const int key) {
             static std::unordered_map<int, bool> key_states;
+            GLFWwindow* window = Application::get().get_window();
+            if (!window) return false;
 
             const bool is_pressed = glfwGetKey(window, key) == GLFW_PRESS;
             bool& was_pressed_last_frame = key_states[key];

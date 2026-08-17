@@ -6,6 +6,7 @@
 #include "EditorLayer.hpp"
 
 #include <core/Config.hpp>
+#include <core/Keys.hpp>
 #include <input/Input.hpp>
 #include <scene/Entity.hpp>
 
@@ -13,6 +14,9 @@ namespace editor {
     void EditorLayer::on_attach(engine::Renderer& renderer) {
         active_scene_ = std::make_shared<engine::Scene>();
         active_scene_->on_init(renderer);
+
+        camera_.apply_default_view();
+        camera_controller_.reset_mouse_state();
     }
 
     void EditorLayer::on_detach() {
@@ -21,9 +25,9 @@ namespace editor {
         }
     }
 
-    void EditorLayer::on_update(engine::Renderer& renderer, GLFWwindow* window, engine::CameraController& camera_controller, const float delta_time) {
-        if (engine::Input::is_key_pressed_once(window, GLFW_KEY_F3)) {
-            show_debug_panel_ = !show_debug_panel_;
+    void EditorLayer::on_update(const float delta_time) {
+        if (engine::Input::is_key_pressed_once(engine::Key::F3)) {
+        show_debug_panel_ = !show_debug_panel_;
         }
         if (active_scene_) {
             active_scene_->on_update(delta_time);
@@ -31,7 +35,7 @@ namespace editor {
         total_time_ += delta_time;
     }
 
-    void EditorLayer::on_render(engine::Renderer& renderer) {
+    void EditorLayer::on_render(engine::Renderer& renderer, const float delta_time) {
         if (show_grid_) {
             render_grid(renderer);
         }
@@ -39,7 +43,7 @@ namespace editor {
             render_gizmo(renderer);
         }
         if (active_scene_) {
-            active_scene_->on_render(renderer);
+            active_scene_->on_render(renderer, camera_, delta_time);
         }
         // --------------------------------
         // 1. Big cube grid test

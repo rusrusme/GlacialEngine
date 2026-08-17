@@ -13,7 +13,7 @@ namespace engine {
     public:
         void reset_mouse_state();
 
-        void update(GLFWwindow* window, Camera& camera, float delta_time);
+        void update(Camera& camera, float delta_time);
 
         static void on_scroll(Camera& camera, double y_offset);
 
@@ -22,8 +22,8 @@ namespace engine {
         double last_y_ = 0.0;
         bool is_first_frame_ = true;
 
-        void update_keyboard(GLFWwindow* window, Camera& camera, float delta_time);
+        void update_keyboard(Camera& camera, float delta_time);
 
-        void update_mouse(GLFWwindow* window, Camera& camera);
+        void update_mouse(Camera& camera);
     };
 }

@@ -36,6 +36,7 @@ add_library(Engine STATIC
             include/core/LayerStack.hpp
             src/scene/CameraSystem.cpp
             include/scene/CameraSystem.hpp
+            include/core/Keys.hpp
 )
 # ----------------------------------------------------------------------------
 target_include_directories(Engine

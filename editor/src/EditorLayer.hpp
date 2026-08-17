@@ -19,13 +19,15 @@ namespace editor {
         void on_attach(engine::Renderer& renderer) override;
         void on_detach() override;
 
-        void on_update(engine::Renderer& renderer, GLFWwindow* window, engine::CameraController& camera_controller, float delta_time) override;
+        void on_update(float delta_time) override;
 
-        void on_render(engine::Renderer& renderer) override;
+        void on_render(engine::Renderer& renderer, float delta_time) override;
         void on_imGuiRender(float delta_time) override;
 
     private:
         std::shared_ptr<engine::Scene> active_scene_;
+        engine::Camera camera_;
+        engine::CameraController camera_controller_;
 
         // -----------------------------------------
         // Editor overlays
@@ -54,9 +56,7 @@ namespace editor {
         float total_time_ = 0.0f;
 
         void cube_grid(engine::Renderer& renderer) const;
-
         void orbiting_spheres(engine::Renderer& renderer) const;
-
         void dynamic_ring(engine::Renderer& renderer) const;
     };
 }

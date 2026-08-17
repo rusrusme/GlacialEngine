@@ -35,10 +35,10 @@ namespace engine {
         void on_resize(int width, int height);
 
         // -------------------------
-        // Frames
+        // Scene
         // -------------------------
-        void begin_frame();
-        void end_frame(float delta_time);
+        void begin_scene(const Camera& camera);
+        void end_scene(float delta_time);
 
         // -------------------------
         // Mesh
@@ -59,14 +59,10 @@ namespace engine {
         void draw_sphere(const glm::vec3& center, float radius, const glm::vec3& color, int segments = 32);
 
         /** @brief Draws all lines at the end of the frame */
-        void flush_lines();
+        void flush();
 
-        // Todo: Refactor to editor
-         /** @brief Renders the editor grid */
-        void render_grid() const;
+        [[deprecated]] void render_grid() const;
         // -------------------------
-
-        [[nodiscard]] Camera& get_camera() const;
 
     private:
         static unsigned int build_shader_program();
@@ -77,8 +73,8 @@ namespace engine {
         int framebuffer_width_ = 1;
         int framebuffer_height_ = 1;
 
-        // Todo: Move camera OR camera component to  scene
-        std::unique_ptr<Camera> camera_ = nullptr;
+        glm::mat4 view_matrix_{1.0f};
+        glm::mat4 projection_matrix_{1.0f};
 
         // -----------------------------------------
         // Line rendering

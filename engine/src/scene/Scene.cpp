@@ -40,6 +40,9 @@ namespace engine {
 
     }
 
-    void Scene::on_render(const Renderer& renderer) {
+    void Scene::on_render(Renderer& renderer, Camera& camera, const float delta_time) {
+        renderer.begin_scene(camera);
+
+        renderer.end_scene(delta_time);
     }
 }

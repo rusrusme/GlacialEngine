@@ -14,12 +14,18 @@ namespace engine {
         is_first_frame_ = true;
     }
 
-    void CameraController::update(GLFWwindow* window, Camera& camera, const float delta_time) {
-        update_mouse(window, camera);
-        update_keyboard(window, camera, delta_time);
+    void CameraController::update(Camera& camera, const float delta_time) {
+        GLFWwindow* window = Application::get().get_window();
+        if (!window) return;
+
+        update_mouse(camera);
+        update_keyboard(camera, delta_time);
     }
 
-    void CameraController::update_keyboard(GLFWwindow* window, Camera& camera, const float delta_time) {
+    void CameraController::update_keyboard(Camera& camera, const float delta_time) {
+        GLFWwindow* window = Application::get().get_window();
+        if (!window) return;
+
         if (Input::is_keyboard_captured()) {
             return;
         }
@@ -47,7 +53,10 @@ namespace engine {
         }
     }
 
-    void CameraController::update_mouse(GLFWwindow* window, Camera& camera) {
+    void CameraController::update_mouse(Camera& camera) {
+        GLFWwindow* window = Application::get().get_window();
+        if (!window) return;
+
         double mouse_x = 0.0;
         double mouse_y = 0.0;
         glfwGetCursorPos(window, &mouse_x, &mouse_y);

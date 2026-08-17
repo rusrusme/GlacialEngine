@@ -166,15 +166,10 @@ namespace engine {
         init_line_resources();
         init_grid_resources();
 
-        camera_ = std::make_unique<Camera>();
-        camera_->apply_default_view();
-
         return true;
     }
 
     void Renderer::on_shutdown() {
-        camera_ = nullptr;
-
         cleanup_line_resources();
         cleanup_grid_resources();
 
@@ -190,13 +185,13 @@ namespace engine {
         glViewport(0, 0, framebuffer_width_, framebuffer_height_);
     }
 
-    void Renderer::begin_frame() {
-        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    void Renderer::begin_scene(const Camera& camera) {
+        projection_matrix_ = camera.get_projection_matrix();
+        view_matrix_ = camera.get_view_matrix();
     }
 
-    void Renderer::end_frame(const float delta_time) {
-        this->flush_lines();
+    void Renderer::end_scene(const float delta_time) {
+        flush();
     }
 
     Mesh Renderer::upload_mesh(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices) {
@@ -230,17 +225,14 @@ namespace engine {
     }
 
     void Renderer::draw_mesh(const Mesh& mesh, const glm::mat4& model_matrix) const {
-        if (shader_program_ == 0 || mesh.vao == 0 || mesh.index_count == 0 || camera_ == nullptr) {
+        if (shader_program_ == 0 || mesh.vao == 0 || mesh.index_count == 0) {
             return;
         }
         glUseProgram(shader_program_);
 
-        const glm::mat4 view = camera_->get_view_matrix();
-        const glm::mat4 projection = camera_->get_projection_matrix();
-
         glUniformMatrix4fv(glGetUniformLocation(shader_program_, "u_model"), 1, GL_FALSE, glm::value_ptr(model_matrix));
-        glUniformMatrix4fv(glGetUniformLocation(shader_program_, "u_view"), 1, GL_FALSE, glm::value_ptr(view));
-        glUniformMatrix4fv(glGetUniformLocation(shader_program_, "u_projection"), 1, GL_FALSE, glm::value_ptr(projection));
+        glUniformMatrix4fv(glGetUniformLocation(shader_program_, "u_view"), 1, GL_FALSE, glm::value_ptr(view_matrix_));
+        glUniformMatrix4fv(glGetUniformLocation(shader_program_, "u_projection"), 1, GL_FALSE, glm::value_ptr(projection_matrix_));
 
         glBindVertexArray(mesh.vao);
         glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(mesh.index_count), GL_UNSIGNED_INT, nullptr);
@@ -305,8 +297,8 @@ namespace engine {
         draw_circle(center, radius, {0, 0, 1}, color, segments);
     }
 
-    void Renderer::flush_lines() {
-        if (line_batch_buffer_.empty() || camera_ == nullptr) return;
+    void Renderer::flush() {
+        if (line_batch_buffer_.empty()) return;
 
         const size_t bytes_needed = line_batch_buffer_.size() * sizeof(LineVertex);
 
@@ -323,8 +315,8 @@ namespace engine {
         }
 
         glUseProgram(line_shader_);
-        glUniformMatrix4fv(line_u_view_loc_, 1, GL_FALSE, glm::value_ptr(camera_->get_view_matrix()));
-        glUniformMatrix4fv(line_u_proj_loc_, 1, GL_FALSE, glm::value_ptr(camera_->get_projection_matrix()));
+        glUniformMatrix4fv(line_u_view_loc_, 1, GL_FALSE, glm::value_ptr(view_matrix_));
+        glUniformMatrix4fv(line_u_proj_loc_, 1, GL_FALSE, glm::value_ptr(projection_matrix_));
 
         glDepthMask(GL_FALSE);
 
@@ -334,10 +326,6 @@ namespace engine {
         glBindVertexArray(0);
 
         line_batch_buffer_.clear();
-    }
-
-    Camera& Renderer::get_camera() const {
-        return *camera_;
     }
 
     unsigned int Renderer::build_shader_program() {
@@ -394,14 +382,14 @@ namespace engine {
     }
 
     void Renderer::render_grid() const {
-        if (camera_ == nullptr || grid_shader_ == 0) return;
+        if (grid_shader_ == 0) return;
 
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
         glUseProgram(grid_shader_);
-        glUniformMatrix4fv(grid_u_view_loc_, 1, GL_FALSE, glm::value_ptr(camera_->get_view_matrix()));
-        glUniformMatrix4fv(grid_u_proj_loc_, 1, GL_FALSE, glm::value_ptr(camera_->get_projection_matrix()));
+        glUniformMatrix4fv(grid_u_view_loc_, 1, GL_FALSE, glm::value_ptr(view_matrix_));
+        glUniformMatrix4fv(grid_u_proj_loc_, 1, GL_FALSE, glm::value_ptr(projection_matrix_));
 
         glBindVertexArray(grid_vao_);
         glDrawArrays(GL_TRIANGLES, 0, 6); // Draw fullscreen quad (6 vertices)

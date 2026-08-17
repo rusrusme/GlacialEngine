@@ -17,8 +17,8 @@ namespace engine {
 
         virtual void on_attach(Renderer& renderer) = 0;
         virtual void on_detach() = 0;
-        virtual void on_update(Renderer& renderer, GLFWwindow* window, CameraController& camera_controller, float delta_time) = 0;
-        virtual void on_render(Renderer& renderer) = 0;
+        virtual void on_update(float delta_time) = 0;
+        virtual void on_render(Renderer& renderer, float delta_time) = 0;
         virtual void on_imGuiRender(float delta_time) = 0;
 
     protected:

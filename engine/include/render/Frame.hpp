@@ -10,12 +10,22 @@
 namespace engine {
     class Frame {
     public:
-        static void on_init(GLFWwindow* window);
+        static void init(GLFWwindow* window);
+        static void shutdown();
 
-        static void on_shutdown();
-
-        static void begin_frame();
-
+        static float begin_frame();
         static void end_frame();
+
+        static float get_delta_time() { return delta_time_; }
+
+    private:
+        static inline GLFWwindow* window_ = nullptr;
+
+        static inline float delta_time_ = 0.0f;
+        static inline double last_frame_time_ = 0.0;
+        static inline double next_frame_time_ = 0.0;
+
+        static void limit_frame_rate();
+
     };
 }
