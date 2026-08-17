@@ -5,12 +5,14 @@
 
 #pragma once
 
-#include <memory>
 #include <vector>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <render/Mesh.hpp>
 #include <render/Vertex.hpp>
+
+#include "Shader.hpp"
+#include "UniformBuffer.hpp"
 
 namespace engine {
     class Camera;
@@ -29,9 +31,7 @@ namespace engine {
         ~Renderer();
 
         bool on_init(GLFWwindow* window);
-
         void on_shutdown();
-
         void on_resize(int width, int height);
 
         // -------------------------
@@ -64,7 +64,18 @@ namespace engine {
         [[deprecated]] void render_grid() const;
         // -------------------------
 
+        // struct CameraData {
+            // glm::mat4 view;
+            // glm::mat4 projection;
+        // };
+
     private:
+        // std::unique_ptr<Shader> mesh_shader_;
+        // std::unique_ptr<Shader> line_shader_;
+        // std::unique_ptr<Shader> grid_shader_;
+        //
+        // std::unique_ptr<UniformBuffer> camera_ubo_;
+
         static unsigned int build_shader_program();
 
         GLFWwindow* window_ = nullptr;
@@ -73,6 +84,7 @@ namespace engine {
         int framebuffer_width_ = 1;
         int framebuffer_height_ = 1;
 
+        // Frame-bound camera settings
         glm::mat4 view_matrix_{1.0f};
         glm::mat4 projection_matrix_{1.0f};
 

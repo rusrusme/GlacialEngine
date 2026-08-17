@@ -66,12 +66,12 @@ namespace editor {
         // --------------------------------
         // 2. Orbiting spheres test
         // --------------------------------
-        // orbiting_spheres(renderer);
+        orbiting_spheres(renderer);
 
         // --------------------------------
         // 3. Dynamic rotating ring test
         // --------------------------------
-        // dynamic_ring(renderer);
+        dynamic_ring(renderer);
     }
 
     void EditorLayer::on_imGuiRender(const float delta_time) {
@@ -153,9 +153,9 @@ namespace editor {
     }
 
     void EditorLayer::cube_grid(engine::Renderer& renderer) const {
-        constexpr int grid_x = 30;
+        constexpr int grid_x = 10;
         constexpr int grid_y = 10;
-        constexpr int grid_z = 30;
+        constexpr int grid_z = 10;
         constexpr float spacing = 2.5f;
 
         for (int x = 0; x < grid_x; ++x) {

@@ -200,43 +200,49 @@ namespace engine {
             return {};
         }
 
+        auto vao = std::make_shared<VertexArray>();
+
+        // 1. VertexBuffer erstellen & Layout passend zu struct Vertex definieren
+        auto vbo = std::make_shared<VertexBuffer>(vertices.data(), vertices.size() * sizeof(Vertex));
+        BufferLayout layout = {
+            {ShaderDataType::Float3, "a_position"},
+            {ShaderDataType::Float3, "a_normal"},
+            {ShaderDataType::Float2, "a_uv"}
+        };
+        vao->add_vertex_buffer(vbo, layout);
+
+        // 2. IndexBuffer erstellen
+        auto ebo = std::make_shared<IndexBuffer>(indices.data(), static_cast<uint32_t>(indices.size()));
+        vao->set_index_buffer(ebo);
+
         Mesh mesh{};
-        mesh.index_count = static_cast<uint32_t>(indices.size());
-
-        // Todo: OpenGL magic
-
+        mesh.vertex_array = std::move(vao);
         return mesh;
     }
 
     void Renderer::destroy_mesh(Mesh& mesh) {
-        if (mesh.ebo != 0) {
-            glDeleteBuffers(1, &mesh.ebo);
-            mesh.ebo = 0;
-        }
-        if (mesh.vbo != 0) {
-            glDeleteBuffers(1, &mesh.vbo);
-            mesh.vbo = 0;
-        }
-        if (mesh.vao != 0) {
-            glDeleteVertexArrays(1, &mesh.vao);
-            mesh.vao = 0;
-        }
-        mesh.index_count = 0;
+        mesh.vertex_array.reset();
     }
 
     void Renderer::draw_mesh(const Mesh& mesh, const glm::mat4& model_matrix) const {
-        if (shader_program_ == 0 || mesh.vao == 0 || mesh.index_count == 0) {
+        if (!mesh.is_valid() || shader_program_ == 0) {
             return;
         }
-        glUseProgram(shader_program_);
 
+        // (Später ersetzen wir shader_program_ durch dein Shader-Objekt)
+        glUseProgram(shader_program_);
         glUniformMatrix4fv(glGetUniformLocation(shader_program_, "u_model"), 1, GL_FALSE, glm::value_ptr(model_matrix));
         glUniformMatrix4fv(glGetUniformLocation(shader_program_, "u_view"), 1, GL_FALSE, glm::value_ptr(view_matrix_));
         glUniformMatrix4fv(glGetUniformLocation(shader_program_, "u_projection"), 1, GL_FALSE, glm::value_ptr(projection_matrix_));
 
-        glBindVertexArray(mesh.vao);
-        glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(mesh.index_count), GL_UNSIGNED_INT, nullptr);
-        glBindVertexArray(0);
+        mesh.vertex_array->bind();
+        glDrawElements(
+            GL_TRIANGLES,
+            static_cast<GLsizei>(mesh.vertex_array->get_index_buffer()->get_count()),
+            GL_UNSIGNED_INT,
+            nullptr
+        );
+        mesh.vertex_array->unbind();
     }
 
     void Renderer::draw_line(const glm::vec3& from, const glm::vec3& to, const glm::vec3& color) {

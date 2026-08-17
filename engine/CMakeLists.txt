@@ -42,6 +42,16 @@ add_library(Engine STATIC
             include/event/WindowResizedEvent.hpp
             include/event/MouseScrolledEvent.hpp
             src/core/Window.cpp
+            src/render/Buffer.cpp
+            include/render/Buffer.hpp
+            src/render/BufferLayout.cpp
+            include/render/BufferLayout.hpp
+            src/render/VertexArray.cpp
+            include/render/VertexArray.hpp
+            src/render/Shader.cpp
+            include/render/Shader.hpp
+            src/render/UniformBuffer.cpp
+            include/render/UniformBuffer.hpp
 )
 # ----------------------------------------------------------------------------
 target_include_directories(Engine

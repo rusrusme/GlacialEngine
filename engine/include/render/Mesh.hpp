@@ -4,13 +4,15 @@
 //
 
 #pragma once
-#include <cstdint>
+
+#include "VertexArray.hpp"
 
 namespace engine {
     struct Mesh {
-        std::uint32_t vao = 0;
-        std::uint32_t vbo = 0;
-        std::uint32_t ebo = 0;
-        std::uint32_t index_count = 0;
+        std::shared_ptr<VertexArray> vertex_array;
+
+        [[nodiscard]] bool is_valid() const {
+            return vertex_array != nullptr && vertex_array->get_index_buffer() != nullptr;
+        }
     };
 }
