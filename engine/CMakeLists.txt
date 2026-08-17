@@ -29,7 +29,6 @@ add_library(Engine STATIC
             include/core/Layer.hpp
             src/scene/Components.cpp
             include/scene/Components.hpp
-            include/core/Assertions.hpp
             src/core/UUID.cpp
             include/core/Uuid.hpp
             include/core/Engine.hpp
