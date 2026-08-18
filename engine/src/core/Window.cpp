@@ -4,7 +4,9 @@
 //
 
 #include <core/Window.hpp>
+
 #include <event/KeyEvents.hpp>
+#include <event/MouseEvents.hpp>
 
 namespace engine {
     Window::Window(GLFWwindow* window) : window_(window) {

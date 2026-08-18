@@ -3,6 +3,10 @@
 // All rights reserved.
 //
 
+#ifdef ENABLE_IMGUI
+#include <imgui.h>
+#endif
+
 #include <input/Input.hpp>
 
 #include <core/Application.hpp>

@@ -5,6 +5,8 @@
 
 #include "Editor.hpp"
 
+#include <EditorLayer.hpp>
+
 namespace editor {
     Editor::Editor() {
         push_layer(std::make_unique<EditorLayer>());

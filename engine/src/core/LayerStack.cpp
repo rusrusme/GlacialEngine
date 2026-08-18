@@ -3,7 +3,7 @@
 // All rights reserved.
 //
 
-#include "../../include/core/LayerStack.hpp"
+#include "core/LayerStack.hpp"
 
 namespace engine {
     // LayerStack calls on_detach() for every layer in its destructor, but Application::run() also explicitly detaches layers before shutdown. This can result in on_detach() being called twice (and potentially double-freeing resources). Consider removing detach logic from the LayerStack destructor (let Application own detach ordering), or ensure detach only happens in one place.

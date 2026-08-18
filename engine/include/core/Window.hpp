@@ -4,8 +4,8 @@
 //
 
 #pragma once
+
 #include <functional>
-#include <event/MouseEvents.hpp>
 #include <event/WindowEvents.hpp>
 
 #include "GLFW/glfw3.h"

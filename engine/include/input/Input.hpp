@@ -5,10 +5,6 @@
 
 #pragma once
 
-#ifdef ENABLE_IMGUI
-#include <imgui.h>
-#endif
-
 #include <glm/glm.hpp>
 
 namespace engine {

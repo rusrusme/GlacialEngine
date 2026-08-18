@@ -5,6 +5,10 @@
 
 #include "EditorLayer.hpp"
 
+#ifdef ENABLE_IMGUI
+#include <imgui.h>
+#endif
+
 #include <core/Application.hpp>
 #include <core/Config.hpp>
 #include <core/Log.hpp>
@@ -13,7 +17,7 @@
 #include <event/WindowEvents.hpp>
 #include <input/Input.hpp>
 #include <input/KeyCodes.hpp>
-#include <../../engine/include/scene/ecs/Entity.hpp>
+#include <scene/ecs/Entity.hpp>
 
 namespace editor {
     void EditorLayer::on_attach(engine::Renderer& renderer) {
