@@ -68,7 +68,7 @@ namespace engine {
             return nullptr;
         }
 
-        return std::make_unique<Shader>(vs_code, fs_code);
+        return std::make_unique < Shader > (vs_code, fs_code);
     }
 
     void Shader::bind() const {

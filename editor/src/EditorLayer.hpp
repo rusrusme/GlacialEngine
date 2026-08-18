@@ -23,7 +23,7 @@ namespace editor {
         void on_update(float delta_time) override;
 
         void on_render(engine::Renderer& renderer, float delta_time) override;
-        void on_imGuiRender(float delta_time) override;
+        void on_imGuiRender(engine::Renderer& renderer, float delta_time) override;
 
         void on_event(engine::Event& event) override;
 
@@ -60,5 +60,7 @@ namespace editor {
         void cube_grid(engine::Renderer& renderer) const;
         void orbiting_spheres(engine::Renderer& renderer) const;
         void dynamic_ring(engine::Renderer& renderer) const;
+        void wave_around_scene(engine::Renderer& renderer) const;
+        void tree_trunks_around_pyramid(engine::Renderer& renderer) const;
     };
 }

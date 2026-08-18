@@ -15,13 +15,12 @@ namespace editor {
         EditorGrid() = default;
         ~EditorGrid() = default;
 
-        void init();
+        void init(engine::Renderer& renderer);
         void render(const engine::Renderer& renderer);
 
     private:
-        std::unique_ptr<engine::Shader> grid_shader_;
+        std::shared_ptr<engine::Shader> grid_shader_;
         std::unique_ptr<engine::VertexArray> grid_vao_;
         bool initialized_ = false;
     };
-
 }

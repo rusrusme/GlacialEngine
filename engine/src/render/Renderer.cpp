@@ -39,10 +39,10 @@ namespace engine {
 
         camera_ubo_ = std::make_unique<UniformBuffer>(sizeof(CameraData), 0);
 
-        mesh_shader_ = Shader::from_file("assets/shaders/mesh.vert", "assets/shaders/mesh.frag");
+        shader_library_.load("mesh", "assets/shaders/mesh.vert", "assets/shaders/mesh.frag");
+        shader_library_.load("line", "assets/shaders/line.vert", "assets/shaders/line.frag");
 
         init_line_resources();
-        init_grid_resources();
 
         return true;
     }
@@ -51,12 +51,6 @@ namespace engine {
         line_batch_buffer_.clear();
         line_vao_.reset();
         line_vbo_.reset();
-        grid_vao_.reset();
-
-        mesh_shader_.reset();
-        line_shader_.reset();
-        grid_shader_.reset();
-
         camera_ubo_.reset();
     }
 
@@ -77,6 +71,22 @@ namespace engine {
 
     void Renderer::end_scene(const float delta_time) {
         flush();
+    }
+
+    void Renderer::set_blend(const bool enable) const {
+        if (enable) {
+            glEnable(GL_BLEND);
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        }
+        else {
+            glDisable(GL_BLEND);
+        }
+    }
+
+    void Renderer::draw_arrays(const VertexArray& vao, const uint32_t count) const {
+        vao.bind();
+        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(count));
+        vao.unbind();
     }
 
     Mesh Renderer::upload_mesh(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices) {
@@ -108,12 +118,13 @@ namespace engine {
     }
 
     void Renderer::draw_mesh(const Mesh& mesh, const glm::mat4& model_matrix) const {
-        if (!mesh.is_valid() || !mesh_shader_) {
+        const auto mesh_shader = shader_library_.get("mesh");
+        if (!mesh.is_valid() || !mesh_shader) {
             return;
         }
 
-        mesh_shader_->bind();
-        mesh_shader_->set_mat4("u_model", model_matrix);
+        mesh_shader->bind();
+        mesh_shader->set_mat4("u_model", model_matrix);
 
         mesh.vertex_array->bind();
         glDrawElements(
@@ -183,23 +194,9 @@ namespace engine {
         draw_circle(center, radius, {0, 0, 1}, color, segments);
     }
 
-    void Renderer::set_blend(const bool enable) const {
-        if (enable) {
-            glEnable(GL_BLEND);
-            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        } else {
-            glDisable(GL_BLEND);
-        }
-    }
-
-    void Renderer::draw_arrays(const VertexArray& vao, const uint32_t count) const {
-        vao.bind();
-        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(count));
-        vao.unbind();
-    }
-
     void Renderer::flush() {
-        if (line_batch_buffer_.empty() || !line_shader_ || !line_vao_) return;
+        auto line_shader = shader_library_.get("line");
+        if (line_batch_buffer_.empty() || !line_shader || !line_vao_) return;
 
         const size_t bytes_needed = line_batch_buffer_.size() * sizeof(LineVertex);
 
@@ -218,7 +215,7 @@ namespace engine {
 
         line_vbo_->set_data(line_batch_buffer_.data(), bytes_needed);
 
-        line_shader_->bind();
+        line_shader->bind();
         line_vao_->bind();
 
         glDepthMask(GL_FALSE);
@@ -226,29 +223,22 @@ namespace engine {
         glDepthMask(GL_TRUE);
 
         line_vao_->unbind();
-        line_shader_->unbind();
+        line_shader->unbind();
 
         line_batch_buffer_.clear();
     }
 
     void Renderer::init_line_resources() {
-        line_shader_ = Shader::from_file("assets/shaders/line.vert", "assets/shaders/line.frag");
-
         line_vbo_capacity_bytes_ = 2000 * sizeof(LineVertex);
         line_vbo_ = std::make_shared<VertexBuffer>(nullptr, line_vbo_capacity_bytes_, true);
 
         line_vao_ = std::make_unique<VertexArray>();
         const BufferLayout line_layout = {
-            { ShaderDataType::Float3, "a_position" },
-            { ShaderDataType::Float3, "a_color" }
+            {ShaderDataType::Float3, "a_position"},
+            {ShaderDataType::Float3, "a_color"}
         };
         line_vao_->add_vertex_buffer(line_vbo_, line_layout);
 
         line_batch_buffer_.reserve(2000);
-    }
-
-    void Renderer::init_grid_resources() {
-        grid_shader_ = Shader::from_file("assets/shaders/grid.vert", "assets/shaders/grid.frag");
-        grid_vao_ = std::make_unique<VertexArray>();
     }
 }

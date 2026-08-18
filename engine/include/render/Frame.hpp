@@ -26,6 +26,5 @@ namespace engine {
         static inline double next_frame_time_ = 0.0;
 
         static void limit_frame_rate();
-
     };
 }

@@ -37,7 +37,6 @@ namespace engine {
     }
 
     void Scene::on_update(float delta_time) {
-
     }
 
     void Scene::on_render(Renderer& renderer, Camera& camera, const float delta_time) {

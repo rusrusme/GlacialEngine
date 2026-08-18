@@ -84,7 +84,7 @@ namespace engine {
             }
             #ifdef ENABLE_IMGUI
             for (const auto& layer : layers_) {
-                layer->on_imGuiRender(delta_time);
+                layer->on_imGuiRender(renderer_, delta_time);
             }
             #endif
             // ----------------------------------

@@ -6,10 +6,15 @@
 #include "EditorGrid.hpp"
 
 namespace editor {
-    void EditorGrid::init() {
+    void EditorGrid::init(engine::Renderer& renderer) {
         if (initialized_) return;
 
-        grid_shader_ = engine::Shader::from_file("assets/shaders/grid.vert", "assets/shaders/grid.frag");
+        grid_shader_ = renderer.get_shader_library().load(
+            "grid",
+            "assets/shaders/grid.vert",
+            "assets/shaders/grid.frag"
+        );
+
         grid_vao_ = std::make_unique<engine::VertexArray>();
         initialized_ = true;
     }

@@ -19,7 +19,7 @@ namespace engine {
         virtual void on_detach() {}
         virtual void on_update(float delta_time) {}
         virtual void on_render(Renderer& renderer, float delta_time) {}
-        virtual void on_imGuiRender(float delta_time) {}
+        virtual void on_imGuiRender(Renderer& renderer, float delta_time) {}
 
         virtual void on_event(Event& event) {}
 

@@ -13,7 +13,7 @@
 namespace engine {
     class Window {
     public:
-        using EventCallbackFunc = std::function<void(Event&)>;
+        using EventCallbackFunc = std::function<void(Event &)>;
 
         explicit Window(GLFWwindow* window);
 

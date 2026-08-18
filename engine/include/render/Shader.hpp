@@ -25,6 +25,8 @@ namespace engine {
 
         static std::unique_ptr<Shader> from_file(const std::string& vertex_path, const std::string& fragment_path);
 
+        [[nodiscard]] uint32_t get_renderer_id() const { return id_; }
+
         void bind() const;
         void unbind() const;
 

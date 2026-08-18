@@ -56,6 +56,8 @@ add_library(Engine STATIC
             include/event/KeyEvents.hpp
             src/input/Input.cpp
             include/input/MouseCodes.hpp
+            src/render/ShaderLibrary.cpp
+            include/render/ShaderLibrary.hpp
 )
 # ----------------------------------------------------------------------------
 target_include_directories(Engine

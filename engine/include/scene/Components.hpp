@@ -34,6 +34,7 @@ namespace engine {
         glm::vec3 scale{1.0f, 1.0f, 1.0f};
 
         TransformComponent() = default;
+
         TransformComponent(const glm::vec3& pos, const glm::vec3& rot = glm::vec3(0.0f), const glm::vec3& scl = glm::vec3(1.0f))
             : position(pos), rotation(rot), scale(scl) {}
 
