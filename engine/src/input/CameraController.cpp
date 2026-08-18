@@ -26,6 +26,12 @@ namespace engine {
         if (Input::is_keyboard_captured()) {
             return;
         }
+        if (Input::is_key_pressed(Key::LEFT_CONTROL) || Input::is_key_pressed(Key::RIGHT_CONTROL)
+            || Input::is_key_pressed(Key::LEFT_ALT) || Input::is_key_pressed(Key::RIGHT_ALT)
+            || Input::is_key_pressed(Key::LEFT_SHIFT) || Input::is_key_pressed(Key::RIGHT_SHIFT)) {
+            return;
+        }
+
         float input_x = 0.0f;
         float input_z = 0.0f;
 

@@ -28,6 +28,8 @@ namespace editor {
 
         void on_event(engine::Event& event) override;
 
+        [[nodiscard]] const engine::Camera& get_camera() const { return camera_; }
+
     private:
         std::shared_ptr<engine::Scene> active_scene_;
         engine::Camera camera_;

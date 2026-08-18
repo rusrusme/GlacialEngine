@@ -89,7 +89,18 @@ if (ENABLE_IMGUI)
     endif ()
 endif ()
 # ----------------------------------------------------------------------------
-# Fetch cgltf
+# Fetch ImGuizmo
+if (ENABLE_IMGUI)
+    FetchContent_Declare(
+            imguizmo
+            GIT_REPOSITORY https://github.com/CedricGuillemet/ImGuizmo.git
+            GIT_TAG 1.10
+    )
+    FetchContent_MakeAvailable(imguizmo)
+    target_link_libraries(imguizmo PUBLIC imgui)
+endif ()
+# ----------------------------------------------------------------------------
+# Fetch cgl
 FetchContent_Declare(
         cgltf
         GIT_REPOSITORY https://github.com/jkuhlmann/cgltf.git

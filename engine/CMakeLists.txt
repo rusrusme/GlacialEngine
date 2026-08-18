@@ -77,7 +77,7 @@ target_link_libraries(Engine PUBLIC
 )
 # ----------------------------------------------------------------------------
 if (ENABLE_IMGUI)
-    target_link_libraries(Engine PUBLIC imgui)
+    target_link_libraries(Engine PUBLIC imgui imguizmo::imguizmo)
 endif ()
 
 if (NOT DIST_BUILD)

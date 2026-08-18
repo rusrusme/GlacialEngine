@@ -31,7 +31,7 @@ namespace editor {
         const uint32_t width = engine::Application::get().window().get_width();
         const uint32_t height = engine::Application::get().window().get_height();
         camera_.set_aspect_ratio(static_cast<float>(width) / static_cast<float>(height));
-        camera_.set_projection_params(45.0f, 1.0f, 10000.0f);
+        camera_.set_projection_params(45.0f, 0.1f, 10000.0f);
     }
 
     void EditorLayer::on_detach() {
@@ -81,16 +81,16 @@ namespace editor {
         }
         if (show_gizmo_) {
             // World Origin Gizmo (X = Red, Y = Green, Z = Blue)
-            renderer.draw_line({0, 0, 0}, {2, 0, 0}, {1, 0, 0});
-            renderer.draw_line({0, 0, 0}, {0, 2, 0}, {0, 1, 0});
-            renderer.draw_line({0, 0, 0}, {0, 0, 2}, {0, 0, 1});
+            // renderer.draw_line({0, 0, 0}, {2, 0, 0}, {1, 0, 0});
+            // renderer.draw_line({0, 0, 0}, {0, 2, 0}, {0, 1, 0});
+            // renderer.draw_line({0, 0, 0}, {0, 0, 2}, {0, 0, 1});
         }
         if (is_hovering_tile_) {
-            renderer.draw_box(
-                hover_tile_pos_,
-                hover_tile_pos_ + glm::vec3(1.0f, 0.05f, 1.0f),
-                glm::vec3(0.0f, 1.0f, 0.0f)
-            );
+            // renderer.draw_box(
+            //     hover_tile_pos_,
+            //     hover_tile_pos_ + glm::vec3(1.0f, 0.05f, 1.0f),
+            //     glm::vec3(0.0f, 1.0f, 0.0f)
+            // );
         }
         if (active_scene_) {
             active_scene_->on_render(renderer, camera_, delta_time);
@@ -143,10 +143,10 @@ namespace editor {
             if (ImGui::Checkbox("Show World Grid", &grid_active)) {
                 set_grid_enabled(grid_active);
             }
-            bool gizmo_active = is_gizmo_enabled();
-            if (ImGui::Checkbox("Show Axis Gizmo", &gizmo_active)) {
-                set_gizmo_enabled(gizmo_active);
-            }
+            // bool gizmo_active = is_gizmo_enabled();
+            // if (ImGui::Checkbox("Show Axis Gizmo", &gizmo_active)) {
+                // set_gizmo_enabled(gizmo_active);
+            // }
             ImGui::End();
         }
 
