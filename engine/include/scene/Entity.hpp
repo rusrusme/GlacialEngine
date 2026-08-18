@@ -10,7 +10,6 @@
 #include "Scene.hpp"
 
 namespace engine {
-    // Todo: Global UUID system
     class Entity {
     public:
         Entity() = default;
@@ -58,7 +57,6 @@ namespace engine {
     private:
         entt::entity entity_handle_ = entt::null;
 
-        // Todo: Consider using weak ptr,
         Scene* scene_ = nullptr;
     };
 }

@@ -13,7 +13,6 @@ namespace engine {
         #ifdef ENABLE_IMGUI
         return ImGui::GetIO().WantCaptureMouse;
         #endif
-        // Todo: Implement polling handling
         return false;
     }
 
@@ -21,7 +20,6 @@ namespace engine {
         #ifdef ENABLE_IMGUI
         return ImGui::GetIO().WantTextInput;
         #endif
-        // Todo: Implement polling handling
         return false;
     }
 
