@@ -6,7 +6,7 @@
 #include "scene/Scene.hpp"
 
 #include <core/UUID.hpp>
-#include <scene/Entity.hpp>
+#include <scene/ecs/Entity.hpp>
 
 namespace engine {
     Scene::Scene() = default;

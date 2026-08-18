@@ -3,7 +3,7 @@
 // All rights reserved.
 //
 
-#include "scene/Components.hpp"
+#include "../../../include/scene/ecs/Components.hpp"
 
 namespace engine {
 }

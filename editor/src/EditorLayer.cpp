@@ -13,7 +13,7 @@
 #include <event/WindowEvents.hpp>
 #include <input/Input.hpp>
 #include <input/KeyCodes.hpp>
-#include <scene/Entity.hpp>
+#include <../../engine/include/scene/ecs/Entity.hpp>
 
 namespace editor {
     void EditorLayer::on_attach(engine::Renderer& renderer) {

@@ -3,7 +3,7 @@
 // All rights reserved.
 //
 
-#include "scene/Entity.hpp"
+#include "../../../include/scene/ecs/Entity.hpp"
 
 namespace engine {
     Entity::Entity(const entt::entity handle, Scene* scene)

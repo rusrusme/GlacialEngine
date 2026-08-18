@@ -23,19 +23,19 @@ add_library(Engine STATIC
             src/render/Frame.cpp
             src/scene/Scene.cpp
             include/scene/Scene.hpp
-            src/scene/Entity.cpp
-            include/scene/Entity.hpp
+            src/scene/ecs/Entity.cpp
+            include/scene/ecs/Entity.hpp
             src/core/Layer.cpp
             include/core/Layer.hpp
-            src/scene/Components.cpp
-            include/scene/Components.hpp
+            src/scene/ecs/Components.cpp
+            include/scene/ecs/Components.hpp
             src/core/UUID.cpp
             include/core/Uuid.hpp
             include/core/Engine.hpp
             src/core/LayerStack.cpp
             include/core/LayerStack.hpp
-            src/scene/CameraSystem.cpp
-            include/scene/CameraSystem.hpp
+            src/scene/ecs/CameraSystem.cpp
+            include/scene/ecs/CameraSystem.hpp
             include/input/KeyCodes.hpp
             include/core/Window.hpp
             include/event/Event.hpp

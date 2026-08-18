@@ -7,7 +7,7 @@
 
 #include <entt/entt.hpp>
 
-#include "Scene.hpp"
+#include "../Scene.hpp"
 
 namespace engine {
     class Entity {

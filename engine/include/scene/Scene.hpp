@@ -8,7 +8,7 @@
 #include <entt/entt.hpp>
 #include <render/Camera.hpp>
 #include <render/Renderer.hpp>
-#include <scene/Components.hpp>
+#include <scene/ecs/Components.hpp>
 
 namespace engine {
     class Entity;

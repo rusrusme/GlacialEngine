@@ -23,6 +23,6 @@
 #include "render/Mesh.hpp"
 #include "render/Renderer.hpp"
 // Scene
-#include "scene/Components.hpp"
-#include "scene/Entity.hpp"
+#include "../scene/ecs/Components.hpp"
+#include "../scene/ecs/Entity.hpp"
 #include "scene/Scene.hpp"
