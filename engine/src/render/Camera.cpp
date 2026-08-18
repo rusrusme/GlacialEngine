@@ -106,6 +106,26 @@ namespace engine {
         far_clip_ = far_p;
     }
 
+    Ray Camera::screen_point_to_ray(const glm::vec2& mouse_pos, const glm::vec2& viewport_size) {
+        const float x = (2.0f * mouse_pos.x) / viewport_size.x - 1.0f;
+        const float y = 1.0f - (2.0f * mouse_pos.y) / viewport_size.y;
+
+        const glm::vec4 ray_start_ndc(x, y, -1.0f, 1.0f);
+        const glm::vec4 ray_end_ndc(x, y, 1.0f, 1.0f);
+
+        const glm::mat4 inv_view_proj = glm::inverse(get_projection_matrix() * get_view_matrix());
+
+        glm::vec4 ray_start_world = inv_view_proj * ray_start_ndc;
+        ray_start_world /= ray_start_world.w;
+
+        glm::vec4 ray_end_world = inv_view_proj * ray_end_ndc;
+        ray_end_world /= ray_end_world.w;
+
+        const glm::vec3 ray_dir = glm::normalize(glm::vec3(ray_end_world - ray_start_world));
+
+        return Ray{.origin = glm::vec3(ray_start_world), .direction = ray_dir};
+    }
+
     void Camera::update_position() {
         const float yaw_radians = deg_to_rad(yaw_degrees_);
         const float pitch_radians = deg_to_rad(pitch_degrees_);

@@ -7,12 +7,12 @@
 
 #include <core/Application.hpp>
 #include <core/Config.hpp>
-#include <../../engine/include/input/KeyCodes.hpp>
 #include <core/Log.hpp>
 #include <event/KeyEvents.hpp>
 #include <event/MouseEvents.hpp>
 #include <event/WindowEvents.hpp>
 #include <input/Input.hpp>
+#include <input/KeyCodes.hpp>
 #include <scene/Entity.hpp>
 
 namespace editor {
@@ -51,6 +51,25 @@ namespace editor {
             camera_controller_.reset_mouse_state();
         }
         total_time_ += delta_time;
+
+        // ----------------------------------------------
+        // Ray-casted tile hovering for debug purposes
+        // ----------------------------------------------
+        const glm::vec2 mouse_pos = engine::Input::get_mouse_position();
+        int window_w, window_h;
+        glfwGetWindowSize(engine::Application::get().window().native(), &window_w, &window_h);
+        const glm::vec2 viewport_size = {static_cast<float>(window_w), static_cast<float>(window_h)};
+        const engine::Ray ray = camera_.screen_point_to_ray(mouse_pos, viewport_size);
+        glm::vec3 hit_point;
+        if (ray.intersect_plane_y(0.0f, hit_point)) {
+            hover_tile_pos_ = glm::floor(hit_point);
+            hover_tile_pos_.y = 0.0f;
+            is_hovering_tile_ = true;
+        }
+        else {
+            is_hovering_tile_ = false;
+        }
+        // ----------------------------------------------
     }
 
     void EditorLayer::on_render(engine::Renderer& renderer, const float delta_time) {
@@ -63,26 +82,24 @@ namespace editor {
             renderer.draw_line({0, 0, 0}, {0, 2, 0}, {0, 1, 0});
             renderer.draw_line({0, 0, 0}, {0, 0, 2}, {0, 0, 1});
         }
+        if (is_hovering_tile_) {
+            renderer.draw_box(
+                hover_tile_pos_,
+                hover_tile_pos_ + glm::vec3(1.0f, 0.05f, 1.0f),
+                glm::vec3(0.0f, 1.0f, 0.0f)
+            );
+        }
         if (active_scene_) {
             active_scene_->on_render(renderer, camera_, delta_time);
         }
+
         // --------------------------------
-        // 1. Big cube grid test
+        // Test objects
         // --------------------------------
         cube_grid(renderer);
-
-        // --------------------------------
-        // 2. Orbiting spheres test
-        // --------------------------------
         orbiting_spheres(renderer);
-
-        // --------------------------------
-        // 3. Dynamic rotating ring test
-        // --------------------------------
         dynamic_ring(renderer);
-
         wave_around_scene(renderer);
-
         tree_trunks_around_pyramid(renderer);
     }
 
@@ -100,7 +117,6 @@ namespace editor {
                 fps_display = ImGui::GetIO().Framerate;
                 timer = 0.0f;
             }
-
             ImGui::SetNextWindowSize(ImVec2(400, 500), ImGuiCond_FirstUseEver);
             ImGui::Begin("Debug panel");
 
@@ -124,7 +140,6 @@ namespace editor {
             if (ImGui::Checkbox("Show World Grid", &grid_active)) {
                 set_grid_enabled(grid_active);
             }
-
             bool gizmo_active = is_gizmo_enabled();
             if (ImGui::Checkbox("Show Axis Gizmo", &gizmo_active)) {
                 set_gizmo_enabled(gizmo_active);
@@ -151,10 +166,8 @@ namespace editor {
 
                 for (const auto& [name, shader] : shaders) {
                     ImGui::TableNextRow();
-
                     ImGui::TableSetColumnIndex(0);
                     ImGui::Text("%s", name.c_str());
-
                     ImGui::TableSetColumnIndex(1);
                     if (shader) {
                         ImGui::Text("%u", shader->get_renderer_id());
@@ -162,7 +175,6 @@ namespace editor {
                     else {
                         ImGui::TextDisabled("-");
                     }
-
                     ImGui::TableSetColumnIndex(2);
                     if (shader) {
                         ImGui::TextColored(ImVec4(0.2f, 0.9f, 0.2f, 1.0f), "Active");
@@ -171,7 +183,6 @@ namespace editor {
                         ImGui::TextColored(ImVec4(0.9f, 0.2f, 0.2f, 1.0f), "Null");
                     }
                 }
-
                 ImGui::EndTable();
             }
         }
@@ -289,7 +300,7 @@ namespace editor {
             glm::vec3(-pyramid_half_base, pyramid_base_y, pyramid_half_base)
         };
 
-        const glm::vec3 apex = {0.0f, pyramid_height, 0.0f};
+        constexpr glm::vec3 apex = {0.0f, pyramid_height, 0.0f};
 
         const float pulse = (std::sin(total_time_ * 2.0f) + 1.0f) * 0.5f;
         const glm::vec3 pyramid_color = {1.0f, 0.8f + pulse * 0.2f, 0.2f};
@@ -333,7 +344,7 @@ namespace editor {
             }
         }
 
-        const glm::vec3 flower_center = apex + glm::vec3(0.0f, 1.0f, 0.0f);
+        constexpr glm::vec3 flower_center = apex + glm::vec3(0.0f, 1.0f, 0.0f);
         constexpr int num_petals = 8;
         constexpr float petal_length = 12.0f;
         constexpr float petal_width = 5.0f;
@@ -344,7 +355,7 @@ namespace editor {
 
         // Gelbe Blütenmitte
         constexpr float core_size = 3.0f;
-        const glm::vec3 core_top = flower_center + glm::vec3(0.0f, core_size * 1.5f, 0.0f);
+        constexpr glm::vec3 core_top = flower_center + glm::vec3(0.0f, core_size * 1.5f, 0.0f);
         for (int i = 0; i < 6; ++i) {
             const float a1 = (static_cast<float>(i) / 6.0f) * glm::two_pi<float>() + total_time_ * 0.5f;
             const float a2 = (static_cast<float>((i + 1) % 6) / 6.0f) * glm::two_pi<float>() + total_time_ * 0.5f;
@@ -364,7 +375,7 @@ namespace editor {
             const glm::vec3 dir_out = {std::cos(petal_angle), 0.3f, std::sin(petal_angle)};
             const glm::vec3 dir_side = {-std::sin(petal_angle), 0.0f, std::cos(petal_angle)};
 
-            const glm::vec3 petal_base = flower_center;
+            constexpr glm::vec3 petal_base = flower_center;
             const glm::vec3 petal_mid = flower_center + dir_out * (petal_length * 0.5f) + glm::vec3(0.0f, 3.0f, 0.0f);
             const glm::vec3 petal_tip = flower_center + dir_out * petal_length + glm::vec3(0.0f, -1.0f, 0.0f);
 

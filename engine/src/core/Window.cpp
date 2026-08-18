@@ -23,15 +23,12 @@ namespace engine {
 
     void Window::update_dimensions() {
         if (window_) {
-            glfwGetFramebufferSize(window_, &width_, &height_);
+            glfwGetFramebufferSize(window_, &data_.width, &data_.height);
         }
     }
 
     void Window::setup_callbacks() {
         if (!window_) return;
-
-        data_.width = width_;
-        data_.height = height_;
 
         glfwSetWindowUserPointer(window_, &data_);
 

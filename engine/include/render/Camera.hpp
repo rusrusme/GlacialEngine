@@ -5,6 +5,7 @@
 
 #pragma once
 #include <glm/glm.hpp>
+#include <math/Ray.hpp>
 
 namespace engine {
     class Camera {
@@ -38,6 +39,9 @@ namespace engine {
         void set_aspect_ratio(float aspect);
 
         void set_projection_params(float fov, float near_p, float far_p);
+
+        // ---------------------------
+        Ray screen_point_to_ray(const glm::vec2& mouse_pos, const glm::vec2& viewport_size);
 
     private:
         void update_position();

@@ -35,6 +35,11 @@ namespace editor {
         EditorGrid editor_grid_;
 
         // -----------------------------------------
+        glm::vec3 hover_tile_pos_{0.0f};
+        bool is_hovering_tile_ = false;
+        // -----------------------------------------
+
+        // -----------------------------------------
         // Editor overlays
         // -----------------------------------------
         bool show_grid_ = true;
