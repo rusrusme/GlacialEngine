@@ -6,10 +6,13 @@
 #include "Editor.hpp"
 
 #include <EditorLayer.hpp>
+#include <EditorUILayer.hpp>
 
 namespace editor {
     Editor::Editor() {
-        push_layer(std::make_unique<EditorLayer>());
+        active_scene_ = std::make_shared<engine::Scene>();
+        push_layer(std::make_unique<EditorLayer>(active_scene_));
+        push_layer(std::make_unique<EditorUILayer>(active_scene_));
     }
 }
 

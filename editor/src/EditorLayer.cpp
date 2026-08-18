@@ -23,7 +23,6 @@ namespace editor {
     void EditorLayer::on_attach(engine::Renderer& renderer) {
         editor_grid_.init(renderer);
 
-        active_scene_ = std::make_shared<engine::Scene>();
         active_scene_->on_init(renderer);
 
         camera_.apply_default_view();
@@ -100,11 +99,11 @@ namespace editor {
         // --------------------------------
         // Test objects
         // --------------------------------
-        cube_grid(renderer);
-        orbiting_spheres(renderer);
-        dynamic_ring(renderer);
-        wave_around_scene(renderer);
-        tree_trunks_around_pyramid(renderer);
+        // cube_grid(renderer);
+        // orbiting_spheres(renderer);
+        // dynamic_ring(renderer);
+        // wave_around_scene(renderer);
+        // tree_trunks_around_pyramid(renderer);
     }
 
     void EditorLayer::on_imGuiRender(engine::Renderer& renderer, const float delta_time) {

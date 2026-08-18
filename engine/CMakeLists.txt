@@ -12,7 +12,7 @@ add_library(Engine STATIC
             src/render/Camera.cpp
             include/render/Camera.hpp
             include/math/Ray.hpp
-            include/render/Mesh.hpp
+            include/render/mesh/Mesh.hpp
             include/render/Vertex.hpp
             src/input/CameraController.cpp
             include/input/Input.hpp
@@ -58,6 +58,7 @@ add_library(Engine STATIC
             include/input/MouseCodes.hpp
             src/render/ShaderLibrary.cpp
             include/render/ShaderLibrary.hpp
+            include/render/mesh/PrimitiveMesh.hpp
 )
 # ----------------------------------------------------------------------------
 target_include_directories(Engine

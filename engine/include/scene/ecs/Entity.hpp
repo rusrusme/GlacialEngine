@@ -51,6 +51,17 @@ namespace engine {
             return get_component<LabelComponent>().tag;
         }
 
+        explicit operator bool() const {
+            return entity_handle_ != entt::null && scene_ != nullptr;
+        }
+
+        bool operator==(const Entity& other) const {
+            return entity_handle_ == other.entity_handle_ && scene_ == other.scene_;
+        }
+        bool operator!=(const Entity& other) const {
+            return !(*this == other);
+        }
+
         operator entt::entity() const { return entity_handle_; }
         operator uint32_t() const { return static_cast<uint32_t>(entity_handle_); }
 

@@ -10,11 +10,12 @@
 #include <input/CameraController.hpp>
 #include <render/Renderer.hpp>
 #include <scene/Scene.hpp>
+#include <utility>
 
 namespace editor {
     class EditorLayer : public engine::Layer {
     public:
-        EditorLayer() = default;
+        explicit EditorLayer(std::shared_ptr<engine::Scene> scene) : active_scene_(std::move(scene)) {}
         ~EditorLayer() override = default;
 
         void on_attach(engine::Renderer& renderer) override;

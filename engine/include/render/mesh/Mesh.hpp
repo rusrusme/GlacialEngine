@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "VertexArray.hpp"
+#include "../VertexArray.hpp"
 
 namespace engine {
     struct Mesh {

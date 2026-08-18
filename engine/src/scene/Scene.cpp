@@ -43,6 +43,20 @@ namespace engine {
         renderer.begin_scene(camera);
 
         // Rendering logic
+        auto view = registry_.view<TransformComponent, MeshComponent>();
+        for (auto entity : view) {
+            auto [transform, mesh] = view.get<TransformComponent, MeshComponent>(entity);
+
+            glm::vec4 color{1.0f};
+            glm::mat4 transform_matrix = transform.get_matrix();
+
+            if (registry_.all_of<MaterialComponent>(entity)) {
+                color = registry_.get<MaterialComponent>(entity).color;
+            }
+
+            renderer.draw_mesh(mesh.mesh, transform_matrix, color);
+
+        }
 
         renderer.end_scene(delta_time);
     }

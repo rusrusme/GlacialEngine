@@ -5,10 +5,6 @@
 
 #include "render/Renderer.hpp"
 
-#ifdef ENABLE_IMGUI
-#include <imgui.h>
-#endif
-
 #include <iostream>
 #include <memory>
 #include <core/Config.hpp>
@@ -73,7 +69,7 @@ namespace engine {
         flush();
     }
 
-    void Renderer::set_blend(const bool enable) const {
+    void Renderer::set_blend(const bool enable) {
         if (enable) {
             glEnable(GL_BLEND);
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -83,7 +79,7 @@ namespace engine {
         }
     }
 
-    void Renderer::draw_arrays(const VertexArray& vao, const uint32_t count) const {
+    void Renderer::draw_arrays(const VertexArray& vao, const uint32_t count) {
         vao.bind();
         glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(count));
         vao.unbind();
@@ -118,6 +114,10 @@ namespace engine {
     }
 
     void Renderer::draw_mesh(const Mesh& mesh, const glm::mat4& model_matrix) const {
+        draw_mesh(mesh, model_matrix, {1.0f, 1.0f, 1.0f, 1.0f});
+    }
+
+    void Renderer::draw_mesh(const Mesh& mesh, const glm::mat4& model_matrix, const glm::vec4& color) const {
         const auto mesh_shader = shader_library_.get("mesh");
         if (!mesh.is_valid() || !mesh_shader) {
             return;
@@ -125,6 +125,10 @@ namespace engine {
 
         mesh_shader->bind();
         mesh_shader->set_mat4("u_model", model_matrix);
+        mesh_shader->set_vec4("u_color", color);
+
+        glm::vec3 light_dir = glm::normalize(glm::vec3(-0.3f, -1.0f, -0.5f));
+        mesh_shader->set_vec3("u_light_dir", light_dir);
 
         mesh.vertex_array->bind();
         glDrawElements(

@@ -26,7 +26,7 @@
 #include "render/BufferLayout.hpp"
 #include "render/Camera.hpp"
 #include "render/Frame.hpp"
-#include "render/Mesh.hpp"
+#include "../render/mesh/Mesh.hpp"
 #include "render/Renderer.hpp"
 #include "render/Shader.hpp"
 #include "render/ShaderLibrary.hpp"

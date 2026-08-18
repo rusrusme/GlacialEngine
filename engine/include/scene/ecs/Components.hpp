@@ -11,7 +11,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <render/Camera.hpp>
-#include <render/Mesh.hpp>
+#include <render/mesh/Mesh.hpp>
 
 namespace engine {
     struct LabelComponent {
@@ -56,6 +56,13 @@ namespace engine {
 
         MeshComponent() = default;
         MeshComponent(const Mesh& m) : mesh(m) {}
+    };
+
+    struct MaterialComponent {
+        glm::vec4 color{1.0f};
+
+        MaterialComponent() = default;
+        MaterialComponent(const glm::vec4 color) : color(color) {}
     };
 
     struct CameraComponent {

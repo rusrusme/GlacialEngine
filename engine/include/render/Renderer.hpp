@@ -8,7 +8,7 @@
 #include <vector>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
-#include <render/Mesh.hpp>
+#include <render/mesh/Mesh.hpp>
 #include <render/Vertex.hpp>
 
 #include "Shader.hpp"
@@ -41,17 +41,18 @@ namespace engine {
         void end_scene(float delta_time);
 
         /** @brief Enables or disables blending for rendering */
-        void set_blend(bool enable) const;
+        static void set_blend(bool enable);
 
         /** @brief Draws a VertexArray with a specified number of vertices. This is useful for rendering simple shapes or primitives without the need for an index buffer. */
-        void draw_arrays(const VertexArray& vao, uint32_t count) const;
+        static void draw_arrays(const VertexArray& vao, uint32_t count);
 
         // -------------------------
         // Mesh
         // -------------------------
         [[nodiscard]] static Mesh upload_mesh(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices);
         static void destroy_mesh(Mesh& mesh);
-        void draw_mesh(const Mesh& mesh, const glm::mat4& model_matrix) const;
+        [[deprecated]] void draw_mesh(const Mesh& mesh, const glm::mat4& model_matrix) const;
+        void draw_mesh(const Mesh& mesh, const glm::mat4& model_matrix, const glm::vec4& color) const;
 
         // -------------------------
         // Debug line rendering
