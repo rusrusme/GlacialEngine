@@ -4,6 +4,7 @@
 //
 
 #pragma once
+#include <EditorGrid.hpp>
 #include <memory>
 #include <core/Layer.hpp>
 #include <input/CameraController.hpp>
@@ -31,15 +32,14 @@ namespace editor {
         engine::Camera camera_;
         engine::CameraController camera_controller_;
 
+        EditorGrid editor_grid_;
+
         // -----------------------------------------
         // Editor overlays
         // -----------------------------------------
         bool show_grid_ = true;
         bool show_gizmo_ = true;
         bool show_debug_panel_ = true;
-
-        static void render_grid(engine::Renderer& renderer);
-        static void render_gizmo(engine::Renderer& renderer);
 
         // -------------------------
         // Debug controls

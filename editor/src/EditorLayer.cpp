@@ -5,15 +5,20 @@
 
 #include "EditorLayer.hpp"
 
+#include <core/Application.hpp>
 #include <core/Config.hpp>
-#include <core/Keys.hpp>
-#include <event/MouseScrolledEvent.hpp>
-#include <event/WindowResizedEvent.hpp>
+#include <../../engine/include/input/KeyCodes.hpp>
+#include <core/Log.hpp>
+#include <event/KeyEvents.hpp>
+#include <event/MouseEvents.hpp>
+#include <event/WindowEvents.hpp>
 #include <input/Input.hpp>
 #include <scene/Entity.hpp>
 
 namespace editor {
     void EditorLayer::on_attach(engine::Renderer& renderer) {
+        editor_grid_.init();
+
         active_scene_ = std::make_shared<engine::Scene>();
         active_scene_->on_init(renderer);
 
@@ -50,10 +55,13 @@ namespace editor {
 
     void EditorLayer::on_render(engine::Renderer& renderer, const float delta_time) {
         if (show_grid_) {
-            render_grid(renderer);
+            editor_grid_.render(renderer);
         }
         if (show_gizmo_) {
-            render_gizmo(renderer);
+            // World Origin Gizmo (X = Red, Y = Green, Z = Blue)
+            renderer.draw_line({0, 0, 0}, {2, 0, 0}, {1, 0, 0});
+            renderer.draw_line({0, 0, 0}, {0, 2, 0}, {0, 1, 0});
+            renderer.draw_line({0, 0, 0}, {0, 0, 2}, {0, 0, 1});
         }
         if (active_scene_) {
             active_scene_->on_render(renderer, camera_, delta_time);
@@ -125,6 +133,21 @@ namespace editor {
     void EditorLayer::on_event(engine::Event& event) {
         engine::EventDispatcher dispatcher(event);
 
+        dispatcher.dispatch<engine::KeyPressedEvent>([](const engine::KeyPressedEvent& e) {
+            CLIENT_TRACE("Pressed Key: {0}", e.key_code());
+            return false;
+        });
+
+        dispatcher.dispatch<engine::MouseButtonPressedEvent>([](const engine::MouseButtonPressedEvent& e) {
+            CLIENT_TRACE("Clicked Button: {0}", e.button());
+            return false;
+        });
+
+        // dispatcher.dispatch<engine::MouseMovedEvent>([](const engine::MouseMovedEvent& e) {
+        //     CLIENT_TRACE("Moved Mouse to: {0}, {1}", e.x(), e.y());
+        //     return false;
+        // });
+
         dispatcher.dispatch<engine::WindowResizedEvent>([this](const engine::WindowResizedEvent& e) {
             if (e.height() > 0) {
                 camera_.set_aspect_ratio(static_cast<float>(e.width()) / static_cast<float>(e.height()));
@@ -139,17 +162,6 @@ namespace editor {
             }
             return false;
         });
-    }
-
-    void EditorLayer::render_grid(engine::Renderer& renderer) {
-        renderer.render_grid();
-    }
-
-    void EditorLayer::render_gizmo(engine::Renderer& renderer) {
-        // World Origin Gizmo (X = Red, Y = Green, Z = Blue)
-        renderer.draw_line({0, 0, 0}, {2, 0, 0}, {1, 0, 0});
-        renderer.draw_line({0, 0, 0}, {0, 2, 0}, {0, 1, 0});
-        renderer.draw_line({0, 0, 0}, {0, 0, 2}, {0, 0, 1});
     }
 
     void EditorLayer::cube_grid(engine::Renderer& renderer) const {

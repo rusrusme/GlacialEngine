@@ -5,7 +5,6 @@
 
 #pragma once
 
-#include <GLFW/glfw3.h>
 #include <render/Camera.hpp>
 
 namespace engine {

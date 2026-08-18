@@ -5,8 +5,8 @@
 
 #pragma once
 #include <functional>
-#include <event/MouseScrolledEvent.hpp>
-#include <event/WindowResizedEvent.hpp>
+#include <event/MouseEvents.hpp>
+#include <event/WindowEvents.hpp>
 
 #include "GLFW/glfw3.h"
 
@@ -19,10 +19,7 @@ namespace engine {
 
         void set_event_callback(const EventCallbackFunc& callback);
 
-        void on_resize(int width, int height);
-
         void set_vsync(bool enabled);
-
         [[nodiscard]] bool is_vsync() const { return vsync_enabled_; }
 
         [[nodiscard]] float get_aspect_ratio() const { return height_ > 0 ? static_cast<float>(width_) / static_cast<float>(height_) : 1.0f; }

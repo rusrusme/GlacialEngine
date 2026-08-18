@@ -3,9 +3,12 @@
 // All rights reserved.
 //
 
+#include <core/Application.hpp>
 #include <core/Config.hpp>
 #include <input/CameraController.hpp>
 #include <input/Input.hpp>
+#include <input/KeyCodes.hpp>
+#include <input/MouseCodes.hpp>
 
 namespace engine {
     void CameraController::reset_mouse_state() {
@@ -15,27 +18,21 @@ namespace engine {
     }
 
     void CameraController::update(Camera& camera, const float delta_time) {
-        GLFWwindow* window = Application::get().window().native();
-        if (!window) return;
-
         update_mouse(camera);
         update_keyboard(camera, delta_time);
     }
 
     void CameraController::update_keyboard(Camera& camera, const float delta_time) {
-        GLFWwindow* window = Application::get().window().native();
-        if (!window) return;
-
         if (Input::is_keyboard_captured()) {
             return;
         }
         float input_x = 0.0f;
         float input_z = 0.0f;
 
-        if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) input_z -= 1.0f; // W
-        if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) input_x += 1.0f; // A
-        if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) input_z += 1.0f; // S
-        if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) input_x -= 1.0f; // D
+        if (Input::is_key_pressed(Key::W)) input_z -= 1.0f; // W
+        if (Input::is_key_pressed(Key::A)) input_x += 1.0f; // A
+        if (Input::is_key_pressed(Key::S)) input_z += 1.0f; // S
+        if (Input::is_key_pressed(Key::D)) input_x -= 1.0f; // D
 
         if (input_x != 0.0f || input_z != 0.0f) {
             // Normalize diagonal movement (so W+A isn't ~41% faster than W alone)
@@ -54,30 +51,29 @@ namespace engine {
     }
 
     void CameraController::update_mouse(Camera& camera) {
-        GLFWwindow* window = Application::get().window().native();
-        if (!window) return;
+        if (Input::is_mouse_captured()) {
+            return;
+        }
 
-        double mouse_x = 0.0;
-        double mouse_y = 0.0;
-        glfwGetCursorPos(window, &mouse_x, &mouse_y);
+        const glm::vec2 mouse_pos = Input::get_mouse_position();
 
         if (is_first_frame_) {
-            last_x_ = mouse_x;
-            last_y_ = mouse_y;
+            last_x_ = mouse_pos.x;
+            last_y_ = mouse_pos.y;
             is_first_frame_ = false;
             return;
         }
 
-        const double delta_x = mouse_x - last_x_;
-        const double delta_y = mouse_y - last_y_;
+        const float delta_x = mouse_pos.x - static_cast<float>(last_x_);
+        const float delta_y = mouse_pos.y - static_cast<float>(last_y_);
 
-        last_x_ = mouse_x;
-        last_y_ = mouse_y;
+        last_x_ = mouse_pos.x;
+        last_y_ = mouse_pos.y;
 
-        if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_MIDDLE) == GLFW_PRESS) {
+        if (Input::is_mouse_button_pressed(Mouse::MOUSE_BUTTON_MIDDLE)) {
             camera.orbit(
-                static_cast<float>(+delta_x) * setting::camera_controller::ORBIT_SENSITIVITY,
-                static_cast<float>(+delta_y) * setting::camera_controller::ORBIT_SENSITIVITY
+                delta_x * setting::camera_controller::ORBIT_SENSITIVITY,
+                delta_y * setting::camera_controller::ORBIT_SENSITIVITY
             );
         }
     }

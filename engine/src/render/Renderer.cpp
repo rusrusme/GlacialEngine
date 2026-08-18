@@ -183,6 +183,21 @@ namespace engine {
         draw_circle(center, radius, {0, 0, 1}, color, segments);
     }
 
+    void Renderer::set_blend(const bool enable) const {
+        if (enable) {
+            glEnable(GL_BLEND);
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        } else {
+            glDisable(GL_BLEND);
+        }
+    }
+
+    void Renderer::draw_arrays(const VertexArray& vao, const uint32_t count) const {
+        vao.bind();
+        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(count));
+        vao.unbind();
+    }
+
     void Renderer::flush() {
         if (line_batch_buffer_.empty() || !line_shader_ || !line_vao_) return;
 
@@ -214,23 +229,6 @@ namespace engine {
         line_shader_->unbind();
 
         line_batch_buffer_.clear();
-    }
-
-    void Renderer::render_grid() const {
-        if (!grid_shader_ || !grid_vao_) return;
-
-        glEnable(GL_BLEND);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-        grid_shader_->bind();
-        grid_vao_->bind();
-
-        glDrawArrays(GL_TRIANGLES, 0, 6);
-
-        grid_vao_->unbind();
-        grid_shader_->unbind();
-
-        glDisable(GL_BLEND);
     }
 
     void Renderer::init_line_resources() {

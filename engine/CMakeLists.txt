@@ -36,11 +36,11 @@ add_library(Engine STATIC
             include/core/LayerStack.hpp
             src/scene/CameraSystem.cpp
             include/scene/CameraSystem.hpp
-            include/core/Keys.hpp
+            include/input/KeyCodes.hpp
             include/core/Window.hpp
             include/event/Event.hpp
-            include/event/WindowResizedEvent.hpp
-            include/event/MouseScrolledEvent.hpp
+            include/event/WindowEvents.hpp
+            include/event/MouseEvents.hpp
             src/core/Window.cpp
             src/render/Buffer.cpp
             include/render/Buffer.hpp
@@ -53,6 +53,9 @@ add_library(Engine STATIC
             src/render/UniformBuffer.cpp
             include/render/UniformBuffer.hpp
             include/util/FileIo.hpp
+            include/event/KeyEvents.hpp
+            src/input/Input.cpp
+            include/input/MouseCodes.hpp
 )
 # ----------------------------------------------------------------------------
 target_include_directories(Engine

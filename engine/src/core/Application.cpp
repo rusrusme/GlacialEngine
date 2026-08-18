@@ -10,8 +10,8 @@
 #include <thread>
 #include <core/Config.hpp>
 #include <core/Log.hpp>
-#include <event/MouseScrolledEvent.hpp>
-#include <event/WindowResizedEvent.hpp>
+#include <event/MouseEvents.hpp>
+#include <event/WindowEvents.hpp>
 #include <GLFW/glfw3.h>
 #include <render/Frame.hpp>
 
@@ -66,7 +66,7 @@ namespace engine {
         // ----------------------------------
         setting::configuration::load();
 
-        while (!glfwWindowShouldClose(window_->native())) {
+        while (running_) {
             const float delta_time = Frame::begin_frame();
 
             // ----------------------------------
@@ -100,21 +100,14 @@ namespace engine {
         return 0;
     }
 
-    void Application::shutdown() {
-        setting::configuration::save();
-
-        Frame::shutdown();
-        renderer_.on_shutdown();
-        if (window_ != nullptr) {
-            glfwDestroyWindow(window_->native());
-        }
-        glfwTerminate();
-    }
-
     void Application::on_event(Event& event) {
         EventDispatcher dispatcher(event);
+        dispatcher.dispatch<WindowClosedEvent>([this](const WindowClosedEvent& _) {
+            close();
+            return true;
+        });
+
         dispatcher.dispatch<WindowResizedEvent>([this](const WindowResizedEvent& e) {
-            window_->on_resize(e.width(), e.height());
             renderer_.on_resize(e.width(), e.height());
             return false; // Forward to layer
         });
@@ -134,6 +127,17 @@ namespace engine {
 
     void Application::push_overlay(std::unique_ptr<Layer> overlay) {
         layers_.push_overlay(std::move(overlay));
+    }
+
+    void Application::shutdown() {
+        setting::configuration::save();
+
+        Frame::shutdown();
+        renderer_.on_shutdown();
+        if (window_ != nullptr) {
+            glfwDestroyWindow(window_->native());
+        }
+        glfwTerminate();
     }
 
     Application* Application::instance_ = nullptr;

@@ -1,0 +1,27 @@
+//
+// Copyright (c) 2026 rusrusme 
+// All rights reserved.
+//
+
+#pragma once
+
+#include <render/Renderer.hpp>
+#include "render/Shader.hpp"
+#include "render/VertexArray.hpp"
+
+namespace editor {
+    class EditorGrid {
+    public:
+        EditorGrid() = default;
+        ~EditorGrid() = default;
+
+        void init();
+        void render(const engine::Renderer& renderer);
+
+    private:
+        std::unique_ptr<engine::Shader> grid_shader_;
+        std::unique_ptr<engine::VertexArray> grid_vao_;
+        bool initialized_ = false;
+    };
+
+}

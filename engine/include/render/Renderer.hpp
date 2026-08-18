@@ -21,8 +21,7 @@ namespace engine {
         glm::vec3 position;
         glm::vec3 color;
 
-        LineVertex(const glm::vec3& pos, const glm::vec3& col)
-            : position(pos), color(col) {}
+        LineVertex(const glm::vec3& pos, const glm::vec3& col) : position(pos), color(col) {}
     };
 
     class Renderer {
@@ -50,6 +49,7 @@ namespace engine {
 
         /** @brief Draws an uploaded Mesh using a world transform matrix */
         void draw_mesh(const Mesh& mesh, const glm::mat4& model_matrix) const;
+
         // -------------------------
         // Rendering
         // -------------------------
@@ -58,10 +58,14 @@ namespace engine {
         void draw_circle(const glm::vec3& center, float radius, const glm::vec3& normal, const glm::vec3& color, int segments = 32);
         void draw_sphere(const glm::vec3& center, float radius, const glm::vec3& color, int segments = 32);
 
+        /** @brief Enables or disables blending for rendering */
+        void set_blend(bool enable) const;
+
+        /** @brief Draws a VertexArray with a specified number of vertices. This is useful for rendering simple shapes or primitives without the need for an index buffer. */
+        void draw_arrays(const VertexArray& vao, uint32_t count) const;
+
         /** @brief Draws all lines at the end of the frame */
         void flush();
-
-        [[deprecated]] void render_grid() const;
         // -------------------------
 
         struct CameraData {

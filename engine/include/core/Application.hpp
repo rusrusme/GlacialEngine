@@ -18,8 +18,7 @@ namespace engine {
 
         /** @brief Entry point for running the application */
         int run();
-
-        void shutdown();
+        void close() { running_ = false; }
 
         /** @brief Central resize handler dispatching to Window, Renderer, and Layers */
         void on_event(Event& event);
@@ -32,9 +31,13 @@ namespace engine {
         void push_overlay(std::unique_ptr<Layer> overlay);
 
     private:
+        void shutdown();
+
         static Application* instance_;
         std::unique_ptr<Window> window_;
         Renderer renderer_;
         LayerStack layers_;
+
+        bool running_ = true;
     };
 }
