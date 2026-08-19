@@ -27,6 +27,9 @@ namespace engine {
 
     class Renderer {
     public:
+        struct DirectionalLightData;
+        struct PointLightData;
+
         Renderer();
         ~Renderer();
 
@@ -70,16 +73,51 @@ namespace engine {
         // -------------------------
         [[nodiscard]] ShaderLibrary& get_shader_library() { return shader_library_; }
         [[nodiscard]] const ShaderLibrary& get_shader_library() const { return shader_library_; }
+
         // -------------------------
+        // Light
+        // -------------------------
+        void add_directional_light(const DirectionalLightData& light) {
+            if (directional_lights_.size() < 4) { // Limit auf max. 4 Sonnen
+                directional_lights_.push_back(light);
+            }
+        }
+
+        void add_point_light(const PointLightData& light) {
+            if (point_lights_.size() < 8) { // Limit auf max. 8 Punktlichter
+                point_lights_.push_back(light);
+            }
+        }
+
+        void clear_lights() {
+            directional_lights_.clear();
+            point_lights_.clear();
+        }
 
         struct CameraData {
             glm::mat4 view;
             glm::mat4 projection;
         };
 
+        struct DirectionalLightData {
+            glm::vec3 direction{0.0f, -1.0f, 0.0f};
+            glm::vec3 color{0.0f, 0.0f, 0.0f};
+            float intensity{0.0f};
+        };
+
+        struct PointLightData {
+            glm::vec3 position{0.0f, 0.0f, 0.0f};
+            glm::vec3 color{1.0f, 1.0f, 1.0f};
+            float intensity{1.0f};
+            float radius{10.0f};
+        };
+
     private:
         ShaderLibrary shader_library_;
         std::unique_ptr<UniformBuffer> camera_ubo_;
+
+        std::vector<DirectionalLightData> directional_lights_;
+        std::vector<PointLightData> point_lights_;
 
         GLFWwindow* window_ = nullptr;
 

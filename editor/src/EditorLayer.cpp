@@ -97,6 +97,12 @@ namespace editor {
             active_scene_->on_render(renderer, camera_, delta_time);
         }
 
+        auto view = active_scene_->get_registry().view<engine::TransformComponent, engine::DirectionalLightComponent>();
+        for (auto entity : view) {
+            auto [transform, light] = view.get<engine::TransformComponent, engine::DirectionalLightComponent>(entity);
+            draw_directional_light(renderer, transform.position, transform.get_forward(), light.color);
+        }
+
         // --------------------------------
         // Test objects
         // --------------------------------
@@ -226,6 +232,40 @@ namespace editor {
             }
             return false;
         });
+    }
+
+    void EditorLayer::draw_directional_light(engine::Renderer& renderer, const glm::vec3 position, const glm::vec3& direction, const glm::vec3& color) {
+        const float ray_length = 1.5f;
+        const float circle_radius = 0.3f;
+        const glm::vec3 dir = glm::normalize(direction);
+
+        // 1. Kleine Sonne im Zentrum zeichnen
+        renderer.draw_sphere(position, circle_radius, color, 8);
+
+        // 2. Haupt-Richtungsstrahl (Pfeil)
+        const glm::vec3 main_target = position + dir * ray_length;
+        renderer.draw_line(position, main_target, color);
+
+        // 3. Pfeilspitze am Ende
+        glm::vec3 up = std::abs(dir.z) < 0.999f ? glm::vec3(0, 0, 1) : glm::vec3(1, 0, 0);
+        glm::vec3 right = glm::normalize(glm::cross(dir, up)) * 0.15f;
+        up = glm::normalize(glm::cross(right, dir)) * 0.15f;
+
+        renderer.draw_line(main_target, main_target - dir * 0.3f + right, color);
+        renderer.draw_line(main_target, main_target - dir * 0.3f - right, color);
+        renderer.draw_line(main_target, main_target - dir * 0.3f + up, color);
+        renderer.draw_line(main_target, main_target - dir * 0.3f - up, color);
+
+        // 4. Parallele Strahlen (Sonnensymbol-Effekt)
+        constexpr int num_rays = 4;
+        for (int i = 0; i < num_rays; ++i) {
+            float angle = glm::two_pi<float>() * (static_cast<float>(i) / num_rays);
+            glm::vec3 offset = (right * std::cos(angle) + up * std::sin(angle)) * 2.0f; // Versatz nach außen
+
+            glm::vec3 ray_start = position + offset;
+            glm::vec3 ray_end = ray_start + dir * (ray_length * 0.75f);
+            renderer.draw_line(ray_start, ray_end, color);
+        }
     }
 
     void EditorLayer::wave_around_scene(engine::Renderer& renderer) const {

@@ -42,7 +42,38 @@ namespace engine {
     void Scene::on_render(Renderer& renderer, Camera& camera, const float delta_time) {
         renderer.begin_scene(camera);
 
-        // Rendering logic
+        // ------------------
+        // Directional lights
+        // ------------------
+        auto dir_light_view = registry_.view<TransformComponent, DirectionalLightComponent>();
+        for (auto entity : dir_light_view) {
+            auto [transform, light] = dir_light_view.get<TransformComponent, DirectionalLightComponent>(entity);
+
+            renderer.add_directional_light({
+                .direction = transform.get_forward(),
+                .color     = light.color,
+                .intensity = light.intensity
+            });
+        }
+
+        // ------------------
+        // Point lights
+        // ------------------
+        auto point_light_view = registry_.view<TransformComponent, PointLightComponent>();
+        for (auto entity : point_light_view) {
+            auto [transform, light] = point_light_view.get<TransformComponent, PointLightComponent>(entity);
+
+            renderer.add_point_light({
+                .position  = transform.position,
+                .color     = light.color,
+                .intensity = light.intensity,
+                .radius    = light.radius
+            });
+        }
+
+        // ------------------
+        // Meshes
+        // ------------------
         auto view = registry_.view<TransformComponent, MeshComponent>();
         for (auto entity : view) {
             auto [transform, mesh] = view.get<TransformComponent, MeshComponent>(entity);
@@ -55,7 +86,6 @@ namespace engine {
             }
 
             renderer.draw_mesh(mesh.mesh, transform_matrix, color);
-
         }
 
         renderer.end_scene(delta_time);

@@ -57,11 +57,12 @@ namespace engine {
     }
 
     void Renderer::begin_scene(const Camera& camera) {
+        clear_lights();
+
         const CameraData camera_data{
             .view       = camera.get_view_matrix(),
             .projection = camera.get_projection_matrix()
         };
-
         camera_ubo_->set_data(&camera_data, sizeof(CameraData));
     }
 
@@ -127,16 +128,25 @@ namespace engine {
         mesh_shader->set_mat4("u_model", model_matrix);
         mesh_shader->set_vec4("u_color", color);
 
-        glm::vec3 light_dir = glm::normalize(glm::vec3(-0.3f, -1.0f, -0.5f));
-        mesh_shader->set_vec3("u_light_dir", light_dir);
+        mesh_shader->set_int("u_num_dir_lights", static_cast<int>(directional_lights_.size()));
+        for (size_t i = 0; i < directional_lights_.size(); ++i) {
+            std::string base = "u_dir_lights[" + std::to_string(i) + "].";
+            mesh_shader->set_vec3(base + "direction", directional_lights_[i].direction);
+            mesh_shader->set_vec3(base + "color", directional_lights_[i].color);
+            mesh_shader->set_float(base + "intensity", directional_lights_[i].intensity);
+        }
+
+        mesh_shader->set_int("u_num_point_lights", static_cast<int>(point_lights_.size()));
+        for (size_t i = 0; i < point_lights_.size(); ++i) {
+            std::string base = "u_point_lights[" + std::to_string(i) + "].";
+            mesh_shader->set_vec3(base + "position", point_lights_[i].position);
+            mesh_shader->set_vec3(base + "color", point_lights_[i].color);
+            mesh_shader->set_float(base + "intensity", point_lights_[i].intensity);
+            mesh_shader->set_float(base + "radius", point_lights_[i].radius);
+        }
 
         mesh.vertex_array->bind();
-        glDrawElements(
-            GL_TRIANGLES,
-            static_cast<GLsizei>(mesh.vertex_array->get_index_buffer()->get_count()),
-            GL_UNSIGNED_INT,
-            nullptr
-        );
+        glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(mesh.vertex_array->get_index_buffer()->get_count()), GL_UNSIGNED_INT, nullptr);
         mesh.vertex_array->unbind();
     }
 

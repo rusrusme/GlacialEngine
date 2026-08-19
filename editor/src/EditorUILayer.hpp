@@ -36,6 +36,7 @@ namespace editor {
         engine::TransformComponent initial_transform_{};
         bool was_using_gizmo_ = false;
         bool gizmo_canceled_ = false;
+        glm::mat4 active_gizmo_matrix_{1.0f};
 
         std::shared_ptr<engine::Scene> active_scene_;
         const engine::Camera* camera_ = nullptr;

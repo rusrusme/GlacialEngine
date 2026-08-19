@@ -10,7 +10,7 @@
 
 namespace editor {
     void ObjectInspector::render_ui() {
-        ImGui::Begin("Object Editor");
+        ImGui::Begin("Object Inspector");
         if (selected_entity_) {
             draw_component(selected_entity_);
         }

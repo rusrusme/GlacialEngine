@@ -78,6 +78,18 @@ namespace editor {
                 auto entity = scene_->create_entity(name);
                 entity.add_component<engine::CameraComponent>();
             }
+            ImGui::Separator();
+            if (ImGui::MenuItem("Directional Light")) {
+                const std::string name = name_buffer_[0] != '\0' ? name_buffer_ : "Light";
+                auto entity = scene_->create_entity(name);
+                auto& transform = entity.get_component<engine::TransformComponent>();
+                transform.rotation = glm::vec3(-90.0f, 135.0f, -45.0f);
+                transform.position = glm::vec3(10.0f, 10.0f, 0.0f);
+                entity.add_component<engine::DirectionalLightComponent>(
+                    glm::vec3(1.0f, 0.95f, 0.8f),
+                    1.2f
+                );
+            }
             ImGui::EndPopup();
         }
         ImGui::Separator();

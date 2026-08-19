@@ -161,7 +161,21 @@ namespace editor {
         glm::mat4 proj_matrix = camera.get_projection_matrix();
 
         auto& transform = selected_entity.get_component<engine::TransformComponent>();
-        glm::mat4 transform_matrix = transform.get_matrix();
+
+        if (ImGuizmo::IsUsing()) {
+            if (!was_using_gizmo_) {
+                initial_transform_ = transform;
+                active_gizmo_matrix_ = transform.get_matrix();
+                was_using_gizmo_ = true;
+                gizmo_canceled_ = false;
+            }
+        }
+        else {
+            was_using_gizmo_ = false;
+            gizmo_canceled_ = false;
+        }
+
+        glm::mat4 transform_matrix = was_using_gizmo_ ? active_gizmo_matrix_ : transform.get_matrix();
 
         bool snap = engine::Input::is_key_pressed(engine::Key::LEFT_CONTROL) || engine::Input::is_key_pressed(engine::Key::RIGHT_CONTROL);
         float snap_value = current_gizmo_operation_ == ImGuizmo::ROTATE ? 45.0f : 0.5f;
@@ -178,11 +192,7 @@ namespace editor {
         );
 
         if (ImGuizmo::IsUsing()) {
-            if (!was_using_gizmo_) {
-                initial_transform_ = transform;
-                was_using_gizmo_ = true;
-                gizmo_canceled_ = false;
-            }
+            active_gizmo_matrix_ = transform_matrix;
 
             if (engine::Input::is_key_pressed(engine::Key::ESCAPE)) {
                 gizmo_canceled_ = true;
@@ -200,14 +210,21 @@ namespace editor {
                     scale
                 );
 
-                transform.position = glm::make_vec3(translation);
-                transform.rotation = glm::make_vec3(rotation);
-                transform.scale = glm::make_vec3(scale);
+                if (current_gizmo_operation_ == ImGuizmo::TRANSLATE) {
+                    transform.position = glm::make_vec3(translation);
+                }
+                else if (current_gizmo_operation_ == ImGuizmo::ROTATE) {
+                    transform.rotation = glm::make_vec3(rotation);
+                }
+                else if (current_gizmo_operation_ == ImGuizmo::SCALE) {
+                    transform.scale = glm::make_vec3(scale);
+                }
+                else {
+                    transform.position = glm::make_vec3(translation);
+                    transform.rotation = glm::make_vec3(rotation);
+                    transform.scale = glm::make_vec3(scale);
+                }
             }
-        }
-        else {
-            was_using_gizmo_ = false;
-            gizmo_canceled_ = false;
         }
     }
 }
