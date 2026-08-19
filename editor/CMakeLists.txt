@@ -15,8 +15,6 @@ add_executable(Editor
                src/ui/Hierarchy.hpp
                src/ui/ObjectInspector.cpp
                src/ui/ObjectInspector.hpp
-               src/ui/PlacementToolbar.cpp
-               src/ui/PlacementToolbar.hpp
                src/EditorUiLayer.cpp
                src/EditorUiLayer.hpp
                src/physics/Slab.hpp

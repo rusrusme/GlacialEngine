@@ -59,6 +59,12 @@ add_library(Engine STATIC
             src/render/ShaderLibrary.cpp
             include/render/ShaderLibrary.hpp
             include/render/mesh/PrimitiveMesh.hpp
+            src/scene/SceneSerializer.cpp
+            include/scene/SceneSerializer.hpp
+            src/render/mesh/MeshLoader.cpp
+            include/render/mesh/MeshLoader.hpp
+            src/render/mesh/Mesh.cpp
+            src/render/mesh/Mesh.cpp
 )
 # ----------------------------------------------------------------------------
 target_include_directories(Engine
@@ -74,6 +80,7 @@ target_link_libraries(Engine PUBLIC
                       EnTT::EnTT
                       cgltf
                       OpenGL::GL
+                      nlohmann_json::nlohmann_json
 )
 # ----------------------------------------------------------------------------
 if (ENABLE_IMGUI)

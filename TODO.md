@@ -1,12 +1,12 @@
 # Todo List
 
-- [ ] Light Entities (ECS Integration)
+- [x] Light Entities (ECS Integration)
 - Auslagern des hardcoded Lichts in eine DirectionalLightComponent und PointLightComponent. Der Renderer liest im
   Render-Pass einfach alle Licht-Komponenten aus dem EnTT-Registry aus.
 
 <p>
 
-- [ ] Serialisierung (Scene Save / Load)
+- [x] Serialisierung (Scene Save / Load)
 - Ein universelles Dateiformat (z. B. YAML oder JSON via nlohmann/json), das den EnTT-Registry-Zustand, Entitäten und
   Komponenten in eine .scene-Datei schreibt und wieder einliest.
 

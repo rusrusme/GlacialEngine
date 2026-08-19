@@ -18,7 +18,7 @@ namespace engine {
         template <typename T, typename... Args>
         T& add_component(Args&&... args) {
             if (has_component<T>()) {
-                throw std::runtime_error("Engine error: scene: entity already has component of this type");
+                throw std::runtime_error("Engine error: scenes: entity already has component of this type");
             }
             T& component = scene_->registry_.emplace<T>(entity_handle_, std::forward<Args>(args)...);
             return component;
@@ -27,7 +27,7 @@ namespace engine {
         template <typename T>
         void remove_component() {
             if (!has_component<T>()) {
-                throw std::runtime_error("Engine error: scene: entity does not have component of this type");
+                throw std::runtime_error("Engine error: scenes: entity does not have component of this type");
             }
             scene_->registry_.remove<T>(entity_handle_);
         }
@@ -35,7 +35,7 @@ namespace engine {
         template <typename T>
         [[nodiscard]] T& get_component() {
             if (!has_component<T>()) {
-                throw std::runtime_error("Engine error: scene: entity does not have component of this type");
+                throw std::runtime_error("Engine error: scenes: entity does not have component of this type");
             }
             return scene_->registry_.get<T>(entity_handle_);
         }

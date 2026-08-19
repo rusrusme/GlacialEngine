@@ -10,6 +10,7 @@
 #include <event/Event.hpp>
 #include <render/Camera.hpp>
 #include <render/Renderer.hpp>
+#include <scene/SceneSerializer.hpp>
 #include <ui/Hierarchy.hpp>
 #include <ui/ObjectInspector.hpp>
 
@@ -31,6 +32,7 @@ namespace editor {
 
     private:
         void draw_gizmo(engine::Entity selected_entity, const engine::Camera& camera, const ImVec2& viewport_pos, const ImVec2& viewport_size);
+        void render_main_menu_bar() const;
 
         bool block_gizmo_until_mouse_up_ = false;
         engine::TransformComponent initial_transform_{};

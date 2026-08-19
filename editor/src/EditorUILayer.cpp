@@ -62,6 +62,7 @@ namespace editor {
     }
 
     void EditorUILayer::on_imGuiRender(engine::Renderer& renderer, float delta_time) {
+        render_main_menu_bar();
         ImGuizmo::BeginFrame();
         ImGuizmo::Enable(true);
 
@@ -225,6 +226,69 @@ namespace editor {
                     transform.scale = glm::make_vec3(scale);
                 }
             }
+        }
+    }
+
+    void EditorUILayer::render_main_menu_bar() const {
+        static bool show_save_popup = false;
+        static bool show_load_popup = false;
+        static char path_buffer[256] = "assets/scenes/default.scenes";
+
+        if (ImGui::BeginMainMenuBar()) {
+            if (ImGui::BeginMenu("File")) {
+                if (ImGui::MenuItem("Save Scene As...", "Ctrl+S")) {
+                    show_save_popup = true;
+                }
+                if (ImGui::MenuItem("Load Scene...", "Ctrl+O")) {
+                    show_load_popup = true;
+                }
+                ImGui::EndMenu();
+            }
+            ImGui::EndMainMenuBar();
+        }
+
+        // --- Save Scene Modal Dialog ---
+        if (show_save_popup) {
+            ImGui::OpenPopup("Save Scene");
+            show_save_popup = false;
+        }
+
+        if (ImGui::BeginPopupModal("Save Scene", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+            ImGui::InputText("File Path", path_buffer, sizeof(path_buffer));
+
+            if (ImGui::Button("Save", ImVec2(120, 0))) {
+                engine::SceneSerializer serializer(active_scene_);
+                serializer.serialize(path_buffer);
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("Cancel", ImVec2(120, 0))) {
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::EndPopup();
+        }
+
+        // --- Load Scene Modal Dialog ---
+        if (show_load_popup) {
+            ImGui::OpenPopup("Load Scene");
+            show_load_popup = false;
+        }
+
+        if (ImGui::BeginPopupModal("Load Scene", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
+            ImGui::InputText("File Path", path_buffer, sizeof(path_buffer));
+
+            if (ImGui::Button("Load", ImVec2(120, 0))) {
+                engine::SceneSerializer serializer(active_scene_);
+                if (!serializer.deserialize(path_buffer)) {
+                    // optional: SPDLOG_ERROR("Failed to load scenes from {}", path_buffer);
+                }
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::SameLine();
+            if (ImGui::Button("Cancel", ImVec2(120, 0))) {
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::EndPopup();
         }
     }
 }

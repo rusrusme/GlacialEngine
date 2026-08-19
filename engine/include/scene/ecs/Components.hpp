@@ -67,9 +67,11 @@ namespace engine {
 
     struct MeshComponent {
         Mesh mesh;
+        std::string path;
 
         MeshComponent() = default;
-        MeshComponent(Mesh  m) : mesh(std::move(m)) {}
+        MeshComponent(Mesh m) : mesh(std::move(m)) {}
+        MeshComponent(Mesh m, std::string  path) : mesh(std::move(m)), path(std::move(path)) {}
     };
 
     struct MaterialComponent {

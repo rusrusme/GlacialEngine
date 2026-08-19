@@ -40,14 +40,14 @@ namespace editor {
                 const std::string name = name_buffer_[0] != '\0' ? name_buffer_ : "Plane";
                 auto entity = scene_->create_entity(name);
                 engine::Mesh mesh = engine::PrimitiveMesh::create_plane();
-                entity.add_component<engine::MeshComponent>(mesh);
+                entity.add_component<engine::MeshComponent>(mesh, "primitive://plane");
                 entity.add_component<engine::MaterialComponent>(glm::vec4{1.0f, 0.5f, 0.2f, 1.0f});
             }
             if (ImGui::MenuItem("Circle")) {
                 const std::string name = name_buffer_[0] != '\0' ? name_buffer_ : "Circle";
                 auto entity = scene_->create_entity(name);
                 engine::Mesh mesh = engine::PrimitiveMesh::create_circle();
-                entity.add_component<engine::MeshComponent>(mesh);
+                entity.add_component<engine::MeshComponent>(mesh, "primitive://circle");
                 entity.add_component<engine::MaterialComponent>(glm::vec4{1.0f, 0.5f, 0.2f, 1.0f});
             }
             ImGui::Separator();
@@ -55,21 +55,21 @@ namespace editor {
                 const std::string name = name_buffer_[0] != '\0' ? name_buffer_ : "Cube";
                 auto entity = scene_->create_entity(name);
                 engine::Mesh mesh = engine::PrimitiveMesh::create_cube();
-                entity.add_component<engine::MeshComponent>(mesh);
+                entity.add_component<engine::MeshComponent>(mesh, "primitive://cube");
                 entity.add_component<engine::MaterialComponent>(glm::vec4{1.0f, 0.5f, 0.2f, 1.0f});
             }
             if (ImGui::MenuItem("Sphere")) {
                 const std::string name = name_buffer_[0] != '\0' ? name_buffer_ : "Sphere";
                 auto entity = scene_->create_entity(name);
                 engine::Mesh mesh = engine::PrimitiveMesh::create_uv_sphere();
-                entity.add_component<engine::MeshComponent>(mesh);
+                entity.add_component<engine::MeshComponent>(mesh, "primitive://sphere");
                 entity.add_component<engine::MaterialComponent>(glm::vec4{1.0f, 0.5f, 0.2f, 1.0f});
             }
             if (ImGui::MenuItem("Cylinder")) {
                 const std::string name = name_buffer_[0] != '\0' ? name_buffer_ : "Cylinder";
                 auto entity = scene_->create_entity(name);
                 engine::Mesh mesh = engine::PrimitiveMesh::create_cylinder();
-                entity.add_component<engine::MeshComponent>(mesh);
+                entity.add_component<engine::MeshComponent>(mesh, "primitive://cylinder");
                 entity.add_component<engine::MaterialComponent>(glm::vec4{1.0f, 0.5f, 0.2f, 1.0f});
             }
             ImGui::Separator();

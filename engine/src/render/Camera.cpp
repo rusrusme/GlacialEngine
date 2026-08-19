@@ -88,6 +88,18 @@ namespace engine {
         return position_;
     }
 
+    float Camera::get_fov() const {
+        return fov_y_;
+    }
+
+    float Camera::get_aspect_ratio() const {
+        return aspect_ratio_;
+    }
+
+    float Camera::get_near_clip() const {
+        return near_clip_;
+    }
+
     float Camera::get_far_clip() const {
         return far_clip_;
     }
@@ -98,6 +110,18 @@ namespace engine {
 
     void Camera::set_aspect_ratio(const float aspect) {
         aspect_ratio_ = aspect;
+    }
+
+    void Camera::set_fov(const float fov) {
+        fov_y_ = fov;
+    }
+
+    void Camera::set_near_clip(const float near_clip) {
+        near_clip_ = near_clip;
+    }
+
+    void Camera::set_far_clip(const float far_clip) {
+        far_clip_ = far_clip;
     }
 
     void Camera::set_projection_params(const float fov, const float near_p, const float far_p) {

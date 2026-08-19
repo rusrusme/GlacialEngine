@@ -33,16 +33,23 @@ namespace engine {
 
         [[nodiscard]] glm::vec3 get_position() const;
 
+
+        [[nodiscard]] float get_fov() const;
+        [[nodiscard]] float get_aspect_ratio() const;
+        [[nodiscard]] float get_near_clip() const;
         [[nodiscard]] float get_far_clip() const;
 
         [[nodiscard]] float get_distance() const;
 
         void set_aspect_ratio(float aspect);
+        void set_fov(float fov);
+        void set_near_clip(float near_clip);
+        void set_far_clip(float far_clip);
 
         void set_projection_params(float fov, float near_p, float far_p);
 
         // ---------------------------
-        Ray screen_point_to_ray(const glm::vec2& mouse_pos, const glm::vec2& viewport_size) const;
+        [[nodiscard]] Ray screen_point_to_ray(const glm::vec2& mouse_pos, const glm::vec2& viewport_size) const;
 
     private:
         void update_position();
