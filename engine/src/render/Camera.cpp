@@ -106,7 +106,7 @@ namespace engine {
         far_clip_ = far_p;
     }
 
-    Ray Camera::screen_point_to_ray(const glm::vec2& mouse_pos, const glm::vec2& viewport_size) {
+    Ray Camera::screen_point_to_ray(const glm::vec2& mouse_pos, const glm::vec2& viewport_size) const {
         const float x = (2.0f * mouse_pos.x) / viewport_size.x - 1.0f;
         const float y = 1.0f - (2.0f * mouse_pos.y) / viewport_size.y;
 

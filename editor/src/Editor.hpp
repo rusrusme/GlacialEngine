@@ -7,6 +7,7 @@ namespace editor {
     public:
         Editor();
         ~Editor() override = default;
+
     private:
         // Todo: Consider creating a scene manager
         std::shared_ptr<engine::Scene> active_scene_;

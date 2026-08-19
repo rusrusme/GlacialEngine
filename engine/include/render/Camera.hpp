@@ -42,7 +42,7 @@ namespace engine {
         void set_projection_params(float fov, float near_p, float far_p);
 
         // ---------------------------
-        Ray screen_point_to_ray(const glm::vec2& mouse_pos, const glm::vec2& viewport_size);
+        Ray screen_point_to_ray(const glm::vec2& mouse_pos, const glm::vec2& viewport_size) const;
 
     private:
         void update_position();

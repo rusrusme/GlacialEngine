@@ -32,6 +32,7 @@ namespace editor {
     private:
         void draw_gizmo(engine::Entity selected_entity, const engine::Camera& camera, const ImVec2& viewport_pos, const ImVec2& viewport_size);
 
+        bool block_gizmo_until_mouse_up_ = false;
         engine::TransformComponent initial_transform_{};
         bool was_using_gizmo_ = false;
         bool gizmo_canceled_ = false;

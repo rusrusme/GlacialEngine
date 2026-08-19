@@ -19,6 +19,7 @@ add_executable(Editor
                src/ui/PlacementToolbar.hpp
                src/EditorUiLayer.cpp
                src/EditorUiLayer.hpp
+               src/physics/Slab.hpp
 )
 
 target_include_directories(Editor PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)

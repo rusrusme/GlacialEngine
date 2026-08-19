@@ -17,6 +17,7 @@
 #include <event/WindowEvents.hpp>
 #include <input/Input.hpp>
 #include <input/KeyCodes.hpp>
+#include <input/MouseCodes.hpp>
 #include <scene/ecs/Entity.hpp>
 
 namespace editor {
@@ -145,7 +146,7 @@ namespace editor {
             }
             // bool gizmo_active = is_gizmo_enabled();
             // if (ImGui::Checkbox("Show Axis Gizmo", &gizmo_active)) {
-                // set_gizmo_enabled(gizmo_active);
+            // set_gizmo_enabled(gizmo_active);
             // }
             ImGui::End();
         }

@@ -7,6 +7,8 @@
 
 #include <imgui.h>
 #include <core/Log.hpp>
+#include <input/Input.hpp>
+#include <input/KeyCodes.hpp>
 #include <render/mesh/Mesh.hpp>
 #include <render/mesh/PrimitiveMesh.hpp>
 #include <scene/ecs/Entity.hpp>
@@ -111,6 +113,13 @@ namespace editor {
                 selected_entity_ = {};
             }
             scene_->destroy_entity(entity_to_destroy);
+        }
+
+        if (ImGui::IsMouseDown(ImGuiMouseButton_Left) && ImGui::IsWindowHovered() && !ImGui::IsAnyItemHovered()) {
+            selected_entity_ = {};
+        }
+        if (ImGui::IsWindowFocused() && engine::Input::is_key_pressed_once(engine::Key::ESCAPE)) {
+            selected_entity_ = {};
         }
 
         ImGui::End();

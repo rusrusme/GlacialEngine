@@ -7,10 +7,13 @@
 
 #include <imGUi.h>
 #include <imGuizmo.h>
+#include <core/Application.hpp>
 #include <event/MouseEvents.hpp>
 #include <glm/gtc/type_ptr.hpp>
 #include <input/Input.hpp>
 #include <input/KeyCodes.hpp>
+#include <input/MouseCodes.hpp>
+#include <physics/Slab.hpp>
 
 namespace editor {
     namespace {
@@ -76,20 +79,76 @@ namespace editor {
     }
 
     void EditorUILayer::on_event(engine::Event& event) {
+        engine::EventDispatcher dispatcher(event);
+
         if (ImGuizmo::IsOver() || ImGuizmo::IsUsing()) {
-            engine::EventDispatcher dispatcher(event);
             dispatcher.dispatch<engine::MouseButtonPressedEvent>([](engine::MouseButtonPressedEvent& _) {
                 return true;
             });
             dispatcher.dispatch<engine::MouseMovedEvent>([](engine::MouseMovedEvent& _) {
                 return true;
             });
+            return;
         }
+
+        dispatcher.dispatch<engine::MouseButtonPressedEvent>([this](engine::MouseButtonPressedEvent& e) {
+            if (e.button() != engine::Mouse::MOUSE_BUTTON_LEFT) {
+                return false;
+            }
+            if (!camera_ || engine::Input::is_mouse_captured()) {
+                return false;
+            }
+            const glm::vec2 mouse_pos = engine::Input::get_mouse_position();
+            const uint32_t width = engine::Application::get().window().get_width();
+            const uint32_t height = engine::Application::get().window().get_height();
+            const glm::vec2 viewport_size = {static_cast<float>(width), static_cast<float>(height)};
+            const engine::Ray ray = camera_->screen_point_to_ray(mouse_pos, viewport_size);
+
+            engine::Entity closest_entity{};
+            float closest_distance = std::numeric_limits<float>::max();
+
+            auto view = active_scene_->get_registry().view<engine::TransformComponent>();
+            for (auto entity_handle : view) {
+                engine::Entity entity{entity_handle, active_scene_.get()};
+                auto& transform = entity.get_component<engine::TransformComponent>();
+
+                // Lokale AABB (-0.5 bis 0.5) mit Position & Skalierung der Entity in Welt-AABB umrechnen
+                AABB local_aabb{glm::vec3(-0.5f), glm::vec3(0.5f)};
+                AABB world_aabb;
+
+                glm::vec3 min_scaled = local_aabb.min * transform.scale;
+                glm::vec3 max_scaled = local_aabb.max * transform.scale;
+
+                world_aabb.min = transform.position + glm::min(min_scaled, max_scaled);
+                world_aabb.max = transform.position + glm::max(min_scaled, max_scaled);
+
+                float hit_distance = 0.0f;
+                if (ray_intersects_aabb(ray, world_aabb, hit_distance)) {
+                    if (hit_distance < closest_distance) {
+                        closest_distance = hit_distance;
+                        closest_entity = entity;
+                    }
+                }
+            }
+            hierarchy_.set_selected_entity(closest_entity);
+            block_gizmo_until_mouse_up_ = true;
+            return false;
+        });
     }
 
     void EditorUILayer::draw_gizmo(engine::Entity selected_entity, const engine::Camera& camera, const ImVec2& viewport_pos, const ImVec2& viewport_size) {
         if (!selected_entity || !selected_entity.has_component<engine::TransformComponent>()) {
             return;
+        }
+
+        if (block_gizmo_until_mouse_up_) {
+            if (!engine::Input::is_mouse_button_pressed(engine::Mouse::MOUSE_BUTTON_LEFT)) {
+                block_gizmo_until_mouse_up_ = false;
+            }
+            ImGuizmo::Enable(false);
+        }
+        else {
+            ImGuizmo::Enable(true);
         }
 
         ImGuizmo::SetOrthographic(false);

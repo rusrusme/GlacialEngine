@@ -20,6 +20,7 @@ namespace editor {
         void render_ui();
 
         [[nodiscard]] engine::Entity get_selected_entity() const { return selected_entity_; }
+        void set_selected_entity(const engine::Entity new_entity) { selected_entity_ = new_entity; }
 
     private:
         std::shared_ptr<engine::Scene> scene_ = nullptr;
