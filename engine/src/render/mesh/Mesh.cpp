@@ -26,9 +26,9 @@ namespace engine {
 
         // 3. Layout definieren (Position, Normal, UV)
         BufferLayout layout = {
-            { ShaderDataType::Float3, "a_Position" },
-            { ShaderDataType::Float3, "a_Normal" },
-            { ShaderDataType::Float2, "a_UV" }
+            {ShaderDataType::Float3, "a_Position"},
+            {ShaderDataType::Float3, "a_Normal"},
+            {ShaderDataType::Float2, "a_UV"}
         };
 
         vertex_array->add_vertex_buffer(vertex_buffer, layout);

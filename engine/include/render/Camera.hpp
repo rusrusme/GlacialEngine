@@ -33,7 +33,6 @@ namespace engine {
 
         [[nodiscard]] glm::vec3 get_position() const;
 
-
         [[nodiscard]] float get_fov() const;
         [[nodiscard]] float get_aspect_ratio() const;
         [[nodiscard]] float get_near_clip() const;

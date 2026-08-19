@@ -63,22 +63,22 @@ namespace engine {
             if (!data || !data->event_callback) return;
 
             switch (action) {
-                case GLFW_PRESS: {
+                case GLFW_PRESS : {
                     KeyPressedEvent event(key, false);
                     data->event_callback(event);
                     break;
                 }
-                case GLFW_RELEASE: {
+                case GLFW_RELEASE : {
                     KeyReleasedEvent event(key);
                     data->event_callback(event);
                     break;
                 }
-                case GLFW_REPEAT: {
+                case GLFW_REPEAT : {
                     KeyPressedEvent event(key, true);
                     data->event_callback(event);
                     break;
                 }
-                default: break;
+                default : break;
             }
         });
 

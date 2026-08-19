@@ -42,7 +42,7 @@ namespace engine {
                 glm::vec3 normal(0.0f, 1.0f, 0.0f);
                 glm::vec2 uv(x * 0.5f + 0.5f, z * 0.5f + 0.5f);
 
-                vertices.push_back({ pos, normal, uv });
+                vertices.push_back({pos, normal, uv});
             }
             for (uint32_t i = 1; i <= segments; ++i) {
                 indices.push_back(0);
@@ -156,13 +156,13 @@ namespace engine {
                 glm::vec3 normal(x, 0.0f, z); // Normalen zeigen nach außen
                 float u = static_cast<float>(i) / static_cast<float>(segments);
 
-                vertices.push_back({.position = {x * radius,  half_h, z * radius}, .normal = normal, .uv = {u, 1.0f}}); // Top
+                vertices.push_back({.position = {x * radius, half_h, z * radius}, .normal = normal, .uv = {u, 1.0f}});  // Top
                 vertices.push_back({.position = {x * radius, -half_h, z * radius}, .normal = normal, .uv = {u, 0.0f}}); // Bottom
             }
             for (uint32_t i = 0; i < segments; ++i) {
-                uint32_t top_left     = i * 2;
-                uint32_t bottom_left  = top_left + 1;
-                uint32_t top_right    = top_left + 2;
+                uint32_t top_left = i * 2;
+                uint32_t bottom_left = top_left + 1;
+                uint32_t top_right = top_left + 2;
                 uint32_t bottom_right = top_left + 3;
 
                 indices.push_back(top_left);

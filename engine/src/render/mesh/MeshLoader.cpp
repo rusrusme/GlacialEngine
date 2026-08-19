@@ -13,10 +13,10 @@
 
 namespace engine {
     Mesh MeshLoader::load(const std::string& path) {
-        if (path == "primitive://cube")     return PrimitiveMesh::create_cube();
-        if (path == "primitive://plane")    return PrimitiveMesh::create_plane();
-        if (path == "primitive://sphere")   return PrimitiveMesh::create_uv_sphere();
-        if (path == "primitive://circle")   return PrimitiveMesh::create_circle();
+        if (path == "primitive://cube") return PrimitiveMesh::create_cube();
+        if (path == "primitive://plane") return PrimitiveMesh::create_plane();
+        if (path == "primitive://sphere") return PrimitiveMesh::create_uv_sphere();
+        if (path == "primitive://circle") return PrimitiveMesh::create_circle();
         if (path == "primitive://cylinder") return PrimitiveMesh::create_cylinder();
 
         std::ifstream file(path);

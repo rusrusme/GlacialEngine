@@ -58,6 +58,7 @@ namespace engine {
         bool operator==(const Entity& other) const {
             return entity_handle_ == other.entity_handle_ && scene_ == other.scene_;
         }
+
         bool operator!=(const Entity& other) const {
             return !(*this == other);
         }
