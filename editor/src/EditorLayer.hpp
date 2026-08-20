@@ -11,11 +11,12 @@
 #include <render/Renderer.hpp>
 #include <scene/Scene.hpp>
 #include <utility>
+#include <asset/AssetManager.hpp>
 
 namespace editor {
     class EditorLayer : public engine::Layer {
     public:
-        explicit EditorLayer(std::shared_ptr<engine::Scene> scene) : active_scene_(std::move(scene)) {}
+        explicit EditorLayer(std::shared_ptr<engine::Scene> scene, std::shared_ptr<engine::AssetManager> asset_manager);
         ~EditorLayer() override = default;
 
         void on_attach(engine::Renderer& renderer) override;
@@ -32,6 +33,8 @@ namespace editor {
 
     private:
         std::shared_ptr<engine::Scene> active_scene_;
+        std::shared_ptr<engine::AssetManager> asset_manager_;
+
         engine::Camera camera_;
         engine::CameraController camera_controller_;
 

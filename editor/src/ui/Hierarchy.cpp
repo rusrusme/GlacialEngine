@@ -14,6 +14,11 @@
 #include <scene/ecs/Entity.hpp>
 
 namespace editor {
+    void Hierarchy::init(std::shared_ptr<engine::Scene> scene, std::shared_ptr<engine::AssetManager> asset_manager) {
+        scene_ = std::move(scene);
+        asset_manager_ = std::move(asset_manager);
+    }
+
     engine::Entity Hierarchy::add_entity(const std::string& name) {
         const engine::Entity entity = scene_->create_entity(name);
         selected_entity_ = entity;
@@ -31,48 +36,30 @@ namespace editor {
         ImGui::SameLine();
         ImGui::SetNextItemWidth(-1.0f);
         ImGui::InputText("##NameInput", name_buffer_, sizeof(name_buffer_));
+
         if (ImGui::BeginPopup("AddEntityMenu")) {
             if (ImGui::MenuItem("Entity")) {
                 const std::string name = name_buffer_[0] != '\0' ? name_buffer_ : "Entity";
                 scene_->create_entity(name);
             }
             ImGui::Separator();
-            if (ImGui::MenuItem("Plane")) {
-                const std::string name = name_buffer_[0] != '\0' ? name_buffer_ : "Plane";
+
+            auto create_primitive_entity = [&](const char* default_name, const char* primitive_path) {
+                const std::string name = name_buffer_[0] != '\0' ? name_buffer_ : default_name;
                 auto entity = scene_->create_entity(name);
-                engine::Mesh mesh = engine::PrimitiveMesh::create_plane();
-                entity.add_component<engine::MeshComponent>(mesh, "primitive://plane");
+
+                auto handle = asset_manager_->get_handle_from_path(primitive_path);
+                entity.add_component<engine::MeshComponent>(handle);
                 entity.add_component<engine::MaterialComponent>(glm::vec4{1.0f, 0.5f, 0.2f, 1.0f});
-            }
-            if (ImGui::MenuItem("Circle")) {
-                const std::string name = name_buffer_[0] != '\0' ? name_buffer_ : "Circle";
-                auto entity = scene_->create_entity(name);
-                engine::Mesh mesh = engine::PrimitiveMesh::create_circle();
-                entity.add_component<engine::MeshComponent>(mesh, "primitive://circle");
-                entity.add_component<engine::MaterialComponent>(glm::vec4{1.0f, 0.5f, 0.2f, 1.0f});
-            }
+            };
+
+            if (ImGui::MenuItem("Plane")) create_primitive_entity("Plane", "primitive://plane");
+            if (ImGui::MenuItem("Circle")) create_primitive_entity("Circle", "primitive://circle");
             ImGui::Separator();
-            if (ImGui::MenuItem("Cube")) {
-                const std::string name = name_buffer_[0] != '\0' ? name_buffer_ : "Cube";
-                auto entity = scene_->create_entity(name);
-                engine::Mesh mesh = engine::PrimitiveMesh::create_cube();
-                entity.add_component<engine::MeshComponent>(mesh, "primitive://cube");
-                entity.add_component<engine::MaterialComponent>(glm::vec4{1.0f, 0.5f, 0.2f, 1.0f});
-            }
-            if (ImGui::MenuItem("Sphere")) {
-                const std::string name = name_buffer_[0] != '\0' ? name_buffer_ : "Sphere";
-                auto entity = scene_->create_entity(name);
-                engine::Mesh mesh = engine::PrimitiveMesh::create_uv_sphere();
-                entity.add_component<engine::MeshComponent>(mesh, "primitive://sphere");
-                entity.add_component<engine::MaterialComponent>(glm::vec4{1.0f, 0.5f, 0.2f, 1.0f});
-            }
-            if (ImGui::MenuItem("Cylinder")) {
-                const std::string name = name_buffer_[0] != '\0' ? name_buffer_ : "Cylinder";
-                auto entity = scene_->create_entity(name);
-                engine::Mesh mesh = engine::PrimitiveMesh::create_cylinder();
-                entity.add_component<engine::MeshComponent>(mesh, "primitive://cylinder");
-                entity.add_component<engine::MaterialComponent>(glm::vec4{1.0f, 0.5f, 0.2f, 1.0f});
-            }
+            if (ImGui::MenuItem("Cube")) create_primitive_entity("Cube", "primitive://cube");
+            if (ImGui::MenuItem("Sphere")) create_primitive_entity("Sphere", "primitive://sphere");
+            if (ImGui::MenuItem("Cylinder")) create_primitive_entity("Cylinder", "primitive://cylinder");
+
             ImGui::Separator();
             if (ImGui::MenuItem("Camera")) {
                 const std::string name = name_buffer_[0] != '\0' ? name_buffer_ : "Camera";
@@ -93,8 +80,10 @@ namespace editor {
             }
             ImGui::EndPopup();
         }
+
         ImGui::Separator();
-        auto view = scene_->get_registry().view<engine::LabelComponent>();
+
+        auto view = scene_->view<engine::LabelComponent>();
         for (auto raw_entity : view) {
             engine::Entity entity{raw_entity, scene_.get()};
             const auto& label = entity.get_component<engine::LabelComponent>();
@@ -120,6 +109,7 @@ namespace editor {
             }
             ImGui::PopID();
         }
+
         if (entity_to_destroy) {
             if (selected_entity_ == entity_to_destroy) {
                 CLIENT_INFO("Deleted entity - {0}", entity_to_destroy.name().c_str());

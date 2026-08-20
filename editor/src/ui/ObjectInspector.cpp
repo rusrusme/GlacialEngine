@@ -9,6 +9,11 @@
 #include <glm/gtc/type_ptr.hpp>
 
 namespace editor {
+    void ObjectInspector::init(std::shared_ptr<engine::Scene> scene, std::shared_ptr<engine::AssetManager> asset_manager) {
+        scene_ = std::move(scene);
+        asset_manager_ = std::move(asset_manager);
+    }
+
     void ObjectInspector::render_ui() {
         ImGui::Begin("Object Inspector");
         if (selected_entity_) {
@@ -48,15 +53,26 @@ namespace editor {
                 ImGui::DragFloat3("Scale", glm::value_ptr(transform.scale), 0.05f, 0.001f, 1000.0f);
             }
         }
+
         // --------------------
-        // Mesh
+        // Mesh (Nutzung von AssetHandle)
         // --------------------
         if (entity.has_component<engine::MeshComponent>()) {
             if (ImGui::CollapsingHeader("Mesh Component", ImGuiTreeNodeFlags_DefaultOpen)) {
                 auto& mesh_comp = entity.get_component<engine::MeshComponent>();
-                ImGui::Text("Mesh Valid: %s", mesh_comp.mesh.is_valid() ? "Yes" : "No");
+
+                // Metadaten zum Handle aus der Asset-Registry abfragen
+                const auto& metadata = asset_manager_->get_metadata(mesh_comp.handle);
+
+                std::string asset_name = metadata.is_valid()
+                                             ? metadata.filepath.filename().string()
+                                             : "None / Invalid Handle";
+
+                ImGui::Text("Mesh Asset: %s", asset_name.c_str());
+                ImGui::Text("Handle UUID: %llu", static_cast<uint64_t>(mesh_comp.handle));
             }
         }
+
         // --------------------
         // Material
         // --------------------
@@ -80,7 +96,6 @@ namespace editor {
                     ImGui::CloseCurrentPopup();
                 }
             }
-            // Hier später z.B. PointLightComponent, RigidbodyComponent usw.
             ImGui::EndPopup();
         }
     }

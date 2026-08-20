@@ -21,6 +21,8 @@
 #include <scene/ecs/Entity.hpp>
 
 namespace editor {
+    EditorLayer::EditorLayer(std::shared_ptr<engine::Scene> scene, std::shared_ptr<engine::AssetManager> asset_manager): active_scene_(std::move(scene)), asset_manager_(std::move(asset_manager)) {}
+
     void EditorLayer::on_attach(engine::Renderer& renderer) {
         editor_grid_.init(renderer);
 
@@ -33,6 +35,8 @@ namespace editor {
         const uint32_t height = engine::Application::get().window().get_height();
         camera_.set_aspect_ratio(static_cast<float>(width) / static_cast<float>(height));
         camera_.set_projection_params(45.0f, 0.1f, 10000.0f);
+
+        asset_manager_->scan_directory("assets/models");
     }
 
     void EditorLayer::on_detach() {
@@ -94,10 +98,10 @@ namespace editor {
             // );
         }
         if (active_scene_) {
-            active_scene_->on_render(renderer, camera_, delta_time);
+            active_scene_->on_render(renderer, camera_, *asset_manager_, delta_time);
         }
 
-        auto view = active_scene_->get_registry().view<engine::TransformComponent, engine::DirectionalLightComponent>();
+        auto view = active_scene_->view<engine::TransformComponent, engine::DirectionalLightComponent>();
         for (auto entity : view) {
             auto [transform, light] = view.get<engine::TransformComponent, engine::DirectionalLightComponent>(entity);
             draw_directional_light(renderer, transform.position, transform.get_forward(), light.color);

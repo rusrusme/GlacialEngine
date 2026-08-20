@@ -17,7 +17,7 @@
 namespace editor {
     class EditorUILayer : public engine::Layer {
     public:
-        explicit EditorUILayer(const std::shared_ptr<engine::Scene>& scene);
+        explicit EditorUILayer(const std::shared_ptr<engine::Scene>& scene, std::shared_ptr<engine::AssetManager> asset_manager);
         ~EditorUILayer() override = default;
 
         void on_attach(engine::Renderer& renderer) override;
@@ -40,10 +40,12 @@ namespace editor {
         bool gizmo_canceled_ = false;
         glm::mat4 active_gizmo_matrix_{1.0f};
 
-        std::shared_ptr<engine::Scene> active_scene_;
+        std::shared_ptr<engine::Scene> active_scene_ = nullptr;
+        std::shared_ptr<engine::AssetManager> asset_manager_ = nullptr;
+
         const engine::Camera* camera_ = nullptr;
 
-        ObjectInspector object_editor_;
+        ObjectInspector object_inspector_;
         Hierarchy hierarchy_;
     };
 }

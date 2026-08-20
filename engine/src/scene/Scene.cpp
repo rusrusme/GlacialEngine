@@ -14,14 +14,16 @@ namespace engine {
     Scene::~Scene() = default;
 
     Entity Scene::create_entity(const std::string& name) {
+        return create_entity_with_uuid(UUID(), name);
+    }
+
+    Entity Scene::create_entity_with_uuid(UUID uuid, const std::string& name) {
         Entity entity = {registry_.create(), this};
-        // ----------------------------------------
-        // Metadata
-        // ----------------------------------------
-        entity.add_component<IDComponent>(UUID());
+        entity.add_component<IDComponent>(uuid);
+
         auto& tag = entity.add_component<LabelComponent>();
         tag.tag = name.empty() ? "Entity" : name;
-        // ----------------------------------------
+
         entity.add_component<TransformComponent>();
         return entity;
     }
@@ -39,7 +41,7 @@ namespace engine {
     void Scene::on_update(float delta_time) {
     }
 
-    void Scene::on_render(Renderer& renderer, Camera& camera, const float delta_time) {
+    void Scene::on_render(Renderer& renderer, Camera& camera, AssetManager& asset_manager, const float delta_time) {
         renderer.begin_scene(camera);
 
         // ------------------
@@ -76,7 +78,7 @@ namespace engine {
         // ------------------
         auto view = registry_.view<TransformComponent, MeshComponent>();
         for (auto entity : view) {
-            auto [transform, mesh] = view.get<TransformComponent, MeshComponent>(entity);
+            auto [transform, mesh_comp] = view.get<TransformComponent, MeshComponent>(entity);
 
             glm::vec4 color{1.0f};
             glm::mat4 transform_matrix = transform.get_matrix();
@@ -85,7 +87,9 @@ namespace engine {
                 color = registry_.get<MaterialComponent>(entity).color;
             }
 
-            renderer.draw_mesh(mesh.mesh, transform_matrix, color);
+            if (std::shared_ptr<Mesh> mesh = asset_manager.get_asset<Mesh>(mesh_comp.handle)) {
+                renderer.draw_mesh(*mesh, transform_matrix, color);
+            }
         }
 
         renderer.end_scene(delta_time);

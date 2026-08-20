@@ -13,7 +13,7 @@ namespace editor {
     public:
         Hierarchy() = default;
 
-        void init(std::shared_ptr<engine::Scene> scene) { scene_ = std::move(scene); }
+        void init(std::shared_ptr<engine::Scene> scene, std::shared_ptr<engine::AssetManager> asset_manager);
 
         engine::Entity add_entity(const std::string& name);
 
@@ -24,6 +24,7 @@ namespace editor {
 
     private:
         std::shared_ptr<engine::Scene> scene_ = nullptr;
+        std::shared_ptr<engine::AssetManager> asset_manager_ = nullptr;
         engine::Entity selected_entity_;
 
         char name_buffer_[128] = "";

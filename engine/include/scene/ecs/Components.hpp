@@ -13,6 +13,7 @@
 
 #include <string>
 #include <utility>
+#include <asset/AssetType.hpp>
 #include <core/UUID.hpp>
 #include <render/Camera.hpp>
 #include <render/mesh/Mesh.hpp>
@@ -66,12 +67,10 @@ namespace engine {
     };
 
     struct MeshComponent {
-        Mesh mesh;
-        std::string path;
+        AssetHandle handle{0};
 
         MeshComponent() = default;
-        MeshComponent(Mesh m) : mesh(std::move(m)) {}
-        MeshComponent(Mesh m, std::string path) : mesh(std::move(m)), path(std::move(path)) {}
+        MeshComponent(const AssetHandle h) : handle(h) {}
     };
 
     struct MaterialComponent {

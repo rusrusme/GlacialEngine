@@ -7,7 +7,6 @@
 
 #include <fstream>
 #include <nlohmann/json.hpp>
-#include <render/mesh/MeshLoader.hpp>
 
 #include "scene/ecs/Entity.hpp"
 
@@ -25,7 +24,7 @@ namespace engine {
         root["scene"] = "Untitled";
         root["entities"] = json::array();
 
-        auto view = scene_->get_registry().view<IDComponent>();
+        auto view = scene_->view<IDComponent>();
         for (auto entity_handle : view) {
             Entity entity{entity_handle, scene_.get()};
             if (!entity) continue;
@@ -52,7 +51,7 @@ namespace engine {
             if (entity.has_component<MeshComponent>()) {
                 auto& mc = entity.get_component<MeshComponent>();
                 entity_json["mesh"] = {
-                    {"filepath", mc.path}
+                    {"handle", static_cast<uint64_t>(mc.handle)}
                 };
             }
             // CameraComponent
@@ -105,15 +104,20 @@ namespace engine {
         json root;
         in >> root;
 
-        scene_->get_registry().clear(); // Alte Szene leeren
+        scene_->clear();
 
         for (const auto& entity_json : root["entities"]) {
             std::string name = entity_json.value("label", "Entity");
-            Entity entity = scene_->create_entity(name);
 
-            if (entity_json.contains("id")) {
-                entity.get_component<IDComponent>().id = UUID(entity_json["id"].get<uint64_t>());
-            }
+            // 1. UUID aus der JSON auslesen (falls vorhanden)
+            const UUID uuid = entity_json.contains("id")
+                                  ? UUID(entity_json["id"].get<uint64_t>())
+                                  : UUID();
+
+            // 2. Entity mit exakter UUID & Name erstellen (erstellt ID, Label & Transform automatisch)
+            Entity entity = scene_->create_entity_with_uuid(uuid, name);
+
+            // 3. Transform überschreiben
             if (entity_json.contains("transform")) {
                 auto& tc = entity.get_component<TransformComponent>();
                 auto& t_json = entity_json["transform"];
@@ -121,13 +125,16 @@ namespace engine {
                 tc.rotation = deserialize_vec3(t_json["rotation"]);
                 tc.scale = deserialize_vec3(t_json["scale"]);
             }
+            // 4. MeshComponent hinzufügen
             if (entity_json.contains("mesh")) {
-                std::string path = entity_json["mesh"]["filepath"];
-                // Mesh über deinen Loader laden und anhängen
-                auto mesh = MeshLoader::load(path);
-                entity.add_component<MeshComponent>(mesh, path);
+                auto& m_json = entity_json["mesh"];
+                AssetHandle handle{0};
+                if (m_json.contains("handle")) {
+                    handle = AssetHandle(m_json["handle"].get<uint64_t>());
+                }
+                entity.add_component<MeshComponent>(handle);
             }
-
+            // 5. CameraComponent
             if (entity_json.contains("camera")) {
                 auto& cc = entity.add_component<CameraComponent>();
                 auto& c_json = entity_json["camera"];
@@ -136,16 +143,19 @@ namespace engine {
                 cc.camera.set_far_clip(c_json["far_plane"]);
                 cc.is_primary = c_json["is_primary"];
             }
+            // 6. MaterialComponent
             if (entity_json.contains("material")) {
                 auto& mc = entity.add_component<MaterialComponent>();
                 mc.color = deserialize_vec4(entity_json["material"]["color"]);
             }
+            // 7. DirectionalLightComponent
             if (entity_json.contains("directional_light")) {
                 auto& dlc = entity.add_component<DirectionalLightComponent>();
                 auto& l_json = entity_json["directional_light"];
                 dlc.color = deserialize_vec3(l_json["color"]);
                 dlc.intensity = l_json["intensity"];
             }
+            // 8. PointLightComponent
             if (entity_json.contains("point_light")) {
                 auto& plc = entity.add_component<PointLightComponent>();
                 auto& l_json = entity_json["point_light"];
@@ -154,7 +164,6 @@ namespace engine {
                 plc.radius = l_json["radius"];
             }
         }
-
         return true;
     }
 }

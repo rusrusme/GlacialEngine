@@ -65,6 +65,12 @@ add_library(Engine STATIC
             include/render/mesh/MeshLoader.hpp
             src/render/mesh/Mesh.cpp
             src/render/mesh/Mesh.cpp
+            src/asset/AssetType.cpp
+            include/asset/AssetType.hpp
+            src/asset/MetafileHandler.cpp
+            include/asset/MetafileHandler.hpp
+            include/asset/AssetManager.hpp
+            src/asset/AssetManager.cpp
 )
 # ----------------------------------------------------------------------------
 target_include_directories(Engine

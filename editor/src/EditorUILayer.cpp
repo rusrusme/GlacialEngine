@@ -21,11 +21,11 @@ namespace editor {
         ImGuizmo::MODE current_gizmo_mode_ = ImGuizmo::LOCAL;
     }
 
-    EditorUILayer::EditorUILayer(const std::shared_ptr<engine::Scene>& scene) : active_scene_(scene) {}
+    EditorUILayer::EditorUILayer(const std::shared_ptr<engine::Scene>& scene, std::shared_ptr<engine::AssetManager> asset_manager) : active_scene_(std::move(scene)), asset_manager_(std::move(asset_manager)) {}
 
     void EditorUILayer::on_attach(engine::Renderer& renderer) {
-        object_editor_.init(active_scene_);
-        hierarchy_.init(active_scene_);
+        object_inspector_.init(active_scene_, asset_manager_);
+        hierarchy_.init(active_scene_, asset_manager_);
 
         ImGuizmo::Style& style = ImGuizmo::GetStyle();
         style.TranslationLineThickness = 3.0f;
@@ -35,8 +35,8 @@ namespace editor {
     }
 
     void EditorUILayer::on_detach() {
-        object_editor_.init(nullptr);
-        hierarchy_.init(nullptr);
+        object_inspector_.init(nullptr, nullptr);
+        hierarchy_.init(nullptr, nullptr);
     }
 
     void EditorUILayer::on_update(float delta_time) {
@@ -67,8 +67,8 @@ namespace editor {
         ImGuizmo::Enable(true);
 
         hierarchy_.render_ui();
-        object_editor_.set_selected_entity(hierarchy_.get_selected_entity());
-        object_editor_.render_ui();
+        object_inspector_.set_selected_entity(hierarchy_.get_selected_entity());
+        object_inspector_.render_ui();
 
         const ImGuiViewport* main_viewport = ImGui::GetMainViewport();
         ImVec2 viewport_pos = main_viewport->Pos;
@@ -108,7 +108,7 @@ namespace editor {
             engine::Entity closest_entity{};
             float closest_distance = std::numeric_limits<float>::max();
 
-            auto view = active_scene_->get_registry().view<engine::TransformComponent>();
+            auto view = active_scene_->view<engine::TransformComponent>();
             for (auto entity_handle : view) {
                 engine::Entity entity{entity_handle, active_scene_.get()};
                 auto& transform = entity.get_component<engine::TransformComponent>();

@@ -10,6 +10,7 @@ namespace editor {
 
     private:
         // Todo: Consider creating a scenes manager
-        std::shared_ptr<engine::Scene> active_scene_;
+        std::shared_ptr<engine::Scene> active_scene_ = nullptr;
+        std::shared_ptr<engine::AssetManager> asset_manager_ = nullptr;
     };
 }

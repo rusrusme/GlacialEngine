@@ -13,7 +13,7 @@ namespace editor {
     public:
         ObjectInspector() = default;
 
-        void init(std::shared_ptr<engine::Scene> scene) { scene_ = std::move(scene); }
+        void init(std::shared_ptr<engine::Scene> scene, std::shared_ptr<engine::AssetManager> asset_manager);
         void set_selected_entity(engine::Entity entity) { selected_entity_ = entity; }
 
         void render_ui();
@@ -21,6 +21,7 @@ namespace editor {
     private:
         void draw_component(engine::Entity entity);
 
+        std::shared_ptr<engine::AssetManager> asset_manager_ = nullptr;
         std::shared_ptr<engine::Scene> scene_ = nullptr;
         engine::Entity selected_entity_{};
     };
