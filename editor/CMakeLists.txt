@@ -11,6 +11,8 @@ add_executable(Editor
                src/ui/Hierarchy.hpp
                src/ui/ObjectInspector.cpp
                src/ui/ObjectInspector.hpp
+               src/ui/AssetBrowser.hpp
+               src/ui/AssetBrowser.cpp
                src/EditorUiLayer.cpp
                src/EditorUiLayer.hpp
                src/physics/Slab.hpp

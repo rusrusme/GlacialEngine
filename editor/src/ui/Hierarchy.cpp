@@ -142,14 +142,15 @@ namespace editor {
             ImGui::PopID();
         }
 
+        if (selected_entity_ && !ImGui::IsAnyItemActive() && engine::Input::is_key_pressed_once(engine::Key::DELETE)) {
+            entity_to_destroy = selected_entity_;
+        }
         if (entity_to_destroy) {
             if (selected_entity_ == entity_to_destroy) {
-                CLIENT_INFO("Deleted entity - {0}", entity_to_destroy.name().c_str());
                 selected_entity_ = {};
             }
             scene_->destroy_entity(entity_to_destroy);
         }
-
         if (ImGui::IsMouseDown(ImGuiMouseButton_Left) && ImGui::IsWindowHovered() && !ImGui::IsAnyItemHovered()) {
             selected_entity_ = {};
         }

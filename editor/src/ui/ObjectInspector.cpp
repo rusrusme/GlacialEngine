@@ -21,6 +21,28 @@ namespace editor {
         }
         else {
             ImGui::TextDisabled("Nothing selected");
+            // --- Drag & Drop Target ---
+            ImVec2 avail_size = ImGui::GetContentRegionAvail();
+            if (avail_size.x < 1.0f) avail_size.x = 1.0f;
+            if (avail_size.y < 1.0f) avail_size.y = 1.0f;
+            ImGui::Dummy(avail_size);
+
+            if (ImGui::BeginDragDropTarget()) {
+                if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET_BROWSER_ITEM")) {
+                    engine::AssetHandle dropped_handle = *static_cast<const engine::AssetHandle*>(payload->Data);
+                    const auto& meta = asset_manager_->get_metadata(dropped_handle);
+
+                    if (meta.is_valid() && meta.type == engine::AssetType::MESH) {
+                        std::string entity_name = meta.filepath.stem().string();
+                        auto entity = scene_->create_entity(entity_name);
+                        entity.add_component<engine::MeshComponent>(dropped_handle);
+                        entity.add_component<engine::MaterialComponent>(glm::vec4{1.0f, 1.0f, 1.0f, 1.0f});
+
+                        selected_entity_ = entity;
+                    }
+                }
+                ImGui::EndDragDropTarget();
+            }
         }
         ImGui::End();
     }

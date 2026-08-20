@@ -17,7 +17,6 @@
 #include <event/WindowEvents.hpp>
 #include <input/Input.hpp>
 #include <input/KeyCodes.hpp>
-#include <input/MouseCodes.hpp>
 #include <scene/ecs/Entity.hpp>
 
 namespace editor {
@@ -109,9 +108,8 @@ namespace editor {
         auto point_light = active_scene_->view<engine::TransformComponent, engine::PointLightComponent>();
         for (auto entity : point_light) {
             auto [transform, light] = point_light.get<engine::TransformComponent, engine::PointLightComponent>(entity);
-            renderer.draw_sphere(transform.position, 0.2f, light.color, 16);
+            renderer.draw_sphere(transform.position, 0.05f, light.color, 16);
         }
-
 
         // --------------------------------
         // Test objects
@@ -160,10 +158,6 @@ namespace editor {
             if (ImGui::Checkbox("Show World Grid", &grid_active)) {
                 set_grid_enabled(grid_active);
             }
-            // bool gizmo_active = is_gizmo_enabled();
-            // if (ImGui::Checkbox("Show Axis Gizmo", &gizmo_active)) {
-            // set_gizmo_enabled(gizmo_active);
-            // }
             ImGui::End();
         }
 
@@ -246,7 +240,7 @@ namespace editor {
 
     void EditorLayer::draw_directional_light(engine::Renderer& renderer, const glm::vec3 position, const glm::vec3& direction, const glm::vec3& color) {
         const float ray_length = 1.5f;
-        const float circle_radius = 0.3f;
+        const float circle_radius = 0.05f;
         const glm::vec3 dir = glm::normalize(direction);
 
         // 1. Kleine Sonne im Zentrum zeichnen

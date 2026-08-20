@@ -26,6 +26,7 @@ namespace editor {
     void EditorUILayer::on_attach(engine::Renderer& renderer) {
         object_inspector_.init(active_scene_, asset_manager_);
         hierarchy_.init(active_scene_, asset_manager_);
+        asset_browser_.init(asset_manager_);
 
         ImGuizmo::Style& style = ImGuizmo::GetStyle();
         style.TranslationLineThickness = 3.0f;
@@ -69,6 +70,7 @@ namespace editor {
         hierarchy_.render_ui();
         object_inspector_.set_selected_entity(hierarchy_.get_selected_entity());
         object_inspector_.render_ui();
+        asset_browser_.render_ui();
 
         const ImGuiViewport* main_viewport = ImGui::GetMainViewport();
         ImVec2 viewport_pos = main_viewport->Pos;

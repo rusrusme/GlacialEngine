@@ -75,6 +75,6 @@ namespace editor {
         void tree_trunks_around_pyramid(engine::Renderer& renderer) const;
         // -------------------------
 
-        void draw_directional_light(engine::Renderer& renderer, glm::vec3 position, const glm::vec3& direction, const glm::vec3& color);
+        static void draw_directional_light(engine::Renderer& renderer, glm::vec3 position, const glm::vec3& direction, const glm::vec3& color);
     };
 }

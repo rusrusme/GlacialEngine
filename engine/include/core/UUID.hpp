@@ -28,5 +28,4 @@ namespace std {
             return std::hash<uint64_t>{}(static_cast<uint64_t>(uuid));
         }
     };
-
 }

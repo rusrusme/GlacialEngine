@@ -11,6 +11,7 @@
 #include <render/Camera.hpp>
 #include <render/Renderer.hpp>
 #include <scene/SceneSerializer.hpp>
+#include <ui/AssetBrowser.hpp>
 #include <ui/Hierarchy.hpp>
 #include <ui/ObjectInspector.hpp>
 
@@ -47,5 +48,6 @@ namespace editor {
 
         ObjectInspector object_inspector_;
         Hierarchy hierarchy_;
+        AssetBrowser asset_browser_;
     };
 }

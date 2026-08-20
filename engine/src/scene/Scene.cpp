@@ -5,6 +5,7 @@
 
 #include "scene/Scene.hpp"
 
+#include <core/Log.hpp>
 #include <core/UUID.hpp>
 #include <scene/ecs/Entity.hpp>
 
@@ -25,10 +26,12 @@ namespace engine {
         tag.tag = name.empty() ? "Entity" : name;
 
         entity.add_component<TransformComponent>();
+        CORE_INFO("Created entity - {0} [{1}]", name, static_cast<uint64_t>(uuid));
         return entity;
     }
 
-    void Scene::destroy_entity(const Entity entity) {
+    void Scene::destroy_entity(Entity entity) {
+        CORE_INFO("Deleted entity - {0} [{1}]", entity.name(), static_cast<uint64_t>(entity.uuid()));
         registry_.destroy(entity);
     }
 
