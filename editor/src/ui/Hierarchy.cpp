@@ -29,6 +29,7 @@ namespace editor {
             ImGui::OpenPopup("AddEntityMenu");
         }
         ImGui::SameLine();
+        ImGui::SetNextItemWidth(-1.0f);
         ImGui::InputText("##NameInput", name_buffer_, sizeof(name_buffer_));
         if (ImGui::BeginPopup("AddEntityMenu")) {
             if (ImGui::MenuItem("Entity")) {
