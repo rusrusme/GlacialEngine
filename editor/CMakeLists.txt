@@ -7,10 +7,6 @@ add_executable(Editor
                src/EditorGrid.cpp
                src/EditorGrid.hpp
 
-               src/ui/AssetBrowser.cpp
-               src/ui/AssetBrowser.hpp
-               src/ui/Console.cpp
-               src/ui/Console.hpp
                src/ui/Hierarchy.cpp
                src/ui/Hierarchy.hpp
                src/ui/ObjectInspector.cpp
