@@ -68,7 +68,7 @@ namespace editor {
             }
             ImGui::Separator();
             if (ImGui::MenuItem("Directional Light")) {
-                const std::string name = name_buffer_[0] != '\0' ? name_buffer_ : "Light";
+                const std::string name = name_buffer_[0] != '\0' ? name_buffer_ : "Sun";
                 auto entity = scene_->create_entity(name);
                 auto& transform = entity.get_component<engine::TransformComponent>();
                 transform.rotation = glm::vec3(-90.0f, 135.0f, -45.0f);
@@ -77,6 +77,38 @@ namespace editor {
                     glm::vec3(1.0f, 0.95f, 0.8f),
                     1.2f
                 );
+            }
+            if (ImGui::MenuItem("Point Light")) {
+                const std::string name = name_buffer_[0] != '\0' ? name_buffer_ : "Light";
+                auto entity = scene_->create_entity(name);
+                auto& transform = entity.get_component<engine::TransformComponent>();
+                transform.rotation = glm::vec3(0.0f);
+                transform.position = glm::vec3(0.0f);
+                entity.add_component<engine::PointLightComponent>(
+                    glm::vec3(1.0f, 0.95f, 0.8f),
+                    1.2f
+                );
+            }
+            ImGui::Separator();
+            if (ImGui::BeginMenu("Imported Models")) {
+                bool found_any = false;
+                for (const auto& [handle, meta] : asset_manager_->get_registry()) {
+                    if (meta.type == engine::AssetType::MESH && !meta.filepath.string().starts_with("primitive://")) {
+                        found_any = true;
+                        std::string filename = meta.filepath.filename().string();
+
+                        if (ImGui::MenuItem(filename.c_str())) {
+                            const std::string name = name_buffer_[0] != '\0' ? name_buffer_ : meta.filepath.stem().string();
+                            auto entity = scene_->create_entity(name);
+                            entity.add_component<engine::MeshComponent>(handle);
+                            entity.add_component<engine::MaterialComponent>(glm::vec4{1.0f, 1.0f, 1.0f, 1.0f});
+                        }
+                    }
+                }
+                if (!found_any) {
+                    ImGui::TextDisabled("No models found in assets/");
+                }
+                ImGui::EndMenu();
             }
             ImGui::EndPopup();
         }

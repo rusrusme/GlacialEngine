@@ -34,19 +34,21 @@ void main() {
     vec3 norm = normalize(v_normal);
     vec3 total_diffuse = vec3(0.0);
 
+    // Directional Lights
     for (int i = 0; i < u_num_dir_lights && i < MAX_DIR_LIGHTS; ++i) {
         vec3 light_dir = normalize(-u_dir_lights[i].direction);
         float diff = max(dot(norm, light_dir), 0.0);
         total_diffuse += diff * u_dir_lights[i].color * u_dir_lights[i].intensity;
     }
 
+    // Point Lights
     for (int i = 0; i < u_num_point_lights && i < MAX_POINT_LIGHTS; ++i) {
-        vec3 light_dir = u_point_lights[i].position - v_position;
-        float dist = length(light_dir);
-        light_dir = normalize(light_dir);
+        vec3 light_vec = u_point_lights[i].position - v_position;
+        float dist = length(light_vec);
 
         if (dist < u_point_lights[i].radius) {
-            float attenuation = 1.0 - (dist / u_point_lights[i].radius);
+            vec3 light_dir = normalize(light_vec);
+            float attenuation = clamp(1.0 - (dist / u_point_lights[i].radius), 0.0, 1.0);
             float diff = max(dot(norm, light_dir), 0.0);
             total_diffuse += diff * u_point_lights[i].color * u_point_lights[i].intensity * attenuation;
         }

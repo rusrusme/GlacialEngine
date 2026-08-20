@@ -8,3 +8,5 @@
 # Runtime
 *.ini
 *.scene
+*.glb
+*.meta

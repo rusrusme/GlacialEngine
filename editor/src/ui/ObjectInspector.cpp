@@ -55,21 +55,28 @@ namespace editor {
         }
 
         // --------------------
-        // Mesh (Nutzung von AssetHandle)
+        // Mesh
         // --------------------
         if (entity.has_component<engine::MeshComponent>()) {
             if (ImGui::CollapsingHeader("Mesh Component", ImGuiTreeNodeFlags_DefaultOpen)) {
                 auto& mesh_comp = entity.get_component<engine::MeshComponent>();
+                const auto& current_meta = asset_manager_->get_metadata(mesh_comp.handle);
 
-                // Metadaten zum Handle aus der Asset-Registry abfragen
-                const auto& metadata = asset_manager_->get_metadata(mesh_comp.handle);
+                std::string current_label = current_meta.is_valid() ? current_meta.filepath.filename().string() : "None / Select Mesh";
 
-                std::string asset_name = metadata.is_valid()
-                                             ? metadata.filepath.filename().string()
-                                             : "None / Invalid Handle";
-
-                ImGui::Text("Mesh Asset: %s", asset_name.c_str());
-                ImGui::Text("Handle UUID: %llu", static_cast<uint64_t>(mesh_comp.handle));
+                if (ImGui::BeginCombo("Mesh Asset", current_label.c_str())) {
+                    for (const auto& [handle, meta] : asset_manager_->get_registry()) {
+                        if (meta.type != engine::AssetType::MESH) continue;
+                        const bool is_selected = (mesh_comp.handle == handle);
+                        std::string item_name = meta.filepath.filename().string();
+                        if (ImGui::Selectable(item_name.c_str(), is_selected)) {
+                            mesh_comp.handle = handle;
+                        }
+                        if (is_selected) ImGui::SetItemDefaultFocus();
+                    }
+                    ImGui::EndCombo();
+                }
+                ImGui::TextDisabled("Handle UUID: %llu", static_cast<uint64_t>(mesh_comp.handle));
             }
         }
 
