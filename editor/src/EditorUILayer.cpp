@@ -232,7 +232,7 @@ namespace editor {
     void EditorUILayer::render_main_menu_bar() const {
         static bool show_save_popup = false;
         static bool show_load_popup = false;
-        static char path_buffer[256] = "assets/scenes/default.scenes";
+        static char path_buffer[256] = "assets/scenes/default.scene";
 
         if (ImGui::BeginMainMenuBar()) {
             if (ImGui::BeginMenu("File")) {

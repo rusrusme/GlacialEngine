@@ -22,7 +22,7 @@ namespace engine {
 
     void SceneSerializer::serialize(const std::string& filepath) {
         json root;
-        root["scenes"] = "Untitled";
+        root["scene"] = "Untitled";
         root["entities"] = json::array();
 
         auto view = scene_->get_registry().view<IDComponent>();
