@@ -7,6 +7,9 @@
 
 # Runtime
 *.ini
-*.scene
+*.rml
+*.ttf
 *.glb
+*.scene
 *.meta
+
