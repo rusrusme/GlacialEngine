@@ -8,6 +8,7 @@
 #include "asset/AssetManager.hpp"
 #include "core/Log.hpp"
 #include "core/UUID.hpp"
+#include "physics/CollisionSystem.hpp"
 #include "scene/ecs/Entity.hpp"
 
 namespace engine {
@@ -37,13 +38,15 @@ namespace engine {
     }
 
     void Scene::on_init(Renderer& renderer) {
+        collision_system_ = std::make_unique<CollisionSystem>(10.0f);
     }
 
     void Scene::on_shutdown() {
+        collision_system_.reset();
     }
 
     void Scene::on_update(float delta_time) {
-        // collision_system_.update_broadphase(*this);
+        collision_system_->update_broadphase(*this);
     }
 
     void Scene::on_render(Renderer& renderer, Camera& camera, AssetManager& asset_manager, const float delta_time) {
@@ -62,7 +65,6 @@ namespace engine {
                 .intensity = light.intensity
             });
         }
-
         // ------------------
         // Point lights
         // ------------------
@@ -77,7 +79,6 @@ namespace engine {
                 .radius    = light.radius
             });
         }
-
         // ------------------
         // Meshes
         // ------------------
@@ -96,7 +97,6 @@ namespace engine {
                 renderer.draw_mesh(*mesh, transform_matrix, color);
             }
         }
-
         renderer.end_scene(delta_time);
     }
 }

@@ -5,7 +5,6 @@
 
 #pragma once
 
-#include "Components.hpp"
 #include "scene/Scene.hpp"
 
 namespace engine {

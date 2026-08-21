@@ -7,14 +7,13 @@
 
 #include <entt/entt.hpp>
 
-// Todo: fix circular dependency
-// #include <physics/CollisionSystem.hpp>
 #include "render/Renderer.hpp"
 #include "scene/ecs/Components.hpp"
 
 namespace engine {
     class AssetManager;
     class Camera;
+    class CollisionSystem;
     class Entity;
 
     class Scene {
@@ -38,12 +37,12 @@ namespace engine {
         auto clear() { return registry_.clear<Components...>(); }
 
         [[deprecated]] entt::registry& get_registry() { return registry_; }
-        // [[nodiscard]] CollisionSystem& get_collision_system() { return collision_system_; }
+        [[nodiscard]] CollisionSystem& get_collision_system() { return *collision_system_; }
 
     private:
         friend class Entity;
 
         entt::registry registry_;
-        // CollisionSystem collision_system_{10.0};
+        std::unique_ptr<CollisionSystem> collision_system_ = nullptr;
     };
 }
