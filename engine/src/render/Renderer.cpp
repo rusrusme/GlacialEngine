@@ -87,7 +87,14 @@ namespace engine {
             std::cerr << "Engine error: renderer: cannot upload empty mesh" << std::endl;
             return {};
         }
-
+        AABB local_bounds{
+            glm::vec3(std::numeric_limits<float>::max()),
+            glm::vec3(std::numeric_limits<float>::lowest())
+        };
+        for (const auto& vertex : vertices) {
+            local_bounds.min = glm::min(local_bounds.min, vertex.position);
+            local_bounds.max = glm::max(local_bounds.max, vertex.position);
+        }
         auto vao = std::make_shared<VertexArray>();
 
         const auto vbo = std::make_shared<VertexBuffer>(vertices.data(), vertices.size() * sizeof(Vertex));
@@ -103,6 +110,7 @@ namespace engine {
 
         Mesh mesh{};
         mesh.vertex_array = std::move(vao);
+        mesh.local_bounds = local_bounds;
         return mesh;
     }
 

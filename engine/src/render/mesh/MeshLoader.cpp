@@ -68,7 +68,35 @@ namespace engine {
             }
         }
         cgltf_free(data);
-        return {vertices, indices};
+
+        if (vertices.empty() || indices.empty()) return {};
+
+        AABB local_bounds{
+            glm::vec3(std::numeric_limits<float>::max()),
+            glm::vec3(std::numeric_limits<float>::lowest())
+        };
+
+        for (const auto& v : vertices) {
+            local_bounds.min = glm::min(local_bounds.min, v.position);
+            local_bounds.max = glm::max(local_bounds.max, v.position);
+        }
+
+        auto vao = std::make_shared<VertexArray>();
+        const auto vbo = std::make_shared<VertexBuffer>(vertices.data(), vertices.size() * sizeof(Vertex));
+        const BufferLayout layout = {
+            {ShaderDataType::Float3, "a_position"},
+            {ShaderDataType::Float3, "a_normal"},
+            {ShaderDataType::Float2, "a_uv"}
+        };
+        vao->add_vertex_buffer(vbo, layout);
+
+        const auto ebo = std::make_shared<IndexBuffer>(indices.data(), static_cast<uint32_t>(indices.size()));
+        vao->set_index_buffer(ebo);
+
+        Mesh mesh{};
+        mesh.vertex_array = std::move(vao);
+        mesh.local_bounds = local_bounds;
+        return mesh;
     }
 
     Mesh MeshLoader::load(const std::string& path) {

@@ -120,12 +120,25 @@ namespace editor {
                 ImGui::DragFloat3("Center", glm::value_ptr(collider.center), 0.05f);
                 ImGui::DragFloat3("Size", glm::value_ptr(collider.size), 0.05f, 0.01f, 100.0f);
                 ImGui::Checkbox("Is Trigger", &collider.is_trigger);
+
+                if (entity.has_component<engine::MeshComponent>()) {
+                    if (ImGui::Button("Fit to Mesh")) {
+                        const auto& mesh_comp = entity.get_component<engine::MeshComponent>();
+                        if (auto mesh = asset_manager_->get_asset<engine::Mesh>(mesh_comp.handle)) {
+                            collider.size = mesh->local_bounds.max - mesh->local_bounds.min;
+                            collider.center = (mesh->local_bounds.min + mesh->local_bounds.max) * 0.5f;
+                        }
+                    }
+                }
             }
         }
 
         ImGui::Separator();
         ImGui::Spacing();
 
+        // --------------------
+        // Add Component Popup
+        // --------------------
         if (ImGui::Button("+ Add Component")) {
             ImGui::OpenPopup("AddComponentPopup");
         }
@@ -138,7 +151,15 @@ namespace editor {
             }
             if (!entity.has_component<engine::BoxColliderComponent>()) {
                 if (ImGui::MenuItem("Box Collider Component")) {
-                    entity.add_component<engine::BoxColliderComponent>();
+                    auto& collider = entity.add_component<engine::BoxColliderComponent>();
+
+                    if (entity.has_component<engine::MeshComponent>()) {
+                        const auto& mesh_comp = entity.get_component<engine::MeshComponent>();
+                        if (auto mesh = asset_manager_->get_asset<engine::Mesh>(mesh_comp.handle)) {
+                            collider.size = mesh->local_bounds.max - mesh->local_bounds.min;
+                            collider.center = (mesh->local_bounds.min + mesh->local_bounds.max) * 0.5f;
+                        }
+                    }
                     ImGui::CloseCurrentPopup();
                 }
             }

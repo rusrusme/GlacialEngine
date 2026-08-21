@@ -97,7 +97,7 @@ namespace editor {
                             auto entity = scene_->create_entity(name);
                             entity.add_component<engine::MeshComponent>(handle);
                             entity.add_component<engine::MaterialComponent>(glm::vec4{1.0f, 1.0f, 1.0f, 1.0f});
-                            entity.add_component<engine::BoxColliderComponent>();
+                            // entity.add_component<engine::BoxColliderComponent>();
                         }
                     }
                 }
