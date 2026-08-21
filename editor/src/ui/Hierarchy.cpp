@@ -45,6 +45,7 @@ namespace editor {
                 auto handle = asset_manager_->get_handle_from_path(primitive_path);
                 entity.add_component<engine::MeshComponent>(handle);
                 entity.add_component<engine::MaterialComponent>(glm::vec4{1.0f, 0.5f, 0.2f, 1.0f});
+                entity.add_component<engine::BoxColliderComponent>();
             };
 
             if (ImGui::MenuItem("Plane")) create_primitive_entity("Plane", "primitive://plane");
@@ -96,6 +97,7 @@ namespace editor {
                             auto entity = scene_->create_entity(name);
                             entity.add_component<engine::MeshComponent>(handle);
                             entity.add_component<engine::MaterialComponent>(glm::vec4{1.0f, 1.0f, 1.0f, 1.0f});
+                            entity.add_component<engine::BoxColliderComponent>();
                         }
                     }
                 }

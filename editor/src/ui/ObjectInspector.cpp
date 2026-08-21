@@ -110,6 +110,19 @@ namespace editor {
             }
         }
 
+        // --------------------
+        // Box Collider
+        // --------------------
+        if (entity.has_component<engine::BoxColliderComponent>()) {
+            if (ImGui::CollapsingHeader("Box Collider Component", ImGuiTreeNodeFlags_DefaultOpen)) {
+                auto& collider = entity.get_component<engine::BoxColliderComponent>();
+
+                ImGui::DragFloat3("Center", glm::value_ptr(collider.center), 0.05f);
+                ImGui::DragFloat3("Size", glm::value_ptr(collider.size), 0.05f, 0.01f, 100.0f);
+                ImGui::Checkbox("Is Trigger", &collider.is_trigger);
+            }
+        }
+
         ImGui::Separator();
         ImGui::Spacing();
 
@@ -120,6 +133,12 @@ namespace editor {
             if (!entity.has_component<engine::MaterialComponent>()) {
                 if (ImGui::MenuItem("Material Component")) {
                     entity.add_component<engine::MaterialComponent>(glm::vec4{1.0f, 1.0f, 1.0f, 1.0f});
+                    ImGui::CloseCurrentPopup();
+                }
+            }
+            if (!entity.has_component<engine::BoxColliderComponent>()) {
+                if (ImGui::MenuItem("Box Collider Component")) {
+                    entity.add_component<engine::BoxColliderComponent>();
                     ImGui::CloseCurrentPopup();
                 }
             }

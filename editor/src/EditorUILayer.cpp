@@ -5,8 +5,6 @@
 
 #include "EditorUILayer.hpp"
 
-#include "physics/Slab.hpp"
-
 namespace editor {
     #ifdef ENABLE_IMGUI
     namespace {
@@ -15,7 +13,7 @@ namespace editor {
     }
     #endif
 
-    EditorUILayer::EditorUILayer(const std::shared_ptr<engine::Scene>& scene, std::shared_ptr<engine::AssetManager> asset_manager) : active_scene_(std::move(scene)), asset_manager_(std::move(asset_manager)) {}
+    EditorUILayer::EditorUILayer(std::shared_ptr<engine::Scene>& scene, std::shared_ptr<engine::AssetManager> asset_manager) : active_scene_(std::move(scene)), asset_manager_(std::move(asset_manager)) {}
 
     void EditorUILayer::on_attach(engine::Renderer& renderer) {
         object_inspector_.init(active_scene_, asset_manager_);
@@ -109,33 +107,12 @@ namespace editor {
             const glm::vec2 viewport_size = {static_cast<float>(width), static_cast<float>(height)};
             const engine::Ray ray = camera_->screen_point_to_ray(mouse_pos, viewport_size);
 
-            engine::Entity closest_entity{};
-            float closest_distance = std::numeric_limits<float>::max();
-
-            auto view = active_scene_->view<engine::TransformComponent>();
-            for (auto entity_handle : view) {
-                engine::Entity entity{entity_handle, active_scene_.get()};
-                auto& transform = entity.get_component<engine::TransformComponent>();
-
-                // Lokale AABB (-0.5 bis 0.5) mit Position & Skalierung der Entity in Welt-AABB umrechnen
-                AABB local_aabb{glm::vec3(-0.5f), glm::vec3(0.5f)};
-                AABB world_aabb;
-
-                glm::vec3 min_scaled = local_aabb.min * transform.scale;
-                glm::vec3 max_scaled = local_aabb.max * transform.scale;
-
-                world_aabb.min = transform.position + glm::min(min_scaled, max_scaled);
-                world_aabb.max = transform.position + glm::max(min_scaled, max_scaled);
-
-                float hit_distance = 0.0f;
-                if (ray_intersects_aabb(ray, world_aabb, hit_distance)) {
-                    if (hit_distance < closest_distance) {
-                        closest_distance = hit_distance;
-                        closest_entity = entity;
-                    }
-                }
+            if (auto hit = engine::CollisionSystem::raycast(*active_scene_, ray)) {
+                hierarchy_.set_selected_entity(hit->entity);
             }
-            hierarchy_.set_selected_entity(closest_entity);
+            else {
+                hierarchy_.set_selected_entity({});
+            }
             block_gizmo_until_mouse_up_ = true;
             return false;
         });

@@ -69,12 +69,6 @@ namespace editor {
         if (show_grid_) {
             editor_grid_.render(renderer);
         }
-        if (show_gizmo_) {
-            // World Origin Gizmo (X = Red, Y = Green, Z = Blue)
-            // renderer.draw_line({0, 0, 0}, {2, 0, 0}, {1, 0, 0});
-            // renderer.draw_line({0, 0, 0}, {0, 2, 0}, {0, 1, 0});
-            // renderer.draw_line({0, 0, 0}, {0, 0, 2}, {0, 0, 1});
-        }
         if (is_hovering_tile_) {
             // renderer.draw_box(
             //     hover_tile_pos_,
@@ -84,6 +78,25 @@ namespace editor {
         }
         if (active_scene_) {
             active_scene_->on_render(renderer, camera_, *asset_manager_, delta_time);
+        }
+
+        if (active_scene_) {
+            auto view = active_scene_->view<engine::TransformComponent, engine::BoxColliderComponent>();
+
+            for (auto entity_handle : view) {
+                auto [transform, collider] = view.get<engine::TransformComponent, engine::BoxColliderComponent>(entity_handle);
+
+                // Calculate World Space AABB
+                engine::AABB world_aabb = collider.get_world_aabb(transform.position, transform.scale);
+
+                // Query overlapping entities in the spatial grid
+                auto overlaps = active_scene_->get_collision_system().query_aabb(*active_scene_, world_aabb);
+
+                // Turn RED if colliding with another entity (> 1 because it includes itself), otherwise GREEN
+                glm::vec3 box_color = (overlaps.size() > 1) ? glm::vec3(1.0f, 0.0f, 0.0f) : glm::vec3(0.0f, 1.0f, 0.0f);
+
+                renderer.draw_box(world_aabb.min, world_aabb.max, box_color);
+            }
         }
 
         auto dir_light = active_scene_->view<engine::TransformComponent, engine::DirectionalLightComponent>();
