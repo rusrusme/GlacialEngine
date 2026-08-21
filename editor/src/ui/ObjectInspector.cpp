@@ -111,6 +111,25 @@ namespace editor {
         }
 
         // --------------------
+        // Lighting
+        // --------------------
+        if (entity.has_component<engine::DirectionalLightComponent>()) {
+            if (ImGui::CollapsingHeader("Lighting", ImGuiTreeNodeFlags_DefaultOpen)) {
+                auto& dir_light = entity.get_component<engine::DirectionalLightComponent>();
+                ImGui::DragFloat("Intensity", &dir_light.intensity, 0.05);
+                ImGui::ColorEdit4("Color", glm::value_ptr(dir_light.color));
+            }
+        }
+        if (entity.has_component<engine::PointLightComponent>()) {
+            if (ImGui::CollapsingHeader("Lighting", ImGuiTreeNodeFlags_DefaultOpen)) {
+                auto& point_light = entity.get_component<engine::PointLightComponent>();
+                ImGui::DragFloat("Intensity", &point_light.intensity, 0.05);
+                ImGui::ColorEdit4("Color", glm::value_ptr(point_light.color));
+                ImGui::DragFloat("Radius", &point_light.radius);
+            }
+        }
+
+        // --------------------
         // Box Collider
         // --------------------
         if (entity.has_component<engine::BoxColliderComponent>()) {
