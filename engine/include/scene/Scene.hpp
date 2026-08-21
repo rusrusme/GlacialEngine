@@ -7,14 +7,14 @@
 
 #include <entt/entt.hpp>
 
-// Todo: fix circular depen.
+// Todo: fix circular dependency
 // #include <physics/CollisionSystem.hpp>
-#include "asset/AssetManager.hpp"
-#include "render/Camera.hpp"
 #include "render/Renderer.hpp"
 #include "scene/ecs/Components.hpp"
 
 namespace engine {
+    class AssetManager;
+    class Camera;
     class Entity;
 
     class Scene {

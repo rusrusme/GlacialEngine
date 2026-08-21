@@ -19,6 +19,7 @@ namespace editor {
         return entity;
     }
 
+    #ifdef ENABLE_IMGUI
     void Hierarchy::render_imgui() {
         engine::Entity entity_to_destroy{};
 
@@ -153,4 +154,5 @@ namespace editor {
 
         ImGui::End();
     }
+    #endif
 }

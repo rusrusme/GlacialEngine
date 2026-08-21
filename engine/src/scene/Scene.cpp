@@ -5,6 +5,7 @@
 
 #include "scene/Scene.hpp"
 
+#include "asset/AssetManager.hpp"
 #include "core/Log.hpp"
 #include "core/UUID.hpp"
 #include "scene/ecs/Entity.hpp"

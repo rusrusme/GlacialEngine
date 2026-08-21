@@ -5,6 +5,10 @@
 
 #pragma once
 
+// Asset
+#include "asset/AssetManager.hpp"
+#include "asset/AssetType.hpp"
+#include "asset/MetafileHandler.hpp"
 // Core
 #include "core/Application.hpp"
 #include "core/Config.hpp"

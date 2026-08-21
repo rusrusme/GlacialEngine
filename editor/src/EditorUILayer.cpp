@@ -8,10 +8,12 @@
 #include "physics/Slab.hpp"
 
 namespace editor {
+    #ifdef ENABLE_IMGUI
     namespace {
         ImGuizmo::OPERATION current_gizmo_operation_ = ImGuizmo::TRANSLATE;
         ImGuizmo::MODE current_gizmo_mode_ = ImGuizmo::LOCAL;
     }
+    #endif
 
     EditorUILayer::EditorUILayer(const std::shared_ptr<engine::Scene>& scene, std::shared_ptr<engine::AssetManager> asset_manager) : active_scene_(std::move(scene)), asset_manager_(std::move(asset_manager)) {}
 
@@ -20,11 +22,13 @@ namespace editor {
         hierarchy_.init(active_scene_, asset_manager_);
         asset_browser_.init(asset_manager_);
 
+        #ifdef ENABLE_IMGUI
         ImGuizmo::Style& style = ImGuizmo::GetStyle();
         style.TranslationLineThickness = 3.0f;
         style.TranslationLineArrowSize = 5.0f;
         style.CenterCircleSize = 4.0f;
         style.HatchedAxisLineThickness = 0.0f;
+        #endif
     }
 
     void EditorUILayer::on_detach() {
@@ -33,6 +37,7 @@ namespace editor {
     }
 
     void EditorUILayer::on_update(float delta_time) {
+        #ifdef ENABLE_IMGUI
         if (engine::Input::is_keyboard_captured() || ImGuizmo::IsUsing()) {
             return;
         }
@@ -49,6 +54,7 @@ namespace editor {
                 current_gizmo_operation_ = ImGuizmo::SCALE;
             }
         }
+        #endif
     }
 
     void EditorUILayer::on_render(engine::Renderer& renderer, float delta_time) {
@@ -78,6 +84,7 @@ namespace editor {
     void EditorUILayer::on_event(engine::Event& event) {
         engine::EventDispatcher dispatcher(event);
 
+        #ifdef ENABLE_IMGUI
         if (ImGuizmo::IsOver() || ImGuizmo::IsUsing()) {
             dispatcher.dispatch<engine::MouseButtonPressedEvent>([](engine::MouseButtonPressedEvent& _) {
                 return true;
@@ -87,6 +94,7 @@ namespace editor {
             });
             return;
         }
+        #endif
 
         dispatcher.dispatch<engine::MouseButtonPressedEvent>([this](engine::MouseButtonPressedEvent& e) {
             if (e.button() != engine::Mouse::MOUSE_BUTTON_LEFT) {
@@ -133,6 +141,7 @@ namespace editor {
         });
     }
 
+    #ifdef ENABLE_IMGUI
     void EditorUILayer::draw_imguizmo(engine::Entity selected_entity, const engine::Camera& camera, const ImVec2& viewport_pos, const ImVec2& viewport_size) {
         if (!selected_entity || !selected_entity.has_component<engine::TransformComponent>()) {
             return;
@@ -287,4 +296,5 @@ namespace editor {
             ImGui::EndPopup();
         }
     }
+    #endif
 }

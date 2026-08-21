@@ -11,6 +11,7 @@ namespace editor {
         asset_manager_ = std::move(asset_manager);
     }
 
+    #ifdef ENABLE_IMGUI
     void ObjectInspector::render_imgui() {
         ImGui::Begin("Object Inspector");
         if (selected_entity_) {
@@ -125,4 +126,5 @@ namespace editor {
             ImGui::EndPopup();
         }
     }
+    #endif
 }
