@@ -5,8 +5,6 @@
 
 #include "render/mesh/Mesh.hpp"
 
-#include <glad/glad.h>
-
 namespace engine {
     Mesh::Mesh(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices) {
         setup(vertices, indices);

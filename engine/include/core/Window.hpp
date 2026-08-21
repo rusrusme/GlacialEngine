@@ -6,9 +6,9 @@
 #pragma once
 
 #include <functional>
-#include <event/WindowEvents.hpp>
-
 #include "GLFW/glfw3.h"
+
+#include "event/WindowEvents.hpp"
 
 namespace engine {
     class Window {

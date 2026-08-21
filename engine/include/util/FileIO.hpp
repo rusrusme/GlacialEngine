@@ -5,11 +5,11 @@
 
 #pragma once
 
-#include <string>
-#include <fstream>
-#include <sstream>
-#include <iostream>
 #include <filesystem>
+#include <fstream>
+#include <iostream>
+#include <sstream>
+#include <string>
 
 namespace engine::util {
     inline std::string read_file_to_string(const std::string& filepath) {

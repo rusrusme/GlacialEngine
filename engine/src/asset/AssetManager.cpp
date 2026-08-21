@@ -5,7 +5,6 @@
 
 #include <asset/AssetManager.hpp>
 
-#include <iostream>
 #include <asset/MetafileHandler.hpp>
 
 namespace engine {

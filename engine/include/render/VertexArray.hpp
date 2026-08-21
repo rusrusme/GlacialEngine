@@ -8,8 +8,8 @@
 #include <memory>
 #include <vector>
 
-#include "Buffer.hpp"
-#include "BufferLayout.hpp"
+#include "render/Buffer.hpp"
+#include "render/BufferLayout.hpp"
 
 namespace engine {
     class VertexArray {

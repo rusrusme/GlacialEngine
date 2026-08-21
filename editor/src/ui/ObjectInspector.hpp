@@ -5,8 +5,8 @@
 
 #pragma once
 
-#include <scene/Scene.hpp>
-#include <scene/ecs/Entity.hpp>
+#include "scene/Scene.hpp"
+#include "scene/ecs/Entity.hpp"
 
 namespace editor {
     class ObjectInspector {
@@ -14,9 +14,12 @@ namespace editor {
         ObjectInspector() = default;
 
         void init(std::shared_ptr<engine::Scene> scene, std::shared_ptr<engine::AssetManager> asset_manager);
-        void set_selected_entity(engine::Entity entity) { selected_entity_ = entity; }
 
-        void render_ui();
+        #ifdef ENABLE_IMGUI
+        void render_imgui();
+        #endif
+
+        void set_selected_entity(engine::Entity entity) { selected_entity_ = entity; }
 
     private:
         void draw_component(engine::Entity entity);

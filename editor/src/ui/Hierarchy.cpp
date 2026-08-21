@@ -5,14 +5,6 @@
 
 #include "ui/Hierarchy.hpp"
 
-#include <imgui.h>
-#include <core/Log.hpp>
-#include <input/Input.hpp>
-#include <input/KeyCodes.hpp>
-#include <render/mesh/Mesh.hpp>
-#include <render/mesh/PrimitiveMesh.hpp>
-#include <scene/ecs/Entity.hpp>
-
 namespace editor {
     void Hierarchy::init(std::shared_ptr<engine::Scene> scene, std::shared_ptr<engine::AssetManager> asset_manager) {
         scene_ = std::move(scene);
@@ -22,11 +14,12 @@ namespace editor {
     engine::Entity Hierarchy::add_entity(const std::string& name) {
         const engine::Entity entity = scene_->create_entity(name);
         selected_entity_ = entity;
+
         CLIENT_INFO("Created entity - {0}", name.c_str());
         return entity;
     }
 
-    void Hierarchy::render_ui() {
+    void Hierarchy::render_imgui() {
         engine::Entity entity_to_destroy{};
 
         ImGui::Begin("Hierarchy");

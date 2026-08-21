@@ -5,9 +5,6 @@
 
 #include "render/Buffer.hpp"
 
-#include <glad/glad.h>
-#include <utility>
-
 namespace engine {
     // --- VertexBuffer ---
     VertexBuffer::VertexBuffer(const void* data, const size_t size, const bool dynamic) {

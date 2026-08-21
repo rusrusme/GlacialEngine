@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include <render/Renderer.hpp>
+#include "render/Renderer.hpp"
 #include "render/Shader.hpp"
 #include "render/VertexArray.hpp"
 

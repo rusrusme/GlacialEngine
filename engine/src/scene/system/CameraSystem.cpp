@@ -3,10 +3,10 @@
 // All rights reserved.
 //
 
-#include "scene/ecs/CameraSystem.hpp"
+#include "scene/system/CameraSystem.hpp"
 
-#include <render/Camera.hpp>
-#include <scene/ecs/Components.hpp>
+#include "render/Camera.hpp"
+#include "scene/ecs/Components.hpp"
 
 namespace engine {
     void CameraSystem::reset_mouse_state() {

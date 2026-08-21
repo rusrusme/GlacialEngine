@@ -4,14 +4,15 @@
 //
 
 #pragma once
-#include <EditorGrid.hpp>
+
 #include <memory>
-#include <core/Layer.hpp>
-#include <input/CameraController.hpp>
-#include <render/Renderer.hpp>
-#include <scene/Scene.hpp>
-#include <utility>
-#include <asset/AssetManager.hpp>
+
+#include "EditorGrid.hpp"
+#include "asset/AssetManager.hpp"
+#include "core/Layer.hpp"
+#include "input/CameraController.hpp"
+#include "render/Renderer.hpp"
+#include "scene/Scene.hpp"
 
 namespace editor {
     class EditorLayer : public engine::Layer {
@@ -25,7 +26,10 @@ namespace editor {
         void on_update(float delta_time) override;
 
         void on_render(engine::Renderer& renderer, float delta_time) override;
-        void on_imGuiRender(engine::Renderer& renderer, float delta_time) override;
+
+        #ifdef ENABLE_IMGUI
+        void on_imgui_render(engine::Renderer& renderer, float delta_time) override;
+        #endif
 
         void on_event(engine::Event& event) override;
 
@@ -40,10 +44,8 @@ namespace editor {
 
         EditorGrid editor_grid_;
 
-        // -----------------------------------------
         glm::vec3 hover_tile_pos_{0.0f};
         bool is_hovering_tile_ = false;
-        // -----------------------------------------
 
         // -----------------------------------------
         // Editor overlays
@@ -64,8 +66,8 @@ namespace editor {
         [[nodiscard]] bool is_debug_panel_enabled() const { return show_debug_panel_; }
         void set_debug_panel_enabled(const bool enabled) { show_debug_panel_ = enabled; }
         void toggle_debug_panel() { show_debug_panel_ = !show_debug_panel_; }
-
         // -------------------------
+
         float total_time_ = 0.0f;
 
         void cube_grid(engine::Renderer& renderer) const;

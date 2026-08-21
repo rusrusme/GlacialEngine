@@ -5,8 +5,8 @@
 
 #include "Editor.hpp"
 
-#include <EditorLayer.hpp>
-#include <EditorUILayer.hpp>
+#include "EditorLayer.hpp"
+#include "EditorUILayer.hpp"
 
 namespace editor {
     Editor::Editor() {

@@ -5,9 +5,9 @@
 
 #include "scene/Scene.hpp"
 
-#include <core/Log.hpp>
-#include <core/UUID.hpp>
-#include <scene/ecs/Entity.hpp>
+#include "core/Log.hpp"
+#include "core/UUID.hpp"
+#include "scene/ecs/Entity.hpp"
 
 namespace engine {
     Scene::Scene() = default;
@@ -42,6 +42,7 @@ namespace engine {
     }
 
     void Scene::on_update(float delta_time) {
+        // collision_system_.update_broadphase(*this);
     }
 
     void Scene::on_render(Renderer& renderer, Camera& camera, AssetManager& asset_manager, const float delta_time) {

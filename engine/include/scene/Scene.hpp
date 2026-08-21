@@ -5,11 +5,14 @@
 
 #pragma once
 
-#include <asset/AssetManager.hpp>
 #include <entt/entt.hpp>
-#include <render/Camera.hpp>
-#include <render/Renderer.hpp>
-#include <scene/ecs/Components.hpp>
+
+// Todo: fix circular depen.
+// #include <physics/CollisionSystem.hpp>
+#include "asset/AssetManager.hpp"
+#include "render/Camera.hpp"
+#include "render/Renderer.hpp"
+#include "scene/ecs/Components.hpp"
 
 namespace engine {
     class Entity;
@@ -35,10 +38,12 @@ namespace engine {
         auto clear() { return registry_.clear<Components...>(); }
 
         [[deprecated]] entt::registry& get_registry() { return registry_; }
+        // [[nodiscard]] CollisionSystem& get_collision_system() { return collision_system_; }
 
     private:
         friend class Entity;
 
         entt::registry registry_;
+        // CollisionSystem collision_system_{10.0};
     };
 }

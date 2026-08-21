@@ -13,12 +13,16 @@
 
 #include <string>
 #include <utility>
-#include <asset/AssetType.hpp>
-#include <core/UUID.hpp>
-#include <render/Camera.hpp>
-#include <render/mesh/Mesh.hpp>
+
+#include "asset/AssetType.hpp"
+#include "core/UUID.hpp"
+#include "physics/AABB.hpp"
+#include "render/Camera.hpp"
 
 namespace engine {
+    // ----------------------------
+    // Data
+    // ----------------------------
     struct LabelComponent {
         std::string tag;
 
@@ -33,6 +37,9 @@ namespace engine {
         IDComponent(const UUID& uuid) : id(uuid) {}
     };
 
+    // ----------------------------
+    // Rendering
+    // ----------------------------
     struct TransformComponent {
         glm::vec3 position{0.0f, 0.0f, 0.0f};
         glm::vec3 rotation{0.0f, 0.0f, 0.0f}; // Euler-Winkel in Grad (für Inspector/UI)
@@ -88,6 +95,9 @@ namespace engine {
         CameraComponent(const Camera& camera) : camera(camera) {}
     };
 
+    // ----------------------------
+    // Lighting
+    // ----------------------------
     struct DirectionalLightComponent {
         glm::vec3 color{1.0f, 1.0f, 1.0f};
         float intensity{1.0f};
@@ -105,5 +115,31 @@ namespace engine {
 
         PointLightComponent(const glm::vec3& color, const float intensity = 1.0f, const float radius = 10.0f)
             : color(color), intensity(intensity), radius(radius) {}
+    };
+
+    // ----------------------------
+    // Physics
+    // ----------------------------
+    enum class BodyType {
+        STATIC,
+        KINEMATIC,
+        DYNAMIC
+    };
+
+    struct RigidBodyComponent {
+        BodyType type = BodyType::STATIC;
+        glm::vec3 velocity{0.0f};
+    };
+
+    struct BoxColliderComponent {
+        glm::vec3 center{0.0f};
+        glm::vec3 size{1.0f};
+        bool is_trigger = false;
+
+        [[nodiscard]] AABB get_world_aabb(const glm::vec3& position, const glm::vec3& scale) const {
+            const glm::vec3 half_size = (size * scale) * 0.5f;
+            const glm::vec3 world_center = position + (center * scale);
+            return {world_center - half_size, world_center + half_size};
+        }
     };
 }

@@ -5,9 +5,6 @@
 
 #include "render/UniformBuffer.hpp"
 
-#include <utility>
-#include <glad/glad.h>
-
 namespace engine {
     UniformBuffer::UniformBuffer(const uint32_t size, const uint32_t binding) {
         glGenBuffers(1, &id_);

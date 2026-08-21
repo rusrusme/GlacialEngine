@@ -5,10 +5,9 @@
 
 #include "render/Frame.hpp"
 
-#include <core/Application.hpp>
-#include <core/Config.hpp>
-#include <glad/glad.h>
-#include <render/DebugFrame.hpp>
+#include "core/Application.hpp"
+#include "core/Config.hpp"
+#include "render/DebugFrame.hpp"
 
 // --------------------------------------------------------------------
 #if defined(_WIN32)

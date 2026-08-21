@@ -8,6 +8,8 @@
 #include <render/Camera.hpp>
 
 namespace engine {
+    class Camera;
+
     class CameraController {
     public:
         void reset_mouse_state();

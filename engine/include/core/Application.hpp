@@ -5,10 +5,9 @@
 
 #pragma once
 
-#include <core/LayerStack.hpp>
-#include <render/Renderer.hpp>
-
-#include "Window.hpp"
+#include "core/LayerStack.hpp"
+#include "core/Window.hpp"
+#include "render/Renderer.hpp"
 
 namespace engine {
     class Application {

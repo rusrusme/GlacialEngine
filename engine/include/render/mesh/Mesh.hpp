@@ -5,8 +5,7 @@
 
 #pragma once
 
-#include <render/Vertex.hpp>
-
+#include "render/Vertex.hpp"
 #include "render/VertexArray.hpp"
 
 namespace engine {

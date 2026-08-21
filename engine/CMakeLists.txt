@@ -34,8 +34,8 @@ add_library(Engine STATIC
             include/core/Engine.hpp
             src/core/LayerStack.cpp
             include/core/LayerStack.hpp
-            src/scene/ecs/CameraSystem.cpp
-            include/scene/ecs/CameraSystem.hpp
+            src/scene/system/CameraSystem.cpp
+            include/scene/system/CameraSystem.hpp
             include/input/KeyCodes.hpp
             include/core/Window.hpp
             include/event/Event.hpp
@@ -71,6 +71,11 @@ add_library(Engine STATIC
             include/asset/MetafileHandler.hpp
             include/asset/AssetManager.hpp
             src/asset/AssetManager.cpp
+            include/physics/AABB.hpp
+            include/physics/SpatialHashGrid.hpp
+            include/physics/CollisionSystem.hpp
+            src/physics/CollisionSystem.cpp
+            src/physics/SpatialHashGrid.cpp
 )
 # ----------------------------------------------------------------------------
 target_include_directories(Engine
@@ -93,10 +98,12 @@ if (ENABLE_IMGUI)
     target_link_libraries(Engine PUBLIC imgui imguizmo::imguizmo)
 endif ()
 
-if (NOT DIST_BUILD)
+if (ENABLE_SPDLOG)
     target_link_libraries(Engine PUBLIC spdlog::spdlog)
 endif ()
 # ----------------------------------------------------------------------------
 add_compile_definitions(GLFW_INCLUDE_NONE)
+# ----------------------------------------------------------------------------
+target_precompile_headers(Engine PRIVATE src/core/core_pch.hpp)
 # ----------------------------------------------------------------------------
 

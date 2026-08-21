@@ -5,15 +5,14 @@
 
 #include "core/Application.hpp"
 
-#include <chrono>
-#include <iostream>
-#include <thread>
-#include <core/Config.hpp>
+#ifdef ENABLE_SPDLOG
 #include <core/Log.hpp>
-#include <event/MouseEvents.hpp>
-#include <event/WindowEvents.hpp>
-#include <GLFW/glfw3.h>
-#include <render/Frame.hpp>
+#endif
+
+#include "core/Config.hpp"
+#include "event/MouseEvents.hpp"
+#include "event/WindowEvents.hpp"
+#include "render/Frame.hpp"
 
 namespace engine {
     Application::Application() {
@@ -47,7 +46,10 @@ namespace engine {
         // ----------------------------------
         // Initialize core systems
         // ----------------------------------
+        #ifdef ENABLE_SPDLOG
         Log::init();
+        #endif
+
         Frame::init(window_->native());
 
         if (!renderer_.on_init(window_->native())) {
@@ -84,7 +86,7 @@ namespace engine {
             }
             #ifdef ENABLE_IMGUI
             for (const auto& layer : layers_) {
-                layer->on_imGuiRender(renderer_, delta_time);
+                layer->on_imgui_render(renderer_, delta_time);
             }
             #endif
             // ----------------------------------

@@ -7,6 +7,7 @@
 
 #include <optional>
 #include <glm/vec2.hpp>
+
 #include "math/Ray.hpp"
 
 namespace engine {

@@ -5,11 +5,12 @@
 
 #pragma once
 
-#include <entt/entt.hpp>
-
+#include "Components.hpp"
 #include "scene/Scene.hpp"
 
 namespace engine {
+    class Scene;
+
     class Entity {
     public:
         Entity() = default;

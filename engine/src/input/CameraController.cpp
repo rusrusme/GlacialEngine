@@ -3,12 +3,12 @@
 // All rights reserved.
 //
 
-#include <core/Application.hpp>
-#include <core/Config.hpp>
-#include <input/CameraController.hpp>
-#include <input/Input.hpp>
-#include <input/KeyCodes.hpp>
-#include <input/MouseCodes.hpp>
+#include "input/CameraController.hpp"
+#include "core/Application.hpp"
+#include "core/Config.hpp"
+#include "input/Input.hpp"
+#include "input/KeyCodes.hpp"
+#include "input/MouseCodes.hpp"
 
 namespace engine {
     void CameraController::reset_mouse_state() {

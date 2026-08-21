@@ -53,7 +53,7 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(rmlui)
 # ----------------------------------------------------------------------------
 # Fetch spdlog
-if (NOT DIST_BUILD)
+if (ENABLE_SPDLOG)
     FetchContent_Declare(
             spdlog
             GIT_REPOSITORY https://github.com/gabime/spdlog.git
@@ -100,7 +100,7 @@ if (ENABLE_IMGUI)
     target_link_libraries(imguizmo PUBLIC imgui)
 endif ()
 # ----------------------------------------------------------------------------
-# Fetch cgl
+# Fetch cgltf
 FetchContent_Declare(
         cgltf
         GIT_REPOSITORY https://github.com/jkuhlmann/cgltf.git

@@ -5,8 +5,8 @@
 
 #pragma once
 
-#include <scene/Scene.hpp>
-#include <scene/ecs/Entity.hpp>
+#include "scene/Scene.hpp"
+#include "scene/ecs/Entity.hpp"
 
 namespace editor {
     class Hierarchy {
@@ -15,9 +15,11 @@ namespace editor {
 
         void init(std::shared_ptr<engine::Scene> scene, std::shared_ptr<engine::AssetManager> asset_manager);
 
-        engine::Entity add_entity(const std::string& name);
+        #ifdef ENABLE_IMGUI
+        void render_imgui();
+        #endif
 
-        void render_ui();
+        engine::Entity add_entity(const std::string& name);
 
         [[nodiscard]] engine::Entity get_selected_entity() const { return selected_entity_; }
         void set_selected_entity(const engine::Entity new_entity) { selected_entity_ = new_entity; }

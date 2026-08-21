@@ -9,7 +9,7 @@
 #include <string>
 #include <unordered_map>
 
-#include "Shader.hpp"
+#include "render/Shader.hpp"
 
 namespace engine {
     class ShaderLibrary {

@@ -5,15 +5,18 @@
 
 #pragma once
 
-#include <imGUi.h>
-#include <core/Layer.hpp>
-#include <event/Event.hpp>
-#include <render/Camera.hpp>
-#include <render/Renderer.hpp>
-#include <scene/SceneSerializer.hpp>
-#include <ui/AssetBrowser.hpp>
-#include <ui/Hierarchy.hpp>
-#include <ui/ObjectInspector.hpp>
+#include "core/Layer.hpp"
+#include "event/Event.hpp"
+#include "render/Camera.hpp"
+#include "render/Renderer.hpp"
+#include "scene/SceneSerializer.hpp"
+#include "ui/AssetBrowser.hpp"
+#include "ui/Hierarchy.hpp"
+#include "ui/ObjectInspector.hpp"
+
+#ifdef ENABLE_IMGUI
+struct ImVec2;
+#endif
 
 namespace editor {
     class EditorUILayer : public engine::Layer {
@@ -25,15 +28,20 @@ namespace editor {
         void on_detach() override;
         void on_update(float delta_time) override;
         void on_render(engine::Renderer& renderer, float delta_time) override;
-        void on_imGuiRender(engine::Renderer& renderer, float delta_time) override;
+
+        #ifdef ENABLE_IMGUI
+        void on_imgui_render(engine::Renderer& renderer, float delta_time) override;
+        #endif
 
         void on_event(engine::Event& event) override;
 
         void set_camera(const engine::Camera* camera) { camera_ = camera; }
 
     private:
-        void draw_gizmo(engine::Entity selected_entity, const engine::Camera& camera, const ImVec2& viewport_pos, const ImVec2& viewport_size);
-        void render_main_menu_bar() const;
+        #ifdef ENABLE_IMGUI
+        void draw_imguizmo(engine::Entity selected_entity, const engine::Camera& camera, const ImVec2& viewport_pos, const ImVec2& viewport_size);
+        void draw_imgui_menu_bar() const;
+        #endif
 
         bool block_gizmo_until_mouse_up_ = false;
         engine::TransformComponent initial_transform_{};

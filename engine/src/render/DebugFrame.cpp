@@ -3,12 +3,8 @@
 // All rights reserved.
 //
 
-#include "render/DebugFrame.hpp"
-
 #ifdef ENABLE_IMGUI
-#include <imgui.h>
-#include <imgui_impl_glfw.h>
-#include <imgui_impl_opengl3.h>
+#include "render/DebugFrame.hpp"
 
 namespace engine {
     void DebugFrame::init(GLFWwindow* window, const char* glsl_version) {

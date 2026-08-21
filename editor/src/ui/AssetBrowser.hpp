@@ -6,7 +6,8 @@
 #pragma once
 
 #include <memory>
-#include <asset/AssetManager.hpp>
+
+#include "asset/AssetManager.hpp"
 
 namespace editor {
     class AssetBrowser {
@@ -14,7 +15,10 @@ namespace editor {
         AssetBrowser() = default;
 
         void init(std::shared_ptr<engine::AssetManager> asset_manager);
-        void render_ui();
+
+        #ifdef ENABLE_IMGUI
+        void render_imgui();
+        #endif
 
     private:
         std::shared_ptr<engine::AssetManager> asset_manager_ = nullptr;

@@ -5,9 +5,6 @@
 
 #include "render/VertexArray.hpp"
 
-#include <glad/glad.h>
-#include <utility>
-
 namespace engine {
     static GLenum shader_data_type_to_opengl_base_type(ShaderDataType type) {
         switch (type) {

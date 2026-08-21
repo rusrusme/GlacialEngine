@@ -5,12 +5,8 @@
 
 #include "render/Renderer.hpp"
 
-#include <iostream>
-#include <memory>
-#include <core/Config.hpp>
-#include <glad/glad.h>
-#include <glm/gtc/type_ptr.hpp>
-#include <render/Camera.hpp>
+#include "core/Config.hpp"
+#include "render/Camera.hpp"
 
 namespace engine {
     Renderer::Renderer() = default;

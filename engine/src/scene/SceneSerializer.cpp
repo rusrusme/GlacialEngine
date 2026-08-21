@@ -5,9 +5,6 @@
 
 #include "scene/SceneSerializer.hpp"
 
-#include <fstream>
-#include <nlohmann/json.hpp>
-
 #include "scene/ecs/Entity.hpp"
 
 using json = nlohmann::json;

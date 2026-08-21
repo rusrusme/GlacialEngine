@@ -8,11 +8,8 @@
 
 #include "render/mesh/MeshLoader.hpp"
 
-#include <fstream>
-#include <iostream>
-#include <render/mesh/Mesh.hpp>
-#include <render/mesh/PrimitiveMesh.hpp>
-#include <spdlog/sinks/basic_file_sink-inl.h>
+#include "render/mesh/Mesh.hpp"
+#include "render/mesh/PrimitiveMesh.hpp"
 
 namespace engine {
     static Mesh load_gltf(const std::string& path) {

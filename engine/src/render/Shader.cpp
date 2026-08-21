@@ -5,11 +5,7 @@
 
 #include "render/Shader.hpp"
 
-#include <glad/glad.h>
-#include <glm/gtc/type_ptr.hpp>
-#include <iostream>
-#include <utility>
-#include <util/FileIO.hpp>
+#include "util/FileIO.hpp"
 
 namespace engine {
     Shader::Shader(const std::string& vertex_src, const std::string& fragment_src) {

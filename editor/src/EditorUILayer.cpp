@@ -5,15 +5,7 @@
 
 #include "EditorUILayer.hpp"
 
-#include <imGUi.h>
-#include <imGuizmo.h>
-#include <core/Application.hpp>
-#include <event/MouseEvents.hpp>
-#include <glm/gtc/type_ptr.hpp>
-#include <input/Input.hpp>
-#include <input/KeyCodes.hpp>
-#include <input/MouseCodes.hpp>
-#include <physics/Slab.hpp>
+#include "physics/Slab.hpp"
 
 namespace editor {
     namespace {
@@ -62,24 +54,26 @@ namespace editor {
     void EditorUILayer::on_render(engine::Renderer& renderer, float delta_time) {
     }
 
-    void EditorUILayer::on_imGuiRender(engine::Renderer& renderer, float delta_time) {
-        render_main_menu_bar();
+    #ifdef ENABLE_IMGUI
+    void EditorUILayer::on_imgui_render(engine::Renderer& renderer, float delta_time) {
+        draw_imgui_menu_bar();
         ImGuizmo::BeginFrame();
         ImGuizmo::Enable(true);
 
-        hierarchy_.render_ui();
+        hierarchy_.render_imgui();
         object_inspector_.set_selected_entity(hierarchy_.get_selected_entity());
-        object_inspector_.render_ui();
-        asset_browser_.render_ui();
+        object_inspector_.render_imgui();
+        asset_browser_.render_imgui();
 
         const ImGuiViewport* main_viewport = ImGui::GetMainViewport();
         ImVec2 viewport_pos = main_viewport->Pos;
         ImVec2 viewport_size = main_viewport->Size;
 
         if (camera_) {
-            draw_gizmo(hierarchy_.get_selected_entity(), *camera_, viewport_pos, viewport_size);
+            draw_imguizmo(hierarchy_.get_selected_entity(), *camera_, viewport_pos, viewport_size);
         }
     }
+    #endif
 
     void EditorUILayer::on_event(engine::Event& event) {
         engine::EventDispatcher dispatcher(event);
@@ -139,7 +133,7 @@ namespace editor {
         });
     }
 
-    void EditorUILayer::draw_gizmo(engine::Entity selected_entity, const engine::Camera& camera, const ImVec2& viewport_pos, const ImVec2& viewport_size) {
+    void EditorUILayer::draw_imguizmo(engine::Entity selected_entity, const engine::Camera& camera, const ImVec2& viewport_pos, const ImVec2& viewport_size) {
         if (!selected_entity || !selected_entity.has_component<engine::TransformComponent>()) {
             return;
         }
@@ -231,7 +225,7 @@ namespace editor {
         }
     }
 
-    void EditorUILayer::render_main_menu_bar() const {
+    void EditorUILayer::draw_imgui_menu_bar() const {
         static bool show_save_popup = false;
         static bool show_load_popup = false;
         static char path_buffer[256] = "assets/scenes/default.scene";

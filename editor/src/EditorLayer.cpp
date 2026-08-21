@@ -5,20 +5,6 @@
 
 #include "EditorLayer.hpp"
 
-#ifdef ENABLE_IMGUI
-#include <imgui.h>
-#endif
-
-#include <core/Application.hpp>
-#include <core/Config.hpp>
-#include <core/Log.hpp>
-#include <event/KeyEvents.hpp>
-#include <event/MouseEvents.hpp>
-#include <event/WindowEvents.hpp>
-#include <input/Input.hpp>
-#include <input/KeyCodes.hpp>
-#include <scene/ecs/Entity.hpp>
-
 namespace editor {
     EditorLayer::EditorLayer(std::shared_ptr<engine::Scene> scene, std::shared_ptr<engine::AssetManager> asset_manager): active_scene_(std::move(scene)), asset_manager_(std::move(asset_manager)) {}
 
@@ -121,8 +107,8 @@ namespace editor {
         // tree_trunks_around_pyramid(renderer);
     }
 
-    void EditorLayer::on_imGuiRender(engine::Renderer& renderer, const float delta_time) {
-        #ifdef ENABLE_IMGUI
+    #ifdef ENABLE_IMGUI
+    void EditorLayer::on_imgui_render(engine::Renderer& renderer, const float delta_time) {
         // ----------------------
         // Debug panel
         // ----------------------
@@ -201,8 +187,8 @@ namespace editor {
             }
         }
         ImGui::End();
-        #endif
     }
+    #endif
 
     void EditorLayer::on_event(engine::Event& event) {
         engine::EventDispatcher dispatcher(event);

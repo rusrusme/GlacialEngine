@@ -8,8 +8,8 @@
 #include <vector>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
-#include <render/mesh/Mesh.hpp>
 #include <render/Vertex.hpp>
+#include <render/mesh/Mesh.hpp>
 
 #include "Shader.hpp"
 #include "ShaderLibrary.hpp"

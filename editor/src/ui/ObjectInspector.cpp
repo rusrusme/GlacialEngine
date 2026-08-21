@@ -5,16 +5,13 @@
 
 #include "ui/ObjectInspector.hpp"
 
-#include <imgui.h>
-#include <glm/gtc/type_ptr.hpp>
-
 namespace editor {
     void ObjectInspector::init(std::shared_ptr<engine::Scene> scene, std::shared_ptr<engine::AssetManager> asset_manager) {
         scene_ = std::move(scene);
         asset_manager_ = std::move(asset_manager);
     }
 
-    void ObjectInspector::render_ui() {
+    void ObjectInspector::render_imgui() {
         ImGui::Begin("Object Inspector");
         if (selected_entity_) {
             draw_component(selected_entity_);

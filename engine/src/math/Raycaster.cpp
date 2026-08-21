@@ -5,9 +5,6 @@
 
 #include "math/Raycaster.hpp"
 
-#include <glm/vec4.hpp>
-#include <glm/gtc/matrix_inverse.hpp>
-
 #include "math/Ray.hpp"
 #include "render/Camera.hpp"
 

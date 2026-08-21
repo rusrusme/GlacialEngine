@@ -5,8 +5,6 @@
 
 #include "render/ShaderLibrary.hpp"
 
-#include <iostream>
-
 namespace engine {
     void ShaderLibrary::add(const std::string& name, const std::shared_ptr<Shader>& shader) {
         if (exists(name)) {

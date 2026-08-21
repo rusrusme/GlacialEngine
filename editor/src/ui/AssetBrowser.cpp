@@ -5,14 +5,13 @@
 
 #include "ui/AssetBrowser.hpp"
 
-#include <imgui.h>
-
 namespace editor {
     void AssetBrowser::init(std::shared_ptr<engine::AssetManager> asset_manager) {
         asset_manager_ = std::move(asset_manager);
     }
 
-    void AssetBrowser::render_ui() {
+    #ifdef ENABLE_IMGUI
+    void AssetBrowser::render_imgui() {
         ImGui::Begin("Asset Browser");
 
         // 1. Navigation / Pfad-Header
@@ -76,4 +75,5 @@ namespace editor {
         ImGui::Columns(1);
         ImGui::End();
     }
+    #endif
 }

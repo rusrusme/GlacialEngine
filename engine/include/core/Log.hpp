@@ -5,16 +5,17 @@
 
 #pragma once
 
-#ifndef DIST_BUILD
+#ifdef ENABLE_SPDLOG
 #include <spdlog/spdlog.h>
-#include <memory>
 #endif
+
+#include <memory>
 
 namespace engine {
     class Log {
     public:
         static void init();
-        #ifndef DIST_BUILD
+        #ifdef ENABLE_SPDLOG
 
         static std::shared_ptr<spdlog::logger>& get_core_logger() {
             return core_logger;
@@ -31,7 +32,7 @@ namespace engine {
     };
 }
 
-#ifndef DIST_BUILD
+#ifdef ENABLE_SPDLOG
 // Core log macros
 #define CORE_ERROR(...)       ::engine::Log::get_core_logger()->error(__VA_ARGS__)
 #define CORE_WARN(...)        ::engine::Log::get_core_logger()->warn(__VA_ARGS__)

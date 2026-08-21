@@ -5,11 +5,6 @@
 
 #include "asset/MetafileHandler.hpp"
 
-#include <fstream>
-#include <iostream>
-#include <nlohmann/json.hpp>
-#include <nlohmann/json_fwd.hpp>
-
 using json = nlohmann::json;
 
 namespace engine {

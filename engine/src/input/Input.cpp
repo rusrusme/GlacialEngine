@@ -3,14 +3,8 @@
 // All rights reserved.
 //
 
-#ifdef ENABLE_IMGUI
-#include <imgui.h>
-#endif
-
-#include <input/Input.hpp>
-
-#include <core/Application.hpp>
-#include <GLFW/glfw3.h>
+#include "input/Input.hpp"
+#include "core/Application.hpp"
 
 namespace engine {
     bool Input::is_mouse_captured() {
