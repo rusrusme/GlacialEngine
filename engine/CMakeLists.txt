@@ -104,6 +104,7 @@ target_link_libraries(Engine PUBLIC
                       EnTT::EnTT
                       cgltf
                       OpenGL::GL
+                      miniaudio
                       nlohmann_json::nlohmann_json
 )
 # ----------------------------------------------------------------------------
