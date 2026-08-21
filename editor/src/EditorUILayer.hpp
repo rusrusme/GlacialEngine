@@ -9,7 +9,6 @@
 #include "event/Event.hpp"
 #include "render/Camera.hpp"
 #include "render/Renderer.hpp"
-#include "scene/SceneSerializer.hpp"
 #include "ui/AssetBrowser.hpp"
 #include "ui/Hierarchy.hpp"
 #include "ui/ObjectInspector.hpp"

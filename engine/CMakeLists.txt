@@ -77,6 +77,16 @@ add_library(Engine STATIC
             src/physics/CollisionSystem.cpp
             src/physics/SpatialHashGrid.cpp
             include/render/mesh/InstanceData.hpp
+            src/ui/RmlRenderInterface.cpp
+            src/ui/RmlRenderInterface.hpp
+            src/ui/UiSystem.cpp
+            src/ui/UISystem.hpp
+            src/ui/RmlSystemInterface.cpp
+            src/ui/RmlSystemInterface.hpp
+            src/ui/UiLayer.cpp
+            include/ui/UiLayer.hpp
+            include/ui/UIManager.hpp
+            src/ui/UIManager.cpp
 )
 # ----------------------------------------------------------------------------
 target_include_directories(Engine
@@ -88,6 +98,8 @@ find_package(OpenGL REQUIRED)
 target_link_libraries(Engine PUBLIC
                       glad
                       glfw
+                      rmlui
+                      stb_image
                       glm::glm
                       EnTT::EnTT
                       cgltf

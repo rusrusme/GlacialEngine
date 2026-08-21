@@ -13,6 +13,8 @@
 #include "input/CameraController.hpp"
 #include "render/Renderer.hpp"
 #include "scene/Scene.hpp"
+#include "ui/UILayer.hpp"
+#include "../../engine/src/ui/UISystem.hpp"
 
 namespace editor {
     class EditorLayer : public engine::Layer {

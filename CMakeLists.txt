@@ -37,6 +37,9 @@ include(Dependencies.cmake)
 # ----------------------------------------------------------------------------
 add_library(glad STATIC lib/glad/src/glad.c)
 target_include_directories(glad PUBLIC lib/glad/include)
+
+add_library(stb_image INTERFACE)
+target_include_directories(stb_image INTERFACE lib/stb_image)
 # ----------------------------------------------------------------------------
 add_subdirectory(Engine)
 add_subdirectory(Editor)

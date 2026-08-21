@@ -21,6 +21,9 @@ namespace editor {
         asset_browser_.init(asset_manager_);
 
         #ifdef ENABLE_IMGUI
+        ImGuiIO& io = ImGui::GetIO();
+        io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+
         ImGuizmo::Style& style = ImGuizmo::GetStyle();
         style.TranslationLineThickness = 3.0f;
         style.TranslationLineArrowSize = 5.0f;
@@ -61,6 +64,9 @@ namespace editor {
     #ifdef ENABLE_IMGUI
     void EditorUILayer::on_imgui_render(engine::Renderer& renderer, float delta_time) {
         draw_imgui_menu_bar();
+
+        ImGui::DockSpaceOverViewport(0, ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
+
         ImGuizmo::BeginFrame();
         ImGuizmo::Enable(true);
 

@@ -142,4 +142,11 @@ namespace engine {
             return {world_center - half_size, world_center + half_size};
         }
     };
+
+    // UI
+    struct UIComponent {
+        std::string rml_filepath;
+        bool is_screen_space = true;
+        bool is_visible = true;
+    };
 }
