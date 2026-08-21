@@ -5,8 +5,7 @@ out vec4 frag_color;
 in vec3 v_position;
 in vec3 v_normal;
 in vec2 v_uv;
-
-uniform vec4 u_color;
+in vec4 v_color;
 
 struct DirLight {
     vec3 direction;
@@ -54,9 +53,9 @@ void main() {
         }
     }
 
-    float ambient_strength = 0.05;
-    vec3 ambient = ambient_strength * u_color.rgb;
+    float ambient_strength = 0.25;
+    vec3 ambient = ambient_strength * v_color.rgb;
 
-    vec3 final_color = ambient + (total_diffuse * u_color.rgb);
-    frag_color = vec4(final_color, u_color.a);
+    vec3 final_color = ambient + (total_diffuse * v_color.rgb);
+    frag_color = vec4(final_color, v_color.a);
 }

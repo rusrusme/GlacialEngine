@@ -7,6 +7,7 @@
 
 #include "core/Config.hpp"
 #include "render/Camera.hpp"
+#include "render/mesh/InstanceData.hpp"
 
 namespace engine {
     Renderer::Renderer() = default;
@@ -34,8 +35,10 @@ namespace engine {
         shader_library_.load("mesh", "assets/shaders/mesh.vert", "assets/shaders/mesh.frag");
         shader_library_.load("line", "assets/shaders/line.vert", "assets/shaders/line.frag");
 
-        init_line_resources();
+        instance_vbo_capacity_bytes_ = 1000 * sizeof(InstanceData);
+        instance_vbo_ = std::make_shared<VertexBuffer>(nullptr, instance_vbo_capacity_bytes_, true);
 
+        init_line_resources();
         return true;
     }
 
@@ -53,6 +56,7 @@ namespace engine {
     }
 
     void Renderer::begin_scene(const Camera& camera) {
+        reset_stats();
         clear_lights();
 
         const CameraData camera_data{
@@ -118,40 +122,88 @@ namespace engine {
         mesh.vertex_array.reset();
     }
 
-    void Renderer::draw_mesh(const Mesh& mesh, const glm::mat4& model_matrix) const {
+    void Renderer::draw_mesh(const Mesh& mesh, const glm::mat4& model_matrix) {
         draw_mesh(mesh, model_matrix, {1.0f, 1.0f, 1.0f, 1.0f});
     }
 
-    void Renderer::draw_mesh(const Mesh& mesh, const glm::mat4& model_matrix, const glm::vec4& color) const {
-        const auto mesh_shader = shader_library_.get("mesh");
-        if (!mesh.is_valid() || !mesh_shader) {
-            return;
+    void Renderer::draw_mesh_instanced(const Mesh& mesh, const std::vector<InstanceData>& instances) {
+        if (instances.empty() || !mesh.is_valid()) return;
+
+        stats_.draw_calls++;
+        stats_.instance_count += static_cast<uint32_t>(instances.size());
+
+        const auto shader = shader_library_.get("mesh");
+        if (!shader) return;
+
+        const size_t bytes_needed = instances.size() * sizeof(InstanceData);
+
+        if (bytes_needed > instance_vbo_capacity_bytes_) {
+            instance_vbo_capacity_bytes_ = bytes_needed * 2;
+            instance_vbo_ = std::make_shared<VertexBuffer>(nullptr, instance_vbo_capacity_bytes_, true);
         }
+        instance_vbo_->set_data(instances.data(), bytes_needed);
 
-        mesh_shader->bind();
-        mesh_shader->set_mat4("u_model", model_matrix);
-        mesh_shader->set_vec4("u_color", color);
+        shader->bind();
 
-        mesh_shader->set_int("u_num_dir_lights", static_cast<int>(directional_lights_.size()));
+        // Bind Directional and Point Lights
+        shader->set_int("u_num_dir_lights", static_cast<int>(directional_lights_.size()));
         for (size_t i = 0; i < directional_lights_.size(); ++i) {
             std::string base = "u_dir_lights[" + std::to_string(i) + "].";
-            mesh_shader->set_vec3(base + "direction", directional_lights_[i].direction);
-            mesh_shader->set_vec3(base + "color", directional_lights_[i].color);
-            mesh_shader->set_float(base + "intensity", directional_lights_[i].intensity);
+            shader->set_vec3(base + "direction", directional_lights_[i].direction);
+            shader->set_vec3(base + "color", directional_lights_[i].color);
+            shader->set_float(base + "intensity", directional_lights_[i].intensity);
         }
 
-        mesh_shader->set_int("u_num_point_lights", static_cast<int>(point_lights_.size()));
+        shader->set_int("u_num_point_lights", static_cast<int>(point_lights_.size()));
         for (size_t i = 0; i < point_lights_.size(); ++i) {
             std::string base = "u_point_lights[" + std::to_string(i) + "].";
-            mesh_shader->set_vec3(base + "position", point_lights_[i].position);
-            mesh_shader->set_vec3(base + "color", point_lights_[i].color);
-            mesh_shader->set_float(base + "intensity", point_lights_[i].intensity);
-            mesh_shader->set_float(base + "radius", point_lights_[i].radius);
+            shader->set_vec3(base + "position", point_lights_[i].position);
+            shader->set_vec3(base + "color", point_lights_[i].color);
+            shader->set_float(base + "intensity", point_lights_[i].intensity);
+            shader->set_float(base + "radius", point_lights_[i].radius);
+        }
+        mesh.vertex_array->bind();
+        instance_vbo_->bind();
+
+        const auto stride = static_cast<GLsizei>(sizeof(InstanceData));
+        for (uint32_t i = 0; i < 4; ++i) {
+            glEnableVertexAttribArray(3 + i);
+            glVertexAttribPointer(
+                3 + i,
+                4,
+                GL_FLOAT,
+                GL_FALSE,
+                stride,
+                reinterpret_cast<const void*>(sizeof(glm::vec4) * i)
+            );
+            glVertexAttribDivisor(3 + i, 1);
         }
 
-        mesh.vertex_array->bind();
-        glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(mesh.vertex_array->get_index_buffer()->get_count()), GL_UNSIGNED_INT, nullptr);
+        glEnableVertexAttribArray(7);
+        glVertexAttribPointer(
+            7,
+            4,
+            GL_FLOAT,
+            GL_FALSE,
+            stride,
+            reinterpret_cast<const void*>(offsetof(InstanceData, color))
+        );
+        glVertexAttribDivisor(7, 1);
+
+        glDrawElementsInstanced(
+            GL_TRIANGLES,
+            static_cast<GLsizei>(mesh.vertex_array->get_index_buffer()->get_count()),
+            GL_UNSIGNED_INT,
+            nullptr,
+            static_cast<GLsizei>(instances.size())
+        );
+
         mesh.vertex_array->unbind();
+        shader->unbind();
+    }
+
+    void Renderer::draw_mesh(const Mesh& mesh, const glm::mat4& model_matrix, const glm::vec4& color) {
+        draw_mesh_instanced(mesh, {{ model_matrix, color }});
     }
 
     void Renderer::draw_line(const glm::vec3& from, const glm::vec3& to, const glm::vec3& color) {

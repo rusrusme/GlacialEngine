@@ -16,6 +16,7 @@
 #include "UniformBuffer.hpp"
 
 namespace engine {
+    struct InstanceData;
     class Camera;
 
     struct LineVertex {
@@ -23,6 +24,11 @@ namespace engine {
         glm::vec3 color;
 
         LineVertex(const glm::vec3& pos, const glm::vec3& col) : position(pos), color(col) {}
+    };
+
+    struct RenderStats {
+        uint32_t draw_calls = 0;
+        uint32_t instance_count = 0;
     };
 
     class Renderer {
@@ -54,8 +60,9 @@ namespace engine {
         // -------------------------
         [[nodiscard]] static Mesh upload_mesh(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices);
         static void destroy_mesh(Mesh& mesh);
-        [[deprecated]] void draw_mesh(const Mesh& mesh, const glm::mat4& model_matrix) const;
-        void draw_mesh(const Mesh& mesh, const glm::mat4& model_matrix, const glm::vec4& color) const;
+        [[deprecated]] void draw_mesh(const Mesh& mesh, const glm::mat4& model_matrix);
+        void draw_mesh(const Mesh& mesh, const glm::mat4& model_matrix, const glm::vec4& color);
+        void draw_mesh_instanced(const Mesh& mesh, const std::vector<InstanceData>& instances);
 
         // -------------------------
         // Debug line rendering
@@ -112,7 +119,13 @@ namespace engine {
             float radius{10.0f};
         };
 
+        // Stats
+        [[nodiscard]] const RenderStats& get_stats() const { return stats_; }
+        void reset_stats() { stats_ = RenderStats{}; }
+
     private:
+        RenderStats stats_;
+
         ShaderLibrary shader_library_;
         std::unique_ptr<UniformBuffer> camera_ubo_;
 
@@ -132,6 +145,10 @@ namespace engine {
 
         std::unique_ptr<VertexArray> line_vao_;
         std::shared_ptr<VertexBuffer> line_vbo_;
+
+        // Instanced
+        std::shared_ptr<VertexBuffer> instance_vbo_;
+        size_t instance_vbo_capacity_bytes_ = 0;
 
         void init_line_resources();
     };

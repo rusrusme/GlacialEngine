@@ -9,6 +9,7 @@
 #include "core/Log.hpp"
 #include "core/UUID.hpp"
 #include "physics/CollisionSystem.hpp"
+#include "render/mesh/InstanceData.hpp"
 #include "scene/ecs/Entity.hpp"
 
 namespace engine {
@@ -82,19 +83,25 @@ namespace engine {
         // ------------------
         // Meshes
         // ------------------
-        auto view = registry_.view<TransformComponent, MeshComponent>();
-        for (auto entity : view) {
-            auto [transform, mesh_comp] = view.get<TransformComponent, MeshComponent>(entity);
+        std::unordered_map<UUID, std::vector<InstanceData>> mesh_batches;
+
+        auto mesh_view = registry_.view<TransformComponent, MeshComponent>();
+        for (auto entity : mesh_view) {
+            auto [transform, mesh_comp] = mesh_view.get<TransformComponent, MeshComponent>(entity);
 
             glm::vec4 color{1.0f};
-            glm::mat4 transform_matrix = transform.get_matrix();
-
             if (registry_.all_of<MaterialComponent>(entity)) {
                 color = registry_.get<MaterialComponent>(entity).color;
             }
 
-            if (std::shared_ptr<Mesh> mesh = asset_manager.get_asset<Mesh>(mesh_comp.handle)) {
-                renderer.draw_mesh(*mesh, transform_matrix, color);
+            mesh_batches[mesh_comp.handle].push_back(InstanceData{
+                .transform = transform.get_matrix(),
+                .color     = color
+            });
+        }
+        for (const auto& [handle, instance_list] : mesh_batches) {
+            if (std::shared_ptr<Mesh> mesh = asset_manager.get_asset<Mesh>(handle)) {
+                renderer.draw_mesh_instanced(*mesh, instance_list);
             }
         }
         renderer.end_scene(delta_time);

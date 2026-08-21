@@ -84,4 +84,41 @@ namespace engine {
         index_buffer->bind();
         index_buffer_ = std::move(index_buffer);
     }
+
+    void VertexArray::add_instanced_buffer(const std::shared_ptr<VertexBuffer>& vertex_buffer, const BufferLayout& layout, uint32_t divisor) {
+        glBindVertexArray(id_);
+        vertex_buffer->bind();
+
+        for (const auto& element : layout) {
+            if (element.type == ShaderDataType::Mat4) {
+                for (uint32_t i = 0; i < 4; ++i) {
+                    glEnableVertexAttribArray(attribute_index_);
+                    glVertexAttribPointer(
+                        attribute_index_,
+                        4,
+                        GL_FLOAT,
+                        element.normalized ? GL_TRUE : GL_FALSE,
+                        static_cast<GLsizei>(layout.get_stride()),
+                        reinterpret_cast<const void*>(element.offset + sizeof(glm::vec4) * i)
+                    );
+                    glVertexAttribDivisor(attribute_index_, divisor);
+                    attribute_index_++;
+                }
+            }
+            else {
+                glEnableVertexAttribArray(attribute_index_);
+                glVertexAttribPointer(
+                    attribute_index_,
+                    static_cast<GLint>(element.get_component_count()),
+                    shader_data_type_to_opengl_base_type(element.type),
+                    element.normalized ? GL_TRUE : GL_FALSE,
+                    static_cast<GLsizei>(layout.get_stride()),
+                    reinterpret_cast<const void*>(element.offset)
+                );
+                glVertexAttribDivisor(attribute_index_, divisor);
+                attribute_index_++;
+            }
+        }
+        vertex_buffers_.push_back(vertex_buffer);
+    }
 }

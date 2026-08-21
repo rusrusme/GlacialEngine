@@ -76,6 +76,7 @@ add_library(Engine STATIC
             include/physics/CollisionSystem.hpp
             src/physics/CollisionSystem.cpp
             src/physics/SpatialHashGrid.cpp
+            include/render/mesh/InstanceData.hpp
 )
 # ----------------------------------------------------------------------------
 target_include_directories(Engine
