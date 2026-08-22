@@ -86,6 +86,15 @@ namespace engine {
         vao.unbind();
     }
 
+    void Renderer::set_clear_color(const glm::vec4& color) {
+        glClearColor(color.r, color.g, color.b, color.a);
+    }
+
+    void Renderer::clear(const glm::vec4& color) {
+        set_clear_color(color);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    }
+
     Mesh Renderer::upload_mesh(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices) {
         if (vertices.empty() || indices.empty()) {
             std::cerr << "Engine error: renderer: cannot upload empty mesh" << std::endl;

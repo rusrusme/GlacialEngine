@@ -18,6 +18,8 @@ struct ImVec2;
 #endif
 
 namespace editor {
+    class EditorLayer;
+
     class EditorUILayer : public engine::Layer {
     public:
         explicit EditorUILayer(std::shared_ptr<engine::Scene>& scene, std::shared_ptr<engine::AssetManager> asset_manager);
@@ -35,11 +37,17 @@ namespace editor {
         void on_event(engine::Event& event) override;
 
         void set_camera(const engine::Camera* camera) { camera_ = camera; }
+        void set_editor(EditorLayer* editor_layer) { editor_layer_ = editor_layer; }
 
     private:
         #ifdef ENABLE_IMGUI
         void draw_imguizmo(engine::Entity selected_entity, const engine::Camera& camera, const ImVec2& viewport_pos, const ImVec2& viewport_size);
         void draw_imgui_menu_bar() const;
+
+        bool is_viewport_hovered_ = false;
+        bool is_viewport_focused_ = false;
+        ImVec2 viewport_bounds_min_{0.0f, 0.0f};
+        glm::vec2 viewport_bounds_size_{0.0f, 0.0f};
         #endif
 
         bool block_gizmo_until_mouse_up_ = false;
@@ -52,6 +60,7 @@ namespace editor {
         std::shared_ptr<engine::AssetManager> asset_manager_ = nullptr;
 
         const engine::Camera* camera_ = nullptr;
+        EditorLayer* editor_layer_ = nullptr;
 
         ObjectInspector object_inspector_;
         Hierarchy hierarchy_;

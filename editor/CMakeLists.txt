@@ -17,6 +17,8 @@ add_executable(Editor
                src/EditorUiLayer.hpp
                src/physics/Slab.hpp
                src/editor_pch.hpp
+               src/ui/DebugPanel.cpp
+               src/ui/DebugPanel.hpp
 )
 # ----------------------------------------------------------------------------
 target_include_directories(Editor PRIVATE ${CMAKE_SOURCE_DIR}/editor/src)

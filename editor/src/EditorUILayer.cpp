@@ -5,6 +5,8 @@
 
 #include "EditorUILayer.hpp"
 
+#include "EditorLayer.hpp"
+
 namespace editor {
     #ifdef ENABLE_IMGUI
     namespace {
@@ -39,21 +41,19 @@ namespace editor {
 
     void EditorUILayer::on_update(float delta_time) {
         #ifdef ENABLE_IMGUI
+        if (engine::Input::is_key_pressed_once(engine::Key::ESCAPE)) {
+            hierarchy_.set_selected_entity({});
+        }
+
         if (engine::Input::is_keyboard_captured() || ImGuizmo::IsUsing()) {
             return;
         }
-        const bool is_ctrl = engine::Input::is_key_pressed(engine::Key::LEFT_CONTROL) || engine::Input::is_key_pressed(engine::Key::RIGHT_CONTROL);
 
+        const bool is_ctrl = engine::Input::is_key_pressed(engine::Key::LEFT_CONTROL) || engine::Input::is_key_pressed(engine::Key::RIGHT_CONTROL);
         if (is_ctrl) {
-            if (engine::Input::is_key_pressed_once(engine::Key::W)) {
-                current_gizmo_operation_ = ImGuizmo::TRANSLATE;
-            }
-            if (engine::Input::is_key_pressed_once(engine::Key::E)) {
-                current_gizmo_operation_ = ImGuizmo::ROTATE;
-            }
-            if (engine::Input::is_key_pressed_once(engine::Key::R)) {
-                current_gizmo_operation_ = ImGuizmo::SCALE;
-            }
+            if (engine::Input::is_key_pressed_once(engine::Key::W)) current_gizmo_operation_ = ImGuizmo::TRANSLATE;
+            if (engine::Input::is_key_pressed_once(engine::Key::E)) current_gizmo_operation_ = ImGuizmo::ROTATE;
+            if (engine::Input::is_key_pressed_once(engine::Key::R)) current_gizmo_operation_ = ImGuizmo::SCALE;
         }
         #endif
     }
@@ -67,21 +67,93 @@ namespace editor {
 
         ImGui::DockSpaceOverViewport(0, ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
 
-        ImGuizmo::BeginFrame();
-        ImGuizmo::Enable(true);
+        // ------------------------------------------------------------------
+        // SCENE PANEL
+        // ------------------------------------------------------------------
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
+        ImGui::Begin("Scene");
 
+        // Hover & Focus an EditorLayer weitergeben
+        is_viewport_hovered_ = ImGui::IsWindowHovered();
+        is_viewport_focused_ = ImGui::IsWindowFocused();
+        if (editor_layer_) {
+            editor_layer_->set_viewport_hovered(is_viewport_hovered_);
+            editor_layer_->set_viewport_focused(is_viewport_focused_);
+        }
+
+        ImVec2 viewport_panel_size = ImGui::GetContentRegionAvail();
+        if (viewport_panel_size.x < 1.0f) viewport_panel_size.x = 1.0f;
+        if (viewport_panel_size.y < 1.0f) viewport_panel_size.y = 1.0f;
+
+        viewport_bounds_min_ = ImGui::GetCursorScreenPos();
+        viewport_bounds_size_ = {viewport_panel_size.x, viewport_panel_size.y};
+
+        // 1. Framebuffer Resizing
+        if (editor_layer_) {
+            uint32_t current_fb_w = editor_layer_->get_framebuffer_width();
+            uint32_t current_fb_h = editor_layer_->get_framebuffer_height();
+
+            if (current_fb_w != static_cast<uint32_t>(viewport_panel_size.x) ||
+                current_fb_h != static_cast<uint32_t>(viewport_panel_size.y)) {
+                editor_layer_->resize_viewport(
+                    static_cast<uint32_t>(viewport_panel_size.x),
+                    static_cast<uint32_t>(viewport_panel_size.y)
+                );
+            }
+        }
+
+        // 2. Szene-Textur zeichnen
+        uint32_t texture_id = editor_layer_ ? editor_layer_->get_scene_texture_id() : 0;
+        if (texture_id != 0) {
+            ImGui::Image((void*)(intptr_t)texture_id, viewport_panel_size, ImVec2(0, 1), ImVec2(1, 0));
+        }
+
+        // 3. Drag & Drop Target
+        if (ImGui::BeginDragDropTarget()) {
+            if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET_BROWSER_ITEM")) {
+                engine::AssetHandle dropped_handle = *static_cast<const engine::AssetHandle*>(payload->Data);
+                const auto& meta = asset_manager_->get_metadata(dropped_handle);
+
+                if (meta.is_valid() && meta.type == engine::AssetType::MESH) {
+                    std::string entity_name = meta.filepath.stem().string();
+                    auto entity = active_scene_->create_entity(entity_name);
+                    entity.add_component<engine::MeshComponent>(dropped_handle);
+                    entity.add_component<engine::MaterialComponent>(glm::vec4{1.0f, 1.0f, 1.0f, 1.0f});
+
+                    ImVec2 mouse_pos = ImGui::GetMousePos();
+                    glm::vec2 local_mouse = {mouse_pos.x - viewport_bounds_min_.x, mouse_pos.y - viewport_bounds_min_.y};
+
+                    if (camera_) {
+                        const engine::Ray ray = camera_->screen_point_to_ray(local_mouse, viewport_bounds_size_);
+                        glm::vec3 hit_point{0.0f};
+
+                        if (ray.intersect_plane_y(0.0f, hit_point)) {
+                            auto& transform = entity.get_component<engine::TransformComponent>();
+                            transform.position = hit_point;
+                        }
+                    }
+
+                    hierarchy_.set_selected_entity(entity);
+                }
+            }
+            ImGui::EndDragDropTarget();
+        }
+
+        // 4. ImGuizmo
+        ImGuizmo::BeginFrame();
+        ImGuizmo::SetDrawlist(); // Zeichnet direkt auf das ImGui Panel
+        if (camera_) {
+            draw_imguizmo(hierarchy_.get_selected_entity(), *camera_, viewport_bounds_min_, viewport_panel_size);
+        }
+
+        ImGui::End();
+        ImGui::PopStyleVar();
+
+        // Übrige Panels
         hierarchy_.render_imgui();
         object_inspector_.set_selected_entity(hierarchy_.get_selected_entity());
         object_inspector_.render_imgui();
         asset_browser_.render_imgui();
-
-        const ImGuiViewport* main_viewport = ImGui::GetMainViewport();
-        ImVec2 viewport_pos = main_viewport->Pos;
-        ImVec2 viewport_size = main_viewport->Size;
-
-        if (camera_) {
-            draw_imguizmo(hierarchy_.get_selected_entity(), *camera_, viewport_pos, viewport_size);
-        }
     }
     #endif
 
@@ -89,13 +161,9 @@ namespace editor {
         engine::EventDispatcher dispatcher(event);
 
         #ifdef ENABLE_IMGUI
-        if (ImGuizmo::IsOver() || ImGuizmo::IsUsing()) {
-            dispatcher.dispatch<engine::MouseButtonPressedEvent>([](engine::MouseButtonPressedEvent& _) {
-                return true;
-            });
-            dispatcher.dispatch<engine::MouseMovedEvent>([](engine::MouseMovedEvent& _) {
-                return true;
-            });
+        if (ImGuizmo::IsUsing()) {
+            dispatcher.dispatch<engine::MouseButtonPressedEvent>([](engine::MouseButtonPressedEvent& _) { return true; });
+            dispatcher.dispatch<engine::MouseMovedEvent>([](engine::MouseMovedEvent& _) { return true; });
             return;
         }
         #endif
@@ -104,21 +172,29 @@ namespace editor {
             if (e.button() != engine::Mouse::MOUSE_BUTTON_LEFT) {
                 return false;
             }
-            if (!camera_ || engine::Input::is_mouse_captured()) {
+
+            if (!is_viewport_hovered_ || !camera_) {
                 return false;
             }
-            const glm::vec2 mouse_pos = engine::Input::get_mouse_position();
-            const uint32_t width = engine::Application::get().window().get_width();
-            const uint32_t height = engine::Application::get().window().get_height();
-            const glm::vec2 viewport_size = {static_cast<float>(width), static_cast<float>(height)};
-            const engine::Ray ray = camera_->screen_point_to_ray(mouse_pos, viewport_size);
+
+            // Lokale Mausposition im Szene-Panel berechnen
+            const ImVec2 mouse_pos = ImGui::GetMousePos();
+            const glm::vec2 local_mouse = {
+                mouse_pos.x - viewport_bounds_min_.x,
+                mouse_pos.y - viewport_bounds_min_.y
+            };
+
+            const engine::Ray ray = camera_->screen_point_to_ray(local_mouse, viewport_bounds_size_);
 
             if (auto hit = engine::CollisionSystem::raycast(*active_scene_, ray)) {
+                // Objekt getroffen -> Auswählen
                 hierarchy_.set_selected_entity(hit->entity);
             }
             else {
+                // Ins Leere geklickt -> Abwählen
                 hierarchy_.set_selected_entity({});
             }
+
             block_gizmo_until_mouse_up_ = true;
             return false;
         });
@@ -141,7 +217,10 @@ namespace editor {
         }
 
         ImGuizmo::SetOrthographic(false);
-        ImGuizmo::SetDrawlist(ImGui::GetBackgroundDrawList());
+
+        // WICHTIG: Auf das Window-Drawlist zeichnen (liegt über ImGui::Image)
+        ImGuizmo::SetDrawlist(ImGui::GetWindowDrawList());
+
         ImGuizmo::SetRect(viewport_pos.x, viewport_pos.y, viewport_size.x, viewport_size.y);
         ImGuizmo::SetID(0);
         ImGuizmo::SetGizmoSizeClipSpace(0.115f);

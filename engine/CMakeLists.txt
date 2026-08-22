@@ -87,6 +87,8 @@ add_library(Engine STATIC
             include/ui/UiLayer.hpp
             include/ui/UIManager.hpp
             src/ui/UIManager.cpp
+            include/core/Framebuffer.hpp
+            src/core/Framebuffer.cpp
 )
 # ----------------------------------------------------------------------------
 target_include_directories(Engine

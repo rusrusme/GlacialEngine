@@ -6,9 +6,10 @@
 #include "EditorLayer.hpp"
 
 namespace editor {
-    EditorLayer::EditorLayer(std::shared_ptr<engine::Scene> scene, std::shared_ptr<engine::AssetManager> asset_manager): active_scene_(std::move(scene)), asset_manager_(std::move(asset_manager)) {}
+    EditorLayer::EditorLayer(std::shared_ptr<engine::Scene> scene, std::shared_ptr<engine::AssetManager> asset_manager) : active_scene_(std::move(scene)), asset_manager_(std::move(asset_manager)) {}
 
     void EditorLayer::on_attach(engine::Renderer& renderer) {
+        framebuffer_ = std::make_unique<engine::Framebuffer>(1280, 720);
         editor_grid_.init(renderer);
 
         active_scene_->on_init(renderer);
@@ -37,49 +38,31 @@ namespace editor {
         if (active_scene_) {
             active_scene_->on_update(delta_time);
         }
-        if (!engine::Input::is_mouse_captured()) {
+
+        const bool can_control_camera = is_viewport_hovered_ || is_viewport_focused_ ||
+            engine::Input::is_mouse_button_pressed(engine::Mouse::MOUSE_BUTTON_MIDDLE);
+
+        if (can_control_camera) {
             camera_controller_.update(camera_, delta_time);
         }
         else {
             camera_controller_.reset_mouse_state();
         }
         total_time_ += delta_time;
-
-        // ----------------------------------------------
-        // Ray-casted tile hovering for debug purposes
-        // ----------------------------------------------
-        const glm::vec2 mouse_pos = engine::Input::get_mouse_position();
-        int window_w, window_h;
-        glfwGetWindowSize(engine::Application::get().window().native(), &window_w, &window_h);
-        const glm::vec2 viewport_size = {static_cast<float>(window_w), static_cast<float>(window_h)};
-        const engine::Ray ray = camera_.screen_point_to_ray(mouse_pos, viewport_size);
-        glm::vec3 hit_point;
-        if (ray.intersect_plane_y(0.0f, hit_point)) {
-            hover_tile_pos_ = glm::floor(hit_point);
-            hover_tile_pos_.y = 0.0f;
-            is_hovering_tile_ = true;
-        }
-        else {
-            is_hovering_tile_ = false;
-        }
-        // ----------------------------------------------
     }
 
     void EditorLayer::on_render(engine::Renderer& renderer, const float delta_time) {
+        if (!framebuffer_) return;
+        framebuffer_->bind();
+
+        renderer.clear({0.12f, 0.12f, 0.12f, 1.0f});
+
         if (show_grid_) {
             editor_grid_.render(renderer);
-        }
-        if (is_hovering_tile_) {
-            // renderer.draw_box(
-            //     hover_tile_pos_,
-            //     hover_tile_pos_ + glm::vec3(1.0f, 0.05f, 1.0f),
-            //     glm::vec3(0.0f, 1.0f, 0.0f)
-            // );
         }
         if (active_scene_) {
             active_scene_->on_render(renderer, camera_, *asset_manager_, delta_time);
         }
-
         if (active_scene_) {
             auto view = active_scene_->view<engine::TransformComponent, engine::BoxColliderComponent>();
 
@@ -98,7 +81,6 @@ namespace editor {
                 renderer.draw_box(world_aabb.min, world_aabb.max, box_color);
             }
         }
-
         auto dir_light = active_scene_->view<engine::TransformComponent, engine::DirectionalLightComponent>();
         for (auto entity : dir_light) {
             auto [transform, light] = dir_light.get<engine::TransformComponent, engine::DirectionalLightComponent>(entity);
@@ -118,6 +100,7 @@ namespace editor {
         // dynamic_ring(renderer);
         // wave_around_scene(renderer);
         // tree_trunks_around_pyramid(renderer);
+        framebuffer_->unbind();
     }
 
     #ifdef ENABLE_IMGUI
@@ -234,7 +217,7 @@ namespace editor {
         });
 
         dispatcher.dispatch<engine::MouseScrolledEvent>([this](const engine::MouseScrolledEvent& e) {
-            if (!engine::Input::is_mouse_captured()) {
+            if (is_viewport_hovered_) {
                 engine::CameraController::on_scroll(camera_, e.y_offset());
                 return true;
             }
