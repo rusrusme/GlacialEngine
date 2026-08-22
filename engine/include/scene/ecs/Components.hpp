@@ -7,7 +7,6 @@
 
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtx/quaternion.hpp>
 
@@ -135,6 +134,7 @@ namespace engine {
         glm::vec3 center{0.0f};
         glm::vec3 size{1.0f};
         bool is_trigger = false;
+        bool show_hitbox = false;
 
         [[nodiscard]] AABB get_world_aabb(const glm::vec3& position, const glm::vec3& scale) const {
             const glm::vec3 half_size = (size * scale) * 0.5f;

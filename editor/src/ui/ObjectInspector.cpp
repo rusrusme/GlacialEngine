@@ -114,6 +114,7 @@ namespace editor {
                 ImGui::DragFloat3("Center", glm::value_ptr(collider.center), 0.05f);
                 ImGui::DragFloat3("Size", glm::value_ptr(collider.size), 0.05f, 0.01f, 100.0f);
                 ImGui::Checkbox("Is Trigger", &collider.is_trigger);
+                ImGui::Checkbox("Show Hitbox", &collider.show_hitbox);
 
                 if (entity.has_component<engine::MeshComponent>()) {
                     if (ImGui::Button("Fit to Mesh")) {

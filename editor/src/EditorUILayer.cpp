@@ -73,7 +73,6 @@ namespace editor {
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 0));
         ImGui::Begin("Scene");
 
-        // Hover & Focus an EditorLayer weitergeben
         is_viewport_hovered_ = ImGui::IsWindowHovered();
         is_viewport_focused_ = ImGui::IsWindowFocused();
         if (editor_layer_) {
@@ -108,6 +107,9 @@ namespace editor {
             ImGui::Image((void*)(intptr_t)texture_id, viewport_panel_size, ImVec2(0, 1), ImVec2(1, 0));
         }
 
+        // WICHTIG: Prüfen, ob das 3D-Viewport-Bild mit Links geklickt wurde
+        const bool viewport_clicked = ImGui::IsItemClicked(ImGuiMouseButton_Left);
+
         // 3. Drag & Drop Target
         if (ImGui::BeginDragDropTarget()) {
             if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET_BROWSER_ITEM")) {
@@ -139,11 +141,28 @@ namespace editor {
             ImGui::EndDragDropTarget();
         }
 
-        // 4. ImGuizmo
+        // 4. ImGuizmo zeichnen (aktualisiert ImGuizmo::IsOver() für diesen Frame)
         ImGuizmo::BeginFrame();
-        ImGuizmo::SetDrawlist(); // Zeichnet direkt auf das ImGui Panel
         if (camera_) {
             draw_imguizmo(hierarchy_.get_selected_entity(), *camera_, viewport_bounds_min_, viewport_panel_size);
+        }
+
+        // 5. Picking/Selection ausführen (NUR wenn das Bild geklickt wurde UND nicht auf den Gizmo geklickt wurde)
+        if (viewport_clicked && !ImGuizmo::IsOver() && !ImGuizmo::IsUsing()) {
+            ImVec2 mouse_pos = ImGui::GetMousePos();
+            glm::vec2 local_mouse = {
+                mouse_pos.x - viewport_bounds_min_.x,
+                mouse_pos.y - viewport_bounds_min_.y
+            };
+
+            const engine::Ray ray = camera_->screen_point_to_ray(local_mouse, viewport_bounds_size_);
+
+            if (auto hit = engine::CollisionSystem::raycast(*active_scene_, ray, 1000.0f, asset_manager_.get())) {
+                hierarchy_.set_selected_entity(hit->entity);
+            }
+            else {
+                hierarchy_.set_selected_entity({});
+            }
         }
 
         ImGui::End();
@@ -159,45 +178,6 @@ namespace editor {
 
     void EditorUILayer::on_event(engine::Event& event) {
         engine::EventDispatcher dispatcher(event);
-
-        #ifdef ENABLE_IMGUI
-        if (ImGuizmo::IsUsing()) {
-            dispatcher.dispatch<engine::MouseButtonPressedEvent>([](engine::MouseButtonPressedEvent& _) { return true; });
-            dispatcher.dispatch<engine::MouseMovedEvent>([](engine::MouseMovedEvent& _) { return true; });
-            return;
-        }
-        #endif
-
-        dispatcher.dispatch<engine::MouseButtonPressedEvent>([this](engine::MouseButtonPressedEvent& e) {
-            if (e.button() != engine::Mouse::MOUSE_BUTTON_LEFT) {
-                return false;
-            }
-
-            if (!is_viewport_hovered_ || !camera_) {
-                return false;
-            }
-
-            // Lokale Mausposition im Szene-Panel berechnen
-            const ImVec2 mouse_pos = ImGui::GetMousePos();
-            const glm::vec2 local_mouse = {
-                mouse_pos.x - viewport_bounds_min_.x,
-                mouse_pos.y - viewport_bounds_min_.y
-            };
-
-            const engine::Ray ray = camera_->screen_point_to_ray(local_mouse, viewport_bounds_size_);
-
-            if (auto hit = engine::CollisionSystem::raycast(*active_scene_, ray)) {
-                // Objekt getroffen -> Auswählen
-                hierarchy_.set_selected_entity(hit->entity);
-            }
-            else {
-                // Ins Leere geklickt -> Abwählen
-                hierarchy_.set_selected_entity({});
-            }
-
-            block_gizmo_until_mouse_up_ = true;
-            return false;
-        });
     }
 
     #ifdef ENABLE_IMGUI
@@ -206,21 +186,9 @@ namespace editor {
             return;
         }
 
-        if (block_gizmo_until_mouse_up_) {
-            if (!engine::Input::is_mouse_button_pressed(engine::Mouse::MOUSE_BUTTON_LEFT)) {
-                block_gizmo_until_mouse_up_ = false;
-            }
-            ImGuizmo::Enable(false);
-        }
-        else {
-            ImGuizmo::Enable(true);
-        }
-
+        ImGuizmo::Enable(true);
         ImGuizmo::SetOrthographic(false);
-
-        // WICHTIG: Auf das Window-Drawlist zeichnen (liegt über ImGui::Image)
         ImGuizmo::SetDrawlist(ImGui::GetWindowDrawList());
-
         ImGuizmo::SetRect(viewport_pos.x, viewport_pos.y, viewport_size.x, viewport_size.y);
         ImGuizmo::SetID(0);
         ImGuizmo::SetGizmoSizeClipSpace(0.115f);
@@ -229,24 +197,10 @@ namespace editor {
         glm::mat4 proj_matrix = camera.get_projection_matrix();
 
         auto& transform = selected_entity.get_component<engine::TransformComponent>();
+        glm::mat4 transform_matrix = transform.get_matrix();
 
-        if (ImGuizmo::IsUsing()) {
-            if (!was_using_gizmo_) {
-                initial_transform_ = transform;
-                active_gizmo_matrix_ = transform.get_matrix();
-                was_using_gizmo_ = true;
-                gizmo_canceled_ = false;
-            }
-        }
-        else {
-            was_using_gizmo_ = false;
-            gizmo_canceled_ = false;
-        }
-
-        glm::mat4 transform_matrix = was_using_gizmo_ ? active_gizmo_matrix_ : transform.get_matrix();
-
-        bool snap = engine::Input::is_key_pressed(engine::Key::LEFT_CONTROL) || engine::Input::is_key_pressed(engine::Key::RIGHT_CONTROL);
-        float snap_value = current_gizmo_operation_ == ImGuizmo::ROTATE ? 45.0f : 0.5f;
+        const bool snap = engine::Input::is_key_pressed(engine::Key::LEFT_CONTROL) || engine::Input::is_key_pressed(engine::Key::RIGHT_CONTROL);
+        const float snap_value = current_gizmo_operation_ == ImGuizmo::ROTATE ? 45.0f : 0.5f;
         float snap_values[3] = {snap_value, snap_value, snap_value};
 
         ImGuizmo::Manipulate(
@@ -259,40 +213,19 @@ namespace editor {
             snap ? snap_values : nullptr
         );
 
+        // Sobald der Gizmo bewegt/genutzt wird, schreiben wir die Werte direkt in die Component
         if (ImGuizmo::IsUsing()) {
-            active_gizmo_matrix_ = transform_matrix;
+            float translation[3], rotation[3], scale[3];
+            ImGuizmo::DecomposeMatrixToComponents(
+                glm::value_ptr(transform_matrix),
+                translation,
+                rotation,
+                scale
+            );
 
-            if (engine::Input::is_key_pressed(engine::Key::ESCAPE)) {
-                gizmo_canceled_ = true;
-            }
-
-            if (gizmo_canceled_) {
-                transform = initial_transform_;
-            }
-            else {
-                float translation[3], rotation[3], scale[3];
-                ImGuizmo::DecomposeMatrixToComponents(
-                    glm::value_ptr(transform_matrix),
-                    translation,
-                    rotation,
-                    scale
-                );
-
-                if (current_gizmo_operation_ == ImGuizmo::TRANSLATE) {
-                    transform.position = glm::make_vec3(translation);
-                }
-                else if (current_gizmo_operation_ == ImGuizmo::ROTATE) {
-                    transform.rotation = glm::make_vec3(rotation);
-                }
-                else if (current_gizmo_operation_ == ImGuizmo::SCALE) {
-                    transform.scale = glm::make_vec3(scale);
-                }
-                else {
-                    transform.position = glm::make_vec3(translation);
-                    transform.rotation = glm::make_vec3(rotation);
-                    transform.scale = glm::make_vec3(scale);
-                }
-            }
+            transform.position = glm::make_vec3(translation);
+            transform.rotation = glm::make_vec3(rotation);
+            transform.scale = glm::make_vec3(scale);
         }
     }
 

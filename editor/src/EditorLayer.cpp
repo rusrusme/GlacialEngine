@@ -68,16 +68,14 @@ namespace editor {
 
             for (auto entity_handle : view) {
                 auto [transform, collider] = view.get<engine::TransformComponent, engine::BoxColliderComponent>(entity_handle);
+                if (!collider.show_hitbox) continue;
 
                 // Calculate World Space AABB
                 engine::AABB world_aabb = collider.get_world_aabb(transform.position, transform.scale);
-
-                // Query overlapping entities in the spatial grid
                 auto overlaps = active_scene_->get_collision_system().query_aabb(*active_scene_, world_aabb);
 
                 // Turn RED if colliding with another entity (> 1 because it includes itself), otherwise GREEN
                 glm::vec3 box_color = (overlaps.size() > 1) ? glm::vec3(1.0f, 0.0f, 0.0f) : glm::vec3(0.0f, 1.0f, 0.0f);
-
                 renderer.draw_box(world_aabb.min, world_aabb.max, box_color);
             }
         }

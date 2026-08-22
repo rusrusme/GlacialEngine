@@ -14,6 +14,7 @@ namespace engine {
     struct AABB;
     struct Ray;
     class Scene;
+    class AssetManager;
 
     struct RaycastHit {
         Entity entity{};
@@ -27,7 +28,7 @@ namespace engine {
 
         void update_broadphase(Scene& scene);
 
-        [[nodiscard]] static std::optional<RaycastHit> raycast(Scene& scene, const Ray& ray, float max_distance = 1000.0f);
+        [[nodiscard]] static std::optional<RaycastHit> raycast(Scene& scene, const Ray& ray, float max_distance = 1000.0f, AssetManager* asset_manager = nullptr);
 
         [[nodiscard]] bool intersects_any(Scene& scene, const AABB& target_aabb) const;
 

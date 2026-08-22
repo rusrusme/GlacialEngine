@@ -50,7 +50,6 @@ namespace editor {
         glm::vec2 viewport_bounds_size_{0.0f, 0.0f};
         #endif
 
-        bool block_gizmo_until_mouse_up_ = false;
         engine::TransformComponent initial_transform_{};
         bool was_using_gizmo_ = false;
         bool gizmo_canceled_ = false;
