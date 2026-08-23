@@ -12,7 +12,6 @@
 namespace engine {
     class Camera;
 
-
     class CameraSystem {
     public:
         void reset_mouse_state();

@@ -9,10 +9,8 @@
 
 namespace engine {
     struct Ray {
-        /** @brief Starting point of ray in 3d space */
         glm::vec3 origin{0.0f};
 
-        /** @brief Normalized direction vector of ray */
         glm::vec3 direction{0.0f, 0.0f, -1.0f};
 
         /** @brief Calculates the point along the ray at a given distance from the origin */

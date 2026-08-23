@@ -12,6 +12,7 @@
 // Core
 #include "core/Application.hpp"
 #include "core/Config.hpp"
+#include "core/Framebuffer.hpp"
 #include "core/Layer.hpp"
 #include "core/LayerStack.hpp"
 #include "core/Log.hpp"
@@ -58,5 +59,8 @@
 
 #include "scene/Scene.hpp"
 #include "scene/SceneSerializer.hpp"
+// UI
+#include "ui/UILayer.hpp"
+#include "ui/UIManager.hpp"
 // Util
 #include "util/FileIO.hpp"

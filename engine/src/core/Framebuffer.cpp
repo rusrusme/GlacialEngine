@@ -6,12 +6,12 @@
 #include "core/Framebuffer.hpp"
 
 namespace engine {
-    void Framebuffer::bind() {
+    void Framebuffer::bind() const {
         glBindFramebuffer(GL_FRAMEBUFFER, fbo_id_);
         glViewport(0, 0, width_, height_);
     }
 
-    void Framebuffer::unbind() {
+    void Framebuffer::unbind() const {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 
@@ -42,7 +42,7 @@ namespace engine {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 
-    void Framebuffer::invalidate() {
+    void Framebuffer::invalidate() const {
         if (fbo_id_) {
             glDeleteFramebuffers(1, &fbo_id_);
             glDeleteTextures(1, &color_attachment_id_);

@@ -14,11 +14,9 @@ namespace engine {
         ~LayerStack();
 
         void push_layer(std::unique_ptr<Layer> layer);
-
         void push_overlay(std::unique_ptr<Layer> overlay);
 
         std::unique_ptr<Layer> pop_layer(Layer* layer);
-
         std::unique_ptr<Layer> pop_overlay(Layer* overlay);
 
         std::vector<std::unique_ptr<Layer>>::iterator begin() { return layers_.begin(); }

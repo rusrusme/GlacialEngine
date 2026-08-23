@@ -18,7 +18,9 @@ namespace engine {
 
         virtual void on_attach(Renderer& renderer) {}
         virtual void on_detach() {}
+
         virtual void on_update(float delta_time) {}
+
         virtual void on_render(Renderer& renderer, float delta_time) {}
         virtual void on_imgui_render(Renderer& renderer, float delta_time) {}
 

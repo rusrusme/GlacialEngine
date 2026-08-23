@@ -13,9 +13,9 @@ namespace engine {
         Framebuffer(uint32_t width, uint32_t height) { resize(width, height); }
         ~Framebuffer() { invalidate(); }
 
-        void bind();
+        void bind() const;
 
-        void unbind();
+        void unbind() const;
 
         void resize(uint32_t width, uint32_t height);
 
@@ -24,7 +24,7 @@ namespace engine {
         [[nodiscard]] uint32_t get_height() const { return height_; }
 
     private:
-        void invalidate();
+        void invalidate() const;
 
         uint32_t fbo_id_ = 0;
         uint32_t color_attachment_id_ = 0;

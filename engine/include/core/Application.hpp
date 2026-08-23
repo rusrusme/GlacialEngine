@@ -15,11 +15,9 @@ namespace engine {
         Application();
         virtual ~Application() = default;
 
-        /** @brief Entry point for running the application */
         int run();
         void close() { running_ = false; }
 
-        /** @brief Central resize handler dispatching to Window, Renderer, and Layers */
         void on_event(Event& event);
 
         static Application& get() { return *instance_; }

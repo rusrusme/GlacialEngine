@@ -89,6 +89,8 @@ add_library(Engine STATIC
             src/ui/UIManager.cpp
             include/core/Framebuffer.hpp
             src/core/Framebuffer.cpp
+            src/physics/AABB.cpp
+            src/render/mesh/PrimitiveMesh.cpp
 )
 # ----------------------------------------------------------------------------
 target_include_directories(Engine

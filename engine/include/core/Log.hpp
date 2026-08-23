@@ -17,13 +17,9 @@ namespace engine {
         static void init();
         #ifdef ENABLE_SPDLOG
 
-        static std::shared_ptr<spdlog::logger>& get_core_logger() {
-            return core_logger;
-        }
+        static std::shared_ptr<spdlog::logger>& get_core_logger() { return core_logger; }
 
-        static std::shared_ptr<spdlog::logger>& get_client_logger() {
-            return client_logger;
-        }
+        static std::shared_ptr<spdlog::logger>& get_client_logger() { return client_logger; }
 
     private:
         static std::shared_ptr<spdlog::logger> core_logger;
