@@ -15,6 +15,7 @@
 #include "scene/Scene.hpp"
 #include "ui/UILayer.hpp"
 #include "core/Framebuffer.hpp"
+#include "ui/DebugPanel.hpp"
 
 namespace editor {
     class EditorLayer : public engine::Layer {
@@ -63,39 +64,18 @@ namespace editor {
         std::unique_ptr<engine::Framebuffer> framebuffer_;
         std::shared_ptr<engine::Scene> active_scene_;
         std::shared_ptr<engine::AssetManager> asset_manager_;
+        std::unique_ptr<DebugPanel> debug_panel_;
 
         engine::Camera camera_;
         engine::CameraController camera_controller_;
+
+        // -------------------------
+        float total_time_ = 0.0f;
 
         EditorGrid editor_grid_;
 
         bool is_viewport_hovered_ = false;
         bool is_viewport_focused_ = false;
-
-        // -----------------------------------------
-        // Editor overlays
-        // -----------------------------------------
-        bool show_grid_ = true;
-        bool show_gizmo_ = true;
-        bool show_debug_panel_ = true;
-
-        // -------------------------
-        // Debug controls
-        // -------------------------
-        void set_grid_enabled(const bool toggle) { show_grid_ = toggle; }
-        [[nodiscard]] bool is_grid_enabled() const { return show_grid_; }
-
-        void set_gizmo_enabled(const bool toggle) { show_gizmo_ = toggle; }
-        [[nodiscard]] bool is_gizmo_enabled() const { return show_gizmo_; }
-
-        [[nodiscard]] bool is_debug_panel_enabled() const { return show_debug_panel_; }
-        void set_debug_panel_enabled(const bool enabled) { show_debug_panel_ = enabled; }
-        void toggle_debug_panel() { show_debug_panel_ = !show_debug_panel_; }
-        // -------------------------
-
-        float total_time_ = 0.0f;
-
-        // -------------------------
 
         static void draw_directional_light(engine::Renderer& renderer, glm::vec3 position, const glm::vec3& direction, const glm::vec3& color);
     };

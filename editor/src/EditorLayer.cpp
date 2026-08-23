@@ -10,6 +10,7 @@ namespace editor {
 
     void EditorLayer::on_attach(engine::Renderer& renderer) {
         framebuffer_ = std::make_unique<engine::Framebuffer>(1280, 720);
+        debug_panel_ = std::make_unique<DebugPanel>();
         editor_grid_.init(renderer);
 
         active_scene_->on_init(renderer);
@@ -33,7 +34,7 @@ namespace editor {
 
     void EditorLayer::on_update(const float delta_time) {
         if (engine::Input::is_key_pressed_once(engine::Key::F3)) {
-            show_debug_panel_ = !show_debug_panel_;
+            if (debug_panel_) debug_panel_->toggle_debug_panel();
         }
         if (active_scene_) {
             active_scene_->on_update(delta_time);
@@ -57,7 +58,7 @@ namespace editor {
 
         renderer.clear({0.12f, 0.12f, 0.12f, 1.0f});
 
-        if (show_grid_) {
+        if (debug_panel_ && debug_panel_->is_grid_enabled()) {
             editor_grid_.render(renderer);
         }
         if (active_scene_) {
@@ -94,89 +95,7 @@ namespace editor {
 
     #ifdef ENABLE_IMGUI
     void EditorLayer::on_imgui_render(engine::Renderer& renderer, const float delta_time) {
-        // ----------------------
-        // Debug panel
-        // ----------------------
-        if (show_debug_panel_) {
-            static float timer = 0.0f;
-            static float fps_display = 0.0f;
-
-            timer += delta_time;
-            if (timer >= engine::setting::video::FPS_REFRESH_RATE_IN_SECONDS || fps_display == 0.0f) {
-                fps_display = ImGui::GetIO().Framerate;
-                timer = 0.0f;
-            }
-            ImGui::SetNextWindowSize(ImVec2(400, 500), ImGuiCond_FirstUseEver);
-            ImGui::Begin("Debug panel");
-            ImGui::Text("Performance");
-            ImGui::Text("  FPS: %.1f", fps_display);
-            ImGui::Text("  Frame Time: %.2f ms", 1000.0f / (fps_display > 0.0f ? fps_display : 1.0f));
-
-            ImGui::Separator();
-            ImGui::Text("Rendering");
-            const auto& [draw_calls, instance_count] = renderer.get_stats();
-            ImGui::Text("Draw Calls: %u", draw_calls);
-            ImGui::Text("Instances Rendered: %u", instance_count);
-
-            ImGui::Separator();
-            ImGui::Text("Video");
-            static bool vsync_enabled = engine::Application::get().window().is_vsync();
-            if (ImGui::Checkbox("V-Sync", &vsync_enabled)) {
-                glfwSwapInterval(vsync_enabled ? 1 : 0);
-            }
-            ImGui::Text("FPS Limit: %s", engine::setting::video::get_target_fps_str().c_str());
-            ImGui::SetNextItemWidth(-1.0f);
-            ImGui::SliderInt("##", &engine::setting::video::target_fps_index, 0, engine::setting::video::num_presets - 1, engine::setting::video::get_target_fps_str().c_str());
-
-            ImGui::Separator();
-            ImGui::Text("Editor");
-            bool grid_active = is_grid_enabled();
-            if (ImGui::Checkbox("Show World Grid", &grid_active)) {
-                set_grid_enabled(grid_active);
-            }
-            ImGui::End();
-        }
-
-        // ----------------------
-        // Shader library inspector
-        // ----------------------
-        if (ImGui::Begin("Shader Library Inspector")) {
-            const auto& shaders = renderer.get_shader_library().get_shaders();
-
-            ImGui::Text("Registered Shaders: %zu", shaders.size());
-            ImGui::Separator();
-
-            static ImGuiTableFlags flags = ImGuiTableFlags_Borders | ImGuiTableFlags_RowBg | ImGuiTableFlags_SizingFixedFit;
-
-            if (ImGui::BeginTable("ShaderLibraryTable", 3, flags)) {
-                ImGui::TableSetupColumn("Name", ImGuiTableColumnFlags_WidthStretch);
-                ImGui::TableSetupColumn("Program ID", ImGuiTableColumnFlags_WidthFixed, 100.0f);
-                ImGui::TableSetupColumn("Status", ImGuiTableColumnFlags_WidthFixed, 80.0f);
-                ImGui::TableHeadersRow();
-
-                for (const auto& [name, shader] : shaders) {
-                    ImGui::TableNextRow();
-                    ImGui::TableSetColumnIndex(0);
-                    ImGui::Text("%s", name.c_str());
-                    ImGui::TableSetColumnIndex(1);
-                    if (shader) {
-                        ImGui::Text("%u", shader->get_renderer_id());
-                    }
-                    else {
-                        ImGui::TextDisabled("-");
-                    }
-                    ImGui::TableSetColumnIndex(2);
-                    if (shader) {
-                        ImGui::TextColored(ImVec4(0.2f, 0.9f, 0.2f, 1.0f), "Active");
-                    }
-                    else {
-                        ImGui::TextColored(ImVec4(0.9f, 0.2f, 0.2f, 1.0f), "Null");
-                    }
-                }
-                ImGui::EndTable();
-            }
-        }
-        ImGui::End();
+        debug_panel_->render_imgui(renderer, delta_time);
     }
     #endif
 
