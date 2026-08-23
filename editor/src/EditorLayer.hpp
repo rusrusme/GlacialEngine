@@ -14,7 +14,6 @@
 #include "render/Renderer.hpp"
 #include "scene/Scene.hpp"
 #include "ui/UILayer.hpp"
-#include "../../engine/src/ui/UISystem.hpp"
 #include "core/Framebuffer.hpp"
 
 namespace editor {
@@ -96,11 +95,6 @@ namespace editor {
 
         float total_time_ = 0.0f;
 
-        void cube_grid(engine::Renderer& renderer) const;
-        void orbiting_spheres(engine::Renderer& renderer) const;
-        void dynamic_ring(engine::Renderer& renderer) const;
-        void wave_around_scene(engine::Renderer& renderer) const;
-        void tree_trunks_around_pyramid(engine::Renderer& renderer) const;
         // -------------------------
 
         static void draw_directional_light(engine::Renderer& renderer, glm::vec3 position, const glm::vec3& direction, const glm::vec3& color);
