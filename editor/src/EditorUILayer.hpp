@@ -9,9 +9,9 @@
 #include "event/Event.hpp"
 #include "render/Camera.hpp"
 #include "render/Renderer.hpp"
-#include "ui/AssetBrowser.hpp"
-#include "ui/Hierarchy.hpp"
-#include "ui/ObjectInspector.hpp"
+#include "panel/AssetBrowser.hpp"
+#include "panel/Hierarchy.hpp"
+#include "panel/ObjectInspector.hpp"
 
 #ifdef ENABLE_IMGUI
 struct ImVec2;

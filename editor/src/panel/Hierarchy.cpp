@@ -3,7 +3,7 @@
 // All rights reserved.
 //
 
-#include "ui/Hierarchy.hpp"
+#include "panel/Hierarchy.hpp"
 
 namespace editor {
     void Hierarchy::init(std::shared_ptr<engine::Scene> scene, std::shared_ptr<engine::AssetManager> asset_manager) {

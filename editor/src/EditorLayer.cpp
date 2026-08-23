@@ -133,6 +133,13 @@ namespace editor {
         });
     }
 
+    void EditorLayer::resize_viewport(uint32_t width, uint32_t height) {
+        if (framebuffer_) {
+            framebuffer_->resize(width, height);
+            camera_.set_aspect_ratio(static_cast<float>(width) / static_cast<float>(height));
+        }
+    }
+
     void EditorLayer::draw_directional_light(engine::Renderer& renderer, const glm::vec3 position, const glm::vec3& direction, const glm::vec3& color) {
         const float ray_length = 1.5f;
         const float circle_radius = 0.05f;

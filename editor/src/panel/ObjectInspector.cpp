@@ -3,7 +3,7 @@
 // All rights reserved.
 //
 
-#include "ui/ObjectInspector.hpp"
+#include "panel/ObjectInspector.hpp"
 
 namespace editor {
     void ObjectInspector::init(std::shared_ptr<engine::Scene> scene, std::shared_ptr<engine::AssetManager> asset_manager) {

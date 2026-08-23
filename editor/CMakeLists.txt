@@ -5,20 +5,19 @@ add_executable(Editor
                src/EditorLayer.hpp
                src/Editor.hpp
                src/Editor.cpp
-               src/EditorGrid.cpp
-               src/EditorGrid.hpp
-               src/ui/Hierarchy.cpp
-               src/ui/Hierarchy.hpp
-               src/ui/ObjectInspector.cpp
-               src/ui/ObjectInspector.hpp
-               src/ui/AssetBrowser.hpp
-               src/ui/AssetBrowser.cpp
+               src/environment/EditorGrid.cpp
+               src/environment/EditorGrid.hpp
+               src/panel/Hierarchy.cpp
+               src/panel/Hierarchy.hpp
+               src/panel/ObjectInspector.cpp
+               src/panel/ObjectInspector.hpp
+               src/panel/AssetBrowser.hpp
+               src/panel/AssetBrowser.cpp
                src/EditorUiLayer.cpp
                src/EditorUiLayer.hpp
-               src/physics/Slab.hpp
                src/editor_pch.hpp
-               src/ui/DebugPanel.cpp
-               src/ui/DebugPanel.hpp
+               src/panel/DebugPanel.cpp
+               src/panel/DebugPanel.hpp
 )
 # ----------------------------------------------------------------------------
 target_include_directories(Editor PRIVATE ${CMAKE_SOURCE_DIR}/editor/src)

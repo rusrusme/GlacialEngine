@@ -7,15 +7,15 @@
 
 #include <memory>
 
-#include "EditorGrid.hpp"
 #include "asset/AssetManager.hpp"
+#include "core/Framebuffer.hpp"
 #include "core/Layer.hpp"
+#include "environment/EditorGrid.hpp"
 #include "input/CameraController.hpp"
+#include "panel/DebugPanel.hpp"
 #include "render/Renderer.hpp"
 #include "scene/Scene.hpp"
 #include "ui/UILayer.hpp"
-#include "core/Framebuffer.hpp"
-#include "ui/DebugPanel.hpp"
 
 namespace editor {
     class EditorLayer : public engine::Layer {
@@ -38,24 +38,13 @@ namespace editor {
 
         [[nodiscard]] const engine::Camera& get_camera() const { return camera_; }
 
-        [[nodiscard]] uint32_t get_scene_texture_id() const {
-            return framebuffer_ ? framebuffer_->get_color_attachment_id() : 0;
-        }
+        [[nodiscard]] uint32_t get_scene_texture_id() const { return framebuffer_ ? framebuffer_->get_color_attachment_id() : 0; }
 
-        [[nodiscard]] uint32_t get_framebuffer_width() const {
-            return framebuffer_ ? framebuffer_->get_width() : 0;
-        }
+        [[nodiscard]] uint32_t get_framebuffer_width() const { return framebuffer_ ? framebuffer_->get_width() : 0; }
 
-        [[nodiscard]] uint32_t get_framebuffer_height() const {
-            return framebuffer_ ? framebuffer_->get_height() : 0;
-        }
+        [[nodiscard]] uint32_t get_framebuffer_height() const { return framebuffer_ ? framebuffer_->get_height() : 0; }
 
-        void resize_viewport(uint32_t width, uint32_t height) {
-            if (framebuffer_) {
-                framebuffer_->resize(width, height);
-                camera_.set_aspect_ratio(static_cast<float>(width) / static_cast<float>(height));
-            }
-        }
+        void resize_viewport(uint32_t width, uint32_t height);
 
         void set_viewport_hovered(bool hovered) { is_viewport_hovered_ = hovered; }
         void set_viewport_focused(bool focused) { is_viewport_focused_ = focused; }
