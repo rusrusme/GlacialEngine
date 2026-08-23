@@ -25,6 +25,7 @@ namespace editor {
         #ifdef ENABLE_IMGUI
         ImGuiIO& io = ImGui::GetIO();
         io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
+        io.FontGlobalScale = 1.5f;
 
         ImGuizmo::Style& style = ImGuizmo::GetStyle();
         style.TranslationLineThickness = 3.0f;
