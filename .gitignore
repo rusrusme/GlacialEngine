@@ -2,10 +2,10 @@
 /.idea/
 /.vscode/
 /cmake-build-*/
-/build/
 
 # Distribution
 /engine-lib/
+/distribution/
 
 # Runtime
 *.ini
