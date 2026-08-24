@@ -5,54 +5,58 @@
 
 #pragma once
 
-#ifdef ENABLE_SPDLOG
-#include <spdlog/spdlog.h>
-#endif
-
-#include <memory>
+#include <format>
+#include <mutex>
+#include <string>
+#include <vector>
 
 namespace engine {
+    enum class LogLevel { Trace, Info, Warn, Error, Critical };
+
+    struct LogEntry {
+        std::string message;
+        LogLevel level;
+        std::string timestamp;
+    };
+
     class Log {
     public:
         static void init();
-        #ifdef ENABLE_SPDLOG
 
-        static std::shared_ptr<spdlog::logger>& get_core_logger() { return core_logger; }
+        template<typename... Args>
+        static void log(LogLevel level, const char* category, std::format_string<Args...> fmt, Args&&... args);
 
-        static std::shared_ptr<spdlog::logger>& get_client_logger() { return client_logger; }
+        static const std::vector<LogEntry>& get_entries();
+        static void clear();
 
     private:
-        static std::shared_ptr<spdlog::logger> core_logger;
-        static std::shared_ptr<spdlog::logger> client_logger;
-        #endif
+        static void add_entry(LogLevel level, const char* category, const std::string& message);
+
+        static inline std::vector<LogEntry> entries_;
+        static inline std::mutex mutex_;
     };
+
+    template<typename... Args>
+    void Log::log(const LogLevel level, const char* category, std::format_string<Args...> fmt, Args&&... args) {
+        const std::string formatted_msg = std::format(fmt, std::forward<Args>(args)...);
+        add_entry(level, category, formatted_msg);
+    }
 }
 
-#ifdef ENABLE_SPDLOG
-// Core log macros
-#define CORE_ERROR(...)       ::engine::Log::get_core_logger()->error(__VA_ARGS__)
-#define CORE_WARN(...)        ::engine::Log::get_core_logger()->warn(__VA_ARGS__)
-#define CORE_INFO(...)        ::engine::Log::get_core_logger()->info(__VA_ARGS__)
-#define CORE_TRACE(...)       ::engine::Log::get_core_logger()->trace(__VA_ARGS__)
-#define CORE_CRITICAL(...)    ::engine::Log::get_core_logger()->critical(__VA_ARGS__)
+// -----------------------------------------------------------------------------------------------
+// Core Engine Logging Macros
+// -----------------------------------------------------------------------------------------------
+#define CORE_TRACE(...)    ::engine::Log::log(::engine::LogLevel::Trace,    "ENGINE", __VA_ARGS__)
+#define CORE_INFO(...)     ::engine::Log::log(::engine::LogLevel::Info,     "ENGINE", __VA_ARGS__)
+#define CORE_WARN(...)     ::engine::Log::log(::engine::LogLevel::Warn,     "ENGINE", __VA_ARGS__)
+#define CORE_ERROR(...)    ::engine::Log::log(::engine::LogLevel::Error,    "ENGINE", __VA_ARGS__)
+#define CORE_CRITICAL(...) ::engine::Log::log(::engine::LogLevel::Critical, "ENGINE", __VA_ARGS__)
 
-// Client log macros
-#define CLIENT_ERROR(...)     ::engine::Log::get_client_logger()->error(__VA_ARGS__)
-#define CLIENT_WARN(...)      ::engine::Log::get_client_logger()->warn(__VA_ARGS__)
-#define CLIENT_INFO(...)      ::engine::Log::get_client_logger()->info(__VA_ARGS__)
-#define CLIENT_TRACE(...)     ::engine::Log::get_client_logger()->trace(__VA_ARGS__)
-#define CLIENT_CRITICAL(...)  ::engine::Log::get_client_logger()->critical(__VA_ARGS__)
-#else
-// Strip logs in Distribution/Release builds
-#define CORE_ERROR(...)       ((void)0)
-#define CORE_WARN(...)        ((void)0)
-#define CORE_INFO(...)        ((void)0)
-#define CORE_TRACE(...)       ((void)0)
-#define CORE_CRITICAL(...)    ((void)0)
-
-#define CLIENT_ERROR(...)     ((void)0)
-#define CLIENT_WARN(...)      ((void)0)
-#define CLIENT_INFO(...)      ((void)0)
-#define CLIENT_TRACE(...)     ((void)0)
-#define CLIENT_CRITICAL(...)  ((void)0)
-#endif
+// -----------------------------------------------------------------------------------------------
+// Client Application Logging Macros
+// -----------------------------------------------------------------------------------------------
+#define CLIENT_TRACE(...)    ::engine::Log::log(::engine::LogLevel::Trace,    "APP", __VA_ARGS__)
+#define CLIENT_INFO(...)     ::engine::Log::log(::engine::LogLevel::Info,     "APP", __VA_ARGS__)
+#define CLIENT_WARN(...)     ::engine::Log::log(::engine::LogLevel::Warn,     "APP", __VA_ARGS__)
+#define CLIENT_ERROR(...)    ::engine::Log::log(::engine::LogLevel::Error,    "APP", __VA_ARGS__)
+#define CLIENT_CRITICAL(...) ::engine::Log::log(::engine::LogLevel::Critical, "APP", __VA_ARGS__)

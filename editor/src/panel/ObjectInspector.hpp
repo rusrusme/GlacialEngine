@@ -19,10 +19,12 @@ namespace editor {
         void render_imgui();
         #endif
 
-        void set_selected_entity(engine::Entity entity) { selected_entity_ = entity; }
+        void set_selected_entity(const engine::Entity entity) { selected_entity_ = entity; }
 
     private:
+        #ifdef ENABLE_IMGUI
         void draw_component(engine::Entity entity);
+        #endif
 
         std::shared_ptr<engine::AssetManager> asset_manager_ = nullptr;
         std::shared_ptr<engine::Scene> scene_ = nullptr;

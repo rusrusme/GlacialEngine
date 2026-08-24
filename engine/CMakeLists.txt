@@ -115,10 +115,6 @@ target_link_libraries(Engine PUBLIC
 if (ENABLE_IMGUI)
     target_link_libraries(Engine PUBLIC imgui imguizmo::imguizmo)
 endif ()
-
-if (ENABLE_SPDLOG)
-    target_link_libraries(Engine PUBLIC spdlog::spdlog)
-endif ()
 # ----------------------------------------------------------------------------
 add_compile_definitions(GLFW_INCLUDE_NONE)
 # ----------------------------------------------------------------------------

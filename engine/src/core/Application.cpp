@@ -5,11 +5,8 @@
 
 #include "core/Application.hpp"
 
-#ifdef ENABLE_SPDLOG
-#include <core/Log.hpp>
-#endif
-
 #include "core/Config.hpp"
+#include "core/Log.hpp"
 #include "event/MouseEvents.hpp"
 #include "event/WindowEvents.hpp"
 #include "render/Frame.hpp"
@@ -46,9 +43,7 @@ namespace engine {
         // ----------------------------------
         // Initialize core systems
         // ----------------------------------
-        #ifdef ENABLE_SPDLOG
         Log::init();
-        #endif
 
         Frame::init(window_->native());
 

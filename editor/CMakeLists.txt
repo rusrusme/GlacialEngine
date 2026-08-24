@@ -18,6 +18,8 @@ add_executable(Editor
                src/editor_pch.hpp
                src/panel/DebugPanel.cpp
                src/panel/DebugPanel.hpp
+               src/panel/Console.cpp
+               src/panel/Console.hpp
 )
 # ----------------------------------------------------------------------------
 target_include_directories(Editor PRIVATE ${CMAKE_SOURCE_DIR}/editor/src)

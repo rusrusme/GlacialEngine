@@ -7,11 +7,12 @@
 
 #include "core/Layer.hpp"
 #include "event/Event.hpp"
-#include "render/Camera.hpp"
-#include "render/Renderer.hpp"
 #include "panel/AssetBrowser.hpp"
+#include "panel/Console.hpp"
 #include "panel/Hierarchy.hpp"
 #include "panel/ObjectInspector.hpp"
+#include "render/Camera.hpp"
+#include "render/Renderer.hpp"
 
 #ifdef ENABLE_IMGUI
 struct ImVec2;
@@ -64,5 +65,6 @@ namespace editor {
         ObjectInspector object_inspector_;
         Hierarchy hierarchy_;
         AssetBrowser asset_browser_;
+        Console console_;
     };
 }

@@ -25,7 +25,7 @@ namespace editor {
         #ifdef ENABLE_IMGUI
         ImGuiIO& io = ImGui::GetIO();
         io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-        io.FontGlobalScale = 1.5f;
+        io.FontGlobalScale = 1.0f;
 
         ImGuizmo::Style& style = ImGuizmo::GetStyle();
         style.TranslationLineThickness = 3.0f;
@@ -174,6 +174,7 @@ namespace editor {
         object_inspector_.set_selected_entity(hierarchy_.get_selected_entity());
         object_inspector_.render_imgui();
         asset_browser_.render_imgui();
+        console_.render_imgui();
     }
     #endif
 

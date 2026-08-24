@@ -102,15 +102,15 @@ namespace editor {
     void EditorLayer::on_event(engine::Event& event) {
         engine::EventDispatcher dispatcher(event);
 
-        dispatcher.dispatch<engine::KeyPressedEvent>([](const engine::KeyPressedEvent& e) {
-            CLIENT_TRACE("Pressed Key: {0}", e.key_code());
-            return false;
-        });
+        // dispatcher.dispatch<engine::KeyPressedEvent>([](const engine::KeyPressedEvent& e) {
+        //     CLIENT_TRACE("Pressed Key: {0}", e.key_code());
+        //     return false;
+        // });
 
-        dispatcher.dispatch<engine::MouseButtonPressedEvent>([](const engine::MouseButtonPressedEvent& e) {
-            CLIENT_TRACE("Clicked Button: {0}", e.button());
-            return false;
-        });
+        // dispatcher.dispatch<engine::MouseButtonPressedEvent>([](const engine::MouseButtonPressedEvent& e) {
+        //     CLIENT_TRACE("Clicked Button: {0}", e.button());
+        //     return false;
+        // });
 
         // dispatcher.dispatch<engine::MouseMovedEvent>([](const engine::MouseMovedEvent& e) {
         //     CLIENT_TRACE("Moved Mouse to: {0}, {1}", e.x(), e.y());
