@@ -1,6 +1,6 @@
 # CoreEngine
 
-### A C++ 3D simulation engine built with OpenGL 4.6.
+### C++ 3D simulation engine built with OpenGL 4.6.
 
 ---
 
@@ -10,7 +10,6 @@
 * **Graphics API:** OpenGL 4.6 (via GLAD)
 * **Windowing & Input:** GLFW
 * **Mathematics:** GLM
-* **UI:** Dear ImGui
 * **Build System:** CMake
 
 ---
@@ -25,11 +24,16 @@
 ### Building the Project
 
 1. Clone the repository:
-   ```bash
-   git clone https://github.com/rusrusme/CoreEngine.git
+    ```bash
+    git clone https://github.com/rusrusme/CoreEngine.git
     ```
-   
-2. For the distribution build use: 
-   ```bash
-   -DDIST_BUILD=1
-   ```
+
+2. Standard Build (Engine + Editor)
+    ```bash
+    cmake -B build
+    cmake --build build
+    ```
+3. Packaging the engine distribution (engine-lib/)
+    ```bash
+    .\Deploy.cmd
+    ```
