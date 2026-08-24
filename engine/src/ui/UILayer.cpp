@@ -6,6 +6,7 @@
 #include "ui/UILayer.hpp"
 
 #include "core/Application.hpp"
+#include "ui/UISystem.hpp"
 
 namespace engine {
     UILayer::UILayer(std::string name): Layer(std::move(name)), ui_system_(std::make_unique<UISystem>()), manager_(std::make_unique<UIManager>(*ui_system_)) {}

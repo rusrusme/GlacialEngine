@@ -5,6 +5,8 @@
 
 #include "ui/UIManager.hpp"
 
+#include "ui/UISystem.hpp"
+
 namespace engine {
     Rml::ElementDocument* UIManager::load_document(const std::string& name, const std::string& filepath) {
         if (documents_.contains(name)) {

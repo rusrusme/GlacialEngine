@@ -120,4 +120,4 @@ add_compile_definitions(GLFW_INCLUDE_NONE)
 # ----------------------------------------------------------------------------
 target_precompile_headers(Engine PRIVATE src/core/core_pch.hpp)
 # ----------------------------------------------------------------------------
-
+include(PackageDistribution.cmake)

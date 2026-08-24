@@ -5,20 +5,23 @@ cmake_minimum_required(VERSION 4.3)
 project(CoreEngine CXX C)
 set(CMAKE_CXX_STANDARD 20)
 # ----------------------------------------------------------------------------
-option(DIST_BUILD "Build for engine distribution" OFF)
+option(DEBUG_DIST "Debug distribution build for developers" OFF)
+option(RELEASE_DIST "Release distribution build" OFF)
 
-if (DIST_BUILD OR CMAKE_BUILD_TYPE STREQUAL "Dist")
-    set(DIST_BUILD ON CACHE BOOL "" FORCE)
-    set(ENABLE_IMGUI OFF CACHE BOOL "" FORCE)
-elseif (CMAKE_BUILD_TYPE STREQUAL "Release")
-    set(ENABLE_IMGUI ON CACHE BOOL "" FORCE)
-else () # Debug
+if (DEBUG_DIST)
+    set(DEBUG_DIST ON CACHE BOOL "" FORCE)
+elseif (RELEASE_DIST)
+    set(RELEASE_DIST ON CACHE BOOL "" FORCE)
+else() # Non-distribution profile
     set(ENABLE_IMGUI ON CACHE BOOL "" FORCE)
 endif ()
 
-if (DIST_BUILD)
-    add_compile_definitions(DIST_BUILD)
+if (DEBUG_DIST)
+    add_compile_definitions(DEBUG_DIST)
+elseif (RELEASE_DIST)
+    add_compile_definitions(RELEASE_DIST)
 endif ()
+
 if (ENABLE_IMGUI)
     add_compile_definitions(ENABLE_IMGUI)
 endif ()
@@ -36,7 +39,7 @@ add_library(stb_image INTERFACE)
 target_include_directories(stb_image INTERFACE lib/stb_image)
 # ----------------------------------------------------------------------------
 add_subdirectory(Engine)
-if (NOT DIST_BUILD)
+if (NOT DEBUG_DIST AND NOT RELEASE_DIST)
     add_subdirectory(Editor)
 endif ()
 # ----------------------------------------------------------------------------

@@ -5,7 +5,6 @@
 
 #pragma once
 
-#include "../../src/ui/UISystem.hpp"
 #include "core/Layer.hpp"
 #include "ui/UIManager.hpp"
 

@@ -9,9 +9,10 @@
 #include <unordered_map>
 #include <RmlUi/Core.h>
 
-#include "../../src/ui/UISystem.hpp"
 
 namespace engine {
+    class UISystem;
+
     class UIManager {
     public:
         explicit UIManager(UISystem& ui_system) : ui_system_(ui_system) {}
