@@ -20,7 +20,7 @@ namespace editor {
         ImGui::End();
     }
 
-    void ObjectInspector::draw_component(engine::Entity entity) {
+    void ObjectInspector::draw_component(engine::Entity entity) const {
         // --------------------
         // Label
         // --------------------

@@ -23,7 +23,7 @@ namespace editor {
 
     private:
         #ifdef ENABLE_IMGUI
-        void draw_component(engine::Entity entity);
+        void draw_component(engine::Entity entity) const;
         #endif
 
         std::shared_ptr<engine::AssetManager> asset_manager_ = nullptr;

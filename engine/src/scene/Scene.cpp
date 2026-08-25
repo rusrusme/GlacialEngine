@@ -52,6 +52,7 @@ namespace engine {
 
     void Scene::on_render(Renderer& renderer, Camera& camera, AssetManager& asset_manager, const float delta_time) {
         renderer.begin_scene(camera);
+        renderer.set_blend(true);
 
         // ------------------
         // Directional lights

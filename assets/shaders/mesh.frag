@@ -57,5 +57,8 @@ void main() {
     vec3 ambient = ambient_strength * v_color.rgb;
 
     vec3 final_color = ambient + (total_diffuse * v_color.rgb);
+
+    if (v_color.a < 0.01) discard; // Discard fully transparent pixels so they don't occlude depth
+
     frag_color = vec4(final_color, v_color.a);
 }
