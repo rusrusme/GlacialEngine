@@ -5,6 +5,8 @@
 
 #include "EditorUILayer.hpp"
 
+#include <imgui_internal.h>
+
 #include "EditorLayer.hpp"
 
 namespace editor {
@@ -43,7 +45,20 @@ namespace editor {
     void EditorUILayer::on_update(float delta_time) {
         #ifdef ENABLE_IMGUI
         if (engine::Input::is_key_pressed_once(engine::Key::ESCAPE)) {
-            hierarchy_.set_selected_entity({});
+            // If gizmo is currently active, cancel the operation and restore initial transform
+            if (was_using_gizmo_ || ImGuizmo::IsUsing()) {
+                gizmo_canceled_ = true;
+                ImGui::ClearActiveID();
+
+                auto selected_entity = hierarchy_.get_selected_entity();
+                if (selected_entity && selected_entity.has_component<engine::TransformComponent>()) {
+                    selected_entity.get_component<engine::TransformComponent>() = initial_transform_;
+                }
+            }
+            // Otherwise, deselect the object
+            else {
+                hierarchy_.set_selected_entity({});
+            }
         }
 
         if (engine::Input::is_keyboard_captured() || ImGuizmo::IsUsing()) {
@@ -188,6 +203,19 @@ namespace editor {
             return;
         }
 
+        auto& transform = selected_entity.get_component<engine::TransformComponent>();
+
+        if (gizmo_canceled_) {
+            transform = initial_transform_;
+            ImGuizmo::Enable(false);
+
+            if (!ImGui::IsMouseDown(ImGuiMouseButton_Left)) {
+                gizmo_canceled_ = false;
+                was_using_gizmo_ = false;
+            }
+            return;
+        }
+
         ImGuizmo::Enable(true);
         ImGuizmo::SetOrthographic(false);
         ImGuizmo::SetDrawlist(ImGui::GetWindowDrawList());
@@ -197,13 +225,11 @@ namespace editor {
 
         glm::mat4 view_matrix = camera.get_view_matrix();
         glm::mat4 proj_matrix = camera.get_projection_matrix();
-
-        auto& transform = selected_entity.get_component<engine::TransformComponent>();
         glm::mat4 transform_matrix = transform.get_matrix();
 
         const bool snap = engine::Input::is_key_pressed(engine::Key::LEFT_CONTROL) || engine::Input::is_key_pressed(engine::Key::RIGHT_CONTROL);
         const float snap_value = current_gizmo_operation_ == ImGuizmo::ROTATE ? 45.0f : 0.5f;
-        float snap_values[3] = {snap_value, snap_value, snap_value};
+        const float snap_values[3] = {snap_value, snap_value, snap_value};
 
         ImGuizmo::Manipulate(
             glm::value_ptr(view_matrix),
@@ -215,8 +241,19 @@ namespace editor {
             snap ? snap_values : nullptr
         );
 
-        // Sobald der Gizmo bewegt/genutzt wird, schreiben wir die Werte direkt in die Component
-        if (ImGuizmo::IsUsing()) {
+        const bool is_using = ImGuizmo::IsUsing();
+
+        if (is_using && !was_using_gizmo_) {
+            was_using_gizmo_ = true;
+            gizmo_canceled_ = false;
+            initial_transform_ = transform;
+        }
+
+        if (!is_using && was_using_gizmo_) {
+            was_using_gizmo_ = false;
+        }
+
+        if (is_using) {
             float translation[3], rotation[3], scale[3];
             ImGuizmo::DecomposeMatrixToComponents(
                 glm::value_ptr(transform_matrix),
@@ -235,6 +272,18 @@ namespace editor {
         static bool show_save_popup = false;
         static bool show_load_popup = false;
         static char path_buffer[256] = "assets/scenes/default.scene";
+
+        const bool is_ctrl = engine::Input::is_key_pressed(engine::Key::LEFT_CONTROL) ||
+                         engine::Input::is_key_pressed(engine::Key::RIGHT_CONTROL);
+
+        if (is_ctrl && !engine::Input::is_keyboard_captured() && !ImGuizmo::IsUsing()) {
+            if (engine::Input::is_key_pressed_once(engine::Key::S)) {
+                show_save_popup = true;
+            }
+            if (engine::Input::is_key_pressed_once(engine::Key::O)) {
+                show_load_popup = true;
+            }
+        }
 
         if (ImGui::BeginMainMenuBar()) {
             if (ImGui::BeginMenu("File")) {
