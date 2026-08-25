@@ -87,7 +87,7 @@ namespace editor {
         ImGui::Separator();
         ImGui::Text("Editor");
         bool grid_active = is_grid_enabled();
-        if (ImGui::Checkbox("Show World Grid", &grid_active)) {
+        if (ImGui::Checkbox("Show Grid", &grid_active)) {
             set_grid_enabled(grid_active);
         }
         ImGui::End();
