@@ -18,9 +18,12 @@ namespace editor {
 
         #ifdef ENABLE_IMGUI
         void render_imgui();
+    private:
+        void render_header();
+        void render_grid();
+        void render_asset_item(const std::filesystem::directory_entry& entry, float thumbnail_size);
         #endif
 
-    private:
         std::shared_ptr<engine::AssetManager> asset_manager_ = nullptr;
         std::filesystem::path root_directory_{"assets"};
         std::filesystem::path current_directory_{root_directory_};
