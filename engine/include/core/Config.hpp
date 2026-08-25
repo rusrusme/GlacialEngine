@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <cstdint>
 #include <fstream>
 #include <iostream>
 #include <iterator>
@@ -18,6 +19,8 @@ namespace engine::setting {
         constexpr int MONITOR_RESOLUTION_HEIGHT = 1080;
 
         constexpr float FPS_REFRESH_RATE_IN_SECONDS = 0.5f;
+
+        inline bool IS_VSYNC = false;
 
         inline int target_fps_index = 7;
         const int fps_presets[] = {30, 60, 90, 120, 144, 165, 240, INT32_MAX};
@@ -41,15 +44,32 @@ namespace engine::setting {
 
         inline void load() {
             std::ifstream file(CONFIG_FILE_PATH);
-            if (!file.is_open()) {
-                return;
-            }
-            std::string key;
-            int value;
-            while (file >> key >> value) {
+            if (!file.is_open()) return;
+
+            std::string line;
+            while (std::getline(file, line)) {
+                if (line.empty() || line[0] == '#' || line[0] == ';') continue;
+
+                std::istringstream iss(line);
+                std::string key;
+                if (!(iss >> key)) continue;
+
                 if (key == "target_fps_index") {
-                    if (value >= 0 && value < video::num_presets) {
+                    int value;
+                    if (iss >> value && value >= 0 && value < video::num_presets) {
                         video::target_fps_index = value;
+                    }
+                }
+                else if (key == "is_vsync") {
+                    int int_val;
+                    if (iss >> int_val) {
+                        video::IS_VSYNC = (int_val != 0);
+                    } else {
+                        iss.clear();
+                        std::string str_val;
+                        if (iss >> str_val) {
+                            video::IS_VSYNC = (str_val == "true" || str_val == "1");
+                        }
                     }
                 }
             }
@@ -62,6 +82,7 @@ namespace engine::setting {
                 return;
             }
             file << "target_fps_index " << video::target_fps_index << "\n";
+            file << "is_vsync " << (video::IS_VSYNC ? 1 : 0) << "\n";
         }
     }
 

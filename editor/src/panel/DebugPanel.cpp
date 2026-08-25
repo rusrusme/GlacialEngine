@@ -63,7 +63,7 @@ namespace editor {
             timer = 0.0f;
         }
         ImGui::SetNextWindowSize(ImVec2(400, 500), ImGuiCond_FirstUseEver);
-        ImGui::Begin("Debug panel");
+        ImGui::Begin("Debug Panel");
         ImGui::Text("Performance");
         ImGui::Text("  FPS: %.1f", fps_display);
         ImGui::Text("  Frame Time: %.2f ms", 1000.0f / (fps_display > 0.0f ? fps_display : 1.0f));
@@ -76,9 +76,9 @@ namespace editor {
 
         ImGui::Separator();
         ImGui::Text("Video");
-        static bool vsync_enabled = engine::Application::get().window().is_vsync();
+        bool vsync_enabled = engine::Application::get().window().is_vsync();
         if (ImGui::Checkbox("V-Sync", &vsync_enabled)) {
-            glfwSwapInterval(vsync_enabled ? 1 : 0);
+            engine::Application::get().window().set_vsync(vsync_enabled);
         }
         ImGui::Text("FPS Limit: %s", engine::setting::video::get_target_fps_str().c_str());
         ImGui::SetNextItemWidth(-1.0f);

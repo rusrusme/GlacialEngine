@@ -17,6 +17,7 @@ namespace engine {
     }
 
     int Application::run() {
+        setting::configuration::load();
         if (!glfwInit()) {
             std::cerr << "Engine error: application: failed to initialize GLFW" << std::endl;
             return 1;
@@ -61,8 +62,6 @@ namespace engine {
         // ----------------------------------
         // Run core loop
         // ----------------------------------
-        setting::configuration::load();
-
         while (running_) {
             const float delta_time = Frame::begin_frame();
 

@@ -5,6 +5,7 @@
 
 #include <core/Window.hpp>
 
+#include "core/Config.hpp"
 #include "event/KeyEvents.hpp"
 #include "event/MouseEvents.hpp"
 
@@ -19,8 +20,16 @@ namespace engine {
     }
 
     void Window::set_vsync(const bool enabled) {
-        vsync_enabled_ = enabled;
+        setting::video::IS_VSYNC = enabled;
         glfwSwapInterval(enabled ? 1 : 0);
+    }
+
+    float Window::get_monitor_dpi_scale() {
+        GLFWmonitor* monitor = glfwGetPrimaryMonitor();
+        if (!monitor) return 1.0f;
+        float xscale, yscale;
+        glfwGetMonitorContentScale(monitor, &xscale, &yscale);
+        return xscale;
     }
 
     void Window::update_dimensions() {

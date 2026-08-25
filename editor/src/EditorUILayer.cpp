@@ -79,7 +79,39 @@ namespace editor {
     void EditorUILayer::on_imgui_render(engine::Renderer& renderer, float delta_time) {
         draw_imgui_menu_bar();
 
-        ImGui::DockSpaceOverViewport(0, ImGui::GetMainViewport(), ImGuiDockNodeFlags_PassthruCentralNode);
+        ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_PassthruCentralNode;
+        ImGuiID dockspace_id = ImGui::DockSpaceOverViewport(0, ImGui::GetMainViewport(), dockspace_flags);
+
+        ImGuiDockNode* node = ImGui::DockBuilderGetNode(dockspace_id);
+        if (node == nullptr || node->ChildNodes[0] == nullptr) {
+            ImGui::DockBuilderRemoveNode(dockspace_id);
+            ImGui::DockBuilderAddNode(dockspace_id, dockspace_flags | ImGuiDockNodeFlags_DockSpace);
+            ImGui::DockBuilderSetNodeSize(dockspace_id, ImGui::GetMainViewport()->WorkSize);
+
+            ImGuiID dock_main_id = dockspace_id;
+            ImGuiID dock_left_bottom_id;
+            ImGuiID dock_bottom_id = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Down, 0.25f, nullptr, &dock_main_id);
+            ImGuiID dock_right_id = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Right, 0.15f, nullptr, &dock_main_id);
+            ImGuiID dock_left_id = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Left, 0.20f, nullptr, &dock_main_id);
+            ImGuiID dock_left_top_id = ImGui::DockBuilderSplitNode(dock_left_id, ImGuiDir_Up, 0.4f, nullptr, &dock_left_bottom_id);
+
+            ImGui::DockBuilderDockWindow("Asset Browser", dock_left_top_id);
+            ImGui::DockBuilderDockWindow("Hierarchy", dock_left_bottom_id);
+            ImGui::DockBuilderDockWindow("Inspector", dock_right_id);
+            ImGui::DockBuilderDockWindow("Console", dock_bottom_id);
+            ImGui::DockBuilderDockWindow("Scene", dock_main_id);
+
+            ImGuiID float_node_id = ImGui::DockBuilderAddNode();
+            ImGuiViewport* viewport = ImGui::GetMainViewport();
+            ImGui::DockBuilderSetNodePos(float_node_id, ImVec2(viewport->Pos.x + 100.0f, viewport->Pos.y + 100.0f));
+            ImGui::DockBuilderSetNodeSize(float_node_id, ImVec2(400.0f, 500.0f));
+
+            ImGui::DockBuilderDockWindow("Debug Panel", float_node_id);
+            ImGui::DockBuilderDockWindow("Shader Library Inspector", float_node_id);
+            ImGui::DockBuilderFinish(float_node_id);
+
+            ImGui::DockBuilderFinish(dockspace_id);
+        }
 
         // ------------------------------------------------------------------
         // SCENE PANEL
@@ -115,16 +147,15 @@ namespace editor {
             }
         }
 
-        // 2. Szene-Textur zeichnen
+        // Szene-Textur zeichnen
         uint32_t texture_id = editor_layer_ ? editor_layer_->get_scene_texture_id() : 0;
         if (texture_id != 0) {
-            ImGui::Image((void*)(intptr_t)texture_id, viewport_panel_size, ImVec2(0, 1), ImVec2(1, 0));
+            ImGui::Image(texture_id, viewport_panel_size, ImVec2(0, 1), ImVec2(1, 0));
         }
 
-        // WICHTIG: Prüfen, ob das 3D-Viewport-Bild mit Links geklickt wurde
         const bool viewport_clicked = ImGui::IsItemClicked(ImGuiMouseButton_Left);
 
-        // 3. Drag & Drop Target
+        // Drag & Drop Target
         if (ImGui::BeginDragDropTarget()) {
             if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET_BROWSER_ITEM")) {
                 engine::AssetHandle dropped_handle = *static_cast<const engine::AssetHandle*>(payload->Data);
@@ -155,13 +186,13 @@ namespace editor {
             ImGui::EndDragDropTarget();
         }
 
-        // 4. ImGuizmo zeichnen (aktualisiert ImGuizmo::IsOver() für diesen Frame)
+        // ImGuizmo zeichnen (aktualisiert ImGuizmo::IsOver() für diesen Frame)
         ImGuizmo::BeginFrame();
         if (camera_) {
             draw_imguizmo(hierarchy_.get_selected_entity(), *camera_, viewport_bounds_min_, viewport_panel_size);
         }
 
-        // 5. Picking/Selection ausführen (NUR wenn das Bild geklickt wurde UND nicht auf den Gizmo geklickt wurde)
+        // Picking/Selection ausführen (NUR wenn das Bild geklickt wurde UND nicht auf den Gizmo geklickt wurde)
         if (viewport_clicked && !ImGuizmo::IsOver() && !ImGuizmo::IsUsing()) {
             ImVec2 mouse_pos = ImGui::GetMousePos();
             glm::vec2 local_mouse = {
@@ -182,7 +213,6 @@ namespace editor {
         ImGui::End();
         ImGui::PopStyleVar();
 
-        // Übrige Panels
         hierarchy_.render_imgui();
         object_inspector_.set_selected_entity(hierarchy_.get_selected_entity());
         object_inspector_.render_imgui();
@@ -272,7 +302,7 @@ namespace editor {
         static char path_buffer[256] = "assets/scenes/default.scene";
 
         const bool is_ctrl = engine::Input::is_key_pressed(engine::Key::LEFT_CONTROL) ||
-                         engine::Input::is_key_pressed(engine::Key::RIGHT_CONTROL);
+            engine::Input::is_key_pressed(engine::Key::RIGHT_CONTROL);
 
         if (is_ctrl && !engine::Input::is_keyboard_captured() && !ImGuizmo::IsUsing()) {
             if (engine::Input::is_key_pressed_once(engine::Key::S)) {

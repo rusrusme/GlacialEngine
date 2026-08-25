@@ -6,6 +6,8 @@
 #pragma once
 
 #include <functional>
+
+#include "core/Config.hpp"
 #include "GLFW/glfw3.h"
 
 #include "event/WindowEvents.hpp"
@@ -20,7 +22,9 @@ namespace engine {
         void set_event_callback(const EventCallbackFunc& callback);
 
         void set_vsync(bool enabled);
-        [[nodiscard]] bool is_vsync() const { return vsync_enabled_; }
+        [[nodiscard]] bool is_vsync() const { return setting::video::IS_VSYNC; }
+
+        [[nodiscard]] float get_monitor_dpi_scale();
 
         [[nodiscard]] float get_aspect_ratio() const { return data_.height > 0 ? static_cast<float>(data_.width) / static_cast<float>(data_.height) : 1.0f; }
 
@@ -43,7 +47,7 @@ namespace engine {
         void setup_callbacks();
 
         GLFWwindow* window_ = nullptr;
-        bool vsync_enabled_ = false;
+        // bool vsync_enabled_ = false;
         WindowData data_;
     };
 }

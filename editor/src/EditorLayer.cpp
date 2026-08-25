@@ -5,6 +5,8 @@
 
 #include "EditorLayer.hpp"
 
+#include "Config.hpp"
+
 namespace editor {
     EditorLayer::EditorLayer(std::shared_ptr<engine::Scene> scene, std::shared_ptr<engine::AssetManager> asset_manager) : active_scene_(std::move(scene)), asset_manager_(std::move(asset_manager)) {}
 
@@ -24,12 +26,18 @@ namespace editor {
         camera_.set_projection_params(45.0f, 0.1f, 2000.0f);
 
         asset_manager_->scan_directory("assets/models");
+
+        setting::config::load();
+        const int toggle_debug_panel = setting::config::get_int("toggle_debug_panel");
+        debug_panel_->set_debug_panel_enabled(toggle_debug_panel);
     }
 
     void EditorLayer::on_detach() {
         if (active_scene_) {
             active_scene_->on_shutdown();
         }
+        setting::config::set_int("toggle_debug_panel", debug_panel_->is_debug_panel_enabled());
+        setting::config::save();
     }
 
     void EditorLayer::on_update(const float delta_time) {

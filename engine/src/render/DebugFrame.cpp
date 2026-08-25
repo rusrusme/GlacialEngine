@@ -6,6 +6,8 @@
 #ifdef ENABLE_IMGUI
 #include "render/DebugFrame.hpp"
 
+#include "core/Application.hpp"
+
 namespace engine {
     void DebugFrame::init(GLFWwindow* window, const char* glsl_version) {
         IMGUI_CHECKVERSION();
@@ -19,11 +21,15 @@ namespace engine {
         io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
         io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
-        ImFont* main_font = io.Fonts->AddFontFromFileTTF(
+        float dpiScale = Application::get().window().get_monitor_dpi_scale();
+
+        io.Fonts->AddFontFromFileTTF(
             "assets/fonts/Inter-VariableFont_opsz,wght.ttf",
-            16.0f,
+            16.0f * dpiScale,
             &config
         );
+
+        ImGui::GetStyle().ScaleAllSizes(dpiScale);
 
         // -----------------------------------------
         // Modern Engine Theme
@@ -34,9 +40,9 @@ namespace engine {
         // Remove Tab Menu Button
         style.WindowMenuButtonPosition = ImGuiDir_None;
 
-        style.TabBarBorderSize   = 0.0f;
+        style.TabBarBorderSize = 0.0f;
         style.TabBarOverlineSize = 0.0f;
-        style.DockingSeparatorSize = 0.0f;
+        style.DockingSeparatorSize = 1.0f;
 
         // Geometry & Spacing
         style.WindowRounding = 6.0f;
@@ -90,10 +96,10 @@ namespace engine {
         colors[ImGuiCol_MenuBarBg] = bg_dark;
 
         // Tabs
-        colors[ImGuiCol_Tab]                = ImVec4(0.08f, 0.08f, 0.09f, 1.00f);
-        colors[ImGuiCol_TabHovered]         = ImVec4(0.20f, 0.20f, 0.22f, 1.00f);
-        colors[ImGuiCol_TabActive]          = ImVec4(0.18f, 0.18f, 0.20f, 1.00f);
-        colors[ImGuiCol_TabUnfocused]       = ImVec4(0.08f, 0.08f, 0.09f, 1.00f);
+        colors[ImGuiCol_Tab] = ImVec4(0.08f, 0.08f, 0.09f, 1.00f);
+        colors[ImGuiCol_TabHovered] = ImVec4(0.20f, 0.20f, 0.22f, 1.00f);
+        colors[ImGuiCol_TabActive] = ImVec4(0.18f, 0.18f, 0.20f, 1.00f);
+        colors[ImGuiCol_TabUnfocused] = ImVec4(0.08f, 0.08f, 0.09f, 1.00f);
         colors[ImGuiCol_TabUnfocusedActive] = ImVec4(0.14f, 0.14f, 0.15f, 1.00f);
 
         // Controls & Buttons
