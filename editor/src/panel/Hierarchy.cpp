@@ -34,10 +34,9 @@ namespace editor {
         ImGui::InputText("##NameInput", name_buffer_, sizeof(name_buffer_));
 
         if (ImGui::BeginPopup("AddEntityMenu")) {
-            // Helper lambda to draw menu item with icon offset
             auto menuItemWithIcon = [&](const char* label, EntityType type) -> bool {
                 ImVec2 cursor = ImGui::GetCursorScreenPos();
-                ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 20.0f);
+                ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 22.0f);
                 bool clicked = ImGui::MenuItem(label);
                 ImDrawList* draw_list = ImGui::GetWindowDrawList();
                 draw_entity_icon(draw_list, ImVec2(cursor.x + 4.0f, cursor.y + (ImGui::GetTextLineHeight() - 14.0f) * 0.5f), type);
@@ -62,12 +61,12 @@ namespace editor {
                 }
             };
 
-            create_primitive_entity("Plane", "primitive://plane", EntityType::Mesh);
-            create_primitive_entity("Circle", "primitive://circle", EntityType::Mesh);
+            create_primitive_entity("Plane", "primitive://plane", EntityType::Mesh2D);
+            create_primitive_entity("Circle", "primitive://circle", EntityType::Mesh2D);
             ImGui::Separator();
-            create_primitive_entity("Cube", "primitive://cube", EntityType::Mesh);
-            create_primitive_entity("Sphere", "primitive://sphere", EntityType::Mesh);
-            create_primitive_entity("Cylinder", "primitive://cylinder", EntityType::Mesh);
+            create_primitive_entity("Cube", "primitive://cube", EntityType::Mesh3D);
+            create_primitive_entity("Sphere", "primitive://sphere", EntityType::Mesh3D);
+            create_primitive_entity("Cylinder", "primitive://cylinder", EntityType::Mesh3D);
 
             ImGui::Separator();
             if (menuItemWithIcon("Camera", EntityType::Camera)) {
@@ -106,7 +105,7 @@ namespace editor {
                         found_any = true;
                         std::string filename = meta.filepath.filename().string();
 
-                        if (menuItemWithIcon(filename.c_str(), EntityType::Mesh)) {
+                        if (menuItemWithIcon(filename.c_str(), EntityType::Mesh3D)) {
                             const std::string name = name_buffer_[0] != '\0' ? name_buffer_ : meta.filepath.stem().string();
                             auto entity = scene_->create_entity(name);
                             entity.add_component<engine::MeshComponent>(handle);
@@ -153,29 +152,16 @@ namespace editor {
             if (!is_active) {
                 ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetStyleColorVec4(ImGuiCol_TextDisabled));
             }
-
             const bool is_selected = selected_entity_ == raw_entity;
             const ImGuiTreeNodeFlags flags = (is_selected ? ImGuiTreeNodeFlags_Selected : 0)
                 | ImGuiTreeNodeFlags_OpenOnArrow
                 | ImGuiTreeNodeFlags_SpanAvailWidth;
 
-            // Extract entity type and pad label string with spaces for the tree icon
-            const EntityType entity_type = get_entity_type_from_name(label.tag);
-            const std::string node_label = "    " + label.tag;
-
-            const ImVec2 cursor = ImGui::GetCursorScreenPos();
-            const bool opened = ImGui::TreeNodeEx(node_label.c_str(), flags);
-
-            // Draw vector icon in the space padding before label text
-            ImDrawList* draw_list = ImGui::GetWindowDrawList();
-            const float label_spacing = ImGui::GetTreeNodeToLabelSpacing();
-            const ImVec2 icon_pos = ImVec2(cursor.x + label_spacing - 2.0f, cursor.y + (ImGui::GetTextLineHeight() - 14.0f) * 0.5f);
-            draw_entity_icon(draw_list, icon_pos, entity_type);
+            const bool opened = ImGui::TreeNodeEx(label.tag.c_str(), flags);
 
             if (!is_active) {
                 ImGui::PopStyleColor();
             }
-
             if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen()) {
                 selected_entity_ = entity;
             }
@@ -206,7 +192,6 @@ namespace editor {
         if (ImGui::IsWindowFocused() && engine::Input::is_key_pressed_once(engine::Key::ESCAPE)) {
             selected_entity_ = {};
         }
-
         ImGui::End();
     }
     #endif
