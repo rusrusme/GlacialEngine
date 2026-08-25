@@ -111,4 +111,43 @@ namespace editor {
         }
     }
     #endif
+
+    #ifdef ENABLE_IMGUI
+    static void draw_eye_icon(ImDrawList* draw_list, const ImVec2 pos, const bool is_active, const bool is_hovered = false) {
+        constexpr float size = 14.0f;
+        const auto center = ImVec2(pos.x + size * 0.5f, pos.y + size * 0.5f);
+
+        ImU32 col = is_active
+                        ? (is_hovered ? IM_COL32(240, 240, 245, 255) : IM_COL32(180, 185, 195, 220))
+                        : (is_hovered ? IM_COL32(140, 140, 150, 255) : IM_COL32(80, 80, 90, 160));
+
+        // Top Eye Arc
+        draw_list->AddBezierCubic(
+            ImVec2(pos.x + 1.0f, center.y),
+            ImVec2(pos.x + 4.0f, pos.y + 2.0f),
+            ImVec2(pos.x + 10.0f, pos.y + 2.0f),
+            ImVec2(pos.x + 13.0f, center.y),
+            col, 1.2f
+        );
+
+        // Bottom Eye Arc
+        draw_list->AddBezierCubic(
+            ImVec2(pos.x + 1.0f, center.y),
+            ImVec2(pos.x + 4.0f, pos.y + 12.0f),
+            ImVec2(pos.x + 10.0f, pos.y + 12.0f),
+            ImVec2(pos.x + 13.0f, center.y),
+            col, 1.2f
+        );
+
+        if (is_active) {
+            // Pupil
+            draw_list->AddCircleFilled(center, 2.2f, col);
+        }
+        else {
+            // Red/Muted Slash across hidden eye
+            ImU32 slash_col = is_hovered ? IM_COL32(220, 90, 90, 255) : IM_COL32(160, 70, 70, 200);
+            draw_list->AddLine(ImVec2(pos.x + 2.0f, pos.y + 12.0f), ImVec2(pos.x + 12.0f, pos.y + 2.0f), slash_col, 1.5f);
+        }
+    }
+    #endif
 }

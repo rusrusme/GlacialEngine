@@ -114,7 +114,7 @@ namespace editor {
                     }
                 }
                 if (!found_any) {
-                    ImGui::TextDisabled("No models found in assets/");
+                    ImGui::TextDisabled("No models found");
                 }
                 ImGui::EndMenu();
             }
@@ -133,20 +133,29 @@ namespace editor {
             if (entity.has_component<engine::ActiveComponent>()) {
                 is_active = entity.get_component<engine::ActiveComponent>().active;
             }
-            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
-            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.3f, 0.3f, 0.3f, 0.4f));
-            ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.2f, 0.2f, 0.2f, 0.6f));
 
-            const char* eye_icon = is_active ? "(o)" : "(-)";
-            if (ImGui::SmallButton(eye_icon)) {
+            // ---------------------------------
+            // Procedural Eye Visibility Button
+            // ---------------------------------
+            const ImVec2 eye_button_size(20.0f, ImGui::GetFrameHeight());
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.25f, 0.25f, 0.28f, 0.40f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.20f, 0.20f, 0.22f, 0.60f));
+            if (ImGui::Button("##eye", eye_button_size)) {
                 if (!entity.has_component<engine::ActiveComponent>()) {
                     entity.add_component<engine::ActiveComponent>(!is_active);
                 } else {
-                    auto& active_comp = entity.get_component<engine::ActiveComponent>();
-                    active_comp.active = !active_comp.active;
+                    auto& [active] = entity.get_component<engine::ActiveComponent>();
+                    active = !active;
                 }
             }
+            const bool eye_hovered = ImGui::IsItemHovered();
+            const ImVec2 eye_p0 = ImGui::GetItemRectMin();
+            const float icon_x = eye_p0.x + (eye_button_size.x - 14.0f) * 0.5f;
+            const float icon_y = eye_p0.y + (eye_button_size.y - 14.0f) * 0.5f;
+            draw_eye_icon(ImGui::GetWindowDrawList(), ImVec2(icon_x, icon_y), is_active, eye_hovered);
             ImGui::PopStyleColor(3);
+            // ---------------------------------
 
             ImGui::SameLine();
             if (!is_active) {
