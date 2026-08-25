@@ -5,8 +5,6 @@
 
 #include "EditorUILayer.hpp"
 
-#include <imgui_internal.h>
-
 #include "EditorLayer.hpp"
 
 namespace editor {
