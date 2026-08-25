@@ -16,7 +16,7 @@ namespace editor {
     enum class EntityType { Transform, Mesh2D, Mesh3D, Camera, Light };
 
     static EntityType get_entity_type_from_name(std::string name) {
-        std::ranges::transform(name, name.begin(), [](unsigned char c) {
+        std::ranges::transform(name, name.begin(), [](const unsigned char c) {
             return static_cast<char>(std::tolower(c));
         });
 
@@ -37,7 +37,7 @@ namespace editor {
     }
 
     #ifdef ENABLE_IMGUI
-    static void draw_entity_icon(ImDrawList* draw_list, ImVec2 pos, EntityType type) {
+    static void draw_entity_icon(ImDrawList* draw_list, const ImVec2 pos, const EntityType type) {
         constexpr float size = 14.0f;
         const auto center = ImVec2(pos.x + size * 0.5f, pos.y + size * 0.5f);
 
