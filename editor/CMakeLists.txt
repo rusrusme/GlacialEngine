@@ -20,6 +20,7 @@ add_executable(Editor
                src/panel/DebugPanel.hpp
                src/panel/Console.cpp
                src/panel/Console.hpp
+               src/panel/EntityIcons.hpp
 )
 # ----------------------------------------------------------------------------
 target_include_directories(Editor PRIVATE ${CMAKE_SOURCE_DIR}/editor/src)

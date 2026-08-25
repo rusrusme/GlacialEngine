@@ -31,6 +31,13 @@ namespace engine {
         ImGuiStyle& style = ImGui::GetStyle();
         ImVec4* colors = style.Colors;
 
+        // Remove Tab Menu Button
+        style.WindowMenuButtonPosition = ImGuiDir_None;
+
+        style.TabBarBorderSize   = 0.0f;
+        style.TabBarOverlineSize = 0.0f;
+        style.DockingSeparatorSize = 0.0f;
+
         // Geometry & Spacing
         style.WindowRounding = 6.0f;
         style.ChildRounding = 5.0f;
@@ -83,11 +90,11 @@ namespace engine {
         colors[ImGuiCol_MenuBarBg] = bg_dark;
 
         // Tabs
-        colors[ImGuiCol_Tab] = ImVec4(0.12f, 0.12f, 0.13f, 1.00f);
-        colors[ImGuiCol_TabHovered] = bg_hover;
-        colors[ImGuiCol_TabActive] = bg_mid;
-        colors[ImGuiCol_TabUnfocused] = ImVec4(0.10f, 0.10f, 0.11f, 1.00f);
-        colors[ImGuiCol_TabUnfocusedActive] = bg_mid;
+        colors[ImGuiCol_Tab]                = ImVec4(0.08f, 0.08f, 0.09f, 1.00f);
+        colors[ImGuiCol_TabHovered]         = ImVec4(0.20f, 0.20f, 0.22f, 1.00f);
+        colors[ImGuiCol_TabActive]          = ImVec4(0.18f, 0.18f, 0.20f, 1.00f);
+        colors[ImGuiCol_TabUnfocused]       = ImVec4(0.08f, 0.08f, 0.09f, 1.00f);
+        colors[ImGuiCol_TabUnfocusedActive] = ImVec4(0.14f, 0.14f, 0.15f, 1.00f);
 
         // Controls & Buttons
         colors[ImGuiCol_Button] = bg_light;

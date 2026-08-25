@@ -5,6 +5,8 @@
 
 #include "panel/Hierarchy.hpp"
 
+#include "panel/EntityIcons.hpp"
+
 namespace editor {
     void Hierarchy::init(std::shared_ptr<engine::Scene> scene, std::shared_ptr<engine::AssetManager> asset_manager) {
         scene_ = std::move(scene);
@@ -32,37 +34,49 @@ namespace editor {
         ImGui::InputText("##NameInput", name_buffer_, sizeof(name_buffer_));
 
         if (ImGui::BeginPopup("AddEntityMenu")) {
-            if (ImGui::MenuItem("Entity")) {
+            // Helper lambda to draw menu item with icon offset
+            auto menuItemWithIcon = [&](const char* label, EntityType type) -> bool {
+                ImVec2 cursor = ImGui::GetCursorScreenPos();
+                ImGui::SetCursorPosX(ImGui::GetCursorPosX() + 20.0f);
+                bool clicked = ImGui::MenuItem(label);
+                ImDrawList* draw_list = ImGui::GetWindowDrawList();
+                draw_entity_icon(draw_list, ImVec2(cursor.x + 4.0f, cursor.y + (ImGui::GetTextLineHeight() - 14.0f) * 0.5f), type);
+                return clicked;
+            };
+
+            if (menuItemWithIcon("Entity", EntityType::Transform)) {
                 const std::string name = name_buffer_[0] != '\0' ? name_buffer_ : "Entity";
                 scene_->create_entity(name);
             }
             ImGui::Separator();
 
-            auto create_primitive_entity = [&](const char* default_name, const char* primitive_path) {
-                const std::string name = name_buffer_[0] != '\0' ? name_buffer_ : default_name;
-                auto entity = scene_->create_entity(name);
+            auto create_primitive_entity = [&](const char* default_name, const char* primitive_path, EntityType type) {
+                if (menuItemWithIcon(default_name, type)) {
+                    const std::string name = name_buffer_[0] != '\0' ? name_buffer_ : default_name;
+                    auto entity = scene_->create_entity(name);
 
-                auto handle = asset_manager_->get_handle_from_path(primitive_path);
-                entity.add_component<engine::MeshComponent>(handle);
-                entity.add_component<engine::MaterialComponent>(glm::vec4{1.0f, 0.5f, 0.2f, 1.0f});
-                entity.add_component<engine::BoxColliderComponent>();
+                    auto handle = asset_manager_->get_handle_from_path(primitive_path);
+                    entity.add_component<engine::MeshComponent>(handle);
+                    entity.add_component<engine::MaterialComponent>(glm::vec4{1.0f, 0.5f, 0.2f, 1.0f});
+                    entity.add_component<engine::BoxColliderComponent>();
+                }
             };
 
-            if (ImGui::MenuItem("Plane")) create_primitive_entity("Plane", "primitive://plane");
-            if (ImGui::MenuItem("Circle")) create_primitive_entity("Circle", "primitive://circle");
+            create_primitive_entity("Plane", "primitive://plane", EntityType::Mesh);
+            create_primitive_entity("Circle", "primitive://circle", EntityType::Mesh);
             ImGui::Separator();
-            if (ImGui::MenuItem("Cube")) create_primitive_entity("Cube", "primitive://cube");
-            if (ImGui::MenuItem("Sphere")) create_primitive_entity("Sphere", "primitive://sphere");
-            if (ImGui::MenuItem("Cylinder")) create_primitive_entity("Cylinder", "primitive://cylinder");
+            create_primitive_entity("Cube", "primitive://cube", EntityType::Mesh);
+            create_primitive_entity("Sphere", "primitive://sphere", EntityType::Mesh);
+            create_primitive_entity("Cylinder", "primitive://cylinder", EntityType::Mesh);
 
             ImGui::Separator();
-            if (ImGui::MenuItem("Camera")) {
+            if (menuItemWithIcon("Camera", EntityType::Camera)) {
                 const std::string name = name_buffer_[0] != '\0' ? name_buffer_ : "Camera";
                 auto entity = scene_->create_entity(name);
                 entity.add_component<engine::CameraComponent>();
             }
             ImGui::Separator();
-            if (ImGui::MenuItem("Directional Light")) {
+            if (menuItemWithIcon("Directional Light", EntityType::Light)) {
                 const std::string name = name_buffer_[0] != '\0' ? name_buffer_ : "Sun";
                 auto entity = scene_->create_entity(name);
                 auto& transform = entity.get_component<engine::TransformComponent>();
@@ -73,7 +87,7 @@ namespace editor {
                     1.2f
                 );
             }
-            if (ImGui::MenuItem("Point Light")) {
+            if (menuItemWithIcon("Point Light", EntityType::Light)) {
                 const std::string name = name_buffer_[0] != '\0' ? name_buffer_ : "Light";
                 auto entity = scene_->create_entity(name);
                 auto& transform = entity.get_component<engine::TransformComponent>();
@@ -92,12 +106,11 @@ namespace editor {
                         found_any = true;
                         std::string filename = meta.filepath.filename().string();
 
-                        if (ImGui::MenuItem(filename.c_str())) {
+                        if (menuItemWithIcon(filename.c_str(), EntityType::Mesh)) {
                             const std::string name = name_buffer_[0] != '\0' ? name_buffer_ : meta.filepath.stem().string();
                             auto entity = scene_->create_entity(name);
                             entity.add_component<engine::MeshComponent>(handle);
                             entity.add_component<engine::MaterialComponent>(glm::vec4{1.0f, 1.0f, 1.0f, 1.0f});
-                            // entity.add_component<engine::BoxColliderComponent>();
                         }
                     }
                 }
@@ -145,7 +158,19 @@ namespace editor {
             const ImGuiTreeNodeFlags flags = (is_selected ? ImGuiTreeNodeFlags_Selected : 0)
                 | ImGuiTreeNodeFlags_OpenOnArrow
                 | ImGuiTreeNodeFlags_SpanAvailWidth;
-            const bool opened = ImGui::TreeNodeEx(label.tag.c_str(), flags);
+
+            // Extract entity type and pad label string with spaces for the tree icon
+            const EntityType entity_type = get_entity_type_from_name(label.tag);
+            const std::string node_label = "    " + label.tag;
+
+            const ImVec2 cursor = ImGui::GetCursorScreenPos();
+            const bool opened = ImGui::TreeNodeEx(node_label.c_str(), flags);
+
+            // Draw vector icon in the space padding before label text
+            ImDrawList* draw_list = ImGui::GetWindowDrawList();
+            const float label_spacing = ImGui::GetTreeNodeToLabelSpacing();
+            const ImVec2 icon_pos = ImVec2(cursor.x + label_spacing - 2.0f, cursor.y + (ImGui::GetTextLineHeight() - 14.0f) * 0.5f);
+            draw_entity_icon(draw_list, icon_pos, entity_type);
 
             if (!is_active) {
                 ImGui::PopStyleColor();
