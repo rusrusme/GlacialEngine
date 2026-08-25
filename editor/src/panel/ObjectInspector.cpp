@@ -21,6 +21,12 @@ namespace editor {
     }
 
     void ObjectInspector::draw_component(engine::Entity entity) const {
+        if (selected_entity_.has_component<engine::ActiveComponent>()) {
+            auto& active_comp = entity.get_component<engine::ActiveComponent>();
+            ImGui::Checkbox("##Active", &active_comp.active);
+            ImGui::SameLine();
+        }
+
         // --------------------
         // Label
         // --------------------

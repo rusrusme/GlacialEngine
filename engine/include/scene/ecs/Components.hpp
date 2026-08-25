@@ -72,6 +72,10 @@ namespace engine {
         }
     };
 
+    struct ActiveComponent {
+        bool active = true;
+    };
+
     struct MeshComponent {
         AssetHandle handle{0};
 

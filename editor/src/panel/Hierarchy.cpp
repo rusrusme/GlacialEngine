@@ -117,11 +117,39 @@ namespace editor {
             const auto& label = entity.get_component<engine::LabelComponent>();
             ImGui::PushID(entity.uuid());
 
+            bool is_active = true;
+            if (entity.has_component<engine::ActiveComponent>()) {
+                is_active = entity.get_component<engine::ActiveComponent>().active;
+            }
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.3f, 0.3f, 0.3f, 0.4f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.2f, 0.2f, 0.2f, 0.6f));
+
+            const char* eye_icon = is_active ? "(o)" : "(-)";
+            if (ImGui::SmallButton(eye_icon)) {
+                if (!entity.has_component<engine::ActiveComponent>()) {
+                    entity.add_component<engine::ActiveComponent>(!is_active);
+                } else {
+                    auto& active_comp = entity.get_component<engine::ActiveComponent>();
+                    active_comp.active = !active_comp.active;
+                }
+            }
+            ImGui::PopStyleColor(3);
+
+            ImGui::SameLine();
+            if (!is_active) {
+                ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetStyleColorVec4(ImGuiCol_TextDisabled));
+            }
+
             const bool is_selected = selected_entity_ == raw_entity;
             const ImGuiTreeNodeFlags flags = (is_selected ? ImGuiTreeNodeFlags_Selected : 0)
                 | ImGuiTreeNodeFlags_OpenOnArrow
                 | ImGuiTreeNodeFlags_SpanAvailWidth;
             const bool opened = ImGui::TreeNodeEx(label.tag.c_str(), flags);
+
+            if (!is_active) {
+                ImGui::PopStyleColor();
+            }
 
             if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen()) {
                 selected_entity_ = entity;

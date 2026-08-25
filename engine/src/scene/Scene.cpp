@@ -28,6 +28,7 @@ namespace engine {
         auto& tag = entity.add_component<LabelComponent>();
         tag.tag = name.empty() ? "Entity" : name;
 
+        entity.add_component<ActiveComponent>(true);
         entity.add_component<TransformComponent>();
         CORE_INFO("Created entity - {0} [{1}]", name, static_cast<uint64_t>(uuid));
         return entity;
@@ -52,7 +53,7 @@ namespace engine {
 
     void Scene::on_render(Renderer& renderer, Camera& camera, AssetManager& asset_manager, const float delta_time) {
         renderer.begin_scene(camera);
-        renderer.set_blend(true);
+        Renderer::set_blend(true);
 
         // ------------------
         // Directional lights
@@ -60,7 +61,9 @@ namespace engine {
         auto dir_light_view = registry_.view<TransformComponent, DirectionalLightComponent>();
         for (auto entity : dir_light_view) {
             auto [transform, light] = dir_light_view.get<TransformComponent, DirectionalLightComponent>(entity);
-
+            if (registry_.all_of<ActiveComponent>(entity) && !registry_.get<ActiveComponent>(entity).active) {
+                continue;
+            }
             renderer.add_directional_light({
                 .direction = transform.get_forward(),
                 .color     = light.color,
@@ -73,7 +76,9 @@ namespace engine {
         auto point_light_view = registry_.view<TransformComponent, PointLightComponent>();
         for (auto entity : point_light_view) {
             auto [transform, light] = point_light_view.get<TransformComponent, PointLightComponent>(entity);
-
+            if (registry_.all_of<ActiveComponent>(entity) && !registry_.get<ActiveComponent>(entity).active) {
+                continue;
+            }
             renderer.add_point_light({
                 .position  = transform.position,
                 .color     = light.color,
@@ -86,9 +91,11 @@ namespace engine {
         // ------------------
         std::unordered_map<UUID, std::vector<InstanceData>> mesh_batches;
 
-        auto mesh_view = registry_.view<TransformComponent, MeshComponent>();
+        auto mesh_view = registry_.view<TransformComponent, MeshComponent, ActiveComponent>();
         for (auto entity : mesh_view) {
-            auto [transform, mesh_comp] = mesh_view.get<TransformComponent, MeshComponent>(entity);
+            auto [transform, mesh_comp, active] = mesh_view.get<TransformComponent, MeshComponent, ActiveComponent>(entity);
+
+            if (!active.active) continue;
 
             glm::vec4 color{1.0f};
             if (registry_.all_of<MaterialComponent>(entity)) {
