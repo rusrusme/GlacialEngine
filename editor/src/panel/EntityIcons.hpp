@@ -44,12 +44,9 @@ namespace editor {
         switch (type) {
             case EntityType::Camera : {
                 ImU32 col = IM_COL32(90, 190, 255, 230); // Soft Cyan
-                // Film reels on top
                 draw_list->AddCircleFilled(ImVec2(pos.x + 3.5f, pos.y + 3.0f), 1.5f, col);
                 draw_list->AddCircleFilled(ImVec2(pos.x + 6.5f, pos.y + 3.0f), 1.5f, col);
-                // Camera Body
                 draw_list->AddRectFilled(ImVec2(pos.x + 1.0f, pos.y + 4.5f), ImVec2(pos.x + 8.5f, pos.y + 11.5f), col, 1.5f);
-                // Lens Cone
                 draw_list->AddTriangleFilled(
                     ImVec2(pos.x + 8.5f, pos.y + 6.5f),
                     ImVec2(pos.x + 13.0f, pos.y + 4.0f),
@@ -60,13 +57,8 @@ namespace editor {
             }
             case EntityType::Light : {
                 ImU32 col = IM_COL32(255, 210, 80, 240); // Amber Yellow
-                draw_list->AddCircleFilled(center, 3.0f, col);
-                for (int i = 0; i < 4; ++i) {
-                    float angle = i * 1.57079f;
-                    auto p1 = ImVec2(center.x + std::cos(angle) * 4.5f, center.y + std::sin(angle) * 4.5f);
-                    auto p2 = ImVec2(center.x + std::cos(angle) * 7.0f, center.y + std::sin(angle) * 7.0f);
-                    draw_list->AddLine(p1, p2, col, 1.2f);
-                }
+                draw_list->AddCircleFilled(ImVec2(center.x, pos.y + 4.5f), 4.0f, col);
+                draw_list->AddRectFilled(ImVec2(center.x - 1.2f, pos.y + 11.0f), ImVec2(center.x + 1.2f, pos.y + 12.5f), col, 1.0f);
                 break;
             }
             case EntityType::Mesh2D : {
@@ -117,9 +109,9 @@ namespace editor {
         constexpr float size = 14.0f;
         const auto center = ImVec2(pos.x + size * 0.5f, pos.y + size * 0.5f);
 
-        ImU32 col = is_active
-                        ? (is_hovered ? IM_COL32(240, 240, 245, 255) : IM_COL32(180, 185, 195, 220))
-                        : (is_hovered ? IM_COL32(140, 140, 150, 255) : IM_COL32(80, 80, 90, 160));
+        const ImU32 col = is_active
+                              ? (is_hovered ? IM_COL32(240, 240, 245, 255) : IM_COL32(180, 185, 195, 220))
+                              : (is_hovered ? IM_COL32(140, 140, 150, 255) : IM_COL32(80, 80, 90, 160));
 
         // Top Eye Arc
         draw_list->AddBezierCubic(

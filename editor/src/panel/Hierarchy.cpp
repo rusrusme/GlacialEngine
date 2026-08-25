@@ -122,6 +122,7 @@ namespace editor {
         }
 
         ImGui::Separator();
+        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(2.0f, 1.0f));
 
         auto view = scene_->view<engine::LabelComponent>();
         for (auto raw_entity : view) {
@@ -157,7 +158,7 @@ namespace editor {
             ImGui::PopStyleColor(3);
             // ---------------------------------
 
-            ImGui::SameLine();
+            ImGui::SameLine(0.0f, 4.0f);
             if (!is_active) {
                 ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetStyleColorVec4(ImGuiCol_TextDisabled));
             }
@@ -185,6 +186,8 @@ namespace editor {
             }
             ImGui::PopID();
         }
+
+        ImGui::PopStyleVar();
 
         if (selected_entity_ && !ImGui::IsAnyItemActive() && engine::Input::is_key_pressed_once(engine::Key::DELETE)) {
             entity_to_destroy = selected_entity_;
