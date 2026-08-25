@@ -53,7 +53,7 @@ namespace editor {
         // Mesh
         // --------------------
         if (entity.has_component<engine::MeshComponent>()) {
-            if (ImGui::CollapsingHeader("Mesh Component", ImGuiTreeNodeFlags_DefaultOpen)) {
+            if (ImGui::CollapsingHeader("Mesh", ImGuiTreeNodeFlags_DefaultOpen)) {
                 auto& mesh_comp = entity.get_component<engine::MeshComponent>();
                 const auto& current_meta = asset_manager_->get_metadata(mesh_comp.handle);
 
@@ -79,7 +79,7 @@ namespace editor {
         // Material
         // --------------------
         if (entity.has_component<engine::MaterialComponent>()) {
-            if (ImGui::CollapsingHeader("Material Component", ImGuiTreeNodeFlags_DefaultOpen)) {
+            if (ImGui::CollapsingHeader("Material", ImGuiTreeNodeFlags_DefaultOpen)) {
                 auto& material = entity.get_component<engine::MaterialComponent>();
                 ImGui::ColorEdit4("Color", glm::value_ptr(material.color));
             }
@@ -93,6 +93,8 @@ namespace editor {
                 auto& dir_light = entity.get_component<engine::DirectionalLightComponent>();
                 ImGui::DragFloat("Intensity", &dir_light.intensity, 0.01);
                 ImGui::ColorEdit4("Color", glm::value_ptr(dir_light.color));
+                bool todo_shadow_button = true;
+                ImGui::Checkbox("Cast Shadows", &todo_shadow_button);
             }
         }
         if (entity.has_component<engine::PointLightComponent>()) {
@@ -101,6 +103,8 @@ namespace editor {
                 ImGui::DragFloat("Intensity", &point_light.intensity, 0.01);
                 ImGui::ColorEdit4("Color", glm::value_ptr(point_light.color));
                 ImGui::DragFloat("Radius", &point_light.radius);
+                bool todo_shadow_button = true;
+                ImGui::Checkbox("Cast Shadows", &todo_shadow_button);
             }
         }
 
@@ -108,7 +112,7 @@ namespace editor {
         // Box Collider
         // --------------------
         if (entity.has_component<engine::BoxColliderComponent>()) {
-            if (ImGui::CollapsingHeader("Box Collider Component", ImGuiTreeNodeFlags_DefaultOpen)) {
+            if (ImGui::CollapsingHeader("Box Collider", ImGuiTreeNodeFlags_DefaultOpen)) {
                 auto& collider = entity.get_component<engine::BoxColliderComponent>();
 
                 ImGui::DragFloat3("Center", glm::value_ptr(collider.center), 0.05f);
@@ -145,7 +149,7 @@ namespace editor {
                 }
             }
             if (!entity.has_component<engine::BoxColliderComponent>()) {
-                if (ImGui::MenuItem("Box Collider Component")) {
+                if (ImGui::MenuItem("Box Collider")) {
                     auto& collider = entity.add_component<engine::BoxColliderComponent>();
 
                     if (entity.has_component<engine::MeshComponent>()) {

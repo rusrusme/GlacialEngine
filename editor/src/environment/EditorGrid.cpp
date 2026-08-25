@@ -22,12 +22,12 @@ namespace editor {
     void EditorGrid::render(const engine::Renderer& renderer) {
         if (!initialized_ || !grid_shader_ || !grid_vao_) return;
 
-        renderer.set_blend(true);
+        engine::Renderer::set_blend(true);
 
         grid_shader_->bind();
-        renderer.draw_arrays(*grid_vao_, 6);
+        engine::Renderer::draw_arrays(*grid_vao_, 6);
         grid_shader_->unbind();
 
-        renderer.set_blend(false);
+        engine::Renderer::set_blend(false);
     }
 }

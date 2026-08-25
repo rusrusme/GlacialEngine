@@ -25,7 +25,8 @@ void main() {
 
     vec3 world_pos = v_near_point + t * ray_dir;
 
-    vec4 clip_space_pos = u_projection * u_view * vec4(world_pos, 1.0);
+    vec3 depth_pos = vec3(world_pos.x, world_pos.y + 0.0005, world_pos.z);
+    vec4 clip_space_pos = u_projection * u_view * vec4(depth_pos, 1.0);
     gl_FragDepth = (clip_space_pos.z / clip_space_pos.w) * 0.5 + 0.5;
 
     vec2 coord = world_pos.xz;
@@ -35,8 +36,8 @@ void main() {
     float dist = length(world_pos - v_near_point);
     float fade = max(0.0, 1.0 - (dist / 1000.0));
 
-    vec4 color = vec4(0.35, 0.35, 0.35, grid1 * 0.5);
-    color = mix(color, vec4(0.6, 0.6, 0.6, 0.8), grid10);
+    vec4 color = vec4(0.65, 0.65, 0.65, grid1 * 0.2);
+    color = mix(color, vec4(0.85, 0.85, 0.85, 0.4), grid10);
 
     if (color.a < 0.01) discard;
 

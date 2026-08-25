@@ -21,7 +21,7 @@ namespace editor {
         const uint32_t width = engine::Application::get().window().get_width();
         const uint32_t height = engine::Application::get().window().get_height();
         camera_.set_aspect_ratio(static_cast<float>(width) / static_cast<float>(height));
-        camera_.set_projection_params(45.0f, 0.1f, 10000.0f);
+        camera_.set_projection_params(45.0f, 0.1f, 2000.0f);
 
         asset_manager_->scan_directory("assets/models");
     }
@@ -58,11 +58,11 @@ namespace editor {
 
         renderer.clear({0.12f, 0.12f, 0.12f, 1.0f});
 
-        if (debug_panel_ && debug_panel_->is_grid_enabled()) {
-            editor_grid_.render(renderer);
-        }
         if (active_scene_) {
             active_scene_->on_render(renderer, camera_, *asset_manager_, delta_time);
+        }
+        if (debug_panel_ && debug_panel_->is_grid_enabled()) {
+            editor_grid_.render(renderer);
         }
         if (active_scene_) {
             auto view = active_scene_->view<engine::TransformComponent, engine::BoxColliderComponent>();
