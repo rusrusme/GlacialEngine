@@ -17,6 +17,10 @@ float draw_grid(vec2 pt, float spacing) {
     return 1.0 - min(line, 1.0);
 }
 
+float log10(float x) {
+    return log(x) * 0.4342944819; // 1 / ln(10)
+}
+
 void main() {
     vec3 ray_dir = v_far_point - v_near_point;
     float t = -v_near_point.y / ray_dir.y;
@@ -30,16 +34,34 @@ void main() {
     gl_FragDepth = (clip_space_pos.z / clip_space_pos.w) * 0.5 + 0.5;
 
     vec2 coord = world_pos.xz;
-    float grid1 = draw_grid(coord, 1.0);
-    float grid10 = draw_grid(coord, 10.0);
+    vec2 dxy = fwidth(coord);
+    float pixel_size = max(dxy.x, dxy.y);
 
+    float min_pixels_per_cell = 100.0;
+    float log_scale = log10(pixel_size * min_pixels_per_cell);
+    float lod = floor(log_scale);
+    float fade = smoothstep(0.0, 1.0, fract(log_scale));
+
+    // Three parallel grid scales
+    float cell_size0 = pow(10.0, lod);
+    float cell_size1 = cell_size0 * 10.0;
+    float cell_size2 = cell_size1 * 10.0;
+
+    float g0 = draw_grid(coord, cell_size0);
+    float g1 = draw_grid(coord, cell_size1);
+    float g2 = draw_grid(coord, cell_size2);
+
+    float a0 = 0.20 * (1.0 - fade);
+    float a1 = mix(0.55, 0.20, fade);
+    float a2 = 0.55;
+
+    float alpha = max(g0 * a0, max(g1 * a1, g2 * a2));
+
+    // Fade
     float dist = length(world_pos - v_near_point);
-    float fade = max(0.0, 1.0 - (dist / 1000.0));
+    float distance_fade = max(0.0, 1.0 - (dist * 0.0005));
 
-    vec4 color = vec4(0.65, 0.65, 0.65, grid1 * 0.2);
-    color = mix(color, vec4(0.85, 0.85, 0.85, 0.4), grid10);
+    if (alpha < 0.001) discard;
 
-    if (color.a < 0.01) discard;
-
-    frag_color = vec4(color.rgb, color.a * fade);
+    frag_color = vec4(vec3(0.85), alpha * distance_fade);
 }
