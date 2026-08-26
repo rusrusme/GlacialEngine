@@ -114,7 +114,8 @@ namespace engine {
         const BufferLayout layout = {
             {ShaderDataType::Float3, "a_position"},
             {ShaderDataType::Float3, "a_normal"},
-            {ShaderDataType::Float2, "a_uv"}
+            {ShaderDataType::Float2, "a_uv"},
+            {ShaderDataType::Float3, "a_tangent"}
         };
         vao->add_vertex_buffer(vbo, layout);
 
@@ -154,6 +155,7 @@ namespace engine {
 
         shader->bind();
 
+        // Albedo Map (Slot 0)
         if (mesh.texture) {
             mesh.texture->bind(0);
             shader->set_int("u_albedo_texture", 0);
@@ -161,6 +163,16 @@ namespace engine {
         }
         else {
             shader->set_int("u_use_albedo_texture", 0);
+        }
+
+        // Normal Map (Slot 1)
+        if (mesh.normal_map) {
+            mesh.normal_map->bind(1);
+            shader->set_int("u_normal_texture", 1);
+            shader->set_int("u_use_normal_texture", 1);
+        }
+        else {
+            shader->set_int("u_use_normal_texture", 0);
         }
 
         // Bind Directional and Point Lights

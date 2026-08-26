@@ -35,7 +35,8 @@ namespace engine {
         BufferLayout layout = {
             {ShaderDataType::Float3, "a_Position"},
             {ShaderDataType::Float3, "a_Normal"},
-            {ShaderDataType::Float2, "a_UV"}
+            {ShaderDataType::Float2, "a_UV"},
+            {ShaderDataType::Float3, "a_tangent"}
         };
 
         vertex_array->add_vertex_buffer(vertex_buffer, layout);

@@ -5,6 +5,7 @@ out vec4 frag_color;
 in vec3 v_position;
 in vec3 v_normal;
 in vec2 v_uv;
+in vec3 v_tangent;
 in vec4 v_color;
 
 struct DirLight {
@@ -32,6 +33,9 @@ uniform int u_num_point_lights;
 uniform sampler2D u_albedo_texture;
 uniform int u_use_albedo_texture;
 
+uniform sampler2D u_normal_texture;
+uniform int u_use_normal_texture;
+
 void main() {
     vec4 tex_color = (u_use_albedo_texture != 0) ? texture(u_albedo_texture, v_uv) : vec4(1.0);
     vec4 base_color = v_color * tex_color;
@@ -39,6 +43,16 @@ void main() {
     if (base_color.a < 0.01) discard;
 
     vec3 norm = normalize(v_normal);
+
+    if (u_use_normal_texture != 0) {
+        vec3 tang = normalize(v_tangent - dot(v_tangent, norm) * norm); // Gram-Schmidt orthogonalization
+        vec3 bitang = cross(norm, tang);
+        mat3 TBN = mat3(tang, bitang, norm);
+
+        vec3 sampled_normal = texture(u_normal_texture, v_uv).rgb * 2.0 - 1.0;
+        norm = normalize(TBN * sampled_normal);
+    }
+
     vec3 total_diffuse = vec3(0.0);
 
     // Directional Lights
