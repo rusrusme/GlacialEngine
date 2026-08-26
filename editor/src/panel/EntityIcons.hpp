@@ -62,7 +62,7 @@ namespace editor {
                 break;
             }
             case EntityType::Mesh2D : {
-                ImU32 col = IM_COL32(160, 220, 140, 230); // Flat Green Outline Icon
+                ImU32 col = IM_COL32(230, 120, 120, 230); // Flat Green Outline Icon
                 draw_list->AddRect(ImVec2(pos.x + 2, pos.y + 2), ImVec2(pos.x + 12, pos.y + 12), col, 2.0f, 0, 1.5f);
                 draw_list->AddLine(ImVec2(pos.x + 2, pos.y + 2), ImVec2(pos.x + 12, pos.y + 12), col, 1.2f);
                 break;
