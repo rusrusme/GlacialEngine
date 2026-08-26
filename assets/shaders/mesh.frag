@@ -83,6 +83,16 @@ vec3 fresnelSchlick(float cosTheta, vec3 F0) {
     return F0 + (1.0 - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
 }
 
+// ACES Narkowicz Filmic Tone Mapping Curve (Matches Blender / Engine Standards)
+vec3 toneMapACES(vec3 color) {
+    const float a = 2.51;
+    const float b = 0.03;
+    const float c = 2.43;
+    const float d = 0.59;
+    const float e = 0.14;
+    return clamp((color * (a * color + b)) / (color * (c * color + d) + e), 0.0, 1.0);
+}
+
 in vec2 v_pbr;
 
 void main() {
@@ -141,9 +151,9 @@ void main() {
         float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0) + 0.0001;
         vec3 specular = numerator / denominator;
 
-        vec3 kS = F;
-        vec3 kD = vec3(1.0) - kS;
-        kD *= 1.0 - metallic;
+        // Monochromatic dielectric attenuation prevents colored specular from corrupting diffuse hues
+        vec3 F_dielectric = fresnelSchlick(max(dot(H, V), 0.0), vec3(0.04));
+        vec3 kD = (vec3(1.0) - F_dielectric) * (1.0 - metallic);
 
         float NdotL = max(dot(N, L), 0.0);
         Lo += (kD * albedo.rgb / PI + specular) * radiance * NdotL;
@@ -169,9 +179,9 @@ void main() {
             float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0) + 0.0001;
             vec3 specular = numerator / denominator;
 
-            vec3 kS = F;
-            vec3 kD = vec3(1.0) - kS;
-            kD *= 1.0 - metallic;
+            // Monochromatic dielectric attenuation prevents colored specular from corrupting diffuse hues
+            vec3 F_dielectric = fresnelSchlick(max(dot(H, V), 0.0), vec3(0.04));
+            vec3 kD = (vec3(1.0) - F_dielectric) * (1.0 - metallic);
 
             float NdotL = max(dot(N, L), 0.0);
             Lo += (kD * albedo.rgb / PI + specular) * radiance * NdotL;
@@ -181,8 +191,8 @@ void main() {
     vec3 ambient = vec3(0.01) * albedo.rgb;
     vec3 color = ambient + Lo;
 
-    // Exposure-based Tone Mapping & Gamma Correction back to sRGB
-    color = vec3(1.0) - exp(-color * 2.5);
+    // ACES Filmic Tone Mapping & Gamma Correction back to sRGB
+    color = toneMapACES(color * 1.2);
     color = pow(color, vec3(1.0 / 2.2));
 
     frag_color = vec4(color, albedo.a);
