@@ -13,6 +13,15 @@ namespace engine {
     void Mesh::setup(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices) {
         if (vertices.empty() || indices.empty()) return;
 
+        local_bounds = {
+            glm::vec3(std::numeric_limits<float>::max()),
+            glm::vec3(std::numeric_limits<float>::lowest())
+        };
+        for (const auto& vertex : vertices) {
+            local_bounds.min = glm::min(local_bounds.min, vertex.position);
+            local_bounds.max = glm::max(local_bounds.max, vertex.position);
+        }
+
         // 1. VertexArray erzeugen
         vertex_array = std::make_shared<VertexArray>();
 

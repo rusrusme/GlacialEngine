@@ -154,6 +154,15 @@ namespace engine {
 
         shader->bind();
 
+        if (mesh.texture) {
+            mesh.texture->bind(0);
+            shader->set_int("u_albedo_texture", 0);
+            shader->set_int("u_use_albedo_texture", 1);
+        }
+        else {
+            shader->set_int("u_use_albedo_texture", 0);
+        }
+
         // Bind Directional and Point Lights
         shader->set_int("u_num_dir_lights", static_cast<int>(directional_lights_.size()));
         for (size_t i = 0; i < directional_lights_.size(); ++i) {
@@ -212,7 +221,7 @@ namespace engine {
     }
 
     void Renderer::draw_mesh(const Mesh& mesh, const glm::mat4& model_matrix, const glm::vec4& color) {
-        draw_mesh_instanced(mesh, {{ model_matrix, color }});
+        draw_mesh_instanced(mesh, {{model_matrix, color}});
     }
 
     void Renderer::draw_line(const glm::vec3& from, const glm::vec3& to, const glm::vec3& color) {

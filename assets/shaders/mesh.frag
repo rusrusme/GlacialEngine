@@ -29,7 +29,15 @@ uniform int u_num_dir_lights;
 uniform PointLight u_point_lights[MAX_POINT_LIGHTS];
 uniform int u_num_point_lights;
 
+uniform sampler2D u_albedo_texture;
+uniform int u_use_albedo_texture;
+
 void main() {
+    vec4 tex_color = (u_use_albedo_texture != 0) ? texture(u_albedo_texture, v_uv) : vec4(1.0);
+    vec4 base_color = v_color * tex_color;
+
+    if (base_color.a < 0.01) discard;
+
     vec3 norm = normalize(v_normal);
     vec3 total_diffuse = vec3(0.0);
 
@@ -54,11 +62,8 @@ void main() {
     }
 
     float ambient_strength = 0.25;
-    vec3 ambient = ambient_strength * v_color.rgb;
+    vec3 ambient = ambient_strength * base_color.rgb;
 
-    vec3 final_color = ambient + (total_diffuse * v_color.rgb);
-
-    if (v_color.a < 0.01) discard; // Discard fully transparent pixels so they don't occlude depth
-
-    frag_color = vec4(final_color, v_color.a);
+    vec3 final_color = ambient + (total_diffuse * base_color.rgb);
+    frag_color = vec4(final_color, base_color.a);
 }

@@ -6,12 +6,41 @@
 #define CGLTF_IMPLEMENTATION
 #include <cgltf.h>
 
+#include <stb_image.h>
+
 #include "render/mesh/MeshLoader.hpp"
 
 #include "render/mesh/Mesh.hpp"
 #include "render/mesh/PrimitiveMesh.hpp"
 
 namespace engine {
+    static std::shared_ptr<Texture2D> extract_gltf_texture(const cgltf_texture* gltf_tex) {
+        if (!gltf_tex || !gltf_tex->image) return nullptr;
+
+        const cgltf_image* image = gltf_tex->image;
+        const uint8_t* buffer_data = nullptr;
+        size_t buffer_size = 0;
+
+        if (image->buffer_view) {
+            const auto* buffer = image->buffer_view->buffer;
+            buffer_data = static_cast<const uint8_t*>(buffer->data) + image->buffer_view->offset;
+            buffer_size = image->buffer_view->size;
+        }
+
+        if (!buffer_data || buffer_size == 0) return nullptr;
+
+        int width, height, channels;
+        stbi_uc* pixels = stbi_load_from_memory(buffer_data, static_cast<int>(buffer_size), &width, &height, &channels, 4);
+        if (!pixels) {
+            std::cerr << "Engine warning: Failed to decode embedded GLB texture!\n";
+            return nullptr;
+        }
+
+        auto texture = std::make_shared<Texture2D>(width, height, 4, pixels);
+        stbi_image_free(pixels);
+        return texture;
+    }
+
     static Mesh load_gltf(const std::string& path) {
         cgltf_options options{};
         cgltf_data* data = nullptr;
@@ -29,11 +58,17 @@ namespace engine {
 
         std::vector<Vertex> vertices;
         std::vector<uint32_t> indices;
+        std::shared_ptr<Texture2D> albedo_texture = nullptr;
 
         for (cgltf_size i = 0; i < data->meshes_count; ++i) {
             const auto& mesh = data->meshes[i];
             for (cgltf_size j = 0; j < mesh.primitives_count; ++j) {
                 const auto& prim = mesh.primitives[j];
+
+                // Extract base color texture if present
+                if (!albedo_texture && prim.material && prim.material->has_pbr_metallic_roughness) {
+                    albedo_texture = extract_gltf_texture(prim.material->pbr_metallic_roughness.base_color_texture.texture);
+                }
 
                 cgltf_size vertex_count = prim.attributes[0].data->count;
                 cgltf_size base_index = vertices.size();
@@ -95,6 +130,7 @@ namespace engine {
 
         Mesh mesh{};
         mesh.vertex_array = std::move(vao);
+        mesh.texture = std::move(albedo_texture); // Attached extracted texture
         mesh.local_bounds = local_bounds;
         return mesh;
     }

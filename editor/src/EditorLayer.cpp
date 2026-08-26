@@ -25,7 +25,7 @@ namespace editor {
         camera_.set_aspect_ratio(static_cast<float>(width) / static_cast<float>(height));
         camera_.set_projection_params(45.0f, 0.1f, 2000.0f);
 
-        asset_manager_->scan_directory("assets/models");
+        asset_manager_->scan_directory("assets");
 
         setting::config::load();
         const int toggle_debug_panel = setting::config::get_int("toggle_debug_panel");

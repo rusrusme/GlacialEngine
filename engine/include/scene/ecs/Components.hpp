@@ -85,9 +85,10 @@ namespace engine {
 
     struct MaterialComponent {
         glm::vec4 color{1.0f};
+        AssetHandle texture_handle{0};
 
         MaterialComponent() = default;
-        MaterialComponent(const glm::vec4 color) : color(color) {}
+        MaterialComponent(const glm::vec4 color, const AssetHandle handle = {0}) : color(color), texture_handle(handle) {}
     };
 
     struct CameraComponent {

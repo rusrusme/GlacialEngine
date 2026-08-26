@@ -5,8 +5,7 @@
 
 #pragma once
 
-#include <render/Renderer.hpp>
-#include <render/mesh/Mesh.hpp>
+#include "render/mesh/Mesh.hpp"
 
 namespace engine {
     class PrimitiveMesh {

@@ -6,7 +6,8 @@
 #pragma once
 
 #include <string>
-#include <render/mesh/Mesh.hpp>
+
+#include "render/mesh/Mesh.hpp"
 
 namespace engine {
     class MeshLoader {
