@@ -95,11 +95,45 @@ namespace engine {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
 
-    Mesh Renderer::upload_mesh(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices) {
-        if (vertices.empty() || indices.empty()) {
+    Mesh Renderer::upload_mesh(const std::vector<Vertex>& vertices_in, const std::vector<uint32_t>& indices) {
+        if (vertices_in.empty() || indices.empty()) {
             std::cerr << "Engine error: renderer: cannot upload empty mesh" << std::endl;
             return {};
         }
+
+        std::vector<Vertex> vertices = vertices_in;
+
+        // Auto-generate tangents if unassigned (e.g. primitive meshes)
+        if (glm::length(vertices[0].tangent) < 0.0001f) {
+            for (size_t k = 0; k < indices.size(); k += 3) {
+                Vertex& v0 = vertices[indices[k]];
+                Vertex& v1 = vertices[indices[k + 1]];
+                Vertex& v2 = vertices[indices[k + 2]];
+
+                glm::vec3 edge1 = v1.position - v0.position;
+                glm::vec3 edge2 = v2.position - v0.position;
+                glm::vec2 deltaUV1 = v1.uv - v0.uv;
+                glm::vec2 deltaUV2 = v2.uv - v0.uv;
+
+                float denom = (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
+                float f = (std::abs(denom) < 0.0001f) ? 1.0f : 1.0f / denom;
+
+                glm::vec3 tangent{
+                    f * (deltaUV2.y * edge1.x - deltaUV1.y * edge2.x),
+                    f * (deltaUV2.y * edge1.y - deltaUV1.y * edge2.y),
+                    f * (deltaUV2.y * edge1.z - deltaUV1.y * edge2.z)
+                };
+
+                v0.tangent += tangent;
+                v1.tangent += tangent;
+                v2.tangent += tangent;
+            }
+
+            for (auto& v : vertices) {
+                v.tangent = (glm::length(v.tangent) > 0.0001f) ? glm::normalize(v.tangent) : glm::vec3(1.0f, 0.0f, 0.0f);
+            }
+        }
+
         AABB local_bounds{
             glm::vec3(std::numeric_limits<float>::max()),
             glm::vec3(std::numeric_limits<float>::lowest())
@@ -197,36 +231,36 @@ namespace engine {
 
         const auto stride = static_cast<GLsizei>(sizeof(InstanceData));
         for (uint32_t i = 0; i < 4; ++i) {
-            glEnableVertexAttribArray(3 + i);
+            glEnableVertexAttribArray(4 + i);
             glVertexAttribPointer(
-                3 + i,
+                4 + i,
                 4,
                 GL_FLOAT,
                 GL_FALSE,
                 stride,
                 reinterpret_cast<const void*>(sizeof(glm::vec4) * i)
             );
-            glVertexAttribDivisor(3 + i, 1);
+            glVertexAttribDivisor(4 + i, 1);
         }
 
-        glEnableVertexAttribArray(7);
+        glEnableVertexAttribArray(8);
         glVertexAttribPointer(
-            7,
+            8,
             4,
             GL_FLOAT,
             GL_FALSE,
             stride,
             reinterpret_cast<const void*>(offsetof(InstanceData, color))
         );
-        glVertexAttribDivisor(7, 1);
+        glVertexAttribDivisor(8, 1);
 
         glDrawElementsInstanced(
-            GL_TRIANGLES,
-            static_cast<GLsizei>(mesh.vertex_array->get_index_buffer()->get_count()),
-            GL_UNSIGNED_INT,
-            nullptr,
-            static_cast<GLsizei>(instances.size())
-        );
+        GL_TRIANGLES,
+        static_cast<GLsizei>(mesh.vertex_array->get_index_buffer()->get_count()),
+        GL_UNSIGNED_INT,
+        nullptr,
+        static_cast<GLsizei>(instances.size())
+    );
 
         mesh.vertex_array->unbind();
         shader->unbind();
