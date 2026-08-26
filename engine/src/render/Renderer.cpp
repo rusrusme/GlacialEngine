@@ -209,6 +209,16 @@ namespace engine {
             shader->set_int("u_use_normal_texture", 0);
         }
 
+        // Metallic-Roughness Map (Slot 2)
+        if (mesh.metallic_roughness_map) {
+            mesh.metallic_roughness_map->bind(2);
+            shader->set_int("u_metallic_roughness_texture", 2);
+            shader->set_int("u_use_metallic_roughness_texture", 1);
+        }
+        else {
+            shader->set_int("u_use_metallic_roughness_texture", 0);
+        }
+
         // Bind Directional and Point Lights
         shader->set_int("u_num_dir_lights", static_cast<int>(directional_lights_.size()));
         for (size_t i = 0; i < directional_lights_.size(); ++i) {
@@ -254,20 +264,31 @@ namespace engine {
         );
         glVertexAttribDivisor(8, 1);
 
+        glEnableVertexAttribArray(9);
+        glVertexAttribPointer(
+            9,
+            2,
+            GL_FLOAT,
+            GL_FALSE,
+            stride,
+            reinterpret_cast<const void*>(offsetof(InstanceData, pbr))
+        );
+        glVertexAttribDivisor(9, 1);
+
         glDrawElementsInstanced(
-        GL_TRIANGLES,
-        static_cast<GLsizei>(mesh.vertex_array->get_index_buffer()->get_count()),
-        GL_UNSIGNED_INT,
-        nullptr,
-        static_cast<GLsizei>(instances.size())
-    );
+            GL_TRIANGLES,
+            static_cast<GLsizei>(mesh.vertex_array->get_index_buffer()->get_count()),
+            GL_UNSIGNED_INT,
+            nullptr,
+            static_cast<GLsizei>(instances.size())
+        );
 
         mesh.vertex_array->unbind();
         shader->unbind();
     }
 
     void Renderer::draw_mesh(const Mesh& mesh, const glm::mat4& model_matrix, const glm::vec4& color) {
-        draw_mesh_instanced(mesh, {{model_matrix, color}});
+        draw_mesh_instanced(mesh, {{.transform = model_matrix, .color = color}});
     }
 
     void Renderer::draw_line(const glm::vec3& from, const glm::vec3& to, const glm::vec3& color) {

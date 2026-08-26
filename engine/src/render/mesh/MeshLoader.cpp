@@ -58,8 +58,11 @@ namespace engine {
 
         std::vector<Vertex> vertices;
         std::vector<uint32_t> indices;
+
         std::shared_ptr<Texture2D> albedo_texture = nullptr;
         std::shared_ptr<Texture2D> normal_texture = nullptr;
+        std::shared_ptr<Texture2D> metallic_roughness_texture = nullptr;
+
         bool has_gltf_tangents = false;
 
         for (cgltf_size i = 0; i < data->meshes_count; ++i) {
@@ -73,6 +76,9 @@ namespace engine {
                     }
                     if (!normal_texture && prim.material->normal_texture.texture) {
                         normal_texture = extract_gltf_texture(prim.material->normal_texture.texture);
+                    }
+                    if (!metallic_roughness_texture && prim.material->has_pbr_metallic_roughness && prim.material->pbr_metallic_roughness.metallic_roughness_texture.texture) {
+                        metallic_roughness_texture = extract_gltf_texture(prim.material->pbr_metallic_roughness.metallic_roughness_texture.texture);
                     }
                 }
 
@@ -181,6 +187,7 @@ namespace engine {
         mesh.vertex_array = std::move(vao);
         mesh.texture = std::move(albedo_texture);
         mesh.normal_map = std::move(normal_texture);
+        mesh.metallic_roughness_map = std::move(metallic_roughness_texture);
         mesh.local_bounds = local_bounds;
         return mesh;
     }

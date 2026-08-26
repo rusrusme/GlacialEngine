@@ -98,13 +98,19 @@ namespace engine {
             if (!active.active) continue;
 
             glm::vec4 color{1.0f};
+            float roughness = 0.5f;
+            float metallic  = 0.0f;
             if (registry_.all_of<MaterialComponent>(entity)) {
-                color = registry_.get<MaterialComponent>(entity).color;
+                const auto& mat = registry_.get<MaterialComponent>(entity);
+                color     = mat.color;
+                roughness = mat.roughness;
+                metallic  = mat.metallic;
             }
 
             mesh_batches[mesh_comp.handle].push_back(InstanceData{
                 .transform = transform.get_matrix(),
-                .color     = color
+                .color     = color,
+                .pbr       = glm::vec2(roughness, metallic)
             });
         }
         for (const auto& [handle, instance_list] : mesh_batches) {

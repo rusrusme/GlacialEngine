@@ -33,9 +33,9 @@ namespace engine {
 
         // 3. Layout definieren (Position, Normal, UV)
         BufferLayout layout = {
-            {ShaderDataType::Float3, "a_Position"},
-            {ShaderDataType::Float3, "a_Normal"},
-            {ShaderDataType::Float2, "a_UV"},
+            {ShaderDataType::Float3, "a_position"},
+            {ShaderDataType::Float3, "a_normal"},
+            {ShaderDataType::Float2, "a_uv"},
             {ShaderDataType::Float3, "a_tangent"}
         };
 
