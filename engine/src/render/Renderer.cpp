@@ -7,6 +7,8 @@
 
 #include "core/Config.hpp"
 #include "render/Camera.hpp"
+#include "render/Texture2D.hpp"
+#include "render/VertexArray.hpp"
 #include "render/mesh/InstanceData.hpp"
 
 namespace engine {

@@ -10,6 +10,11 @@
 
 #include "render/mesh/MeshLoader.hpp"
 
+#include "render/Buffer.hpp"
+#include "render/BufferLayout.hpp"
+#include "render/Texture2D.hpp"
+#include "render/Vertex.hpp"
+#include "render/VertexArray.hpp"
 #include "render/mesh/Mesh.hpp"
 #include "render/mesh/PrimitiveMesh.hpp"
 

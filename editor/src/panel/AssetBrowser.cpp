@@ -70,7 +70,7 @@ namespace editor {
         }
     }
 
-    void AssetBrowser::render_asset_item(const std::filesystem::directory_entry& entry, float thumbnail_size) {
+    void AssetBrowser::render_asset_item(const std::filesystem::directory_entry& entry, const float thumbnail_size) {
         const auto& path = entry.path();
         const std::string filename = path.filename().string();
         const bool is_directory = entry.is_directory();

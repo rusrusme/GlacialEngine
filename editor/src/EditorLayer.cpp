@@ -8,7 +8,8 @@
 #include "Config.hpp"
 
 namespace editor {
-    EditorLayer::EditorLayer(std::shared_ptr<engine::Scene> scene, std::shared_ptr<engine::AssetManager> asset_manager) : active_scene_(std::move(scene)), asset_manager_(std::move(asset_manager)) {}
+    EditorLayer::EditorLayer(std::shared_ptr<engine::Scene> scene, std::shared_ptr<engine::AssetManager> asset_manager)
+        : active_scene_(std::move(scene)), asset_manager_(std::move(asset_manager)) {}
 
     void EditorLayer::on_attach(engine::Renderer& renderer) {
         framebuffer_ = std::make_unique<engine::Framebuffer>(1280, 720);
@@ -28,8 +29,8 @@ namespace editor {
         asset_manager_->scan_directory("assets");
 
         config::load();
-        const int toggle_debug_panel = config::get_int("toggle_debug_panel");
-        const int show_grid = config::get_int("show_grid");
+        const int toggle_debug_panel = config::get_value("toggle_debug_panel");
+        const int show_grid = config::get_value("show_grid");
         debug_panel_->set_debug_panel_enabled(toggle_debug_panel);
         debug_panel_->set_grid_enabled(show_grid);
     }
@@ -38,8 +39,8 @@ namespace editor {
         if (active_scene_) {
             active_scene_->on_shutdown();
         }
-        config::set_int("toggle_debug_panel", debug_panel_->is_debug_panel_enabled());
-        config::set_int("show_grid", debug_panel_->is_grid_enabled());
+        config::set_value("toggle_debug_panel", debug_panel_->is_debug_panel_enabled());
+        config::set_value("show_grid", debug_panel_->is_grid_enabled());
         config::save();
     }
 
@@ -67,13 +68,12 @@ namespace editor {
         if (!framebuffer_) return;
         framebuffer_->bind();
 
-        renderer.clear({0.12f, 0.12f, 0.12f, 1.0f});
+        engine::Renderer::clear({0.12f, 0.12f, 0.12f, 1.0f});
 
         if (active_scene_) {
             active_scene_->on_render(renderer, camera_, *asset_manager_, delta_time);
         }
-        if (debug_panel_&& debug_panel_->is_grid_enabled())
-        {
+        if (debug_panel_ && debug_panel_->is_grid_enabled()) {
             editor_grid_.render(renderer);
         }
         if (active_scene_) {
@@ -157,14 +157,11 @@ namespace editor {
         constexpr float circle_radius = 0.05f;
         const glm::vec3 dir = glm::normalize(direction);
 
-        // 1. Kleine Sonne im Zentrum zeichnen
         renderer.draw_sphere(position, circle_radius, color, 16);
 
-        // 2. Haupt-Richtungsstrahl (Pfeil)
         const glm::vec3 main_target = position + dir * ray_length;
         renderer.draw_line(position, main_target, color);
 
-        // 3. Pfeilspitze am Ende
         glm::vec3 up = std::abs(dir.z) < 0.999f ? glm::vec3(0, 0, 1) : glm::vec3(1, 0, 0);
         glm::vec3 right = glm::normalize(glm::cross(dir, up)) * 0.15f;
         up = glm::normalize(glm::cross(right, dir)) * 0.15f;

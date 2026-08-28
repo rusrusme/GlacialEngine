@@ -5,6 +5,8 @@
 
 #include "physics/AABB.hpp"
 
+#include "math/Ray.hpp"
+
 namespace engine {
     bool AABB::intersects_aabb(const AABB& other) const {
         return (min.x <= other.max.x && max.x >= other.min.x) &&

@@ -19,7 +19,7 @@ namespace engine {
 
         /** @brief Intersects a ray with any surface supplying heightfield methods */
         template<typename HeightmapSurface>
-        static std::optional<glm::vec3> intersect_heightmap(const Ray& ray, const HeightmapSurface& surface, const float max_distance = 1000.0f);
+        static std::optional<glm::vec3> intersect_heightmap(const Ray& ray, const HeightmapSurface& surface, float max_distance = 1000.0f);
     };
 
     template<typename HeightmapSurface>

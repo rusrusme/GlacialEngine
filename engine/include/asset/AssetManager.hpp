@@ -23,7 +23,7 @@ namespace engine {
         [[nodiscard]] const AssetMetadata& get_metadata(const std::filesystem::path& filepath) const;
         [[nodiscard]] AssetHandle get_handle_from_path(const std::filesystem::path& filepath) const;
 
-        [[nodiscard]] bool is_asset_handle_valid(AssetHandle handle) const {
+        [[nodiscard]] bool is_asset_handle_valid(const AssetHandle handle) const {
             return asset_registry_.contains(handle);
         }
 

@@ -9,6 +9,7 @@
 #include "input/Input.hpp"
 #include "input/KeyCodes.hpp"
 #include "input/MouseCodes.hpp"
+#include "render/Camera.hpp"
 
 namespace engine {
     void CameraController::reset_mouse_state() {

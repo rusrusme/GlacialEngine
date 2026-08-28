@@ -16,6 +16,7 @@
 #include "UniformBuffer.hpp"
 
 namespace engine {
+    class VertexBuffer;
     struct InstanceData;
     class Camera;
 
