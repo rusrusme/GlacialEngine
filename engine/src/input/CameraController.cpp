@@ -58,7 +58,7 @@ namespace engine {
 
     void CameraController::update_mouse(Camera& camera) {
         // if (Input::is_mouse_captured()) {
-            // return;
+        // return;
         // }
 
         const glm::vec2 mouse_pos = Input::get_mouse_position();

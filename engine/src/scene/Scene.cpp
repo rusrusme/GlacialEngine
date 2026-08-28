@@ -99,12 +99,12 @@ namespace engine {
 
             glm::vec4 color{1.0f};
             float roughness = 0.5f;
-            float metallic  = 0.0f;
+            float metallic = 0.0f;
             if (registry_.all_of<MaterialComponent>(entity)) {
                 const auto& mat = registry_.get<MaterialComponent>(entity);
-                color     = mat.color;
+                color = mat.color;
                 roughness = mat.roughness;
-                metallic  = mat.metallic;
+                metallic = mat.metallic;
             }
 
             mesh_batches[mesh_comp.handle].push_back(InstanceData{

@@ -69,7 +69,8 @@ namespace editor {
         if (active_scene_) {
             active_scene_->on_render(renderer, camera_, *asset_manager_, delta_time);
         }
-        if (debug_panel_ && debug_panel_->is_grid_enabled()) {
+        if (debug_panel_&& debug_panel_->is_grid_enabled())
+        {
             editor_grid_.render(renderer);
         }
         if (active_scene_) {

@@ -64,7 +64,8 @@ namespace engine::setting {
                     int int_val;
                     if (iss >> int_val) {
                         video::IS_VSYNC = (int_val != 0);
-                    } else {
+                    }
+                    else {
                         iss.clear();
                         std::string str_val;
                         if (iss >> str_val) {

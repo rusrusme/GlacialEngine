@@ -12,8 +12,8 @@
 
 namespace editor::setting {
     namespace video {
-
     }
+
     namespace config {
         constexpr auto CONFIG_FILE_PATH = "editor.ini";
         inline std::unordered_map<std::string, int> s_config_cache;

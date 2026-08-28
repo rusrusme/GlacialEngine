@@ -93,6 +93,7 @@ namespace engine {
         float metallic = 0.0f;
 
         MaterialComponent() = default;
+
         MaterialComponent(
             const glm::vec4 color,
             const AssetHandle texture = {0},

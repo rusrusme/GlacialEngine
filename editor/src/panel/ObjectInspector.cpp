@@ -90,7 +90,7 @@ namespace editor {
                 ImGui::ColorEdit4("Color", glm::value_ptr(material.color));
 
                 ImGui::SliderFloat("Roughness", &material.roughness, 0.0f, 1.0f);
-                ImGui::SliderFloat("Metallic",  &material.metallic,  0.0f, 1.0f);
+                ImGui::SliderFloat("Metallic", &material.metallic, 0.0f, 1.0f);
                 ImGui::Separator();
                 const auto& current_tex_meta = asset_manager_->get_metadata(material.texture_handle);
                 std::string tex_label = current_tex_meta.is_valid()

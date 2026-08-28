@@ -23,7 +23,7 @@ namespace engine {
 }
 
 namespace std {
-    template <>
+    template<>
     struct hash<engine::GridKey> {
         std::size_t operator()(const engine::GridKey& k) const noexcept {
             return std::hash<int>()(k.x) ^ (std::hash<int>()(k.z) << 1);

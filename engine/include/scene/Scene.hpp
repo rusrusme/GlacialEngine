@@ -30,10 +30,10 @@ namespace engine {
         void on_update(float delta_time);
         void on_render(Renderer& renderer, Camera& camera, AssetManager& asset_manager, float delta_time);
 
-        template <typename... Components>
+        template<typename... Components>
         auto view() { return registry_.view<Components...>(); }
 
-        template <typename... Components>
+        template<typename... Components>
         auto clear() { return registry_.clear<Components...>(); }
 
         [[deprecated]] entt::registry& get_registry() { return registry_; }

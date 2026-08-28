@@ -18,11 +18,9 @@ namespace engine {
         static Ray cast_ray(glm::vec2 mouse_pos, int viewport_width, int viewport_height, const Camera& camera);
 
         /** @brief Intersects a ray with any surface supplying heightfield methods */
-        template <typename HeightmapSurface>
+        template<typename HeightmapSurface>
         static std::optional<glm::vec3> intersect_heightmap(const Ray& ray, const HeightmapSurface& surface, const float max_distance = 1000.0f);
     };
-
-
 
     template<typename HeightmapSurface>
     std::optional<glm::vec3> Raycaster::intersect_heightmap(const Ray& ray, const HeightmapSurface& surface, const float max_distance) {

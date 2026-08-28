@@ -27,7 +27,7 @@ namespace engine {
     public:
         explicit EventDispatcher(Event& event) : event_(event) {}
 
-        template <typename T, typename F>
+        template<typename T, typename F>
         bool dispatch(const F& function) {
             if (event_.get_event_type() == T::get_static_type()) {
                 event_.handled |= function(static_cast<T&>(event_));

@@ -38,6 +38,6 @@ namespace engine {
         std::string formatted = std::format("[{}] {}: {}", time_str, category, message);
         std::cout << formatted << std::endl;
 
-        entries_.push_back({ .message = formatted, .level = level, .timestamp = time_str });
+        entries_.push_back({.message = formatted, .level = level, .timestamp = time_str});
     }
 }
