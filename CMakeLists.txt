@@ -2,7 +2,7 @@
 # ----------------------------------------------------------------------------
 cmake_minimum_required(VERSION 4.3)
 # ----------------------------------------------------------------------------
-project(CoreEngine CXX C)
+project(BasisEngine CXX C)
 set(CMAKE_CXX_STANDARD 20)
 # ----------------------------------------------------------------------------
 option(DEBUG_DIST "Debug distribution build for developers" OFF)
