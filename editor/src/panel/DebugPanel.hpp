@@ -19,6 +19,7 @@ namespace editor {
         void set_debug_panel_enabled(const bool enabled) { show_debug_panel_ = enabled; }
 
         [[nodiscard]] bool is_grid_enabled() const { return show_grid_; }
+        void set_grid_enabled(const bool toggle) { show_grid_ = toggle; }
 
     private:
         // -----------------------------------------
@@ -31,7 +32,6 @@ namespace editor {
         // -------------------------
         // Debug controls
         // -------------------------
-        void set_grid_enabled(const bool toggle) { show_grid_ = toggle; }
 
         void set_gizmo_enabled(const bool toggle) { show_gizmo_ = toggle; }
         [[nodiscard]] bool is_gizmo_enabled() const { return show_gizmo_; }

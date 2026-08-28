@@ -27,17 +27,20 @@ namespace editor {
 
         asset_manager_->scan_directory("assets");
 
-        setting::config::load();
-        const int toggle_debug_panel = setting::config::get_int("toggle_debug_panel");
+        config::load();
+        const int toggle_debug_panel = config::get_int("toggle_debug_panel");
+        const int show_grid = config::get_int("show_grid");
         debug_panel_->set_debug_panel_enabled(toggle_debug_panel);
+        debug_panel_->set_grid_enabled(show_grid);
     }
 
     void EditorLayer::on_detach() {
         if (active_scene_) {
             active_scene_->on_shutdown();
         }
-        setting::config::set_int("toggle_debug_panel", debug_panel_->is_debug_panel_enabled());
-        setting::config::save();
+        config::set_int("toggle_debug_panel", debug_panel_->is_debug_panel_enabled());
+        config::set_int("show_grid", debug_panel_->is_grid_enabled());
+        config::save();
     }
 
     void EditorLayer::on_update(const float delta_time) {
@@ -150,8 +153,8 @@ namespace editor {
     }
 
     void EditorLayer::draw_directional_light(engine::Renderer& renderer, const glm::vec3 position, const glm::vec3& direction, const glm::vec3& color) {
-        const float ray_length = 1.5f;
-        const float circle_radius = 0.05f;
+        constexpr float ray_length = 1.5f;
+        constexpr float circle_radius = 0.05f;
         const glm::vec3 dir = glm::normalize(direction);
 
         // 1. Kleine Sonne im Zentrum zeichnen

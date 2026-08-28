@@ -1,4 +1,4 @@
-# CoreEngine
+# Basis Engine
 
 ### C++ 3D simulation engine built with OpenGL 4.6.
 
