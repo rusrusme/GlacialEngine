@@ -22,10 +22,10 @@ namespace engine {
 }
 
 namespace std {
-    template <>
+    template<>
     struct hash<engine::UUID> {
         std::size_t operator()(const engine::UUID& uuid) const noexcept {
-            return std::hash<uint64_t>{}(static_cast<uint64_t>(uuid));
+            return std::hash<uint64_t>{}(uuid);
         }
     };
 }

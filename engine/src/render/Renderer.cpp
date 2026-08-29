@@ -7,6 +7,8 @@
 
 #include "core/Config.hpp"
 #include "render/Camera.hpp"
+#include "render/Texture2D.hpp"
+#include "render/VertexArray.hpp"
 #include "render/mesh/InstanceData.hpp"
 
 namespace engine {
@@ -95,11 +97,45 @@ namespace engine {
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     }
 
-    Mesh Renderer::upload_mesh(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices) {
-        if (vertices.empty() || indices.empty()) {
+    Mesh Renderer::upload_mesh(const std::vector<Vertex>& vertices_in, const std::vector<uint32_t>& indices) {
+        if (vertices_in.empty() || indices.empty()) {
             std::cerr << "Engine error: renderer: cannot upload empty mesh" << std::endl;
             return {};
         }
+
+        std::vector<Vertex> vertices = vertices_in;
+
+        // Auto-generate tangents if unassigned (e.g. primitive meshes)
+        if (glm::length(vertices[0].tangent) < 0.0001f) {
+            for (size_t k = 0; k < indices.size(); k += 3) {
+                Vertex& v0 = vertices[indices[k]];
+                Vertex& v1 = vertices[indices[k + 1]];
+                Vertex& v2 = vertices[indices[k + 2]];
+
+                glm::vec3 edge1 = v1.position - v0.position;
+                glm::vec3 edge2 = v2.position - v0.position;
+                glm::vec2 deltaUV1 = v1.uv - v0.uv;
+                glm::vec2 deltaUV2 = v2.uv - v0.uv;
+
+                float denom = (deltaUV1.x * deltaUV2.y - deltaUV2.x * deltaUV1.y);
+                float f = (std::abs(denom) < 0.0001f) ? 1.0f : 1.0f / denom;
+
+                glm::vec3 tangent{
+                    f * (deltaUV2.y * edge1.x - deltaUV1.y * edge2.x),
+                    f * (deltaUV2.y * edge1.y - deltaUV1.y * edge2.y),
+                    f * (deltaUV2.y * edge1.z - deltaUV1.y * edge2.z)
+                };
+
+                v0.tangent += tangent;
+                v1.tangent += tangent;
+                v2.tangent += tangent;
+            }
+
+            for (auto& v : vertices) {
+                v.tangent = (glm::length(v.tangent) > 0.0001f) ? glm::normalize(v.tangent) : glm::vec3(1.0f, 0.0f, 0.0f);
+            }
+        }
+
         AABB local_bounds{
             glm::vec3(std::numeric_limits<float>::max()),
             glm::vec3(std::numeric_limits<float>::lowest())
@@ -114,7 +150,8 @@ namespace engine {
         const BufferLayout layout = {
             {ShaderDataType::Float3, "a_position"},
             {ShaderDataType::Float3, "a_normal"},
-            {ShaderDataType::Float2, "a_uv"}
+            {ShaderDataType::Float2, "a_uv"},
+            {ShaderDataType::Float3, "a_tangent"}
         };
         vao->add_vertex_buffer(vbo, layout);
 
@@ -154,6 +191,36 @@ namespace engine {
 
         shader->bind();
 
+        // Albedo Map (Slot 0)
+        if (mesh.texture) {
+            mesh.texture->bind(0);
+            shader->set_int("u_albedo_texture", 0);
+            shader->set_int("u_use_albedo_texture", 1);
+        }
+        else {
+            shader->set_int("u_use_albedo_texture", 0);
+        }
+
+        // Normal Map (Slot 1)
+        if (mesh.normal_map) {
+            mesh.normal_map->bind(1);
+            shader->set_int("u_normal_texture", 1);
+            shader->set_int("u_use_normal_texture", 1);
+        }
+        else {
+            shader->set_int("u_use_normal_texture", 0);
+        }
+
+        // Metallic-Roughness Map (Slot 2)
+        if (mesh.metallic_roughness_map) {
+            mesh.metallic_roughness_map->bind(2);
+            shader->set_int("u_metallic_roughness_texture", 2);
+            shader->set_int("u_use_metallic_roughness_texture", 1);
+        }
+        else {
+            shader->set_int("u_use_metallic_roughness_texture", 0);
+        }
+
         // Bind Directional and Point Lights
         shader->set_int("u_num_dir_lights", static_cast<int>(directional_lights_.size()));
         for (size_t i = 0; i < directional_lights_.size(); ++i) {
@@ -176,28 +243,39 @@ namespace engine {
 
         const auto stride = static_cast<GLsizei>(sizeof(InstanceData));
         for (uint32_t i = 0; i < 4; ++i) {
-            glEnableVertexAttribArray(3 + i);
+            glEnableVertexAttribArray(4 + i);
             glVertexAttribPointer(
-                3 + i,
+                4 + i,
                 4,
                 GL_FLOAT,
                 GL_FALSE,
                 stride,
                 reinterpret_cast<const void*>(sizeof(glm::vec4) * i)
             );
-            glVertexAttribDivisor(3 + i, 1);
+            glVertexAttribDivisor(4 + i, 1);
         }
 
-        glEnableVertexAttribArray(7);
+        glEnableVertexAttribArray(8);
         glVertexAttribPointer(
-            7,
+            8,
             4,
             GL_FLOAT,
             GL_FALSE,
             stride,
             reinterpret_cast<const void*>(offsetof(InstanceData, color))
         );
-        glVertexAttribDivisor(7, 1);
+        glVertexAttribDivisor(8, 1);
+
+        glEnableVertexAttribArray(9);
+        glVertexAttribPointer(
+            9,
+            2,
+            GL_FLOAT,
+            GL_FALSE,
+            stride,
+            reinterpret_cast<const void*>(offsetof(InstanceData, pbr))
+        );
+        glVertexAttribDivisor(9, 1);
 
         glDrawElementsInstanced(
             GL_TRIANGLES,
@@ -212,7 +290,7 @@ namespace engine {
     }
 
     void Renderer::draw_mesh(const Mesh& mesh, const glm::mat4& model_matrix, const glm::vec4& color) {
-        draw_mesh_instanced(mesh, {{ model_matrix, color }});
+        draw_mesh_instanced(mesh, {{.transform = model_matrix, .color = color}});
     }
 
     void Renderer::draw_line(const glm::vec3& from, const glm::vec3& to, const glm::vec3& color) {

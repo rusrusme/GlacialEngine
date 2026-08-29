@@ -91,6 +91,9 @@ add_library(Engine STATIC
             src/core/Framebuffer.cpp
             src/physics/AABB.cpp
             src/render/mesh/PrimitiveMesh.cpp
+            include/render/Texture2D.hpp
+            src/render/Texture2D.cpp
+            src/util/stb_image.cpp
 )
 # ----------------------------------------------------------------------------
 target_include_directories(Engine

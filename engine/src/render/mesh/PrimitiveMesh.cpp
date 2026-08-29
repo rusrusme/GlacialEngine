@@ -7,6 +7,8 @@
 
 #include <glm/gtc/constants.hpp>
 
+#include "render/Renderer.hpp"
+
 namespace engine {
     Mesh PrimitiveMesh::create_plane(const float size) {
         float half = size * 0.5f;

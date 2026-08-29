@@ -10,7 +10,7 @@
 namespace engine {
     class Framebuffer {
     public:
-        Framebuffer(uint32_t width, uint32_t height) { resize(width, height); }
+        Framebuffer(const uint32_t width, const uint32_t height) { resize(width, height); }
         ~Framebuffer() { invalidate(); }
 
         void bind() const;

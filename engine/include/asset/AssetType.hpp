@@ -22,7 +22,7 @@ namespace engine {
         SHADER,
     };
 
-    inline std::string_view asset_type_to_string(AssetType type) {
+    inline std::string_view asset_type_to_string(const AssetType type) {
         switch (type) {
             case AssetType::TEXTURE_2D : return "Texture2d";
             case AssetType::MESH : return "Mesh";
@@ -32,7 +32,7 @@ namespace engine {
         }
     }
 
-    inline AssetType string_to_asset_type(std::string_view type_str) {
+    inline AssetType string_to_asset_type(const std::string_view type_str) {
         if (type_str == "Texture2d") return AssetType::TEXTURE_2D;
         if (type_str == "Mesh") return AssetType::MESH;
         if (type_str == "Material") return AssetType::MATERIAL;

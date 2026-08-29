@@ -8,8 +8,6 @@
 #include "scene/Scene.hpp"
 
 namespace engine {
-    class Scene;
-
     class Entity {
     public:
         Entity() = default;

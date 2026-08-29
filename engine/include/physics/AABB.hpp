@@ -5,11 +5,11 @@
 
 #pragma once
 
-#include <algorithm>
-
-#include "math/Ray.hpp"
+#include <glm/vec3.hpp>
 
 namespace engine {
+    struct Ray;
+
     struct AABB {
         glm::vec3 min{-0.5f};
         glm::vec3 max{0.5f};

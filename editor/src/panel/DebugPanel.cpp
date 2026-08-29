@@ -7,7 +7,7 @@
 
 namespace editor {
     #ifdef ENABLE_IMGUI
-    void DebugPanel::render_imgui(engine::Renderer& renderer, float delta_time) {
+    void DebugPanel::render_imgui(engine::Renderer& renderer, const float delta_time) {
         if (!show_debug_panel_) return;
 
         // ----------------------

@@ -9,7 +9,6 @@
 #include <unordered_map>
 #include <RmlUi/Core.h>
 
-
 namespace engine {
     class UISystem;
 

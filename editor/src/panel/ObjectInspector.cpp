@@ -88,6 +88,49 @@ namespace editor {
             if (ImGui::CollapsingHeader("Material", ImGuiTreeNodeFlags_DefaultOpen)) {
                 auto& material = entity.get_component<engine::MaterialComponent>();
                 ImGui::ColorEdit4("Color", glm::value_ptr(material.color));
+
+                ImGui::SliderFloat("Roughness", &material.roughness, 0.0f, 1.0f);
+                ImGui::SliderFloat("Metallic", &material.metallic, 0.0f, 1.0f);
+                ImGui::Separator();
+                const auto& current_tex_meta = asset_manager_->get_metadata(material.texture_handle);
+                std::string tex_label = current_tex_meta.is_valid()
+                                            ? current_tex_meta.filepath.filename().string()
+                                            : "None / Select Texture";
+
+                if (ImGui::BeginCombo("Texture", tex_label.c_str())) {
+                    if (ImGui::Selectable("None", material.texture_handle == 0)) {
+                        material.texture_handle = {0};
+                    }
+
+                    for (const auto& [handle, meta] : asset_manager_->get_registry()) {
+                        if (meta.type != engine::AssetType::TEXTURE_2D) continue;
+
+                        const bool is_selected = (material.texture_handle == handle);
+                        std::string item_name = meta.filepath.filename().string();
+
+                        if (ImGui::Selectable(item_name.c_str(), is_selected)) {
+                            material.texture_handle = handle;
+                        }
+                        if (is_selected) ImGui::SetItemDefaultFocus();
+                    }
+                    ImGui::EndCombo();
+                }
+
+                if (ImGui::BeginDragDropTarget()) {
+                    if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET_BROWSER_ITEM")) {
+                        engine::AssetHandle dropped_handle = *static_cast<const engine::AssetHandle*>(payload->Data);
+                        const auto& meta = asset_manager_->get_metadata(dropped_handle);
+
+                        if (meta.is_valid() && meta.type == engine::AssetType::TEXTURE_2D) {
+                            material.texture_handle = dropped_handle;
+                        }
+                    }
+                    ImGui::EndDragDropTarget();
+                }
+
+                if (material.texture_handle != 0) {
+                    ImGui::TextDisabled("Texture Handle: %llu", static_cast<uint64_t>(material.texture_handle));
+                }
             }
         }
 

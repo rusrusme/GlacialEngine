@@ -28,13 +28,13 @@ namespace editor::config {
         s_is_loaded = true;
     }
 
-    inline int get_int(const std::string& key, int default_value = -1) {
+    inline int get_value(const std::string& key, const int default_value = -1) {
         if (!s_is_loaded) load();
         const auto it = s_config_cache.find(key);
         return (it != s_config_cache.end()) ? it->second : default_value;
     }
 
-    inline void set_int(const std::string& key, int value) {
+    inline void set_value(const std::string& key, const int value) {
         s_config_cache[key] = value;
     }
 

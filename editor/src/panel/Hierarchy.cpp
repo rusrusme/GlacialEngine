@@ -145,7 +145,8 @@ namespace editor {
             if (ImGui::Button("##eye", eye_button_size)) {
                 if (!entity.has_component<engine::ActiveComponent>()) {
                     entity.add_component<engine::ActiveComponent>(!is_active);
-                } else {
+                }
+                else {
                     auto& [active] = entity.get_component<engine::ActiveComponent>();
                     active = !active;
                 }

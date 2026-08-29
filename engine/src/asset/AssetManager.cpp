@@ -15,18 +15,18 @@ namespace engine {
         auto register_primitive = [this](const std::string& path, uint64_t fixed_id) {
             AssetHandle handle(fixed_id);
             AssetMetadata meta{
-                .handle = handle,
-                .type = AssetType::MESH,
+                .handle   = handle,
+                .type     = AssetType::MESH,
                 .filepath = path
             };
             asset_registry_[handle] = meta;
             path_to_handle_map_[path] = handle;
         };
 
-        register_primitive("primitive://plane",    1);
-        register_primitive("primitive://circle",   2);
-        register_primitive("primitive://cube",     3);
-        register_primitive("primitive://sphere",   4);
+        register_primitive("primitive://plane", 1);
+        register_primitive("primitive://circle", 2);
+        register_primitive("primitive://cube", 3);
+        register_primitive("primitive://sphere", 4);
         register_primitive("primitive://cylinder", 5);
 
         if (!std::filesystem::exists(asset_directory) || !std::filesystem::is_directory(asset_directory)) {

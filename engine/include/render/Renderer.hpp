@@ -16,6 +16,7 @@
 #include "UniformBuffer.hpp"
 
 namespace engine {
+    class VertexBuffer;
     struct InstanceData;
     class Camera;
 
@@ -55,8 +56,8 @@ namespace engine {
         /** @brief Draws a VertexArray with a specified number of vertices. This is useful for rendering simple shapes or primitives without the need for an index buffer. */
         static void draw_arrays(const VertexArray& vao, uint32_t count);
 
-        void set_clear_color(const glm::vec4& color);
-        void clear(const glm::vec4& color = {0.12f, 0.12f, 0.12f, 1.0f});
+        static void set_clear_color(const glm::vec4& color);
+        static void clear(const glm::vec4& color = {0.12f, 0.12f, 0.12f, 1.0f});
 
         // -------------------------
         // Mesh

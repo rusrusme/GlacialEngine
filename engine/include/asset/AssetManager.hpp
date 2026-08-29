@@ -23,7 +23,7 @@ namespace engine {
         [[nodiscard]] const AssetMetadata& get_metadata(const std::filesystem::path& filepath) const;
         [[nodiscard]] AssetHandle get_handle_from_path(const std::filesystem::path& filepath) const;
 
-        [[nodiscard]] bool is_asset_handle_valid(AssetHandle handle) const {
+        [[nodiscard]] bool is_asset_handle_valid(const AssetHandle handle) const {
             return asset_registry_.contains(handle);
         }
 
@@ -31,7 +31,7 @@ namespace engine {
             return asset_registry_;
         }
 
-        template <typename T>
+        template<typename T>
         std::shared_ptr<T> get_asset(AssetHandle handle);
 
         void clear_cache() {
@@ -47,7 +47,7 @@ namespace engine {
         inline static AssetMetadata null_metadata_{};
     };
 
-    template <typename T>
+    template<typename T>
     std::shared_ptr<T> AssetManager::get_asset(const AssetHandle handle) {
         // 1. Prüfen, ob das Mesh bereits geladen und im Cache ist
         auto it = mesh_cache_.find(handle);

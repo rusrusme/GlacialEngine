@@ -5,6 +5,11 @@
 
 #include "render/mesh/Mesh.hpp"
 
+#include "render/Buffer.hpp"
+#include "render/BufferLayout.hpp"
+#include "render/Vertex.hpp"
+#include "render/VertexArray.hpp"
+
 namespace engine {
     Mesh::Mesh(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices) {
         setup(vertices, indices);
@@ -12,6 +17,15 @@ namespace engine {
 
     void Mesh::setup(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices) {
         if (vertices.empty() || indices.empty()) return;
+
+        local_bounds = {
+            glm::vec3(std::numeric_limits<float>::max()),
+            glm::vec3(std::numeric_limits<float>::lowest())
+        };
+        for (const auto& vertex : vertices) {
+            local_bounds.min = glm::min(local_bounds.min, vertex.position);
+            local_bounds.max = glm::max(local_bounds.max, vertex.position);
+        }
 
         // 1. VertexArray erzeugen
         vertex_array = std::make_shared<VertexArray>();
@@ -24,9 +38,10 @@ namespace engine {
 
         // 3. Layout definieren (Position, Normal, UV)
         BufferLayout layout = {
-            {ShaderDataType::Float3, "a_Position"},
-            {ShaderDataType::Float3, "a_Normal"},
-            {ShaderDataType::Float2, "a_UV"}
+            {ShaderDataType::Float3, "a_position"},
+            {ShaderDataType::Float3, "a_normal"},
+            {ShaderDataType::Float2, "a_uv"},
+            {ShaderDataType::Float3, "a_tangent"}
         };
 
         vertex_array->add_vertex_buffer(vertex_buffer, layout);
