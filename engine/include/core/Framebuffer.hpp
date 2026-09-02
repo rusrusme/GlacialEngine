@@ -22,6 +22,7 @@ namespace engine {
         [[nodiscard]] uint32_t get_color_attachment_id() const { return color_attachment_id_; }
         [[nodiscard]] uint32_t get_width() const { return width_; }
         [[nodiscard]] uint32_t get_height() const { return height_; }
+        uint32_t get_depth_attachment_id() const;
 
     private:
         void invalidate() const;

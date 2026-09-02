@@ -174,7 +174,7 @@ namespace engine {
         draw_mesh(mesh, model_matrix, {1.0f, 1.0f, 1.0f, 1.0f});
     }
 
-    void Renderer::draw_mesh_instanced(const Mesh& mesh, const std::vector<InstanceData>& instances) {
+    void Renderer::draw_mesh_instanced(const Mesh& mesh, const std::vector<InstanceData>& instances, const std::shared_ptr<Shader>& override_shader) {
         if (instances.empty() || !mesh.is_valid()) return;
 
         const std::vector<InstanceData>* instances_to_draw = &instances;
@@ -195,7 +195,7 @@ namespace engine {
         stats_.draw_calls++;
         stats_.instance_count += static_cast<uint32_t>(instances_to_draw->size());
 
-        const auto shader = shader_library_.get("mesh");
+        const auto shader = override_shader ? override_shader : shader_library_.get("mesh");
         if (!shader) return;
 
         const size_t bytes_needed = instances_to_draw->size() * sizeof(InstanceData);
@@ -208,53 +208,56 @@ namespace engine {
 
         shader->bind();
 
-        // Albedo Map (Slot 0)
-        if (mesh.texture) {
-            mesh.texture->bind(0);
-            shader->set_int("u_albedo_texture", 0);
-            shader->set_int("u_use_albedo_texture", 1);
-        }
-        else {
-            shader->set_int("u_use_albedo_texture", 0);
+        if (!override_shader) {
+            // Albedo Map (Slot 0)
+            if (mesh.texture) {
+                mesh.texture->bind(0);
+                shader->set_int("u_albedo_texture", 0);
+                shader->set_int("u_use_albedo_texture", 1);
+            }
+            else {
+                shader->set_int("u_use_albedo_texture", 0);
+            }
+
+            // Normal Map (Slot 1)
+            if (mesh.normal_map) {
+                mesh.normal_map->bind(1);
+                shader->set_int("u_normal_texture", 1);
+                shader->set_int("u_use_normal_texture", 1);
+            }
+            else {
+                shader->set_int("u_use_normal_texture", 0);
+            }
+
+            // Metallic-Roughness Map (Slot 2)
+            if (mesh.metallic_roughness_map) {
+                mesh.metallic_roughness_map->bind(2);
+                shader->set_int("u_metallic_roughness_texture", 2);
+                shader->set_int("u_use_metallic_roughness_texture", 1);
+            }
+            else {
+                shader->set_int("u_use_metallic_roughness_texture", 0);
+            }
+
+            // Bind Directional and Point Lights
+            shader->set_int("u_num_dir_lights", static_cast<int>(directional_lights_.size()));
+            for (size_t i = 0; i < directional_lights_.size(); ++i) {
+                std::string base = "u_dir_lights[" + std::to_string(i) + "].";
+                shader->set_vec3(base + "direction", directional_lights_[i].direction);
+                shader->set_vec3(base + "color", directional_lights_[i].color);
+                shader->set_float(base + "intensity", directional_lights_[i].intensity);
+            }
+
+            shader->set_int("u_num_point_lights", static_cast<int>(point_lights_.size()));
+            for (size_t i = 0; i < point_lights_.size(); ++i) {
+                std::string base = "u_point_lights[" + std::to_string(i) + "].";
+                shader->set_vec3(base + "position", point_lights_[i].position);
+                shader->set_vec3(base + "color", point_lights_[i].color);
+                shader->set_float(base + "intensity", point_lights_[i].intensity);
+                shader->set_float(base + "radius", point_lights_[i].radius);
+            }
         }
 
-        // Normal Map (Slot 1)
-        if (mesh.normal_map) {
-            mesh.normal_map->bind(1);
-            shader->set_int("u_normal_texture", 1);
-            shader->set_int("u_use_normal_texture", 1);
-        }
-        else {
-            shader->set_int("u_use_normal_texture", 0);
-        }
-
-        // Metallic-Roughness Map (Slot 2)
-        if (mesh.metallic_roughness_map) {
-            mesh.metallic_roughness_map->bind(2);
-            shader->set_int("u_metallic_roughness_texture", 2);
-            shader->set_int("u_use_metallic_roughness_texture", 1);
-        }
-        else {
-            shader->set_int("u_use_metallic_roughness_texture", 0);
-        }
-
-        // Bind Directional and Point Lights
-        shader->set_int("u_num_dir_lights", static_cast<int>(directional_lights_.size()));
-        for (size_t i = 0; i < directional_lights_.size(); ++i) {
-            std::string base = "u_dir_lights[" + std::to_string(i) + "].";
-            shader->set_vec3(base + "direction", directional_lights_[i].direction);
-            shader->set_vec3(base + "color", directional_lights_[i].color);
-            shader->set_float(base + "intensity", directional_lights_[i].intensity);
-        }
-
-        shader->set_int("u_num_point_lights", static_cast<int>(point_lights_.size()));
-        for (size_t i = 0; i < point_lights_.size(); ++i) {
-            std::string base = "u_point_lights[" + std::to_string(i) + "].";
-            shader->set_vec3(base + "position", point_lights_[i].position);
-            shader->set_vec3(base + "color", point_lights_[i].color);
-            shader->set_float(base + "intensity", point_lights_[i].intensity);
-            shader->set_float(base + "radius", point_lights_[i].radius);
-        }
         mesh.vertex_array->bind();
         instance_vbo_->bind();
 

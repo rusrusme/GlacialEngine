@@ -6,6 +6,7 @@
 #include "scene/Scene.hpp"
 
 #include "asset/AssetManager.hpp"
+#include "core/Framebuffer.hpp"
 #include "core/Log.hpp"
 #include "core/UUID.hpp"
 #include "physics/CollisionSystem.hpp"
@@ -41,9 +42,18 @@ namespace engine {
 
     void Scene::on_init(Renderer& renderer) {
         collision_system_ = std::make_unique<CollisionSystem>(10.0f);
+
+        shadow_framebuffer_ = std::make_unique<Framebuffer>(2048, 2048);
+
+        renderer.get_shader_library().load(
+            "shadow_depth",
+            "assets/shaders/shadow_depth.vert",
+            "assets/shaders/shadow_depth.frag"
+        );
     }
 
     void Scene::on_shutdown() {
+        shadow_framebuffer_.reset();
         collision_system_.reset();
     }
 
@@ -56,23 +66,30 @@ namespace engine {
         Renderer::set_blend(true);
 
         // ------------------
-        // Directional lights
+        // Lights
         // ------------------
+        glm::vec3 main_light_dir{0.0f, -1.0f, 0.0f};
+        bool has_dir_light = false;
+
         auto dir_light_view = registry_.view<TransformComponent, DirectionalLightComponent>();
         for (auto entity : dir_light_view) {
             auto [transform, light] = dir_light_view.get<TransformComponent, DirectionalLightComponent>(entity);
             if (registry_.all_of<ActiveComponent>(entity) && !registry_.get<ActiveComponent>(entity).active) {
                 continue;
             }
+
+            const glm::vec3 light_forward = transform.get_forward();
             renderer.add_directional_light({
-                .direction = transform.get_forward(),
+                .direction = light_forward,
                 .color     = light.color,
                 .intensity = light.intensity
             });
+
+            if (!has_dir_light) {
+                main_light_dir = light_forward;
+                has_dir_light = true;
+            }
         }
-        // ------------------
-        // Point lights
-        // ------------------
         auto point_light_view = registry_.view<TransformComponent, PointLightComponent>();
         for (auto entity : point_light_view) {
             auto [transform, light] = point_light_view.get<TransformComponent, PointLightComponent>(entity);
@@ -139,6 +156,62 @@ namespace engine {
                 });
             }
         }
+        // ------------------
+        // Shadow pass
+        // ------------------
+        glm::mat4 light_space_matrix(1.0f);
+        if (has_dir_light) {
+            const glm::vec3 light_pos = camera_pos - main_light_dir * 40.0f;
+
+            const glm::vec3 up = std::abs(main_light_dir.y) > 0.99f ? glm::vec3(0.0f, 0.0f, 1.0f) : glm::vec3(0.0f, 1.0f, 0.0f);
+            const glm::mat4 light_view = glm::lookAt(light_pos, camera_pos, up);
+            const glm::mat4 light_projection = glm::ortho(-40.0f, 40.0f, -40.0f, 40.0f, 0.1f, 120.0f);
+            light_space_matrix = light_projection * light_view;
+        }
+
+        if (has_dir_light && shadow_framebuffer_) {
+            GLint prev_fbo = 0;
+            glGetIntegerv(GL_FRAMEBUFFER_BINDING, &prev_fbo);
+            GLint prev_viewport[4];
+            glGetIntegerv(GL_VIEWPORT, prev_viewport);
+
+            shadow_framebuffer_->bind();
+            glClear(GL_DEPTH_BUFFER_BIT);
+
+            auto shadow_shader = renderer.get_shader_library().get("shadow_depth");
+            if (shadow_shader) {
+                shadow_shader->bind();
+                shadow_shader->set_mat4("u_light_space_matrix", light_space_matrix);
+
+                bool prev_culling = renderer.is_frustum_culling_enabled();
+                renderer.set_frustum_culling_enabled(false);
+
+                for (const auto& [handle, instance_list] : mesh_batches_) {
+                    if (std::shared_ptr<Mesh> mesh = asset_manager.get_asset<Mesh>(handle)) {
+                        renderer.draw_mesh_instanced(*mesh, instance_list, shadow_shader);
+                    }
+                }
+
+                renderer.set_frustum_culling_enabled(prev_culling);
+            }
+
+            // Restore editor framebuffer and viewport
+            glBindFramebuffer(GL_FRAMEBUFFER, prev_fbo);
+            glViewport(prev_viewport[0], prev_viewport[1], prev_viewport[2], prev_viewport[3]);
+        }
+
+        // PASS 2: Main Lighting Pass
+        if (shadow_framebuffer_) {
+            glActiveTexture(GL_TEXTURE3);
+            glBindTexture(GL_TEXTURE_2D, shadow_framebuffer_->get_depth_attachment_id());
+
+            if (auto main_shader = renderer.get_shader_library().get("mesh")) {
+                main_shader->bind();
+                main_shader->set_int("u_shadow_map", 3);
+                main_shader->set_mat4("u_light_space_matrix", light_space_matrix);
+            }
+        }
+
         for (const auto& [handle, instance_list] : mesh_batches_) {
             if (std::shared_ptr<Mesh> mesh = asset_manager.get_asset<Mesh>(handle)) {
                 renderer.draw_mesh_instanced(*mesh, instance_list);

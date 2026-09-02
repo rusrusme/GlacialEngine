@@ -11,6 +11,7 @@
 #include "scene/ecs/Components.hpp"
 
 namespace engine {
+    class Framebuffer;
     class AssetManager;
     class Camera;
     class CollisionSystem;
@@ -44,6 +45,7 @@ namespace engine {
 
         entt::registry registry_;
         std::unique_ptr<CollisionSystem> collision_system_ = nullptr;
+        std::unique_ptr<Framebuffer> shadow_framebuffer_;
 
         // Todo: Combine into RenderCommand package
         std::unordered_map<UUID, std::vector<InstanceData>> mesh_batches_;

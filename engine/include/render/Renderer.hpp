@@ -66,7 +66,7 @@ namespace engine {
         static void destroy_mesh(Mesh& mesh);
         [[deprecated]] void draw_mesh(const Mesh& mesh, const glm::mat4& model_matrix);
         void draw_mesh(const Mesh& mesh, const glm::mat4& model_matrix, const glm::vec4& color);
-        void draw_mesh_instanced(const Mesh& mesh, const std::vector<InstanceData>& instances);
+        void draw_mesh_instanced(const Mesh& mesh, const std::vector<InstanceData>& instances, const std::shared_ptr<Shader>& override_shader = nullptr);
 
         // Frustum culling
         void set_frustum_culling_enabled(bool enabled) { frustum_culling_enabled_ = enabled; }
@@ -126,6 +126,10 @@ namespace engine {
             float intensity{1.0f};
             float radius{10.0f};
         };
+
+        // Framebuffer
+        [[nodiscard]] int get_framebuffer_width() const { return framebuffer_width_; }
+        [[nodiscard]] int get_framebuffer_height() const { return framebuffer_height_; }
 
         // Stats
         [[nodiscard]] const RenderStats& get_stats() const { return stats_; }

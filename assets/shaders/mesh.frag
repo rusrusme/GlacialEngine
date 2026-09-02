@@ -7,6 +7,8 @@ in vec3 v_normal;
 in vec2 v_uv;
 in vec3 v_tangent;
 in vec4 v_color;
+in vec2 v_pbr;
+in vec4 v_light_space_pos;
 
 struct DirLight {
     vec3 direction;
@@ -38,6 +40,8 @@ uniform int u_use_normal_texture;
 
 uniform sampler2D u_metallic_roughness_texture;
 uniform int u_use_metallic_roughness_texture;
+
+uniform sampler2D u_shadow_map;
 
 layout(std140, binding = 0) uniform CameraData {
     mat4 u_view;
@@ -83,7 +87,7 @@ vec3 fresnelSchlick(float cosTheta, vec3 F0) {
     return F0 + (1.0 - F0) * pow(clamp(1.0 - cosTheta, 0.0, 1.0), 5.0);
 }
 
-// ACES Narkowicz Filmic Tone Mapping Curve (Matches Blender / Engine Standards)
+// ACES Narkowicz Filmic Tone Mapping Curve
 vec3 toneMapACES(vec3 color) {
     const float a = 2.51;
     const float b = 0.03;
@@ -93,7 +97,37 @@ vec3 toneMapACES(vec3 color) {
     return clamp((color * (a * color + b)) / (color * (c * color + d) + e), 0.0, 1.0);
 }
 
-in vec2 v_pbr;
+// 3x3 Percentage-Closer Filtering (PCF) Directional Shadow Calculation
+float calculateShadow(vec4 light_space_pos, vec3 N, vec3 L) {
+    // Perspective Divide to transform into NDC space [-1, 1]
+    vec3 proj_coords = light_space_pos.xyz / light_space_pos.w;
+
+    // Map NDC coords from [-1, 1] to [0, 1] UV depth space
+    proj_coords = proj_coords * 0.5 + 0.5;
+
+    // Fragments outside the light's far plane or ortho box boundary are unshadowed
+    if (proj_coords.z > 1.0 || proj_coords.x < 0.0 || proj_coords.x > 1.0 || proj_coords.y < 0.0 || proj_coords.y > 1.0) {
+        return 0.0;
+    }
+
+    float current_depth = proj_coords.z;
+
+    // Slope-scale depth bias prevents shadow acne artifacts
+    float bias = max(0.005 * (1.0 - dot(N, L)), 0.0005);
+
+    // PCF 3x3 Kernel
+    float shadow = 0.0;
+    vec2 texel_size = 1.0 / textureSize(u_shadow_map, 0);
+
+    for (int x = -1; x <= 1; ++x) {
+        for (int y = -1; y <= 1; ++y) {
+            float pcf_depth = texture(u_shadow_map, proj_coords.xy + vec2(x, y) * texel_size).r;
+            shadow += (current_depth - bias > pcf_depth) ? 1.0 : 0.0;
+        }
+    }
+
+    return shadow / 9.0;
+}
 
 void main() {
     vec4 tex_color = (u_use_albedo_texture != 0) ? texture(u_albedo_texture, v_uv) : vec4(1.0);
@@ -115,7 +149,7 @@ void main() {
         N = normalize(TBN * sampled_normal);
     }
 
-    // PBR Properties (glTF 2.0 standard: Green = Roughness, Blue = Metallic)
+    // PBR Properties
     float roughness = v_pbr.x;
     float metallic  = v_pbr.y;
 
@@ -124,7 +158,6 @@ void main() {
         roughness = mr_sample.g;
         metallic = mr_sample.b;
     }
-    // Clamp roughness to prevent GGX NDF math collapse at 0.0
     roughness = max(roughness, 0.05);
 
     // Extract Camera World Position from View Matrix
@@ -136,7 +169,7 @@ void main() {
 
     vec3 Lo = vec3(0.0);
 
-    // Directional Lights
+    // Directional Lights (Shadows applied to primary directional light)
     for (int i = 0; i < u_num_dir_lights && i < MAX_DIR_LIGHTS; ++i) {
         vec3 L = normalize(-u_dir_lights[i].direction);
         vec3 H = normalize(V + L);
@@ -151,12 +184,15 @@ void main() {
         float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0) + 0.0001;
         vec3 specular = numerator / denominator;
 
-        // Monochromatic dielectric attenuation prevents colored specular from corrupting diffuse hues
         vec3 F_dielectric = fresnelSchlick(max(dot(H, V), 0.0), vec3(0.04));
         vec3 kD = (vec3(1.0) - F_dielectric) * (1.0 - metallic);
 
         float NdotL = max(dot(N, L), 0.0);
-        Lo += (kD * albedo.rgb / PI + specular) * radiance * NdotL;
+
+        // Compute shadow factor for primary directional light
+        float shadow = (i == 0) ? calculateShadow(v_light_space_pos, N, L) : 0.0;
+
+        Lo += (1.0 - shadow) * (kD * albedo.rgb / PI + specular) * radiance * NdotL;
     }
 
     // Point Lights
@@ -179,7 +215,6 @@ void main() {
             float denominator = 4.0 * max(dot(N, V), 0.0) * max(dot(N, L), 0.0) + 0.0001;
             vec3 specular = numerator / denominator;
 
-            // Monochromatic dielectric attenuation prevents colored specular from corrupting diffuse hues
             vec3 F_dielectric = fresnelSchlick(max(dot(H, V), 0.0), vec3(0.04));
             vec3 kD = (vec3(1.0) - F_dielectric) * (1.0 - metallic);
 

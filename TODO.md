@@ -1,6 +1,6 @@
 Future features:
 
-- Frustum culling
+- Frustum culling DONE
 - Shadow mapping
 - Post-processing pipeline
 - Refined asset manager

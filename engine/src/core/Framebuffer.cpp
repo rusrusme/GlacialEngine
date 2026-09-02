@@ -25,7 +25,7 @@ namespace engine {
         glGenFramebuffers(1, &fbo_id_);
         glBindFramebuffer(GL_FRAMEBUFFER, fbo_id_);
 
-        // Color Attachment (Textur)
+        // Color Attachment (Texture)
         glGenTextures(1, &color_attachment_id_);
         glBindTexture(GL_TEXTURE_2D, color_attachment_id_);
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width_, height_, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
@@ -34,19 +34,31 @@ namespace engine {
         glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, color_attachment_id_, 0);
 
         // Depth Attachment
-        glGenRenderbuffers(1, &depth_attachment_id_);
-        glBindRenderbuffer(GL_RENDERBUFFER, depth_attachment_id_);
-        glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, width_, height_);
-        glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, depth_attachment_id_);
+        glGenTextures(1, &depth_attachment_id_);
+        glBindTexture(GL_TEXTURE_2D, depth_attachment_id_);
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, width_, height_, 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, nullptr);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+
+        constexpr float border_color[] = { 1.0f, 1.0f, 1.0f, 1.0f };
+        glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, border_color);
+
+        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, depth_attachment_id_, 0);
 
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    }
+
+    uint32_t Framebuffer::get_depth_attachment_id() const {
+        return depth_attachment_id_;
     }
 
     void Framebuffer::invalidate() const {
         if (fbo_id_) {
             glDeleteFramebuffers(1, &fbo_id_);
             glDeleteTextures(1, &color_attachment_id_);
-            glDeleteRenderbuffers(1, &depth_attachment_id_);
+            glDeleteTextures(1, &depth_attachment_id_);
         }
     }
 }

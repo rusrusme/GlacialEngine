@@ -7,7 +7,6 @@ layout (location = 3) in vec3 a_tangent;
 
 layout (location = 4) in mat4 a_instance_model;
 layout (location = 8) in vec4 a_instance_color;
-
 layout (location = 9) in vec2 a_instance_pbr;
 
 layout(std140, binding = 0) uniform CameraData {
@@ -15,12 +14,15 @@ layout(std140, binding = 0) uniform CameraData {
     mat4 u_projection;
 };
 
+uniform mat4 u_light_space_matrix;
+
 out vec3 v_position;
 out vec3 v_normal;
 out vec2 v_uv;
 out vec3 v_tangent;
 out vec4 v_color;
 out vec2 v_pbr;
+out vec4 v_light_space_pos;
 
 void main() {
     vec4 world_pos = a_instance_model * vec4(a_position, 1.0);
@@ -33,6 +35,8 @@ void main() {
     v_uv = a_uv;
     v_color = a_instance_color;
     v_pbr = a_instance_pbr;
+
+    v_light_space_pos = u_light_space_matrix * world_pos;
 
     gl_Position = u_projection * u_view * world_pos;
 }
