@@ -90,6 +90,7 @@ namespace engine {
         // Meshes
         // ------------------
         std::unordered_map<UUID, std::vector<InstanceData>> mesh_batches;
+        const Frustum frustum = camera.get_frustum();
 
         auto mesh_view = registry_.view<TransformComponent, MeshComponent, ActiveComponent>();
         for (auto entity : mesh_view) {
@@ -97,21 +98,24 @@ namespace engine {
 
             if (!active.active) continue;
 
-            glm::vec4 color{1.0f};
-            float roughness = 0.5f;
-            float metallic = 0.0f;
-            if (registry_.all_of<MaterialComponent>(entity)) {
-                const auto& mat = registry_.get<MaterialComponent>(entity);
-                color = mat.color;
-                roughness = mat.roughness;
-                metallic = mat.metallic;
+            if (auto mesh = asset_manager.get_asset<Mesh>(mesh_comp.handle)) {
+                const glm::mat4 model_matrix = transform.get_matrix();
+                if (!frustum.intersects(mesh->local_bounds, model_matrix)) continue;
+                glm::vec4 color{1.0f};
+                float roughness = 0.5f;
+                float metallic = 0.0f;
+                if (registry_.all_of<MaterialComponent>(entity)) {
+                    const auto& mat = registry_.get<MaterialComponent>(entity);
+                    color = mat.color;
+                    roughness = mat.roughness;
+                    metallic = mat.metallic;
+                }
+                mesh_batches[mesh_comp.handle].push_back(InstanceData{
+                    .transform = model_matrix,
+                    .color     = color,
+                    .pbr       = glm::vec2(roughness, metallic)
+                });
             }
-
-            mesh_batches[mesh_comp.handle].push_back(InstanceData{
-                .transform = transform.get_matrix(),
-                .color     = color,
-                .pbr       = glm::vec2(roughness, metallic)
-            });
         }
         for (const auto& [handle, instance_list] : mesh_batches) {
             if (std::shared_ptr<Mesh> mesh = asset_manager.get_asset<Mesh>(handle)) {

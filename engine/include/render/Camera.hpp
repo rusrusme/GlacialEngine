@@ -10,6 +10,7 @@
 #include "math/Ray.hpp"
 
 namespace engine {
+    struct Frustum;
     class Camera {
     public:
         void set_target(const glm::vec3& target);
@@ -33,6 +34,8 @@ namespace engine {
         [[nodiscard]] glm::mat4 get_projection_matrix() const;
 
         [[nodiscard]] glm::vec3 get_position() const;
+
+        [[nodiscard]] Frustum get_frustum() const;
 
         [[nodiscard]] float get_fov() const;
         [[nodiscard]] float get_aspect_ratio() const;

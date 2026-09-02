@@ -61,6 +61,8 @@ namespace engine {
         reset_stats();
         clear_lights();
 
+        current_frustum_ = camera.get_frustum();
+
         const CameraData camera_data{
             .view       = camera.get_view_matrix(),
             .projection = camera.get_projection_matrix()
@@ -175,19 +177,34 @@ namespace engine {
     void Renderer::draw_mesh_instanced(const Mesh& mesh, const std::vector<InstanceData>& instances) {
         if (instances.empty() || !mesh.is_valid()) return;
 
+        const std::vector<InstanceData>* instances_to_draw = &instances;
+        std::vector<InstanceData> visible_instances;
+
+        if (frustum_culling_enabled_) {
+            visible_instances.reserve(instances.size());
+            for (const auto& instance : instances) {
+                if (current_frustum_.intersects(mesh.local_bounds, instance.transform)) {
+                    visible_instances.push_back(instance);
+                }
+            }
+
+            if (visible_instances.empty()) return; // All instances culled
+            instances_to_draw = &visible_instances;
+        }
+
         stats_.draw_calls++;
-        stats_.instance_count += static_cast<uint32_t>(instances.size());
+        stats_.instance_count += static_cast<uint32_t>(instances_to_draw->size());
 
         const auto shader = shader_library_.get("mesh");
         if (!shader) return;
 
-        const size_t bytes_needed = instances.size() * sizeof(InstanceData);
+        const size_t bytes_needed = instances_to_draw->size() * sizeof(InstanceData);
 
         if (bytes_needed > instance_vbo_capacity_bytes_) {
             instance_vbo_capacity_bytes_ = bytes_needed * 2;
             instance_vbo_ = std::make_shared<VertexBuffer>(nullptr, instance_vbo_capacity_bytes_, true);
         }
-        instance_vbo_->set_data(instances.data(), bytes_needed);
+        instance_vbo_->set_data(instances_to_draw->data(), bytes_needed);
 
         shader->bind();
 
@@ -282,7 +299,7 @@ namespace engine {
             static_cast<GLsizei>(mesh.vertex_array->get_index_buffer()->get_count()),
             GL_UNSIGNED_INT,
             nullptr,
-            static_cast<GLsizei>(instances.size())
+            static_cast<GLsizei>(instances_to_draw->size())
         );
 
         mesh.vertex_array->unbind();

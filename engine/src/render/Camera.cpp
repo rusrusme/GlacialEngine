@@ -6,6 +6,7 @@
 #include "render/Camera.hpp"
 
 #include "core/Config.hpp"
+#include "render/Frustum.hpp"
 
 namespace engine {
     namespace {
@@ -83,6 +84,10 @@ namespace engine {
 
     glm::vec3 Camera::get_position() const {
         return position_;
+    }
+
+    Frustum Camera::get_frustum() const {
+        return Frustum::from_view_projection(get_projection_matrix() * get_view_matrix());
     }
 
     float Camera::get_fov() const {

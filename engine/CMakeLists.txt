@@ -94,6 +94,8 @@ add_library(Engine STATIC
             include/render/Texture2D.hpp
             src/render/Texture2D.cpp
             src/util/stb_image.cpp
+            include/render/Frustum.hpp
+            src/render/Frustum.cpp
 )
 # ----------------------------------------------------------------------------
 target_include_directories(Engine

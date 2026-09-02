@@ -68,6 +68,10 @@ namespace engine {
         void draw_mesh(const Mesh& mesh, const glm::mat4& model_matrix, const glm::vec4& color);
         void draw_mesh_instanced(const Mesh& mesh, const std::vector<InstanceData>& instances);
 
+        // Frustum culling
+        void set_frustum_culling_enabled(bool enabled) { frustum_culling_enabled_ = enabled; }
+        [[nodiscard]] bool is_frustum_culling_enabled() const { return frustum_culling_enabled_; }
+
         // -------------------------
         // Debug line rendering
         // -------------------------
@@ -140,6 +144,10 @@ namespace engine {
 
         int framebuffer_width_ = 1;
         int framebuffer_height_ = 1;
+
+        // Frustum culling
+        Frustum current_frustum_;
+        bool frustum_culling_enabled_{true};
 
         // -----------------------------------------
         // Line & Grid Rendering Resources
