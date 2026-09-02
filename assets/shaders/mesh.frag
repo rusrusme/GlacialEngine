@@ -41,7 +41,7 @@ uniform int u_use_normal_texture;
 uniform sampler2D u_metallic_roughness_texture;
 uniform int u_use_metallic_roughness_texture;
 
-uniform sampler2D u_shadow_map;
+uniform sampler2DShadow u_shadow_map;
 
 layout(std140, binding = 0) uniform CameraData {
     mat4 u_view;
@@ -99,34 +99,31 @@ vec3 toneMapACES(vec3 color) {
 
 // 3x3 Percentage-Closer Filtering (PCF) Directional Shadow Calculation
 float calculateShadow(vec4 light_space_pos, vec3 N, vec3 L) {
-    // Perspective Divide to transform into NDC space [-1, 1]
     vec3 proj_coords = light_space_pos.xyz / light_space_pos.w;
-
-    // Map NDC coords from [-1, 1] to [0, 1] UV depth space
     proj_coords = proj_coords * 0.5 + 0.5;
 
-    // Fragments outside the light's far plane or ortho box boundary are unshadowed
+    // Out-of-bounds check
     if (proj_coords.z > 1.0 || proj_coords.x < 0.0 || proj_coords.x > 1.0 || proj_coords.y < 0.0 || proj_coords.y > 1.0) {
         return 0.0;
     }
 
-    float current_depth = proj_coords.z;
+    // Small bias (PolygonOffset does the heavy lifting now)
+    float NdotL = max(dot(N, L), 0.0);
+    float bias = max(0.0005 * (1.0 - NdotL), 0.0001);
+    float current_depth = proj_coords.z - bias;
 
-    // Slope-scale depth bias prevents shadow acne artifacts
-    float bias = max(0.005 * (1.0 - dot(N, L)), 0.0005);
-
-    // PCF 3x3 Kernel
-    float shadow = 0.0;
+    // 3x3 PCF Kernel
+    float visibility = 0.0;
     vec2 texel_size = 1.0 / textureSize(u_shadow_map, 0);
 
     for (int x = -1; x <= 1; ++x) {
         for (int y = -1; y <= 1; ++y) {
-            float pcf_depth = texture(u_shadow_map, proj_coords.xy + vec2(x, y) * texel_size).r;
-            shadow += (current_depth - bias > pcf_depth) ? 1.0 : 0.0;
+            visibility += texture(u_shadow_map, vec3(proj_coords.xy + vec2(x, y) * texel_size, current_depth));
         }
     }
 
-    return shadow / 9.0;
+    // visibility / 9.0 gives 1.0 for unshadowed, 0.0 for shadowed
+    return 1.0 - (visibility / 9.0);
 }
 
 void main() {
@@ -151,7 +148,7 @@ void main() {
 
     // PBR Properties
     float roughness = v_pbr.x;
-    float metallic  = v_pbr.y;
+    float metallic = v_pbr.y;
 
     if (u_use_metallic_roughness_texture != 0) {
         vec4 mr_sample = texture(u_metallic_roughness_texture, v_uv);

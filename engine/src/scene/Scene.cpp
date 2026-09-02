@@ -161,14 +161,37 @@ namespace engine {
         // ------------------
         glm::mat4 light_space_matrix(1.0f);
         if (has_dir_light) {
-            const glm::vec3 light_pos = camera_pos - main_light_dir * 40.0f;
+            constexpr float shadow_map_size = 2048.0f;
 
+            // 1. Center shadow frustum on camera TARGET (what you're looking at), NOT eye position
+            const glm::vec3 shadow_center = camera.get_target();
+
+            // 2. Dynamically scale ortho box size with camera distance so zooming out expands coverage
+            const float ortho_size = std::max(20.0f, camera.get_distance() * 0.8f);
+            const float light_distance = ortho_size * 2.0f;
+
+            const glm::vec3 light_pos = shadow_center - main_light_dir * light_distance;
             const glm::vec3 up = std::abs(main_light_dir.y) > 0.99f ? glm::vec3(0.0f, 0.0f, 1.0f) : glm::vec3(0.0f, 1.0f, 0.0f);
-            const glm::mat4 light_view = glm::lookAt(light_pos, camera_pos, up);
-            const glm::mat4 light_projection = glm::ortho(-40.0f, 40.0f, -40.0f, 40.0f, 0.1f, 120.0f);
+
+            const glm::mat4 light_view = glm::lookAt(light_pos, shadow_center, up);
+            glm::mat4 light_projection = glm::ortho(-ortho_size, ortho_size, -ortho_size, ortho_size, 0.1f, light_distance * 2.0f);
+
+            // 3. Texel Snapping (Prevents Shimmering)
+            glm::mat4 shadow_matrix = light_projection * light_view;
+            glm::vec4 shadow_origin = shadow_matrix * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+            shadow_origin *= (shadow_map_size / 2.0f);
+
+            glm::vec4 rounded_origin = glm::round(shadow_origin);
+            glm::vec4 round_offset = rounded_origin - shadow_origin;
+            round_offset /= (shadow_map_size / 2.0f);
+            round_offset.z = 0.0f;
+            round_offset.w = 0.0f;
+
+            light_projection[3] += round_offset;
             light_space_matrix = light_projection * light_view;
         }
 
+        // 2. PASS 1: Shadow Depth Pass with Hardware Polygon Offset (Fixes Peter Panning / Light Leak)
         if (has_dir_light && shadow_framebuffer_) {
             GLint prev_fbo = 0;
             glGetIntegerv(GL_FRAMEBUFFER_BINDING, &prev_fbo);
@@ -183,6 +206,10 @@ namespace engine {
                 shadow_shader->bind();
                 shadow_shader->set_mat4("u_light_space_matrix", light_space_matrix);
 
+                // Hardware Slope-Scale Depth Offset (Replaces GL_FRONT culling)
+                glEnable(GL_POLYGON_OFFSET_FILL);
+                glPolygonOffset(2.0f, 4.0f);
+
                 bool prev_culling = renderer.is_frustum_culling_enabled();
                 renderer.set_frustum_culling_enabled(false);
 
@@ -193,9 +220,10 @@ namespace engine {
                 }
 
                 renderer.set_frustum_culling_enabled(prev_culling);
+
+                glDisable(GL_POLYGON_OFFSET_FILL);
             }
 
-            // Restore editor framebuffer and viewport
             glBindFramebuffer(GL_FRAMEBUFFER, prev_fbo);
             glViewport(prev_viewport[0], prev_viewport[1], prev_viewport[2], prev_viewport[3]);
         }
