@@ -8,13 +8,20 @@
 #include <cstdint>
 
 namespace engine {
+    enum class FramebufferType {
+        Default = 0,
+        ShadowMap
+    };
+
     class Framebuffer {
     public:
-        Framebuffer(const uint32_t width, const uint32_t height) { resize(width, height); }
+        Framebuffer(const uint32_t width, const uint32_t height, const FramebufferType type = FramebufferType::Default)
+            : type_(type) {
+            resize(width, height);
+        }
         ~Framebuffer() { invalidate(); }
 
         void bind() const;
-
         void unbind() const;
 
         void resize(uint32_t width, uint32_t height);
@@ -22,7 +29,8 @@ namespace engine {
         [[nodiscard]] uint32_t get_color_attachment_id() const { return color_attachment_id_; }
         [[nodiscard]] uint32_t get_width() const { return width_; }
         [[nodiscard]] uint32_t get_height() const { return height_; }
-        uint32_t get_depth_attachment_id() const;
+        [[nodiscard]] uint32_t get_depth_attachment_id() const;
+        [[nodiscard]] FramebufferType get_type() const { return type_; }
 
     private:
         void invalidate() const;
@@ -31,5 +39,7 @@ namespace engine {
         uint32_t color_attachment_id_ = 0;
         uint32_t depth_attachment_id_ = 0;
         uint32_t width_ = 1280, height_ = 720;
+
+        FramebufferType type_ = FramebufferType::Default;
     };
 }

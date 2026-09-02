@@ -42,6 +42,7 @@ uniform sampler2D u_metallic_roughness_texture;
 uniform int u_use_metallic_roughness_texture;
 
 uniform sampler2DShadow u_shadow_map;
+uniform mat4 u_light_space_matrix;
 
 layout(std140, binding = 0) uniform CameraData {
     mat4 u_view;
@@ -98,7 +99,20 @@ vec3 toneMapACES(vec3 color) {
 }
 
 // 3x3 Percentage-Closer Filtering (PCF) Directional Shadow Calculation
-float calculateShadow(vec4 light_space_pos, vec3 N, vec3 L) {
+float calculateShadow(vec3 world_pos, vec3 N, vec3 L) {
+    float NdotL = dot(N, L);
+
+    // Early-out: faces pointing away from light are completely shadowed
+    if (NdotL <= 0.0) {
+        return 1.0;
+    }
+
+    // --- Normal Offset Bias ---
+    // Offsets world position outward along normal N proportional to slope angle.
+    // Completely cleans up triangle acne along top/side mesh edges.
+    float normal_bias = max(0.04 * (1.0 - NdotL), 0.005);
+    vec4 light_space_pos = u_light_space_matrix * vec4(world_pos + N * normal_bias, 1.0);
+
     vec3 proj_coords = light_space_pos.xyz / light_space_pos.w;
     proj_coords = proj_coords * 0.5 + 0.5;
 
@@ -106,13 +120,9 @@ float calculateShadow(vec4 light_space_pos, vec3 N, vec3 L) {
     if (proj_coords.z > 1.0 || proj_coords.x < 0.0 || proj_coords.x > 1.0 || proj_coords.y < 0.0 || proj_coords.y > 1.0) {
         return 0.0;
     }
+    float current_depth = proj_coords.z;
 
-    // Small bias (PolygonOffset does the heavy lifting now)
-    float NdotL = max(dot(N, L), 0.0);
-    float bias = max(0.0005 * (1.0 - NdotL), 0.0001);
-    float current_depth = proj_coords.z - bias;
-
-    // 3x3 PCF Kernel
+    // 3x3 PCF Kernel for soft edge filtering
     float visibility = 0.0;
     vec2 texel_size = 1.0 / textureSize(u_shadow_map, 0);
 
@@ -121,8 +131,6 @@ float calculateShadow(vec4 light_space_pos, vec3 N, vec3 L) {
             visibility += texture(u_shadow_map, vec3(proj_coords.xy + vec2(x, y) * texel_size, current_depth));
         }
     }
-
-    // visibility / 9.0 gives 1.0 for unshadowed, 0.0 for shadowed
     return 1.0 - (visibility / 9.0);
 }
 
@@ -187,7 +195,7 @@ void main() {
         float NdotL = max(dot(N, L), 0.0);
 
         // Compute shadow factor for primary directional light
-        float shadow = (i == 0) ? calculateShadow(v_light_space_pos, N, L) : 0.0;
+        float shadow = (i == 0) ? calculateShadow(v_position, N, L) : 0.0;
 
         Lo += (1.0 - shadow) * (kD * albedo.rgb / PI + specular) * radiance * NdotL;
     }

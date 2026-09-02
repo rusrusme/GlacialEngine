@@ -5,7 +5,9 @@
 
 #include "render/Renderer.hpp"
 
+#include "asset/AssetManager.hpp"
 #include "core/Config.hpp"
+#include "core/Framebuffer.hpp"
 #include "render/Camera.hpp"
 #include "render/Texture2D.hpp"
 #include "render/VertexArray.hpp"
@@ -36,6 +38,9 @@ namespace engine {
 
         shader_library_.load("mesh", "assets/shaders/mesh.vert", "assets/shaders/mesh.frag");
         shader_library_.load("line", "assets/shaders/line.vert", "assets/shaders/line.frag");
+        shader_library_.load("shadow_depth", "assets/shaders/shadow_depth.vert", "assets/shaders/shadow_depth.frag");
+
+        shadow_framebuffer_ = std::make_unique<Framebuffer>(4096, 4096, FramebufferType::ShadowMap);
 
         instance_vbo_capacity_bytes_ = 1000 * sizeof(InstanceData);
         instance_vbo_ = std::make_shared<VertexBuffer>(nullptr, instance_vbo_capacity_bytes_, true);
@@ -45,6 +50,7 @@ namespace engine {
     }
 
     void Renderer::on_shutdown() {
+        shadow_framebuffer_.reset();
         line_batch_buffer_.clear();
         line_vao_.reset();
         line_vbo_.reset();
@@ -72,6 +78,78 @@ namespace engine {
 
     void Renderer::end_scene(const float delta_time) {
         flush();
+    }
+
+    void Renderer::render_shadow_pass(const Camera& camera, AssetManager& asset_manager, const std::unordered_map<UUID, std::vector<InstanceData>>& batches) {
+        if (directional_lights_.empty() || !shadow_framebuffer_) return;
+
+        const glm::vec3 main_light_dir = directional_lights_[0].direction;
+        const glm::vec3 shadow_center = camera.get_target();
+
+        constexpr float shadow_map_size = 4096.0f;
+        const float ortho_size = std::clamp(camera.get_distance() * 0.5f, 15.0f, 60.0f);
+        const float light_distance = ortho_size * 2.0f;
+
+        const glm::vec3 light_pos = shadow_center - main_light_dir * light_distance;
+        const glm::vec3 up = std::abs(main_light_dir.y) > 0.99f ? glm::vec3(0.0f, 0.0f, 1.0f) : glm::vec3(0.0f, 1.0f, 0.0f);
+
+        const glm::mat4 light_view = glm::lookAt(light_pos, shadow_center, up);
+        glm::mat4 light_projection = glm::ortho(-ortho_size, ortho_size, -ortho_size, ortho_size, 0.1f, light_distance * 2.0f);
+
+        // Texel Snapping
+        const glm::mat4 shadow_matrix = light_projection * light_view;
+        glm::vec4 shadow_origin = shadow_matrix * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+        shadow_origin *= (shadow_map_size / 2.0f);
+
+        const glm::vec4 rounded_origin = glm::round(shadow_origin);
+        glm::vec4 round_offset = rounded_origin - shadow_origin;
+        round_offset /= (shadow_map_size / 2.0f);
+        round_offset.z = 0.0f;
+        round_offset.w = 0.0f;
+
+        light_projection[3] += round_offset;
+        light_space_matrix_ = light_projection * light_view;
+
+        // Save active framebuffer and viewport
+        GLint prev_fbo = 0;
+        glGetIntegerv(GL_FRAMEBUFFER_BINDING, &prev_fbo);
+        GLint prev_viewport[4];
+        glGetIntegerv(GL_VIEWPORT, prev_viewport);
+
+        shadow_framebuffer_->bind();
+        glClear(GL_DEPTH_BUFFER_BIT);
+
+        auto shadow_shader = shader_library_.get("shadow_depth");
+        if (shadow_shader) {
+            shadow_shader->bind();
+            shadow_shader->set_mat4("u_light_space_matrix", light_space_matrix_);
+
+            glEnable(GL_POLYGON_OFFSET_FILL);
+            glPolygonOffset(3.0f, 6.0f);
+
+            const bool prev_culling = is_frustum_culling_enabled();
+            set_frustum_culling_enabled(false);
+
+            for (const auto& [handle, instance_list] : batches) {
+                if (std::shared_ptr<Mesh> mesh = asset_manager.get_asset<Mesh>(handle)) {
+                    draw_mesh_instanced(*mesh, instance_list, shadow_shader);
+                }
+            }
+            set_frustum_culling_enabled(prev_culling);
+            glDisable(GL_POLYGON_OFFSET_FILL);
+        }
+
+        // Restore active framebuffer and viewport
+        glBindFramebuffer(GL_FRAMEBUFFER, prev_fbo);
+        glViewport(prev_viewport[0], prev_viewport[1], prev_viewport[2], prev_viewport[3]);
+    }
+
+    void Renderer::render_mesh_batches(AssetManager& asset_manager, const std::unordered_map<UUID, std::vector<InstanceData>>& batches) {
+        for (const auto& [handle, instance_list] : batches) {
+            if (std::shared_ptr<Mesh> mesh = asset_manager.get_asset<Mesh>(handle)) {
+                draw_mesh_instanced(*mesh, instance_list);
+            }
+        }
     }
 
     void Renderer::set_blend(const bool enable) {
@@ -170,10 +248,6 @@ namespace engine {
         mesh.vertex_array.reset();
     }
 
-    void Renderer::draw_mesh(const Mesh& mesh, const glm::mat4& model_matrix) {
-        draw_mesh(mesh, model_matrix, {1.0f, 1.0f, 1.0f, 1.0f});
-    }
-
     void Renderer::draw_mesh_instanced(const Mesh& mesh, const std::vector<InstanceData>& instances, const std::shared_ptr<Shader>& override_shader) {
         if (instances.empty() || !mesh.is_valid()) return;
 
@@ -239,7 +313,15 @@ namespace engine {
                 shader->set_int("u_use_metallic_roughness_texture", 0);
             }
 
-            // Bind Directional and Point Lights
+            // Shadow Map (Slot 3)
+            if (shadow_framebuffer_) {
+                glActiveTexture(GL_TEXTURE3);
+                glBindTexture(GL_TEXTURE_2D, shadow_framebuffer_->get_depth_attachment_id());
+                shader->set_int("u_shadow_map", 3);
+                shader->set_mat4("u_light_space_matrix", light_space_matrix_);
+            }
+
+            // Directional & Point Lights
             shader->set_int("u_num_dir_lights", static_cast<int>(directional_lights_.size()));
             for (size_t i = 0; i < directional_lights_.size(); ++i) {
                 std::string base = "u_dir_lights[" + std::to_string(i) + "].";
@@ -377,7 +459,6 @@ namespace engine {
 
         const size_t bytes_needed = line_batch_buffer_.size() * sizeof(LineVertex);
 
-        // Falls das Line-Buffer-Capacity überschritten wird, vergrößern wir den VertexBuffer
         if (bytes_needed > line_vbo_capacity_bytes_) {
             line_vbo_capacity_bytes_ = bytes_needed * 2;
             line_vbo_ = std::make_shared<VertexBuffer>(nullptr, line_vbo_capacity_bytes_, true);

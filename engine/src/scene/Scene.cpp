@@ -42,18 +42,9 @@ namespace engine {
 
     void Scene::on_init(Renderer& renderer) {
         collision_system_ = std::make_unique<CollisionSystem>(10.0f);
-
-        shadow_framebuffer_ = std::make_unique<Framebuffer>(2048, 2048);
-
-        renderer.get_shader_library().load(
-            "shadow_depth",
-            "assets/shaders/shadow_depth.vert",
-            "assets/shaders/shadow_depth.frag"
-        );
     }
 
     void Scene::on_shutdown() {
-        shadow_framebuffer_.reset();
         collision_system_.reset();
     }
 
@@ -68,9 +59,6 @@ namespace engine {
         // ------------------
         // Lights
         // ------------------
-        glm::vec3 main_light_dir{0.0f, -1.0f, 0.0f};
-        bool has_dir_light = false;
-
         auto dir_light_view = registry_.view<TransformComponent, DirectionalLightComponent>();
         for (auto entity : dir_light_view) {
             auto [transform, light] = dir_light_view.get<TransformComponent, DirectionalLightComponent>(entity);
@@ -78,24 +66,20 @@ namespace engine {
                 continue;
             }
 
-            const glm::vec3 light_forward = transform.get_forward();
             renderer.add_directional_light({
-                .direction = light_forward,
+                .direction = transform.get_forward(),
                 .color     = light.color,
                 .intensity = light.intensity
             });
-
-            if (!has_dir_light) {
-                main_light_dir = light_forward;
-                has_dir_light = true;
-            }
         }
+
         auto point_light_view = registry_.view<TransformComponent, PointLightComponent>();
         for (auto entity : point_light_view) {
             auto [transform, light] = point_light_view.get<TransformComponent, PointLightComponent>(entity);
             if (registry_.all_of<ActiveComponent>(entity) && !registry_.get<ActiveComponent>(entity).active) {
                 continue;
             }
+
             renderer.add_point_light({
                 .position  = transform.position,
                 .color     = light.color,
@@ -119,7 +103,7 @@ namespace engine {
 
             if (!active.active) continue;
 
-            UUID target_mesh_handle = mesh_comp.handle; // Default to base mesh (LOD0)
+            UUID target_mesh_handle = mesh_comp.handle;
             const float distance_to_camera = glm::distance(transform.position, camera_pos);
 
             if (registry_.all_of<LODComponent>(entity)) {
@@ -157,94 +141,11 @@ namespace engine {
             }
         }
         // ------------------
-        // Shadow pass
+        // Render passes
         // ------------------
-        glm::mat4 light_space_matrix(1.0f);
-        if (has_dir_light) {
-            constexpr float shadow_map_size = 2048.0f;
+        renderer.render_shadow_pass(camera, asset_manager, mesh_batches_);
+        renderer.render_mesh_batches(asset_manager, mesh_batches_);
 
-            // 1. Center shadow frustum on camera TARGET (what you're looking at), NOT eye position
-            const glm::vec3 shadow_center = camera.get_target();
-
-            // 2. Dynamically scale ortho box size with camera distance so zooming out expands coverage
-            const float ortho_size = std::max(20.0f, camera.get_distance() * 0.8f);
-            const float light_distance = ortho_size * 2.0f;
-
-            const glm::vec3 light_pos = shadow_center - main_light_dir * light_distance;
-            const glm::vec3 up = std::abs(main_light_dir.y) > 0.99f ? glm::vec3(0.0f, 0.0f, 1.0f) : glm::vec3(0.0f, 1.0f, 0.0f);
-
-            const glm::mat4 light_view = glm::lookAt(light_pos, shadow_center, up);
-            glm::mat4 light_projection = glm::ortho(-ortho_size, ortho_size, -ortho_size, ortho_size, 0.1f, light_distance * 2.0f);
-
-            // 3. Texel Snapping (Prevents Shimmering)
-            glm::mat4 shadow_matrix = light_projection * light_view;
-            glm::vec4 shadow_origin = shadow_matrix * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
-            shadow_origin *= (shadow_map_size / 2.0f);
-
-            glm::vec4 rounded_origin = glm::round(shadow_origin);
-            glm::vec4 round_offset = rounded_origin - shadow_origin;
-            round_offset /= (shadow_map_size / 2.0f);
-            round_offset.z = 0.0f;
-            round_offset.w = 0.0f;
-
-            light_projection[3] += round_offset;
-            light_space_matrix = light_projection * light_view;
-        }
-
-        // 2. PASS 1: Shadow Depth Pass with Hardware Polygon Offset (Fixes Peter Panning / Light Leak)
-        if (has_dir_light && shadow_framebuffer_) {
-            GLint prev_fbo = 0;
-            glGetIntegerv(GL_FRAMEBUFFER_BINDING, &prev_fbo);
-            GLint prev_viewport[4];
-            glGetIntegerv(GL_VIEWPORT, prev_viewport);
-
-            shadow_framebuffer_->bind();
-            glClear(GL_DEPTH_BUFFER_BIT);
-
-            auto shadow_shader = renderer.get_shader_library().get("shadow_depth");
-            if (shadow_shader) {
-                shadow_shader->bind();
-                shadow_shader->set_mat4("u_light_space_matrix", light_space_matrix);
-
-                // Hardware Slope-Scale Depth Offset (Replaces GL_FRONT culling)
-                glEnable(GL_POLYGON_OFFSET_FILL);
-                glPolygonOffset(2.0f, 4.0f);
-
-                bool prev_culling = renderer.is_frustum_culling_enabled();
-                renderer.set_frustum_culling_enabled(false);
-
-                for (const auto& [handle, instance_list] : mesh_batches_) {
-                    if (std::shared_ptr<Mesh> mesh = asset_manager.get_asset<Mesh>(handle)) {
-                        renderer.draw_mesh_instanced(*mesh, instance_list, shadow_shader);
-                    }
-                }
-
-                renderer.set_frustum_culling_enabled(prev_culling);
-
-                glDisable(GL_POLYGON_OFFSET_FILL);
-            }
-
-            glBindFramebuffer(GL_FRAMEBUFFER, prev_fbo);
-            glViewport(prev_viewport[0], prev_viewport[1], prev_viewport[2], prev_viewport[3]);
-        }
-
-        // PASS 2: Main Lighting Pass
-        if (shadow_framebuffer_) {
-            glActiveTexture(GL_TEXTURE3);
-            glBindTexture(GL_TEXTURE_2D, shadow_framebuffer_->get_depth_attachment_id());
-
-            if (auto main_shader = renderer.get_shader_library().get("mesh")) {
-                main_shader->bind();
-                main_shader->set_int("u_shadow_map", 3);
-                main_shader->set_mat4("u_light_space_matrix", light_space_matrix);
-            }
-        }
-
-        for (const auto& [handle, instance_list] : mesh_batches_) {
-            if (std::shared_ptr<Mesh> mesh = asset_manager.get_asset<Mesh>(handle)) {
-                renderer.draw_mesh_instanced(*mesh, instance_list);
-            }
-        }
         renderer.end_scene(delta_time);
     }
 }
