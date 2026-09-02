@@ -44,5 +44,8 @@ namespace engine {
 
         entt::registry registry_;
         std::unique_ptr<CollisionSystem> collision_system_ = nullptr;
+
+        // Todo: Combine into RenderCommand package
+        std::unordered_map<UUID, std::vector<InstanceData>> mesh_batches_;
     };
 }

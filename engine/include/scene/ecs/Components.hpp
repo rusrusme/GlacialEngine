@@ -110,6 +110,16 @@ namespace engine {
         CameraComponent(const Camera& camera) : camera(camera) {}
     };
 
+    struct LODLevel {
+        UUID mesh_handle;
+        float max_distance{};
+    };
+
+    struct LODComponent {
+        std::vector<LODLevel> levels;
+        float max_draw_distance = 500.0f;
+    };
+
     // ----------------------------
     // Lighting
     // ----------------------------

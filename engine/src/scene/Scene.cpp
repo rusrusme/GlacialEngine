@@ -89,8 +89,12 @@ namespace engine {
         // ------------------
         // Meshes
         // ------------------
-        std::unordered_map<UUID, std::vector<InstanceData>> mesh_batches;
+        for (auto& batch : mesh_batches_ | std::views::values) {
+            batch.clear();
+        }
+
         const Frustum frustum = camera.get_frustum();
+        const glm::vec3 camera_pos = camera.get_position();
 
         auto mesh_view = registry_.view<TransformComponent, MeshComponent, ActiveComponent>();
         for (auto entity : mesh_view) {
@@ -98,9 +102,27 @@ namespace engine {
 
             if (!active.active) continue;
 
-            if (auto mesh = asset_manager.get_asset<Mesh>(mesh_comp.handle)) {
+            UUID target_mesh_handle = mesh_comp.handle; // Default to base mesh (LOD0)
+            const float distance_to_camera = glm::distance(transform.position, camera_pos);
+
+            if (registry_.all_of<LODComponent>(entity)) {
+                const auto& [levels, max_draw_distance] = registry_.get<LODComponent>(entity);
+                if (distance_to_camera > max_draw_distance) continue;
+
+                for (const auto& [mesh_handle, max_distance] : levels) {
+                    if (distance_to_camera > max_distance) {
+                        target_mesh_handle = mesh_handle;
+                    }
+                    else {
+                        break;
+                    }
+                }
+            }
+
+            if (auto mesh = asset_manager.get_asset<Mesh>(target_mesh_handle)) {
                 const glm::mat4 model_matrix = transform.get_matrix();
                 if (!frustum.intersects(mesh->local_bounds, model_matrix)) continue;
+
                 glm::vec4 color{1.0f};
                 float roughness = 0.5f;
                 float metallic = 0.0f;
@@ -110,14 +132,14 @@ namespace engine {
                     roughness = mat.roughness;
                     metallic = mat.metallic;
                 }
-                mesh_batches[mesh_comp.handle].push_back(InstanceData{
+                mesh_batches_[target_mesh_handle].push_back(InstanceData{
                     .transform = model_matrix,
                     .color     = color,
                     .pbr       = glm::vec2(roughness, metallic)
                 });
             }
         }
-        for (const auto& [handle, instance_list] : mesh_batches) {
+        for (const auto& [handle, instance_list] : mesh_batches_) {
             if (std::shared_ptr<Mesh> mesh = asset_manager.get_asset<Mesh>(handle)) {
                 renderer.draw_mesh_instanced(*mesh, instance_list);
             }
