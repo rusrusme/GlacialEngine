@@ -10,7 +10,9 @@
 namespace engine {
     enum class FramebufferType {
         Default = 0,
-        ShadowMap
+        ShadowMap,
+        // Todo: WIP PointShadow
+        PointShadowMap
     };
 
     class Framebuffer {

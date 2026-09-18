@@ -33,6 +33,7 @@ namespace engine {
         glfwGetFramebufferSize(window_, &framebuffer_width_, &framebuffer_height_);
         glViewport(0, 0, framebuffer_width_, framebuffer_height_);
         glEnable(GL_DEPTH_TEST);
+        glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS); // Todo: Check if needed
 
         camera_ubo_ = std::make_unique<UniformBuffer>(sizeof(CameraData), 0);
 
@@ -144,7 +145,7 @@ namespace engine {
         glViewport(prev_viewport[0], prev_viewport[1], prev_viewport[2], prev_viewport[3]);
     }
 
-    void Renderer::render_mesh_batches(AssetManager& asset_manager, const std::unordered_map<UUID, std::vector<InstanceData>>& batches) {
+    void Renderer::render_mesh_batches(AssetManager& asset_manager, std::unordered_map<UUID, std::vector<InstanceData>>& batches) {
         for (const auto& [handle, instance_list] : batches) {
             if (std::shared_ptr<Mesh> mesh = asset_manager.get_asset<Mesh>(handle)) {
                 draw_mesh_instanced(*mesh, instance_list);
@@ -343,7 +344,7 @@ namespace engine {
         mesh.vertex_array->bind();
         instance_vbo_->bind();
 
-        const auto stride = static_cast<GLsizei>(sizeof(InstanceData));
+        constexpr auto stride = static_cast<GLsizei>(sizeof(InstanceData));
         for (uint32_t i = 0; i < 4; ++i) {
             glEnableVertexAttribArray(4 + i);
             glVertexAttribPointer(

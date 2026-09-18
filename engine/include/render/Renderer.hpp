@@ -8,12 +8,12 @@
 #include <vector>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
-#include <render/Vertex.hpp>
-#include <render/mesh/Mesh.hpp>
 
 #include "Shader.hpp"
 #include "ShaderLibrary.hpp"
 #include "UniformBuffer.hpp"
+#include "render/Vertex.hpp"
+#include "render/mesh/Mesh.hpp"
 
 namespace engine {
     class Framebuffer;
@@ -56,7 +56,7 @@ namespace engine {
         void render_shadow_pass(const Camera& camera, AssetManager& asset_manager, const std::unordered_map<UUID, std::vector<InstanceData>>& batches);
 
         /** @brief Renders all opaque mesh batches */
-        void render_mesh_batches(AssetManager& asset_manager, const std::unordered_map<UUID, std::vector<InstanceData>>& batches);
+        void render_mesh_batches(AssetManager& asset_manager, std::unordered_map<UUID, std::vector<InstanceData>>& batches);
 
         /** @brief Enables or disables blending for rendering */
         static void set_blend(bool enable);
