@@ -1,12 +1,14 @@
 Future features:
 
-- Frustum culling DONE
+- Frustum culling
+    - Object
+    - Camera DONE
+    - Light-space
 - Shadow mapping
-    - Consider adding light-space frustum culling 
     - Consider optimizing two-pass rendering 
         - Consider refactoring into a CastsShadowComponent (Reason: 2 draw calls per object)
 - Post-processing pipeline
-- Refined asset manager
+- Asset manager
     - Drag and drop textures on objects
 - More precise scene picking
 - Simulation state management
