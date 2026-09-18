@@ -118,7 +118,7 @@ target_link_libraries(Engine PUBLIC
 )
 # ----------------------------------------------------------------------------
 if (ENABLE_IMGUI)
-    target_link_libraries(Engine PUBLIC imgui imguizmo::imguizmo)
+    target_link_libraries(Engine PUBLIC imgui)
 endif ()
 # ----------------------------------------------------------------------------
 add_compile_definitions(GLFW_INCLUDE_NONE)

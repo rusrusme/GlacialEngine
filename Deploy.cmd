@@ -12,13 +12,13 @@ if defined VS_PATH (
 )
 
 echo Building debug distribution...
-cmake -B distribution/debug -DCMAKE_BUILD_TYPE=Debug -DDEBUG_DIST=ON
-cmake --build distribution/debug --target Engine --clean-first
+cmake -B engine-lib/build/debug -DCMAKE_BUILD_TYPE=Debug -D ENGINE_DEBUG_DIST=ON
+cmake --build engine-lib/build/debug --target Engine --clean-first
 echo.
 
 echo Building release distribution...
-cmake -B distribution/release -DCMAKE_BUILD_TYPE=Release -DRELEASE_DIST=ON
-cmake --build distribution/release --target Engine --clean-first
+cmake -B engine-lib/build/release -DCMAKE_BUILD_TYPE=Release -D ENGINE_RELEASE_DIST=ON
+cmake --build engine-lib/build/release --target Engine --clean-first
 echo.
 
 echo Build successful.

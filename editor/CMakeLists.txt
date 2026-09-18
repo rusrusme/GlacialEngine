@@ -26,7 +26,10 @@ add_executable(Editor
 )
 # ----------------------------------------------------------------------------
 target_include_directories(Editor PRIVATE ${CMAKE_SOURCE_DIR}/editor/src)
-
+# ----------------------------------------------------------------------------
 target_link_libraries(Editor PRIVATE Engine)
-
+if (ENABLE_IMGUI)
+    target_link_libraries(Editor PRIVATE imguizmo::imguizmo)
+endif ()
+# ----------------------------------------------------------------------------
 target_precompile_headers(Editor PRIVATE src/editor_pch.hpp)

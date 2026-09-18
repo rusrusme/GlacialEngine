@@ -1,6 +1,6 @@
 # engine/PackageDistribution.cmake
-if (RELEASE_DIST OR DEBUG_DIST)
-    if (DEBUG_DIST)
+if (ENGINE_DEBUG_DIST OR ENGINE_RELEASE_DIST)
+    if (ENGINE_DEBUG_DIST)
         set(DIST_CONFIG_DIR "debug")
     else ()
         set(DIST_CONFIG_DIR "release")
