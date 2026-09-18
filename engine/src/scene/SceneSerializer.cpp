@@ -35,6 +35,9 @@ namespace engine {
             if (entity.has_component<LabelComponent>()) {
                 entity_json["label"] = entity.get_component<LabelComponent>().tag;
             }
+            if (entity.has_component<ActiveComponent>()) {
+                entity_json["active"] = entity.get_component<ActiveComponent>().active;
+            }
             // TransformComponent
             if (entity.has_component<TransformComponent>()) {
                 auto& transform = entity.get_component<TransformComponent>();
@@ -114,6 +117,12 @@ namespace engine {
             // 2. Entity mit exakter UUID & Name erstellen (erstellt ID, Label & Transform automatisch)
             Entity entity = scene_->create_entity_with_uuid(uuid, name);
 
+            if (entity_json.contains("active")) {
+                auto& ac = entity.get_component<ActiveComponent>();
+                auto& a_json = entity_json["active"];
+                ac.active = a_json;
+
+            }
             // 3. Transform überschreiben
             if (entity_json.contains("transform")) {
                 auto& tc = entity.get_component<TransformComponent>();
