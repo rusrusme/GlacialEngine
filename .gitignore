@@ -10,7 +10,6 @@
 # Runtime
 *.ini
 *.rml
-*.ttf
 *.glb
 *.scene
 *.meta

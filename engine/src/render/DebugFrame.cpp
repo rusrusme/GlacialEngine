@@ -24,7 +24,7 @@ namespace engine {
         float dpiScale = Application::get().window().get_monitor_dpi_scale();
 
         io.Fonts->AddFontFromFileTTF(
-            "assets/fonts/Inter-VariableFont_opsz,wght.ttf",
+            "assets/fonts/Inter-VariableFont.ttf",
             16.0f * dpiScale,
             &config
         );
