@@ -55,6 +55,7 @@ namespace engine {
         void end_scene(float delta_time);
 
         void render_shadow_pass(Camera& camera, AssetManager& asset_manager, const std::unordered_map<UUID, std::vector<InstanceData>>& batches);
+        void render_point_shadow_pass(AssetManager& asset_manager, const std::unordered_map<UUID, std::vector<InstanceData>>& batches);
 
         /** @brief Renders all opaque mesh batches */
         void render_mesh_batches(AssetManager& asset_manager, const std::unordered_map<UUID, std::vector<InstanceData>>& batches);
@@ -148,6 +149,7 @@ namespace engine {
 
         // Shadow resources
         std::unique_ptr<Framebuffer> shadow_framebuffer_;
+        std::unique_ptr<Framebuffer> point_shadow_framebuffer_;
         glm::mat4 light_space_matrix_{1.0f};
 
         // Line

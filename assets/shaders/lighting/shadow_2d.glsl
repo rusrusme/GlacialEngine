@@ -1,5 +1,5 @@
-#ifndef SHADOW_GLSL
-#define SHADOW_GLSL
+#ifndef SHADOW_2D_GLSL
+#define SHADOW_2D_GLSL
 
 uniform sampler2DShadow u_shadow_map;
 uniform mat4 u_light_space_matrix;

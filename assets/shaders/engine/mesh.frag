@@ -14,7 +14,8 @@ in vec4 varying_light_space_position;
 #include "common/math.glsl"
 #include "lighting/lights.glsl"
 #include "lighting/pbr.glsl"
-#include "lighting/shadow.glsl"
+#include "lighting/shadow_2d.glsl"   // Slot 3
+#include "lighting/shadow_cube.glsl" // Slot 4
 
 uniform sampler2D u_albedo_texture;
 uniform int u_use_albedo_texture;
@@ -110,7 +111,10 @@ void main() {
 
             float normal_dot_light = max(dot(normal, light_direction), 0.0);
 
-            outgoing_radiance += (diffuse_fraction * albedo.rgb / PI + specular) * radiance * normal_dot_light;
+            float shadow = (i == 0) ? calculatePointShadow(varying_position, varying_normal, u_point_lights[i].position, u_point_lights[i].radius) : 0.0;
+
+            outgoing_radiance += (1.0 - shadow) * (diffuse_fraction * albedo.rgb / PI + specular) * radiance * normal_dot_light;
+//            outgoing_radiance += (diffuse_fraction * albedo.rgb / PI + specular) * radiance * normal_dot_light;
         }
     }
 
