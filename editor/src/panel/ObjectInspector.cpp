@@ -150,8 +150,8 @@ namespace editor {
         if (entity.has_component<engine::DirectionalLightComponent>()) {
             if (ImGui::CollapsingHeader("Lighting", ImGuiTreeNodeFlags_DefaultOpen)) {
                 auto& dir_light = entity.get_component<engine::DirectionalLightComponent>();
-                ImGui::DragFloat("Intensity", &dir_light.intensity, 0.01);
-                ImGui::ColorEdit4("Color", glm::value_ptr(dir_light.color));
+                ImGui::DragFloat("Intensity", &dir_light.intensity, 0.01f, 0.0f, 100.0f);
+                ImGui::ColorEdit3("Color", glm::value_ptr(dir_light.color));
                 bool todo_shadow_button = true;
                 ImGui::Checkbox("Cast Shadows", &todo_shadow_button);
             }
@@ -159,9 +159,9 @@ namespace editor {
         if (entity.has_component<engine::PointLightComponent>()) {
             if (ImGui::CollapsingHeader("Lighting", ImGuiTreeNodeFlags_DefaultOpen)) {
                 auto& point_light = entity.get_component<engine::PointLightComponent>();
-                ImGui::DragFloat("Intensity", &point_light.intensity, 0.01);
-                ImGui::ColorEdit4("Color", glm::value_ptr(point_light.color));
-                ImGui::DragFloat("Radius", &point_light.radius);
+                ImGui::DragFloat("Intensity", &point_light.intensity, 0.01f, 0.0f, 100.0f);
+                ImGui::ColorEdit3("Color", glm::value_ptr(point_light.color));
+                ImGui::DragFloat("Radius", &point_light.radius, 0.1f, 0.0f, 1000.0f);
                 bool todo_shadow_button = true;
                 ImGui::Checkbox("Cast Shadows", &todo_shadow_button);
             }
