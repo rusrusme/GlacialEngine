@@ -1,0 +1,26 @@
+#ifndef LIGHTS_GLSL
+#define LIGHTS_GLSL
+
+struct DirLight {
+    vec3 direction;
+    vec3 color;
+    float intensity;
+};
+
+struct PointLight {
+    vec3 position;
+    vec3 color;
+    float intensity;
+    float radius;
+};
+
+#define MAX_DIR_LIGHTS 4
+#define MAX_POINT_LIGHTS 8
+
+uniform DirLight u_dir_lights[MAX_DIR_LIGHTS];
+uniform int u_num_dir_lights;
+
+uniform PointLight u_point_lights[MAX_POINT_LIGHTS];
+uniform int u_num_point_lights;
+
+#endif

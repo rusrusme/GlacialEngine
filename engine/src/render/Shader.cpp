@@ -56,15 +56,17 @@ namespace engine {
     }
 
     std::unique_ptr<Shader> Shader::from_file(const std::string& vertex_path, const std::string& fragment_path) {
-        const std::string vs_code = util::read_file_to_string(vertex_path);
-        const std::string fs_code = util::read_file_to_string(fragment_path);
+        std::unordered_set<std::string> vs_includes;
+        std::unordered_set<std::string> fs_includes;
+        const std::string vs_code = preprocess_source(vertex_path, vs_includes);
+        const std::string fs_code = preprocess_source(fragment_path, fs_includes);
 
         if (vs_code.empty() || fs_code.empty()) {
             std::cerr << "Engine error: failed to load shader sources from files!" << std::endl;
             return nullptr;
         }
 
-        return std::make_unique < Shader > (vs_code, fs_code);
+        return std::make_unique<Shader>(vs_code, fs_code);
     }
 
     void Shader::bind() const {
@@ -130,5 +132,61 @@ namespace engine {
         }
 
         return shader;
+    }
+
+    std::string Shader::preprocess_source(const std::string& filepath, std::unordered_set<std::string>& included_files) {
+        if (included_files.contains(filepath)) {
+            return ""; // Avoid duplicate inclusion
+        }
+
+        if (!std::filesystem::exists(filepath)) {
+            std::cerr << "Engine error: failed to open shader file: " << filepath << std::endl;
+            return "";
+        }
+
+        included_files.insert(filepath);
+
+        std::ifstream file(filepath);
+        if (!file.is_open()) {
+            std::cerr << "Engine error: failed to open shader file: " << filepath << std::endl;
+            return "";
+        }
+
+        std::string directory = "";
+        const size_t last_slash = filepath.find_last_of("/\\");
+        if (last_slash != std::string::npos) {
+            directory = filepath.substr(0, last_slash + 1);
+        }
+
+        std::stringstream ss;
+        std::string line;
+
+        while (std::getline(file, line)) {
+            size_t include_pos = line.find("#include");
+            if (include_pos != std::string::npos) {
+                size_t first_quote = line.find_first_of("\"<", include_pos);
+                size_t last_quote = line.find_last_of("\">");
+
+                if (first_quote != std::string::npos && last_quote != std::string::npos && last_quote > first_quote) {
+                    std::string include_rel_path = line.substr(first_quote + 1, last_quote - first_quote - 1);
+
+                    // Try relative path resolving
+                    std::string full_include_path = directory + include_rel_path;
+
+                    // Fallback searching in root shader directory
+                    if (!std::filesystem::exists(full_include_path)) {
+                        full_include_path = "assets/shaders/" + include_rel_path;
+                    }
+
+                    ss << "// --- Begin Include: " << include_rel_path << " ---\n";
+                    ss << preprocess_source(full_include_path, included_files) << "\n";
+                    ss << "// --- End Include: " << include_rel_path << " ---\n";
+                    continue;
+                }
+            }
+            ss << line << "\n";
+        }
+
+        return ss.str();
     }
 }

@@ -19,14 +19,14 @@ namespace engine {
         render_interface_ = std::make_unique<RmlRenderInterface>(renderer);
         render_interface_->set_viewport(width, height);
 
-        renderer.get_shader_library().load("ui", "assets/shaders/ui.vert", "assets/shaders/ui.frag");
+        renderer.get_shader_library().load("ui", "assets/shaders/engine/ui.vert", "assets/shaders/engine/ui.frag");
 
         Rml::SetSystemInterface(&system_interface_);
         Rml::SetRenderInterface(render_interface_.get());
 
         if (!Rml::Initialise()) return false;
 
-        Rml::LoadFontFace("assets/fonts/arial.ttf");
+        Rml::LoadFontFace("assets/fonts/Inter-VariableFont.ttf");
 
         context_ = Rml::CreateContext("main_context", Rml::Vector2i(width, height));
         if (!context_) return false;

@@ -9,6 +9,7 @@
 #include <memory>
 #include <string>
 #include <unordered_map>
+#include <unordered_set>
 #include <glm/glm.hpp>
 
 namespace engine {
@@ -41,6 +42,8 @@ namespace engine {
     private:
         int get_uniform_location(const std::string& name) const;
         uint32_t compile_shader(unsigned int type, const std::string& source);
+
+        static std::string preprocess_source(const std::string& filepath, std::unordered_set<std::string>& included_files);
 
         uint32_t id_ = 0;
         mutable std::unordered_map<std::string, int> uniform_location_cache_;

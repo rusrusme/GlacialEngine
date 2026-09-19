@@ -1,5 +1,3 @@
-#version 450 core
-
 layout (location = 0) in vec3 a_position;
 layout (location = 1) in vec3 a_normal;
 layout (location = 2) in vec2 a_uv;
@@ -9,10 +7,7 @@ layout (location = 4) in mat4 a_instance_model;
 layout (location = 8) in vec4 a_instance_color;
 layout (location = 9) in vec2 a_instance_pbr;
 
-layout(std140, binding = 0) uniform CameraData {
-    mat4 u_view;
-    mat4 u_projection;
-};
+#include "common/camera.glsl"
 
 uniform mat4 u_light_space_matrix;
 
