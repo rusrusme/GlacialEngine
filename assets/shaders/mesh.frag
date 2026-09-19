@@ -224,6 +224,7 @@ void main() {
             vec3 kD = (vec3(1.0) - F_dielectric) * (1.0 - metallic);
 
             float NdotL = max(dot(N, L), 0.0);
+
             Lo += (kD * albedo.rgb / PI + specular) * radiance * NdotL;
         }
     }

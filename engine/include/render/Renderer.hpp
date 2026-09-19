@@ -5,19 +5,20 @@
 
 #pragma once
 
+#include <unordered_map>
 #include <vector>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 
-#include "Shader.hpp"
-#include "ShaderLibrary.hpp"
-#include "UniformBuffer.hpp"
+#include "core/UUID.hpp"
+#include "render/Shader.hpp"
+#include "render/ShaderLibrary.hpp"
+#include "render/UniformBuffer.hpp"
 #include "render/Vertex.hpp"
 #include "render/mesh/Mesh.hpp"
 
 namespace engine {
     class Framebuffer;
-    class UUID;
     class AssetManager;
     class VertexBuffer;
     struct InstanceData;
@@ -53,10 +54,10 @@ namespace engine {
         void begin_scene(const Camera& camera);
         void end_scene(float delta_time);
 
-        void render_shadow_pass(const Camera& camera, AssetManager& asset_manager, const std::unordered_map<UUID, std::vector<InstanceData>>& batches);
+        void render_shadow_pass(Camera& camera, AssetManager& asset_manager, const std::unordered_map<UUID, std::vector<InstanceData>>& batches);
 
         /** @brief Renders all opaque mesh batches */
-        void render_mesh_batches(AssetManager& asset_manager, std::unordered_map<UUID, std::vector<InstanceData>>& batches);
+        void render_mesh_batches(AssetManager& asset_manager, const std::unordered_map<UUID, std::vector<InstanceData>>& batches);
 
         /** @brief Enables or disables blending for rendering */
         static void set_blend(bool enable);

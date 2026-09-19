@@ -81,7 +81,7 @@ namespace engine {
         flush();
     }
 
-    void Renderer::render_shadow_pass(const Camera& camera, AssetManager& asset_manager, const std::unordered_map<UUID, std::vector<InstanceData>>& batches) {
+    void Renderer::render_shadow_pass(Camera& camera, AssetManager& asset_manager, const std::unordered_map<UUID, std::vector<InstanceData>>& batches) {
         if (directional_lights_.empty() || !shadow_framebuffer_) return;
 
         const glm::vec3 main_light_dir = directional_lights_[0].direction;
@@ -145,7 +145,7 @@ namespace engine {
         glViewport(prev_viewport[0], prev_viewport[1], prev_viewport[2], prev_viewport[3]);
     }
 
-    void Renderer::render_mesh_batches(AssetManager& asset_manager, std::unordered_map<UUID, std::vector<InstanceData>>& batches) {
+    void Renderer::render_mesh_batches(AssetManager& asset_manager, const std::unordered_map<UUID, std::vector<InstanceData>>& batches) {
         for (const auto& [handle, instance_list] : batches) {
             if (std::shared_ptr<Mesh> mesh = asset_manager.get_asset<Mesh>(handle)) {
                 draw_mesh_instanced(*mesh, instance_list);
