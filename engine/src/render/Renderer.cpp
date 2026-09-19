@@ -182,6 +182,12 @@ namespace engine {
         glEnable(GL_POLYGON_OFFSET_FILL);
         glPolygonOffset(1.0f, 2.0f);
 
+        // Draw only back faces into the depth map to prevent self-shadowing acne
+        // (a surface facing the light would otherwise shadow itself). Culling is
+        // disabled again in the restore block below.
+        glEnable(GL_CULL_FACE);
+        glCullFace(GL_FRONT);
+
         // Disable main camera frustum culling
         const bool prev_culling = is_frustum_culling_enabled();
         set_frustum_culling_enabled(false);
@@ -208,6 +214,7 @@ namespace engine {
 
         // Restore state
         set_frustum_culling_enabled(prev_culling);
+        glDisable(GL_CULL_FACE);
         glDisable(GL_POLYGON_OFFSET_FILL);
 
         glBindFramebuffer(GL_FRAMEBUFFER, prev_fbo);

@@ -100,7 +100,7 @@ namespace editor {
         auto point_light = active_scene_->view<engine::TransformComponent, engine::PointLightComponent>();
         for (auto entity : point_light) {
             auto [transform, light] = point_light.get<engine::TransformComponent, engine::PointLightComponent>(entity);
-            // renderer.draw_sphere(transform.position, 0.05f, light.color, 16);
+            renderer.draw_sphere(transform.position, 0.05f, light.color, 16);
         }
         framebuffer_->unbind();
     }
