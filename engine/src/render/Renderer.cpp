@@ -40,7 +40,7 @@ namespace engine {
         shader_library_.load("mesh", "assets/shaders/engine/mesh.vert", "assets/shaders/engine/mesh.frag");
         shader_library_.load("line", "assets/shaders/engine/line.vert", "assets/shaders/engine/line.frag");
         shader_library_.load("shadow_depth", "assets/shaders/engine/shadow/shadow_depth.vert", "assets/shaders/engine/shadow/shadow_depth.frag");
-        shader_library_.load("point_shadow_depth", "assets/shaders/engine/shadow/point_shadow_depth.vert", "assets/shaders/engine/shadow/point_shadow_depth.frag");
+        shader_library_.load("point_shadow_depth", "assets/shaders/engine/shadow/point_shadow_depth.vert", "assets/shaders/engine/shadow/point_shadow_depth.frag", "assets/shaders/engine/shadow/point_shadow_depth.geom");
 
         shadow_framebuffer_ = std::make_unique<Framebuffer>(4096, 4096, FramebufferType::ShadowMap);
         point_shadow_framebuffer_ = std::make_unique<Framebuffer>(1024, 1024, FramebufferType::PointShadowMap);
@@ -154,10 +154,12 @@ namespace engine {
         const glm::vec3 light_pos = light.position;
         const float far_plane = light.radius;
 
+        // Six perspective views around the light: each face covers exactly 90 deg
+        // so the six faces tile one cube (the cubemap).
         const glm::mat4 shadow_proj = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, far_plane);
 
-        // Standard OpenGL Cubemap Cardinal Orientations
-        const std::vector<glm::mat4> shadow_transforms = {
+        // Standard OpenGL Cube map Cardinal Orientations
+        const glm::mat4 shadow_matrices[6] = {
             shadow_proj * glm::lookAt(light_pos, light_pos + glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f)),  // +X
             shadow_proj * glm::lookAt(light_pos, light_pos + glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f)), // -X
             shadow_proj * glm::lookAt(light_pos, light_pos + glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)),   // +Y
@@ -173,16 +175,14 @@ namespace engine {
 
         point_shadow_framebuffer_->bind();
 
-        // 1. Force viewport to shadow map texture dimensions
+        // Force viewport to shadow map texture dimensions
         glViewport(0, 0, point_shadow_framebuffer_->get_width(), point_shadow_framebuffer_->get_height());
 
-        // 2. Hardware Rasterizer Depth Bias & Front-Face Culling
+        // Hardware Rasterizer Depth Bias
         glEnable(GL_POLYGON_OFFSET_FILL);
-        glPolygonOffset(2.0f, 4.0f);
-        glEnable(GL_CULL_FACE);
-        glCullFace(GL_FRONT);
+        glPolygonOffset(1.0f, 2.0f);
 
-        // 3. Disable main camera frustum culling
+        // Disable main camera frustum culling
         const bool prev_culling = is_frustum_culling_enabled();
         set_frustum_culling_enabled(false);
 
@@ -193,28 +193,21 @@ namespace engine {
             point_shadow_shader->set_float("u_far_plane", far_plane);
 
             for (uint32_t face = 0; face < 6; ++face) {
-                glFramebufferTexture2D(
-                    GL_FRAMEBUFFER,
-                    GL_DEPTH_ATTACHMENT,
-                    GL_TEXTURE_CUBE_MAP_POSITIVE_X + face,
-                    point_shadow_framebuffer_->get_depth_attachment_id(),
-                    0
-                );
-                glClear(GL_DEPTH_BUFFER_BIT);
+                point_shadow_shader->set_mat4("u_shadow_matrices[" + std::to_string(face) + "]", shadow_matrices[face]);
+            }
 
-                point_shadow_shader->set_mat4("u_light_space_matrix", shadow_transforms[face]);
-
-                for (const auto& [handle, instance_list] : batches) {
-                    if (std::shared_ptr<Mesh> mesh = asset_manager.get_asset<Mesh>(handle)) {
-                        draw_mesh_instanced(*mesh, instance_list, point_shadow_shader);
-                    }
+            // Geometry shader emits every triangle once per cubemap face in a
+            // single draw call, so we draw the whole scene exactly once.
+            glClear(GL_DEPTH_BUFFER_BIT);
+            for (const auto& [handle, instance_list] : batches) {
+                if (std::shared_ptr<Mesh> mesh = asset_manager.get_asset<Mesh>(handle)) {
+                    draw_mesh_instanced(*mesh, instance_list, point_shadow_shader);
                 }
             }
         }
 
         // Restore state
         set_frustum_culling_enabled(prev_culling);
-        glCullFace(GL_BACK);
         glDisable(GL_POLYGON_OFFSET_FILL);
 
         glBindFramebuffer(GL_FRAMEBUFFER, prev_fbo);

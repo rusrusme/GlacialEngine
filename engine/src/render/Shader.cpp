@@ -8,14 +8,23 @@
 #include "util/FileIO.hpp"
 
 namespace engine {
-    Shader::Shader(const std::string& vertex_src, const std::string& fragment_src) {
+    Shader::Shader(const std::string& vertex_src, const std::string& fragment_src, const std::string& geometry_src) {
         const uint32_t vs = compile_shader(GL_VERTEX_SHADER, vertex_src);
         const uint32_t fs = compile_shader(GL_FRAGMENT_SHADER, fragment_src);
 
+        // A geometry shader is optional (only point-light cubemap maps need it).
+        uint32_t gs = 0;
+        if (!geometry_src.empty()) {
+            gs = compile_shader(GL_GEOMETRY_SHADER, geometry_src);
+        }
+
         if (vs == 0 || fs == 0) return;
+        if (!geometry_src.empty() && gs == 0) return;
 
         id_ = glCreateProgram();
         glAttachShader(id_, vs);
+        if (gs != 0)
+            glAttachShader(id_, gs);
         glAttachShader(id_, fs);
         glLinkProgram(id_);
 
@@ -30,8 +39,12 @@ namespace engine {
         }
 
         glDetachShader(id_, vs);
+        if (gs != 0)
+            glDetachShader(id_, gs);
         glDetachShader(id_, fs);
         glDeleteShader(vs);
+        if (gs != 0)
+            glDeleteShader(gs);
         glDeleteShader(fs);
     }
 
@@ -55,18 +68,24 @@ namespace engine {
         return *this;
     }
 
-    std::unique_ptr<Shader> Shader::from_file(const std::string& vertex_path, const std::string& fragment_path) {
+    std::unique_ptr<Shader> Shader::from_file(const std::string& vertex_path, const std::string& fragment_path, const std::string& geometry_path) {
         std::unordered_set<std::string> vs_includes;
         std::unordered_set<std::string> fs_includes;
+        std::unordered_set<std::string> gs_includes;
         const std::string vs_code = preprocess_source(vertex_path, vs_includes);
         const std::string fs_code = preprocess_source(fragment_path, fs_includes);
+        const std::string gs_code = geometry_path.empty() ? "" : preprocess_source(geometry_path, gs_includes);
 
         if (vs_code.empty() || fs_code.empty()) {
             std::cerr << "Engine error: failed to load shader sources from files!" << std::endl;
             return nullptr;
         }
+        if (!geometry_path.empty() && gs_code.empty()) {
+            std::cerr << "Engine error: failed to load geometry shader source from file!" << std::endl;
+            return nullptr;
+        }
 
-        return std::make_unique<Shader>(vs_code, fs_code);
+        return std::make_unique<Shader>(vs_code, fs_code, gs_code);
     }
 
     void Shader::bind() const {
@@ -125,8 +144,11 @@ namespace engine {
         if (!success) {
             char info_log[512];
             glGetShaderInfoLog(shader, 512, nullptr, info_log);
-            std::cerr << "Engine error: " << (type == GL_VERTEX_SHADER ? "Vertex" : "Fragment")
-                << " shader compilation failed\n" << info_log << std::endl;
+
+            const std::string type_name =
+                type == GL_VERTEX_SHADER ? "Vertex" : type == GL_GEOMETRY_SHADER ? "Geometry" : "Fragment";
+
+            std::cerr << "Engine error: " << type_name << " shader compilation failed\n" << info_log << std::endl;
             glDeleteShader(shader);
             return 0;
         }

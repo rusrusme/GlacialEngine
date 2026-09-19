@@ -15,7 +15,7 @@
 namespace engine {
     class Shader {
     public:
-        Shader(const std::string& vertex_src, const std::string& fragment_src);
+        Shader(const std::string& vertex_src, const std::string& fragment_src, const std::string& geometry_src = "");
         ~Shader();
 
         Shader(const Shader&) = delete;
@@ -24,7 +24,7 @@ namespace engine {
         Shader(Shader&& other) noexcept;
         Shader& operator=(Shader&& other) noexcept;
 
-        static std::unique_ptr<Shader> from_file(const std::string& vertex_path, const std::string& fragment_path);
+        static std::unique_ptr<Shader> from_file(const std::string& vertex_path, const std::string& fragment_path, const std::string& geometry_path = "");
 
         [[nodiscard]] uint32_t get_renderer_id() const { return id_; }
 

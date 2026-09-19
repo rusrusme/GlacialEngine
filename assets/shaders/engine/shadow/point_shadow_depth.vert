@@ -3,12 +3,10 @@
 layout (location = 0) in vec3 a_position;
 layout (location = 4) in mat4 a_instance_model;
 
-uniform mat4 u_light_space_matrix; // Current cubemap face matrix
-
-out vec3 v_world_position;
+// The vertex shader only computes the world position. The actual projection
+// into each of the six cubemap faces happens in the geometry shader, which
+// transforms gl_in[i].gl_Position by each face's light-space matrix.
 
 void main() {
-    vec4 world_pos = a_instance_model * vec4(a_position, 1.0);
-    v_world_position = world_pos.xyz;
-    gl_Position = u_light_space_matrix * world_pos;
+    gl_Position = a_instance_model * vec4(a_position, 1.0);
 }

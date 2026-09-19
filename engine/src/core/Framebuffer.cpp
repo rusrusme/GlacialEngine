@@ -25,13 +25,18 @@ namespace engine {
         glGenFramebuffers(1, &fbo_id_);
         glBindFramebuffer(GL_FRAMEBUFFER, fbo_id_);
 
-        // Color Attachment
-        glGenTextures(1, &color_attachment_id_);
-        glBindTexture(GL_TEXTURE_2D, color_attachment_id_);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width_, height_, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, color_attachment_id_, 0);
+        // Color Attachment. Skipped for the point-light shadow map (a depth-only,
+        // layered cube map): attaching a 2D color texture alongside a layered
+        // cube-map depth attachment makes the FBO GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS,
+        // so nothing renders.
+        if (type_ != FramebufferType::PointShadowMap) {
+            glGenTextures(1, &color_attachment_id_);
+            glBindTexture(GL_TEXTURE_2D, color_attachment_id_);
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width_, height_, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+            glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, color_attachment_id_, 0);
+        }
 
         // Depth Attachment
         switch (type_) {
@@ -53,7 +58,9 @@ namespace engine {
                 glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, depth_attachment_id_, 0);
                 break;
             }
-            // Todo: WIP PointShadow
+            // Point-light cubemap depth map. The whole cubemap is attached as a
+            // single layered texture so a geometry shader can route writes to any
+            // face via gl_Layer.
             case FramebufferType::PointShadowMap : {
                 glGenTextures(1, &depth_attachment_id_);
                 glBindTexture(GL_TEXTURE_CUBE_MAP, depth_attachment_id_);
@@ -68,7 +75,7 @@ namespace engine {
                 glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
                 glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
-                glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_CUBE_MAP_POSITIVE_X, depth_attachment_id_, 0);
+                glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depth_attachment_id_, 0);
                 glDrawBuffer(GL_NONE);
                 glReadBuffer(GL_NONE);
                 break;

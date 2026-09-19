@@ -14,12 +14,12 @@ namespace engine {
         shaders_[name] = shader;
     }
 
-    std::shared_ptr<Shader> ShaderLibrary::load(const std::string& name, const std::string& vertex_path, const std::string& fragment_path) {
+    std::shared_ptr<Shader> ShaderLibrary::load(const std::string& name, const std::string& vertex_path, const std::string& fragment_path, const std::string& geometry_path) {
         if (exists(name)) {
             return shaders_[name];
         }
 
-        auto shader = Shader::from_file(vertex_path, fragment_path);
+        auto shader = Shader::from_file(vertex_path, fragment_path, geometry_path);
         if (!shader) {
             std::cerr << "Engine error: failed to load shader '" << name << "' from files" << std::endl;
             return nullptr;

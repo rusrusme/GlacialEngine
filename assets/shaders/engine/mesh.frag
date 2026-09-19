@@ -27,6 +27,13 @@ uniform sampler2D u_metallic_roughness_texture;
 uniform int u_use_metallic_roughness_texture;
 
 void main() {
+    // --- TEMPORARY DIAGNOSTIC DEBUG ---
+//     vec3 light_to_fragment = varying_position - u_point_lights[0].position;
+//     float raw_depth = texture(u_point_shadow_map, light_to_fragment).r;
+//     fragment_color = vec4(vec3(raw_depth), 1.0);
+//     return;
+    // ----------------------------------
+
     vec4 texture_color = (u_use_albedo_texture != 0) ? texture(u_albedo_texture, varying_uv_coordinates) : vec4(1.0);
     vec4 albedo = varying_color * texture_color;
 
