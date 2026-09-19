@@ -35,8 +35,26 @@ namespace engine {
         return entity;
     }
 
-    void Scene::destroy_entity(Entity entity) {
-        CORE_INFO("Deleted entity - {0} [{1}]", entity.name(), static_cast<uint64_t>(entity.uuid()));
+    Entity Scene::duplicate_entity(Entity source) {
+        const std::string new_name = source.has_component<LabelComponent>() ? source.get_component<LabelComponent>().tag : "Entity";
+        const Entity destination = create_entity(new_name);
+
+        const auto source_handle = source;
+        const auto destination_handle = destination;
+
+        for (auto&& [type_id, storage] : registry_.storage()) {
+            if (type_id == entt::type_hash<IDComponent>::value() ||
+                type_id == entt::type_hash<LabelComponent>::value()) {
+                continue;
+            }
+            if (storage.contains(source_handle)) {
+                storage.push(destination_handle, storage.value(source_handle));
+            }
+        }
+        return destination;
+    }
+
+    void Scene::destroy_entity(const Entity entity) {
         registry_.destroy(entity);
     }
 

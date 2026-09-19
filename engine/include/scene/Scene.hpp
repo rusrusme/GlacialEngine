@@ -24,6 +24,7 @@ namespace engine {
 
         Entity create_entity(const std::string& name = "Entity");
         Entity create_entity_with_uuid(UUID uuid, const std::string& name = "Entity");
+        Entity duplicate_entity(Entity entity);
         void destroy_entity(Entity entity);
 
         void on_init(Renderer& renderer);

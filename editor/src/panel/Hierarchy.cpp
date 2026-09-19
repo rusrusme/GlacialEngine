@@ -15,8 +15,6 @@ namespace editor {
 
     engine::Entity Hierarchy::add_entity(const std::string& name) {
         const engine::Entity entity = scene_->create_entity(name);
-        selected_entity_ = entity;
-
         CLIENT_INFO("Created entity - {0}", name.c_str());
         return entity;
     }
@@ -24,6 +22,7 @@ namespace editor {
     #ifdef ENABLE_IMGUI
     void Hierarchy::render_imgui() {
         engine::Entity entity_to_destroy{};
+        engine::Entity entity_to_duplicate{};
 
         ImGui::Begin("Hierarchy");
         if (ImGui::Button("+")) {
@@ -180,6 +179,9 @@ namespace editor {
                 if (ImGui::MenuItem("Delete")) {
                     entity_to_destroy = entity;
                 }
+                if (ImGui::MenuItem("Duplicate")) {
+                    entity_to_duplicate = entity;
+                }
                 ImGui::EndPopup();
             }
             if (opened) {
@@ -190,9 +192,23 @@ namespace editor {
 
         ImGui::PopStyleVar();
 
-        if (selected_entity_ && !ImGui::IsAnyItemActive() && engine::Input::is_key_pressed_once(engine::Key::DELETE)) {
-            entity_to_destroy = selected_entity_;
+        // Keyboard shortcuts
+        if (selected_entity_ && !ImGui::IsAnyItemActive()) {
+            if (engine::Input::is_key_pressed_once(engine::Key::DELETE)) {
+                entity_to_destroy = selected_entity_;
+            }
+            if (engine::Input::is_key_pressed(engine::Key::LEFT_CONTROL) && engine::Input::is_key_pressed_once(engine::Key::D)) {
+            entity_to_duplicate = selected_entity_;
+
+            }
         }
+
+        // Process duplication
+        if (entity_to_duplicate) {
+            selected_entity_ = scene_->duplicate_entity(entity_to_duplicate);
+        }
+
+        // Process deletion
         if (entity_to_destroy) {
             if (selected_entity_ == entity_to_destroy) {
                 selected_entity_ = {};
