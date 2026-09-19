@@ -35,17 +35,18 @@
 #include "physics/AABB.hpp"
 #include "physics/CollisionSystem.hpp"
 #include "physics/SpatialHashGrid.hpp"
-// Render
+// Render/Mesh
 #include "render/mesh/InstanceData.hpp"
 #include "render/mesh/Mesh.hpp"
 #include "render/mesh/MeshLoader.hpp"
 #include "render/mesh/PrimitiveMesh.hpp"
-
+// Render
 #include "render/Buffer.hpp"
 #include "render/BufferLayout.hpp"
 #include "render/Camera.hpp"
 #include "render/DebugFrame.hpp"
 #include "render/Frame.hpp"
+#include "render/Frustum.hpp"
 #include "render/Renderer.hpp"
 #include "render/Shader.hpp"
 #include "render/ShaderLibrary.hpp"
@@ -53,12 +54,12 @@
 #include "render/UniformBuffer.hpp"
 #include "render/Vertex.hpp"
 #include "render/VertexArray.hpp"
-// Scene
+// Scene/ECS
 #include "scene/ecs/Components.hpp"
 #include "scene/ecs/Entity.hpp"
-
+// Scene/System
 #include "scene/system/CameraSystem.hpp"
-
+// Scene
 #include "scene/Scene.hpp"
 #include "scene/SceneSerializer.hpp"
 // UI
