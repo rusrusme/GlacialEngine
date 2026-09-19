@@ -50,7 +50,17 @@ namespace editor {
                 auto& transform = entity.get_component<engine::TransformComponent>();
 
                 ImGui::DragFloat3("Position", glm::value_ptr(transform.position), 0.1f);
-                ImGui::DragFloat3("Rotation", glm::value_ptr(transform.rotation), 1.0f);
+
+                auto wrap_angle_360 = [](float angle) {
+                    angle = std::fmod(angle, 360.0f);
+                    if (angle < 0.0f) angle += 360.0f;
+                    return angle;
+                };
+                if (ImGui::DragFloat3("Rotation", glm::value_ptr(transform.rotation), 1.0f)) {
+                    transform.rotation.x = wrap_angle_360(transform.rotation.x);
+                    transform.rotation.y = wrap_angle_360(transform.rotation.y);
+                    transform.rotation.z = wrap_angle_360(transform.rotation.z);
+                }
                 ImGui::DragFloat3("Scale", glm::value_ptr(transform.scale), 0.05f, 0.001f, 1000.0f);
             }
         }
