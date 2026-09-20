@@ -4,9 +4,7 @@ Future features:
     - Object
     - Camera DONE
     - Light-space
-- Shadow mapping
-    - Consider optimizing two-pass rendering 
-        - Consider refactoring into a CastsShadowComponent (Reason: 2 draw calls per object)
+- Shadow mapping DONE
 - Post-processing pipeline
 - Asset manager
     - Drag and drop textures on objects
