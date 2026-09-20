@@ -12,7 +12,6 @@ namespace editor {
         : active_scene_(std::move(scene)), asset_manager_(std::move(asset_manager)) {}
 
     void EditorLayer::on_attach(engine::Renderer& renderer) {
-        framebuffer_ = std::make_unique<engine::Framebuffer>(1280, 720);
         debug_panel_ = std::make_unique<DebugPanel>();
         editor_grid_.init(renderer);
 
@@ -65,11 +64,8 @@ namespace editor {
     }
 
     void EditorLayer::on_render(engine::Renderer& renderer, const float delta_time) {
-        if (!framebuffer_) return;
-        framebuffer_->bind();
-
         engine::Renderer::clear({0.12f, 0.12f, 0.12f, 1.0f});
-
+        renderer.begin_scene(camera_);
         if (active_scene_) {
             active_scene_->on_render(renderer, camera_, *asset_manager_, delta_time);
         }
@@ -102,7 +98,7 @@ namespace editor {
             auto [transform, light] = point_light.get<engine::TransformComponent, engine::PointLightComponent>(entity);
             renderer.draw_sphere(transform.position, 0.05f, light.color, 16);
         }
-        framebuffer_->unbind();
+        renderer.end_scene(delta_time);
     }
 
     #ifdef ENABLE_IMGUI
@@ -143,13 +139,6 @@ namespace editor {
             }
             return false;
         });
-    }
-
-    void EditorLayer::resize_viewport(uint32_t width, uint32_t height) {
-        if (framebuffer_) {
-            framebuffer_->resize(width, height);
-            camera_.set_aspect_ratio(static_cast<float>(width) / static_cast<float>(height));
-        }
     }
 
     void EditorLayer::draw_directional_light(engine::Renderer& renderer, const glm::vec3 position, const glm::vec3& direction, const glm::vec3& color) {

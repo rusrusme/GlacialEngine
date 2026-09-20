@@ -96,6 +96,8 @@ add_library(Engine STATIC
             src/util/stb_image.cpp
             include/render/Frustum.hpp
             src/render/Frustum.cpp
+            src/render/PostProcessor.cpp
+            src/render/PostProcessor.hpp
 )
 # ----------------------------------------------------------------------------
 target_include_directories(Engine

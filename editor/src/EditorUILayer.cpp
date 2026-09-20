@@ -127,28 +127,27 @@ namespace editor {
         }
 
         ImVec2 viewport_panel_size = ImGui::GetContentRegionAvail();
-        if (viewport_panel_size.x < 1.0f) viewport_panel_size.x = 1.0f;
-        if (viewport_panel_size.y < 1.0f) viewport_panel_size.y = 1.0f;
+        float panel_w = viewport_panel_size.x;
+        if (panel_w < 1.0f) panel_w = 1.0f;
+        float panel_h = viewport_panel_size.y;
+        if (panel_h < 1.0f) panel_h = 1.0f;
 
         viewport_bounds_min_ = ImGui::GetCursorScreenPos();
-        viewport_bounds_size_ = {viewport_panel_size.x, viewport_panel_size.y};
+        viewport_bounds_size_ = {panel_w, panel_h};
 
         // 1. Framebuffer Resizing
         if (editor_layer_) {
-            uint32_t current_fb_w = editor_layer_->get_framebuffer_width();
-            uint32_t current_fb_h = editor_layer_->get_framebuffer_height();
+            uint32_t current_fb_w = renderer.get_framebuffer_width();
+            uint32_t current_fb_h = renderer.get_framebuffer_height();
 
-            if (current_fb_w != static_cast<uint32_t>(viewport_panel_size.x) ||
-                current_fb_h != static_cast<uint32_t>(viewport_panel_size.y)) {
-                editor_layer_->resize_viewport(
-                    static_cast<uint32_t>(viewport_panel_size.x),
-                    static_cast<uint32_t>(viewport_panel_size.y)
-                );
+            if (current_fb_w != static_cast<uint32_t>(panel_w) ||
+                current_fb_h != static_cast<uint32_t>(panel_h)) {
+                renderer.on_resize(panel_w, panel_h);
             }
         }
 
         // Szene-Textur zeichnen
-        uint32_t texture_id = editor_layer_ ? editor_layer_->get_scene_texture_id() : 0;
+        uint32_t texture_id = renderer.get_final_color_texture();
         if (texture_id != 0) {
             ImGui::Image(texture_id, viewport_panel_size, ImVec2(0, 1), ImVec2(1, 0));
         }

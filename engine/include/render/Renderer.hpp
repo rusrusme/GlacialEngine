@@ -11,6 +11,7 @@
 #include <glm/glm.hpp>
 
 #include "core/UUID.hpp"
+#include "render/PostProcessor.hpp"
 #include "render/Shader.hpp"
 #include "render/ShaderLibrary.hpp"
 #include "render/UniformBuffer.hpp"
@@ -129,6 +130,16 @@ namespace engine {
         [[nodiscard]] const RenderStats& get_stats() const { return stats_; }
         void reset_stats() { stats_ = RenderStats{}; }
 
+        // Post processing
+        [[nodiscard]] PostProcessSettings& get_post_process_settings() {
+            return post_processor_->get_settings();
+        }
+
+        // Texture handle for ImGui Editor Viewports
+        [[nodiscard]] uint32_t get_final_color_texture() const {
+            return post_processor_->get_final_color_texture();
+        }
+
     private:
         RenderStats stats_;
 
@@ -164,5 +175,8 @@ namespace engine {
         size_t instance_vbo_capacity_bytes_ = 0;
 
         void init_line_resources();
+
+        // Post processing
+        std::unique_ptr<PostProcessor> post_processor_;
     };
 }

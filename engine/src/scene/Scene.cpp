@@ -71,7 +71,6 @@ namespace engine {
     }
 
     void Scene::on_render(Renderer& renderer, Camera& camera, AssetManager& asset_manager, const float delta_time) {
-        renderer.begin_scene(camera);
         Renderer::set_blend(true);
 
         // ------------------
@@ -164,7 +163,5 @@ namespace engine {
         renderer.render_shadow_pass(camera, asset_manager, mesh_batches_);
         renderer.render_point_shadow_pass(asset_manager, mesh_batches_);
         renderer.render_mesh_batches(asset_manager, mesh_batches_);
-
-        renderer.end_scene(delta_time);
     }
 }

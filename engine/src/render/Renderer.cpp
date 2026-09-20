@@ -35,6 +35,9 @@ namespace engine {
         glEnable(GL_DEPTH_TEST);
         glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 
+        post_processor_ = std::make_unique<PostProcessor>();
+        post_processor_->init(framebuffer_width_, framebuffer_height_);
+
         camera_ubo_ = std::make_unique<UniformBuffer>(sizeof(CameraData), 0);
 
         shader_library_.load("mesh", "assets/shaders/engine/mesh.vert", "assets/shaders/engine/mesh.frag");
@@ -53,6 +56,10 @@ namespace engine {
     }
 
     void Renderer::on_shutdown() {
+        if (post_processor_) {
+            post_processor_->shutdown();
+            post_processor_.reset();
+        }
         shadow_framebuffer_.reset();
         line_batch_buffer_.clear();
         line_vao_.reset();
@@ -64,11 +71,17 @@ namespace engine {
         framebuffer_width_ = width;
         framebuffer_height_ = height;
         glViewport(0, 0, framebuffer_width_, framebuffer_height_);
+
+        if (post_processor_) {
+            post_processor_->resize(width, height);
+        }
     }
 
     void Renderer::begin_scene(const Camera& camera) {
         reset_stats();
         clear_lights();
+
+        post_processor_->begin_scene();
 
         current_frustum_ = camera.get_frustum();
 
@@ -81,6 +94,8 @@ namespace engine {
 
     void Renderer::end_scene(const float delta_time) {
         flush();
+        post_processor_->end_scene();
+        post_processor_->render_to_screen();
     }
 
     void Renderer::render_shadow_pass(Camera& camera, AssetManager& asset_manager, const std::unordered_map<UUID, std::vector<InstanceData>>& batches) {

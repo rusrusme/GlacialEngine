@@ -11,11 +11,11 @@
 #include "scene/ecs/Components.hpp"
 
 namespace engine {
-    class Framebuffer;
     class AssetManager;
     class Camera;
     class CollisionSystem;
     class Entity;
+    class Framebuffer;
 
     class Scene {
     public:
