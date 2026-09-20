@@ -24,10 +24,8 @@ float calculatePointShadow(vec3 fragment_world_position, vec3 normal, vec3 light
     // Calculate cosine of angle between normal and light direction
     float cos_theta = clamp(dot(normalize(normal), -light_direction), 0.0, 1.0);
 
-    // Anti-acne bias: cushions a surface's own curvature so it does not read as
-    // "a closer surface in front of me" and self-shadow. Matches the proven value
-    // from Gordan's shadow-cubemap reference (larger margin at grazing angles).
-    float bias = max(0.5 * (1.0 - cos_theta), 0.0005);
+    // Anti-acne bias
+    float bias = max(0.5 * (1.0 - cos_theta), 0.02);
 
     float shadow_accumulator = 0.0;
     int total_samples = 20;

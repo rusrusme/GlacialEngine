@@ -33,7 +33,7 @@ namespace engine {
         glfwGetFramebufferSize(window_, &framebuffer_width_, &framebuffer_height_);
         glViewport(0, 0, framebuffer_width_, framebuffer_height_);
         glEnable(GL_DEPTH_TEST);
-        glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS); // Todo: Check if needed
+        glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
 
         camera_ubo_ = std::make_unique<UniformBuffer>(sizeof(CameraData), 0);
 
@@ -182,9 +182,6 @@ namespace engine {
         glEnable(GL_POLYGON_OFFSET_FILL);
         glPolygonOffset(1.0f, 2.0f);
 
-        // Draw only back faces into the depth map to prevent self-shadowing acne
-        // (a surface facing the light would otherwise shadow itself). Culling is
-        // disabled again in the restore block below.
         glEnable(GL_CULL_FACE);
         glCullFace(GL_FRONT);
 
