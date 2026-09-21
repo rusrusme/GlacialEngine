@@ -11,6 +11,11 @@
 
 namespace engine {
     void GLRendererAPI::init() {
+        if (!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress))) {
+            std::cerr << "Engine error: GLRendererAPI: failed to initialize GLAD" << std::endl;
+            return;
+        }
+
         glEnable(GL_DEPTH_TEST);
         glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
     }

@@ -25,10 +25,6 @@ namespace engine {
             std::cerr << "Engine error: renderer: GLFWwindow pointer is null" << std::endl;
             return false;
         }
-        if (!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress))) {
-            std::cerr << "Engine error: renderer: failed to initialize GLAD" << std::endl;
-            return false;
-        }
 
         RenderCommand::init();
 
