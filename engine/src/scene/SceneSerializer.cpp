@@ -5,6 +5,7 @@
 
 #include "scene/SceneSerializer.hpp"
 
+#include "core/Log.hpp"
 #include "scene/ecs/Entity.hpp"
 
 using json = nlohmann::json;
@@ -99,7 +100,10 @@ namespace engine {
 
     bool SceneSerializer::deserialize(const std::string& filepath) {
         std::ifstream in(filepath);
-        if (!in.is_open()) return false;
+        if (!in.is_open()) {
+            CORE_ERROR("Failed to open scene file at path: {0}", filepath);
+            return false;
+        }
 
         json root;
         in >> root;

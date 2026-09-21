@@ -43,7 +43,7 @@ namespace editor {
     private:
         #ifdef ENABLE_IMGUI
         void draw_imguizmo(engine::Entity selected_entity, const engine::Camera& camera, const ImVec2& viewport_pos, const ImVec2& viewport_size);
-        void draw_imgui_menu_bar() const;
+        void draw_imgui_menu_bar();
 
         bool is_viewport_hovered_ = false;
         bool is_viewport_focused_ = false;

@@ -163,4 +163,9 @@ namespace engine {
         renderer.render_point_shadow_pass(asset_manager, mesh_batches_);
         renderer.render_mesh_batches(asset_manager, mesh_batches_);
     }
+
+    void Scene::clear() {
+        registry_.clear();
+        mesh_batches_.clear();
+    }
 }

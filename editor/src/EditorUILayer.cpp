@@ -7,6 +7,37 @@
 
 #include "EditorLayer.hpp"
 
+#ifdef _WIN32
+#define NOMINMAX
+#include <windows.h>
+#include <commdlg.h>
+#endif
+
+#ifdef _WIN32
+namespace {
+    std::string open_file_dialog(const char* filter = "Scene Files (*.scene)\0*.scene\0All Files (*.*)\0*.*\0") {
+        OPENFILENAMEA ofn;
+        char sz_file[260] = {0};
+
+        ZeroMemory(&ofn, sizeof(ofn));
+        ofn.lStructSize = sizeof(ofn);
+        ofn.hwndOwner = NULL; // Pass active window HWND if available
+        ofn.lpstrFile = sz_file;
+        ofn.nMaxFile = sizeof(sz_file);
+        ofn.lpstrFilter = filter;
+        ofn.nFilterIndex = 1;
+        // OFN_NOCHANGEDIR is critical to prevent Windows from altering
+        // the application's working directory when selecting files
+        ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
+
+        if (GetOpenFileNameA(&ofn) == TRUE) {
+            return std::string(ofn.lpstrFile);
+        }
+        return "";
+    }
+}
+#endif
+
 namespace editor {
     #ifdef ENABLE_IMGUI
     namespace {
@@ -295,30 +326,47 @@ namespace editor {
         }
     }
 
-    void EditorUILayer::draw_imgui_menu_bar() const {
+    void EditorUILayer::draw_imgui_menu_bar() {
         static bool show_save_popup = false;
-        static bool show_load_popup = false;
         static char path_buffer[256] = "assets/scenes/default.scene";
 
         const bool is_ctrl = engine::Input::is_key_pressed(engine::Key::LEFT_CONTROL) ||
             engine::Input::is_key_pressed(engine::Key::RIGHT_CONTROL);
 
+        auto handle_load_scene = [this] {
+            #ifdef _WIN32
+            std::string selected_file = open_file_dialog();
+            if (!selected_file.empty()) {
+                engine::SceneSerializer serializer(active_scene_);
+                serializer.deserialize(selected_file);
+            }
+            #endif
+        };
+
         if (is_ctrl && !engine::Input::is_keyboard_captured() && !ImGuizmo::IsUsing()) {
+            if (engine::Input::is_key_pressed_once(engine::Key::N)) {
+                engine::SceneSerializer serializer(active_scene_);
+                serializer.deserialize("assets/scenes/clean.scene");
+            }
             if (engine::Input::is_key_pressed_once(engine::Key::S)) {
                 show_save_popup = true;
             }
             if (engine::Input::is_key_pressed_once(engine::Key::O)) {
-                show_load_popup = true;
+                handle_load_scene();
             }
         }
 
         if (ImGui::BeginMainMenuBar()) {
             if (ImGui::BeginMenu("File")) {
-                if (ImGui::MenuItem("Save Scene As...", "Ctrl+S")) {
+                if (ImGui::MenuItem("New Scene", "Ctrl+N")) {
+                    engine::SceneSerializer serializer(active_scene_);
+                    serializer.deserialize("assets/scenes/clean.scene");
+                }
+                if (ImGui::MenuItem("Save Scene As", "Ctrl+S")) {
                     show_save_popup = true;
                 }
-                if (ImGui::MenuItem("Load Scene...", "Ctrl+O")) {
-                    show_load_popup = true;
+                if (ImGui::MenuItem("Load Scene", "Ctrl+O")) {
+                    handle_load_scene();
                 }
                 ImGui::EndMenu();
             }
@@ -337,29 +385,6 @@ namespace editor {
             if (ImGui::Button("Save", ImVec2(120, 0))) {
                 engine::SceneSerializer serializer(active_scene_);
                 serializer.serialize(path_buffer);
-                ImGui::CloseCurrentPopup();
-            }
-            ImGui::SameLine();
-            if (ImGui::Button("Cancel", ImVec2(120, 0))) {
-                ImGui::CloseCurrentPopup();
-            }
-            ImGui::EndPopup();
-        }
-
-        // --- Load Scene Modal Dialog ---
-        if (show_load_popup) {
-            ImGui::OpenPopup("Load Scene");
-            show_load_popup = false;
-        }
-
-        if (ImGui::BeginPopupModal("Load Scene", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
-            ImGui::InputText("File Path", path_buffer, sizeof(path_buffer));
-
-            if (ImGui::Button("Load", ImVec2(120, 0))) {
-                engine::SceneSerializer serializer(active_scene_);
-                if (!serializer.deserialize(path_buffer)) {
-                    // optional: SPDLOG_ERROR("Failed to load scenes from {}", path_buffer);
-                }
                 ImGui::CloseCurrentPopup();
             }
             ImGui::SameLine();

@@ -173,6 +173,9 @@ namespace engine {
         point_shadow_framebuffer_->bind();
         RenderCommand::set_viewport(0, 0, point_shadow_framebuffer_->get_width(), point_shadow_framebuffer_->get_height());
 
+        RenderCommand::set_depth_test(true);
+        RenderCommand::set_depth_mask(true);
+
         RenderCommand::set_polygon_offset(true, 1.0f, 2.0f);
         RenderCommand::set_cull_face(true, true);
 
@@ -210,6 +213,11 @@ namespace engine {
             post_processor_->begin_scene();
             RenderCommand::set_viewport(0, 0, static_cast<uint32_t>(framebuffer_width_), static_cast<uint32_t>(framebuffer_height_));
         }
+
+        RenderCommand::set_depth_test(true);
+        RenderCommand::set_depth_mask(true);
+
+        RenderCommand::set_cull_face(false);
 
         for (const auto& [handle, instance_list] : batches) {
             if (std::shared_ptr<Mesh> mesh = asset_manager.get_asset<Mesh>(handle)) {
