@@ -35,6 +35,27 @@ namespace {
         }
         return "";
     }
+
+    std::string save_file_dialog(const char* filter = "Scene Files (*.scene)\0*.scene\0All Files (*.*)\0*.*\0") {
+        OPENFILENAMEA ofn;
+        char sz_file[260] = { 0 };
+
+        ZeroMemory(&ofn, sizeof(ofn));
+        ofn.lStructSize = sizeof(ofn);
+        ofn.hwndOwner = NULL;
+        ofn.lpstrFile = sz_file;
+        ofn.nMaxFile = sizeof(sz_file);
+        ofn.lpstrFilter = filter;
+        ofn.nFilterIndex = 1;
+        ofn.lpstrDefExt = "scene"; // Automatically appends .scene if omitted by user
+        // OFN_OVERWRITEPROMPT asks for confirmation before overwriting an existing file
+        ofn.Flags = OFN_PATHMUSTEXIST | OFN_OVERWRITEPROMPT | OFN_NOCHANGEDIR;
+
+        if (GetSaveFileNameA(&ofn) == TRUE) {
+            return std::string(ofn.lpstrFile);
+        }
+        return "";
+    }
 }
 #endif
 
@@ -343,13 +364,23 @@ namespace editor {
             #endif
         };
 
+        auto handle_save_scene = [this] {
+            #ifdef _WIN32
+            std::string selected_file = save_file_dialog();
+            if (!selected_file.empty()) {
+                engine::SceneSerializer serializer(active_scene_);
+                serializer.serialize(selected_file);
+            }
+            #endif
+        };
+
         if (is_ctrl && !engine::Input::is_keyboard_captured() && !ImGuizmo::IsUsing()) {
             if (engine::Input::is_key_pressed_once(engine::Key::N)) {
                 engine::SceneSerializer serializer(active_scene_);
                 serializer.deserialize("assets/scenes/clean.scene");
             }
             if (engine::Input::is_key_pressed_once(engine::Key::S)) {
-                show_save_popup = true;
+                handle_save_scene();
             }
             if (engine::Input::is_key_pressed_once(engine::Key::O)) {
                 handle_load_scene();
@@ -363,7 +394,7 @@ namespace editor {
                     serializer.deserialize("assets/scenes/clean.scene");
                 }
                 if (ImGui::MenuItem("Save Scene As", "Ctrl+S")) {
-                    show_save_popup = true;
+                    handle_save_scene();
                 }
                 if (ImGui::MenuItem("Load Scene", "Ctrl+O")) {
                     handle_load_scene();
@@ -371,27 +402,6 @@ namespace editor {
                 ImGui::EndMenu();
             }
             ImGui::EndMainMenuBar();
-        }
-
-        // --- Save Scene Modal Dialog ---
-        if (show_save_popup) {
-            ImGui::OpenPopup("Save Scene");
-            show_save_popup = false;
-        }
-
-        if (ImGui::BeginPopupModal("Save Scene", nullptr, ImGuiWindowFlags_AlwaysAutoResize)) {
-            ImGui::InputText("File Path", path_buffer, sizeof(path_buffer));
-
-            if (ImGui::Button("Save", ImVec2(120, 0))) {
-                engine::SceneSerializer serializer(active_scene_);
-                serializer.serialize(path_buffer);
-                ImGui::CloseCurrentPopup();
-            }
-            ImGui::SameLine();
-            if (ImGui::Button("Cancel", ImVec2(120, 0))) {
-                ImGui::CloseCurrentPopup();
-            }
-            ImGui::EndPopup();
         }
     }
     #endif
