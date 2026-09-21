@@ -100,13 +100,13 @@ add_library(Engine STATIC
             src/render/platform/opengl/GLUniformBuffer.cpp
             src/render/platform/opengl/GLVertexArray.cpp
             src/render/platform/opengl/GLBuffer.cpp
-            src/render/RenderCommand.cpp
             include/render/platform/opengl/GLBuffer.hpp
             include/render/platform/opengl/GLShader.hpp
             include/render/platform/opengl/GLVertexArray.hpp
             include/render/platform/opengl/GLUniformBuffer.hpp
             include/render/platform/opengl/GLTexture2D.hpp
             include/render/platform/opengl/GLRendererAPI.hpp
+            include/render/RenderCommand.hpp
 )
 # ----------------------------------------------------------------------------
 target_include_directories(Engine

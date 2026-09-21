@@ -26,6 +26,8 @@ namespace engine {
         void bind() const;
         void unbind() const;
 
+        void bind_depth_texture(uint32_t slot = 0) const;
+
         void resize(uint32_t width, uint32_t height);
 
         [[nodiscard]] uint32_t get_color_attachment_id() const { return color_attachment_id_; }

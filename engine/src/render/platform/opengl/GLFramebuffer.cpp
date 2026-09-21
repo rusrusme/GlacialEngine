@@ -6,13 +6,18 @@
 #include "render/platform/opengl/GLFramebuffer.hpp"
 
 namespace engine {
-void GLFramebuffer::bind() const {
+    void GLFramebuffer::bind() const {
         glBindFramebuffer(GL_FRAMEBUFFER, fbo_id_);
         glViewport(0, 0, width_, height_);
     }
 
     void GLFramebuffer::unbind() const {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
+    }
+
+    void GLFramebuffer::bind_depth_texture(const uint32_t slot) const {
+        glActiveTexture(GL_TEXTURE0 + slot);
+        glBindTexture(type_ == GLFramebufferType::PointShadowMap ? GL_TEXTURE_CUBE_MAP : GL_TEXTURE_2D, depth_attachment_id_);
     }
 
     void GLFramebuffer::resize(uint32_t width, uint32_t height) {

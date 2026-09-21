@@ -9,6 +9,7 @@
 #include "core/Config.hpp"
 #include "render/Buffer.hpp"
 #include "render/Camera.hpp"
+#include "render/RenderCommand.hpp"
 #include "render/Texture2D.hpp"
 #include "render/VertexArray.hpp"
 #include "render/mesh/InstanceData.hpp"
@@ -24,16 +25,15 @@ namespace engine {
             std::cerr << "Engine error: renderer: GLFWwindow pointer is null" << std::endl;
             return false;
         }
-
         if (!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress))) {
             std::cerr << "Engine error: renderer: failed to initialize GLAD" << std::endl;
             return false;
         }
 
+        RenderCommand::init();
+
         glfwGetFramebufferSize(window_, &framebuffer_width_, &framebuffer_height_);
-        glViewport(0, 0, framebuffer_width_, framebuffer_height_);
-        glEnable(GL_DEPTH_TEST);
-        glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+        RenderCommand::set_viewport(0, 0, static_cast<uint32_t>(framebuffer_width_), static_cast<uint32_t>(framebuffer_height_));
 
         post_processor_ = std::make_unique<PostProcessor>();
         post_processor_->init(framebuffer_width_, framebuffer_height_);
@@ -61,6 +61,7 @@ namespace engine {
             post_processor_.reset();
         }
         shadow_framebuffer_.reset();
+        point_shadow_framebuffer_.reset();
         line_batch_buffer_.clear();
         line_vao_.reset();
         line_vbo_.reset();
@@ -70,7 +71,7 @@ namespace engine {
     void Renderer::on_resize(const int width, const int height) {
         framebuffer_width_ = width;
         framebuffer_height_ = height;
-        glViewport(0, 0, framebuffer_width_, framebuffer_height_);
+        RenderCommand::set_viewport(0, 0, static_cast<uint32_t>(width), static_cast<uint32_t>(height));
 
         if (post_processor_) {
             post_processor_->resize(width, height);
@@ -128,22 +129,15 @@ namespace engine {
         light_projection[3] += round_offset;
         light_space_matrix_ = light_projection * light_view;
 
-        // Save active framebuffer and viewport
-        GLint prev_fbo = 0;
-        glGetIntegerv(GL_FRAMEBUFFER_BINDING, &prev_fbo);
-        GLint prev_viewport[4];
-        glGetIntegerv(GL_VIEWPORT, prev_viewport);
-
         shadow_framebuffer_->bind();
-        glClear(GL_DEPTH_BUFFER_BIT);
+        RenderCommand::clear(false, true);
 
         auto shadow_shader = shader_library_.get("shadow_depth");
         if (shadow_shader) {
             shadow_shader->bind();
             shadow_shader->set_mat4("u_light_space_matrix", light_space_matrix_);
 
-            glEnable(GL_POLYGON_OFFSET_FILL);
-            glPolygonOffset(3.0f, 6.0f);
+            RenderCommand::set_polygon_offset(true, 3.0f, 6.0f);
 
             const bool prev_culling = is_frustum_culling_enabled();
             set_frustum_culling_enabled(false);
@@ -154,12 +148,11 @@ namespace engine {
                 }
             }
             set_frustum_culling_enabled(prev_culling);
-            glDisable(GL_POLYGON_OFFSET_FILL);
+            RenderCommand::set_polygon_offset(false);
         }
 
-        // Restore active framebuffer and viewport
-        glBindFramebuffer(GL_FRAMEBUFFER, prev_fbo);
-        glViewport(prev_viewport[0], prev_viewport[1], prev_viewport[2], prev_viewport[3]);
+        shadow_framebuffer_->unbind();
+        RenderCommand::set_viewport(0, 0, static_cast<uint32_t>(framebuffer_width_), static_cast<uint32_t>(framebuffer_height_));
     }
 
     void Renderer::render_point_shadow_pass(AssetManager& asset_manager, const std::unordered_map<UUID, std::vector<InstanceData>>& batches) {
@@ -169,8 +162,6 @@ namespace engine {
         const glm::vec3 light_pos = light.position;
         const float far_plane = light.radius;
 
-        // Six perspective views around the light: each face covers exactly 90 deg
-        // so the six faces tile one cube (the cubemap).
         const glm::mat4 shadow_proj = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, far_plane);
 
         // Standard OpenGL Cube map Cardinal Orientations
@@ -183,24 +174,12 @@ namespace engine {
             shadow_proj * glm::lookAt(light_pos, light_pos + glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, -1.0f, 0.0f))  // -Z
         };
 
-        GLint prev_fbo = 0;
-        glGetIntegerv(GL_FRAMEBUFFER_BINDING, &prev_fbo);
-        GLint prev_viewport[4];
-        glGetIntegerv(GL_VIEWPORT, prev_viewport);
-
         point_shadow_framebuffer_->bind();
+        RenderCommand::set_viewport(0, 0, point_shadow_framebuffer_->get_width(), point_shadow_framebuffer_->get_height());
 
-        // Force viewport to shadow map texture dimensions
-        glViewport(0, 0, point_shadow_framebuffer_->get_width(), point_shadow_framebuffer_->get_height());
+        RenderCommand::set_polygon_offset(true, 1.0f, 2.0f);
+        RenderCommand::set_cull_face(true, true);
 
-        // Hardware Rasterizer Depth Bias
-        glEnable(GL_POLYGON_OFFSET_FILL);
-        glPolygonOffset(1.0f, 2.0f);
-
-        glEnable(GL_CULL_FACE);
-        glCullFace(GL_FRONT);
-
-        // Disable main camera frustum culling
         const bool prev_culling = is_frustum_culling_enabled();
         set_frustum_culling_enabled(false);
 
@@ -214,9 +193,7 @@ namespace engine {
                 point_shadow_shader->set_mat4("u_shadow_matrices[" + std::to_string(face) + "]", shadow_matrices[face]);
             }
 
-            // Geometry shader emits every triangle once per cubemap face in a
-            // single draw call, so we draw the whole scene exactly once.
-            glClear(GL_DEPTH_BUFFER_BIT);
+            RenderCommand::clear(false, true);
             for (const auto& [handle, instance_list] : batches) {
                 if (std::shared_ptr<Mesh> mesh = asset_manager.get_asset<Mesh>(handle)) {
                     draw_mesh_instanced(*mesh, instance_list, point_shadow_shader);
@@ -224,16 +201,20 @@ namespace engine {
             }
         }
 
-        // Restore state
         set_frustum_culling_enabled(prev_culling);
-        glDisable(GL_CULL_FACE);
-        glDisable(GL_POLYGON_OFFSET_FILL);
+        RenderCommand::set_cull_face(false);
+        RenderCommand::set_polygon_offset(false);
 
-        glBindFramebuffer(GL_FRAMEBUFFER, prev_fbo);
-        glViewport(prev_viewport[0], prev_viewport[1], prev_viewport[2], prev_viewport[3]);
+        point_shadow_framebuffer_->unbind();
+        RenderCommand::set_viewport(0, 0, static_cast<uint32_t>(framebuffer_width_), static_cast<uint32_t>(framebuffer_height_));
     }
 
     void Renderer::render_mesh_batches(AssetManager& asset_manager, const std::unordered_map<UUID, std::vector<InstanceData>>& batches) {
+        if (post_processor_) {
+            post_processor_->begin_scene();
+            RenderCommand::set_viewport(0, 0, static_cast<uint32_t>(framebuffer_width_), static_cast<uint32_t>(framebuffer_height_));
+        }
+
         for (const auto& [handle, instance_list] : batches) {
             if (std::shared_ptr<Mesh> mesh = asset_manager.get_asset<Mesh>(handle)) {
                 draw_mesh_instanced(*mesh, instance_list);
@@ -242,28 +223,20 @@ namespace engine {
     }
 
     void Renderer::set_blend(const bool enable) {
-        if (enable) {
-            glEnable(GL_BLEND);
-            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        }
-        else {
-            glDisable(GL_BLEND);
-        }
+        RenderCommand::set_blend(enable);
     }
 
     void Renderer::draw_arrays(const VertexArray& vao, const uint32_t count) {
-        vao.bind();
-        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(count));
-        vao.unbind();
+        RenderCommand::draw_arrays(vao, count);
     }
 
     void Renderer::set_clear_color(const glm::vec4& color) {
-        glClearColor(color.r, color.g, color.b, color.a);
+        RenderCommand::set_clear_color(color);
     }
 
     void Renderer::clear(const glm::vec4& color) {
-        set_clear_color(color);
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        RenderCommand::set_clear_color(color);
+        RenderCommand::clear(true, true);
     }
 
     Mesh Renderer::upload_mesh(const std::vector<Vertex>& vertices_in, const std::vector<uint32_t>& indices) {
@@ -274,7 +247,7 @@ namespace engine {
 
         std::vector<Vertex> vertices = vertices_in;
 
-        // Auto-generate tangents if unassigned (e.g. primitive meshes)
+        // Auto-generate tangents if unassigned
         if (glm::length(vertices[0].tangent) < 0.0001f) {
             for (size_t k = 0; k < indices.size(); k += 3) {
                 Vertex& v0 = vertices[indices[k]];
@@ -324,7 +297,7 @@ namespace engine {
         };
         vao->add_vertex_buffer(vbo, layout);
 
-        const auto ebo = std::make_shared<GLIndexBuffer>(indices.data(), static_cast<uint32_t>(indices.size()));
+        const auto ebo = std::make_shared<IndexBuffer>(indices.data(), static_cast<uint32_t>(indices.size()));
         vao->set_index_buffer(ebo);
 
         Mesh mesh{};
@@ -351,7 +324,7 @@ namespace engine {
                 }
             }
 
-            if (visible_instances.empty()) return; // All instances culled
+            if (visible_instances.empty()) return;
             instances_to_draw = &visible_instances;
         }
 
@@ -368,6 +341,16 @@ namespace engine {
             instance_vbo_ = std::make_shared<VertexBuffer>(nullptr, instance_vbo_capacity_bytes_, true);
         }
         instance_vbo_->set_data(instances_to_draw->data(), bytes_needed);
+
+        // Attach instanced layout to VAO once if not attached yet
+        // if (mesh.vertex_array->get_vertex_buffers().size() == 1) {
+        //     static const BufferLayout instance_layout = {
+        //         {ShaderDataType::Mat4, "a_instance_transform"},
+        //         {ShaderDataType::Float4, "a_instance_color"},
+        //         {ShaderDataType::Float2, "a_instance_pbr"}
+        //     };
+        //     mesh.vertex_array->add_instanced_buffer(instance_vbo_, instance_layout, 1);
+        // }
 
         shader->bind();
 
@@ -402,17 +385,16 @@ namespace engine {
                 shader->set_int("u_use_metallic_roughness_texture", 0);
             }
 
-            // Shadow Map (Slot 3)
+            // Directional Shadow Map (Slot 3)
             if (shadow_framebuffer_) {
-                glActiveTexture(GL_TEXTURE3);
-                glBindTexture(GL_TEXTURE_2D, shadow_framebuffer_->get_depth_attachment_id());
+                shadow_framebuffer_->bind_depth_texture(3);
                 shader->set_int("u_shadow_map", 3);
                 shader->set_mat4("u_light_space_matrix", light_space_matrix_);
             }
+
             // Point Shadow Map (Slot 4)
             if (point_shadow_framebuffer_) {
-                glActiveTexture(GL_TEXTURE4);
-                glBindTexture(GL_TEXTURE_CUBE_MAP, point_shadow_framebuffer_->get_depth_attachment_id());
+                point_shadow_framebuffer_->bind_depth_texture(4);
                 shader->set_int("u_point_shadow_map", 4);
             }
 
@@ -439,47 +421,25 @@ namespace engine {
         instance_vbo_->bind();
 
         constexpr auto stride = static_cast<GLsizei>(sizeof(InstanceData));
+
         for (uint32_t i = 0; i < 4; ++i) {
             glEnableVertexAttribArray(4 + i);
-            glVertexAttribPointer(
-                4 + i,
-                4,
-                GL_FLOAT,
-                GL_FALSE,
-                stride,
-                reinterpret_cast<const void*>(sizeof(glm::vec4) * i)
-            );
+            glVertexAttribPointer(4 + i, 4, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<const void*>(sizeof(glm::vec4) * i));
             glVertexAttribDivisor(4 + i, 1);
         }
 
         glEnableVertexAttribArray(8);
-        glVertexAttribPointer(
-            8,
-            4,
-            GL_FLOAT,
-            GL_FALSE,
-            stride,
-            reinterpret_cast<const void*>(offsetof(InstanceData, color))
-        );
+        glVertexAttribPointer(8, 4, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<const void*>(offsetof(InstanceData, color)));
         glVertexAttribDivisor(8, 1);
 
         glEnableVertexAttribArray(9);
-        glVertexAttribPointer(
-            9,
-            2,
-            GL_FLOAT,
-            GL_FALSE,
-            stride,
-            reinterpret_cast<const void*>(offsetof(InstanceData, pbr))
-        );
+        glVertexAttribPointer(9, 2, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<const void*>(offsetof(InstanceData, pbr)));
         glVertexAttribDivisor(9, 1);
 
-        glDrawElementsInstanced(
-            GL_TRIANGLES,
-            static_cast<GLsizei>(mesh.vertex_array->get_index_buffer()->get_count()),
-            GL_UNSIGNED_INT,
-            nullptr,
-            static_cast<GLsizei>(instances_to_draw->size())
+        RenderCommand::draw_indexed_instanced(
+            *mesh.vertex_array,
+            mesh.vertex_array->get_index_buffer()->get_count(),
+            static_cast<uint32_t>(instances_to_draw->size())
         );
 
         mesh.vertex_array->unbind();
@@ -569,13 +529,11 @@ namespace engine {
         line_vbo_->set_data(line_batch_buffer_.data(), bytes_needed);
 
         line_shader->bind();
-        line_vao_->bind();
 
-        glDepthMask(GL_FALSE);
-        glDrawArrays(GL_LINES, 0, static_cast<GLsizei>(line_batch_buffer_.size()));
-        glDepthMask(GL_TRUE);
+        RenderCommand::set_depth_mask(false);
+        RenderCommand::draw_lines(*line_vao_, static_cast<uint32_t>(line_batch_buffer_.size()));
+        RenderCommand::set_depth_mask(true);
 
-        line_vao_->unbind();
         line_shader->unbind();
 
         line_batch_buffer_.clear();

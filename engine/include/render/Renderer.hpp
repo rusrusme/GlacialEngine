@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <memory>
 #include <unordered_map>
 #include <vector>
 #include <GLFW/glfw3.h>
@@ -14,6 +15,7 @@
 #include "render/Buffer.hpp"
 #include "render/Framebuffer.hpp"
 #include "render/PostProcessor.hpp"
+#include "render/RenderCommand.hpp"
 #include "render/Shader.hpp"
 #include "render/ShaderLibrary.hpp"
 #include "render/UniformBuffer.hpp"

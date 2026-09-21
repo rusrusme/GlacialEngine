@@ -1,0 +1,98 @@
+//
+// Copyright (c) 2026 rusrusme 
+// All rights reserved.
+//
+
+#include "render/platform/opengl/GLRendererAPI.hpp"
+
+#include "render/platform/opengl/GLBuffer.hpp"
+#include "render/platform/opengl/GLVertexArray.hpp"
+
+namespace engine {
+    void GLRendererAPI::init() {
+        glEnable(GL_DEPTH_TEST);
+        glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+    }
+
+    void GLRendererAPI::set_viewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height) {
+        glViewport(static_cast<GLint>(x), static_cast<GLint>(y), static_cast<GLsizei>(width), static_cast<GLsizei>(height));
+    }
+
+    void GLRendererAPI::set_clear_color(const glm::vec4& color) {
+        glClearColor(color.r, color.g, color.b, color.a);
+    }
+
+    void GLRendererAPI::clear(bool clear_color, bool clear_depth) {
+        GLbitfield mask = 0;
+        if (clear_color) mask |= GL_COLOR_BUFFER_BIT;
+        if (clear_depth) mask |= GL_DEPTH_BUFFER_BIT;
+        glClear(mask);
+    }
+
+    void GLRendererAPI::set_depth_test(bool enable) {
+        if (enable) glEnable(GL_DEPTH_TEST);
+        else glDisable(GL_DEPTH_TEST);
+    }
+
+    void GLRendererAPI::set_depth_mask(bool enable) {
+        glDepthMask(enable ? GL_TRUE : GL_FALSE);
+    }
+
+    void GLRendererAPI::set_cull_face(bool enable, bool front_face) {
+        if (enable) {
+            glEnable(GL_CULL_FACE);
+            glCullFace(front_face ? GL_FRONT : GL_BACK);
+        } else {
+            glDisable(GL_CULL_FACE);
+        }
+    }
+
+    void GLRendererAPI::set_polygon_offset(bool enable, float factor, float units) {
+        if (enable) {
+            glEnable(GL_POLYGON_OFFSET_FILL);
+            glPolygonOffset(factor, units);
+        } else {
+            glDisable(GL_POLYGON_OFFSET_FILL);
+        }
+    }
+
+    void GLRendererAPI::set_blend(bool enable) {
+        if (enable) {
+            glEnable(GL_BLEND);
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        } else {
+            glDisable(GL_BLEND);
+        }
+    }
+
+    void GLRendererAPI::set_seamless_cubemap(bool enable) {
+        if (enable) glEnable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+        else glDisable(GL_TEXTURE_CUBE_MAP_SEAMLESS);
+    }
+
+    void GLRendererAPI::draw_indexed(const GLVertexArray& vao, uint32_t index_count) {
+        vao.bind();
+        uint32_t count = index_count ? index_count : vao.get_index_buffer()->get_count();
+        glDrawElements(GL_TRIANGLES, static_cast<GLsizei>(count), GL_UNSIGNED_INT, nullptr);
+        vao.unbind();
+    }
+
+    void GLRendererAPI::draw_indexed_instanced(const GLVertexArray& vao, uint32_t index_count, uint32_t instance_count) {
+        vao.bind();
+        uint32_t count = index_count ? index_count : vao.get_index_buffer()->get_count();
+        glDrawElementsInstanced(GL_TRIANGLES, static_cast<GLsizei>(count), GL_UNSIGNED_INT, nullptr, static_cast<GLsizei>(instance_count));
+        vao.unbind();
+    }
+
+    void GLRendererAPI::draw_lines(const GLVertexArray& vao, uint32_t vertex_count) {
+        vao.bind();
+        glDrawArrays(GL_LINES, 0, static_cast<GLsizei>(vertex_count));
+        vao.unbind();
+    }
+
+    void GLRendererAPI::draw_arrays(const GLVertexArray& vao, uint32_t vertex_count) {
+        vao.bind();
+        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(vertex_count));
+        vao.unbind();
+    }
+}
