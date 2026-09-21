@@ -342,16 +342,6 @@ namespace engine {
         }
         instance_vbo_->set_data(instances_to_draw->data(), bytes_needed);
 
-        // Attach instanced layout to VAO once if not attached yet
-        // if (mesh.vertex_array->get_vertex_buffers().size() == 1) {
-        //     static const BufferLayout instance_layout = {
-        //         {ShaderDataType::Mat4, "a_instance_transform"},
-        //         {ShaderDataType::Float4, "a_instance_color"},
-        //         {ShaderDataType::Float2, "a_instance_pbr"}
-        //     };
-        //     mesh.vertex_array->add_instanced_buffer(instance_vbo_, instance_layout, 1);
-        // }
-
         shader->bind();
 
         if (!override_shader) {
@@ -417,32 +407,13 @@ namespace engine {
             }
         }
 
-        mesh.vertex_array->bind();
-        instance_vbo_->bind();
-
-        constexpr auto stride = static_cast<GLsizei>(sizeof(InstanceData));
-
-        for (uint32_t i = 0; i < 4; ++i) {
-            glEnableVertexAttribArray(4 + i);
-            glVertexAttribPointer(4 + i, 4, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<const void*>(sizeof(glm::vec4) * i));
-            glVertexAttribDivisor(4 + i, 1);
-        }
-
-        glEnableVertexAttribArray(8);
-        glVertexAttribPointer(8, 4, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<const void*>(offsetof(InstanceData, color)));
-        glVertexAttribDivisor(8, 1);
-
-        glEnableVertexAttribArray(9);
-        glVertexAttribPointer(9, 2, GL_FLOAT, GL_FALSE, stride, reinterpret_cast<const void*>(offsetof(InstanceData, pbr)));
-        glVertexAttribDivisor(9, 1);
-
         RenderCommand::draw_indexed_instanced(
             *mesh.vertex_array,
+            *instance_vbo_,
             mesh.vertex_array->get_index_buffer()->get_count(),
             static_cast<uint32_t>(instances_to_draw->size())
         );
 
-        mesh.vertex_array->unbind();
         shader->unbind();
     }
 

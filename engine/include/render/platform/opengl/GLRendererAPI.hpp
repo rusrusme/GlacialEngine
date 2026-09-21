@@ -9,6 +9,7 @@
 #include <glm/glm.hpp>
 
 namespace engine {
+    class GLVertexBuffer;
     class GLVertexArray;
 
     class GLRendererAPI {
@@ -29,6 +30,7 @@ namespace engine {
         // Draw Calls
         static void draw_indexed(const GLVertexArray& vao, uint32_t index_count = 0);
         static void draw_indexed_instanced(const GLVertexArray& vao, uint32_t index_count, uint32_t instance_count);
+        static void draw_indexed_instanced(const GLVertexArray& vao, const GLVertexBuffer& instance_vbo, uint32_t index_count, uint32_t instance_count);
         static void draw_lines(const GLVertexArray& vao, uint32_t vertex_count);
         static void draw_arrays(const GLVertexArray& vao, uint32_t vertex_count);
     };

@@ -5,9 +5,9 @@
 
 #pragma once
 
-#include <memory>
 #include <glm/glm.hpp>
 
+#include "render/Buffer.hpp"
 #include "render/VertexArray.hpp"
 
 #if defined(RENDER_API_OPENGL)
@@ -73,6 +73,10 @@ namespace engine {
 
         static void draw_indexed_instanced(const VertexArray& vao, const uint32_t index_count, const uint32_t instance_count) {
             RendererAPI::draw_indexed_instanced(vao, index_count, instance_count);
+        }
+
+        static void draw_indexed_instanced(const VertexArray& vao, const VertexBuffer& instance_vbo, uint32_t index_count, uint32_t instance_count) {
+            RendererAPI::draw_indexed_instanced(vao, instance_vbo, index_count, instance_count);
         }
 
         static void draw_lines(const VertexArray& vao, const uint32_t vertex_count) {
