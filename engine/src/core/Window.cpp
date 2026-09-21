@@ -24,6 +24,13 @@ namespace engine {
         glfwSwapInterval(enabled ? 1 : 0);
     }
 
+    void Window::set_title(const std::string& title) {
+        data_.title = title;
+        if (window_) {
+            glfwSetWindowTitle(window_, data_.title.c_str());
+        }
+    }
+
     float Window::get_monitor_dpi_scale() {
         GLFWmonitor* monitor = glfwGetPrimaryMonitor();
         if (!monitor) return 1.0f;

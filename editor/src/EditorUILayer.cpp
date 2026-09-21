@@ -38,7 +38,7 @@ namespace {
 
     std::string save_file_dialog(const char* filter = "Scene Files (*.scene)\0*.scene\0All Files (*.*)\0*.*\0") {
         OPENFILENAMEA ofn;
-        char sz_file[260] = { 0 };
+        char sz_file[260] = {0};
 
         ZeroMemory(&ofn, sizeof(ofn));
         ofn.lStructSize = sizeof(ofn);
@@ -348,36 +348,49 @@ namespace editor {
     }
 
     void EditorUILayer::draw_imgui_menu_bar() {
-        static bool show_save_popup = false;
-        static char path_buffer[256] = "assets/scenes/default.scene";
+        auto update_window_title = [](const std::string& path) {
+            std::string scene_name = std::filesystem::path(path).stem().string();
+            engine::Application::get().window().set_title("Engine - " + scene_name);
+        };
 
         const bool is_ctrl = engine::Input::is_key_pressed(engine::Key::LEFT_CONTROL) ||
             engine::Input::is_key_pressed(engine::Key::RIGHT_CONTROL);
 
-        auto handle_load_scene = [this] {
+        auto handle_new_scene = [this] {
+            engine::SceneSerializer serializer(active_scene_);
+            serializer.deserialize("assets/scenes/clean.scene");
+            engine::Application::get().window().set_title(engine::setting::FRAME_TITLE);
+        };
+
+        auto handle_load_scene = [this, update_window_title] {
             #ifdef _WIN32
             std::string selected_file = open_file_dialog();
             if (!selected_file.empty()) {
                 engine::SceneSerializer serializer(active_scene_);
                 serializer.deserialize(selected_file);
+                if (std::filesystem::path(selected_file).filename() != "clean.scene") {
+                    update_window_title(selected_file);
+                }
             }
             #endif
         };
 
-        auto handle_save_scene = [this] {
+        auto handle_save_scene = [this, update_window_title] {
             #ifdef _WIN32
             std::string selected_file = save_file_dialog();
             if (!selected_file.empty()) {
                 engine::SceneSerializer serializer(active_scene_);
                 serializer.serialize(selected_file);
+                if (std::filesystem::path(selected_file).filename() != "clean.scene") {
+                    update_window_title(selected_file);
+                }
             }
             #endif
         };
 
         if (is_ctrl && !engine::Input::is_keyboard_captured() && !ImGuizmo::IsUsing()) {
             if (engine::Input::is_key_pressed_once(engine::Key::N)) {
-                engine::SceneSerializer serializer(active_scene_);
-                serializer.deserialize("assets/scenes/clean.scene");
+                handle_new_scene();
             }
             if (engine::Input::is_key_pressed_once(engine::Key::S)) {
                 handle_save_scene();
@@ -390,8 +403,7 @@ namespace editor {
         if (ImGui::BeginMainMenuBar()) {
             if (ImGui::BeginMenu("File")) {
                 if (ImGui::MenuItem("New Scene", "Ctrl+N")) {
-                    engine::SceneSerializer serializer(active_scene_);
-                    serializer.deserialize("assets/scenes/clean.scene");
+                    handle_new_scene();
                 }
                 if (ImGui::MenuItem("Save Scene As", "Ctrl+S")) {
                     handle_save_scene();
