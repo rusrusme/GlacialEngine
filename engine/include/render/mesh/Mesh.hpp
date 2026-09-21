@@ -6,11 +6,11 @@
 #pragma once
 
 #include "physics/AABB.hpp"
+#include "render/Texture2D.hpp"
+#include "render/VertexArray.hpp"
 
 namespace engine {
-    class Texture2D;
     struct Vertex;
-    class VertexArray;
 
     class Mesh {
     public:

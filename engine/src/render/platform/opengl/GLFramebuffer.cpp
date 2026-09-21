@@ -3,19 +3,19 @@
 // All rights reserved.
 //
 
-#include "core/Framebuffer.hpp"
+#include "render/platform/opengl/GLFramebuffer.hpp"
 
 namespace engine {
-    void Framebuffer::bind() const {
+void GLFramebuffer::bind() const {
         glBindFramebuffer(GL_FRAMEBUFFER, fbo_id_);
         glViewport(0, 0, width_, height_);
     }
 
-    void Framebuffer::unbind() const {
+    void GLFramebuffer::unbind() const {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 
-    void Framebuffer::resize(uint32_t width, uint32_t height) {
+    void GLFramebuffer::resize(uint32_t width, uint32_t height) {
         if (width == 0 || height == 0) return;
         width_ = width;
         height_ = height;
@@ -29,7 +29,7 @@ namespace engine {
         // layered cube map): attaching a 2D color texture alongside a layered
         // cube-map depth attachment makes the FBO GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS,
         // so nothing renders.
-        if (type_ != FramebufferType::PointShadowMap) {
+        if (type_ != GLFramebufferType::PointShadowMap) {
             glGenTextures(1, &color_attachment_id_);
             glBindTexture(GL_TEXTURE_2D, color_attachment_id_);
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width_, height_, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
@@ -40,7 +40,7 @@ namespace engine {
 
         // Depth Attachment
         switch (type_) {
-            case FramebufferType::ShadowMap : {
+            case GLFramebufferType::ShadowMap : {
                 glGenTextures(1, &depth_attachment_id_);
                 glBindTexture(GL_TEXTURE_2D, depth_attachment_id_);
                 glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH24_STENCIL8, width_, height_, 0, GL_DEPTH_STENCIL, GL_UNSIGNED_INT_24_8, nullptr);
@@ -61,7 +61,7 @@ namespace engine {
             // Point-light cubemap depth map. The whole cubemap is attached as a
             // single layered texture so a geometry shader can route writes to any
             // face via gl_Layer.
-            case FramebufferType::PointShadowMap : {
+            case GLFramebufferType::PointShadowMap : {
                 glGenTextures(1, &depth_attachment_id_);
                 glBindTexture(GL_TEXTURE_CUBE_MAP, depth_attachment_id_);
 
@@ -97,11 +97,11 @@ namespace engine {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 
-    uint32_t Framebuffer::get_depth_attachment_id() const {
+    uint32_t GLFramebuffer::get_depth_attachment_id() const {
         return depth_attachment_id_;
     }
 
-    void Framebuffer::invalidate() const {
+    void GLFramebuffer::invalidate() const {
         if (fbo_id_) {
             glDeleteFramebuffers(1, &fbo_id_);
             glDeleteTextures(1, &color_attachment_id_);

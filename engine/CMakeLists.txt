@@ -42,15 +42,11 @@ add_library(Engine STATIC
             include/event/WindowEvents.hpp
             include/event/MouseEvents.hpp
             src/core/Window.cpp
-            src/render/Buffer.cpp
             include/render/Buffer.hpp
             src/render/BufferLayout.cpp
             include/render/BufferLayout.hpp
-            src/render/VertexArray.cpp
             include/render/VertexArray.hpp
-            src/render/Shader.cpp
             include/render/Shader.hpp
-            src/render/UniformBuffer.cpp
             include/render/UniformBuffer.hpp
             include/util/FileIo.hpp
             include/event/KeyEvents.hpp
@@ -63,7 +59,6 @@ add_library(Engine STATIC
             include/scene/SceneSerializer.hpp
             src/render/mesh/MeshLoader.cpp
             include/render/mesh/MeshLoader.hpp
-            src/render/mesh/Mesh.cpp
             src/render/mesh/Mesh.cpp
             src/asset/AssetType.cpp
             include/asset/AssetType.hpp
@@ -87,23 +82,46 @@ add_library(Engine STATIC
             include/ui/UiLayer.hpp
             include/ui/UIManager.hpp
             src/ui/UIManager.cpp
-            include/core/Framebuffer.hpp
-            src/core/Framebuffer.cpp
+            include/render/Framebuffer.hpp
             src/physics/AABB.cpp
             src/render/mesh/PrimitiveMesh.cpp
             include/render/Texture2D.hpp
-            src/render/Texture2D.cpp
             src/util/stb_image.cpp
             include/render/Frustum.hpp
             src/render/Frustum.cpp
             src/render/PostProcessor.cpp
-            src/render/PostProcessor.hpp
+            include/render/PostProcessor.hpp
+            src/render/platform/opengl/GlFramebuffer.cpp
+            include/render/platform/opengl/GlFramebuffer.hpp
+            include/render/RenderAPI.hpp
+            src/render/platform/opengl/GLRendererAPI.cpp
+            src/render/platform/opengl/GLShader.cpp
+            src/render/platform/opengl/GLTexture2D.cpp
+            src/render/platform/opengl/GLUniformBuffer.cpp
+            src/render/platform/opengl/GLVertexArray.cpp
+            src/render/platform/opengl/GLBuffer.cpp
+            src/render/RenderCommand.cpp
+            include/render/platform/opengl/GLBuffer.hpp
+            include/render/platform/opengl/GLShader.hpp
+            include/render/platform/opengl/GLVertexArray.hpp
+            include/render/platform/opengl/GLUniformBuffer.hpp
+            include/render/platform/opengl/GLTexture2D.hpp
+            include/render/platform/opengl/GLRendererAPI.hpp
 )
 # ----------------------------------------------------------------------------
 target_include_directories(Engine
                            PUBLIC ${CMAKE_SOURCE_DIR}/engine/include
                            PRIVATE ${CMAKE_SOURCE_DIR}/engine/src
 )
+# ----------------------------------------------------------------------------
+set(RENDER_API "OPENGL" CACHE STRING "Selects the rendering backend")
+if (RENDER_API STREQUAL "OPENGL")
+    target_compile_definitions(Engine PUBLIC RENDER_API_OPENGL)
+elseif (RENDER_API STREQUAL "VULKAN")
+    target_compile_definitions(Engine PUBLIC RENDER_API_VULKAN)
+else()
+    message(FATAL_ERROR "Unsupported Render API: ${RENDER_API}")
+endif()
 # ----------------------------------------------------------------------------
 find_package(OpenGL REQUIRED)
 target_link_libraries(Engine PUBLIC
@@ -123,7 +141,7 @@ if (ENABLE_IMGUI)
     target_link_libraries(Engine PUBLIC imgui)
 endif ()
 # ----------------------------------------------------------------------------
-add_compile_definitions(GLFW_INCLUDE_NONE)
+target_compile_definitions(Engine PRIVATE GLFW_INCLUDE_NONE)
 # ----------------------------------------------------------------------------
 target_precompile_headers(Engine PRIVATE src/core/core_pch.hpp)
 # ----------------------------------------------------------------------------

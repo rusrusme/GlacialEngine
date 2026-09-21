@@ -8,20 +8,20 @@
 #include <cstdint>
 
 namespace engine {
-    enum class FramebufferType {
+    enum class GLFramebufferType {
         Default = 0,
         ShadowMap,
         // Todo: WIP PointShadow
         PointShadowMap
     };
 
-    class Framebuffer {
+    class GLFramebuffer {
     public:
-        Framebuffer(const uint32_t width, const uint32_t height, const FramebufferType type = FramebufferType::Default)
+        GLFramebuffer(const uint32_t width, const uint32_t height, const GLFramebufferType type = GLFramebufferType::Default)
             : type_(type) {
             resize(width, height);
         }
-        ~Framebuffer() { invalidate(); }
+        ~GLFramebuffer() { invalidate(); }
 
         void bind() const;
         void unbind() const;
@@ -32,7 +32,7 @@ namespace engine {
         [[nodiscard]] uint32_t get_width() const { return width_; }
         [[nodiscard]] uint32_t get_height() const { return height_; }
         [[nodiscard]] uint32_t get_depth_attachment_id() const;
-        [[nodiscard]] FramebufferType get_type() const { return type_; }
+        [[nodiscard]] GLFramebufferType get_type() const { return type_; }
 
     private:
         void invalidate() const;
@@ -42,6 +42,6 @@ namespace engine {
         uint32_t depth_attachment_id_ = 0;
         uint32_t width_ = 1280, height_ = 720;
 
-        FramebufferType type_ = FramebufferType::Default;
+        GLFramebufferType type_ = GLFramebufferType::Default;
     };
 }

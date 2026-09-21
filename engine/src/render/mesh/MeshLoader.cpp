@@ -176,7 +176,7 @@ namespace engine {
         }
 
         auto vao = std::make_shared<VertexArray>();
-        const auto vbo = std::make_shared<VertexBuffer>(vertices.data(), vertices.size() * sizeof(Vertex));
+        const auto vbo = std::make_shared<GLVertexBuffer>(vertices.data(), vertices.size() * sizeof(Vertex));
         const BufferLayout layout = {
             {ShaderDataType::Float3, "a_position"},
             {ShaderDataType::Float3, "a_normal"},
@@ -185,7 +185,7 @@ namespace engine {
         };
         vao->add_vertex_buffer(vbo, layout);
 
-        const auto ebo = std::make_shared<IndexBuffer>(indices.data(), static_cast<uint32_t>(indices.size()));
+        const auto ebo = std::make_shared<GLIndexBuffer>(indices.data(), static_cast<uint32_t>(indices.size()));
         vao->set_index_buffer(ebo);
 
         Mesh mesh{};

@@ -31,7 +31,7 @@ namespace engine {
         vertex_array = std::make_shared<VertexArray>();
 
         // 2. VertexBuffer mit Daten befüllen
-        auto vertex_buffer = std::make_shared<VertexBuffer>(
+        auto vertex_buffer = std::make_shared<GLVertexBuffer>(
             vertices.data(),
             vertices.size() * sizeof(Vertex)
         );
@@ -47,7 +47,7 @@ namespace engine {
         vertex_array->add_vertex_buffer(vertex_buffer, layout);
 
         // 4. IndexBuffer zuweisen
-        auto index_buffer = std::make_shared<IndexBuffer>(
+        auto index_buffer = std::make_shared<GLIndexBuffer>(
             indices.data(),
             static_cast<uint32_t>(indices.size())
         );

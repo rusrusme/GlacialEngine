@@ -3,26 +3,26 @@
 // All rights reserved.
 //
 
-#include "render/Buffer.hpp"
+#include "render/platform/opengl/GLBuffer.hpp"
 
 namespace engine {
-    // --- VertexBuffer ---
-    VertexBuffer::VertexBuffer(const void* data, const size_t size, const bool dynamic) {
+    // --- OpenGL VertexBuffer ---
+    GLVertexBuffer::GLVertexBuffer(const void* data, const size_t size, const bool dynamic) {
         glGenBuffers(1, &id_);
         glBindBuffer(GL_ARRAY_BUFFER, id_);
         glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(size), data, dynamic ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
     }
 
-    VertexBuffer::~VertexBuffer() {
+    GLVertexBuffer::~GLVertexBuffer() {
         if (id_ != 0) {
             glDeleteBuffers(1, &id_);
         }
     }
 
-    VertexBuffer::VertexBuffer(VertexBuffer&& other) noexcept
+    GLVertexBuffer::GLVertexBuffer(GLVertexBuffer&& other) noexcept
         : id_(std::exchange(other.id_, 0)) {}
 
-    VertexBuffer& VertexBuffer::operator=(VertexBuffer&& other) noexcept {
+    GLVertexBuffer& GLVertexBuffer::operator=(GLVertexBuffer&& other) noexcept {
         if (this != &other) {
             if (id_ != 0)
                 glDeleteBuffers(1, &id_);
@@ -31,37 +31,37 @@ namespace engine {
         return *this;
     }
 
-    void VertexBuffer::bind() const {
+    void GLVertexBuffer::bind() const {
         glBindBuffer(GL_ARRAY_BUFFER, id_);
     }
 
-    void VertexBuffer::unbind() const {
+    void GLVertexBuffer::unbind() const {
         glBindBuffer(GL_ARRAY_BUFFER, 0);
     }
 
-    void VertexBuffer::set_data(const void* data, const size_t size) {
+    void GLVertexBuffer::set_data(const void* data, const size_t size) {
         glBindBuffer(GL_ARRAY_BUFFER, id_);
         glBufferSubData(GL_ARRAY_BUFFER, 0, static_cast<GLsizeiptr>(size), data);
     }
 
-    // --- IndexBuffer ---
-    IndexBuffer::IndexBuffer(const uint32_t* indices, const uint32_t count)
+    // --- OpenGL IndexBuffer ---
+    GLIndexBuffer::GLIndexBuffer(const uint32_t* indices, const uint32_t count)
         : count_(count) {
         glGenBuffers(1, &id_);
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, id_);
         glBufferData(GL_ELEMENT_ARRAY_BUFFER, static_cast<GLsizeiptr>(count * sizeof(uint32_t)), indices, GL_STATIC_DRAW);
     }
 
-    IndexBuffer::~IndexBuffer() {
+    GLIndexBuffer::~GLIndexBuffer() {
         if (id_ != 0) {
             glDeleteBuffers(1, &id_);
         }
     }
 
-    IndexBuffer::IndexBuffer(IndexBuffer&& other) noexcept
+    GLIndexBuffer::GLIndexBuffer(GLIndexBuffer&& other) noexcept
         : id_(std::exchange(other.id_, 0)), count_(std::exchange(other.count_, 0)) {}
 
-    IndexBuffer& IndexBuffer::operator=(IndexBuffer&& other) noexcept {
+    GLIndexBuffer& GLIndexBuffer::operator=(GLIndexBuffer&& other) noexcept {
         if (this != &other) {
             if (id_ != 0)
                 glDeleteBuffers(1, &id_);
@@ -71,11 +71,11 @@ namespace engine {
         return *this;
     }
 
-    void IndexBuffer::bind() const {
+    void GLIndexBuffer::bind() const {
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, id_);
     }
 
-    void IndexBuffer::unbind() const {
+    void GLIndexBuffer::unbind() const {
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     }
 }

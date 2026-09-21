@@ -15,7 +15,6 @@ namespace engine {
     class Camera;
     class CollisionSystem;
     class Entity;
-    class Framebuffer;
 
     class Scene {
     public:

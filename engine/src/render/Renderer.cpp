@@ -7,7 +7,7 @@
 
 #include "asset/AssetManager.hpp"
 #include "core/Config.hpp"
-#include "core/Framebuffer.hpp"
+#include "render/Buffer.hpp"
 #include "render/Camera.hpp"
 #include "render/Texture2D.hpp"
 #include "render/VertexArray.hpp"
@@ -324,7 +324,7 @@ namespace engine {
         };
         vao->add_vertex_buffer(vbo, layout);
 
-        const auto ebo = std::make_shared<IndexBuffer>(indices.data(), static_cast<uint32_t>(indices.size()));
+        const auto ebo = std::make_shared<GLIndexBuffer>(indices.data(), static_cast<uint32_t>(indices.size()));
         vao->set_index_buffer(ebo);
 
         Mesh mesh{};

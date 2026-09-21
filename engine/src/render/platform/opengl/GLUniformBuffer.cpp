@@ -3,26 +3,26 @@
 // All rights reserved.
 //
 
-#include "render/UniformBuffer.hpp"
+#include "render/platform/opengl/GLUniformBuffer.hpp"
 
 namespace engine {
-    UniformBuffer::UniformBuffer(const uint32_t size, const uint32_t binding) {
+    GLUniformBuffer::GLUniformBuffer(const uint32_t size, const uint32_t binding) {
         glGenBuffers(1, &id_);
         glBindBuffer(GL_UNIFORM_BUFFER, id_);
         glBufferData(GL_UNIFORM_BUFFER, size, nullptr, GL_DYNAMIC_DRAW);
         glBindBufferBase(GL_UNIFORM_BUFFER, binding, id_);
     }
 
-    UniformBuffer::~UniformBuffer() {
+    GLUniformBuffer::~GLUniformBuffer() {
         if (id_ != 0) {
             glDeleteBuffers(1, &id_);
         }
     }
 
-    UniformBuffer::UniformBuffer(UniformBuffer&& other) noexcept
+    GLUniformBuffer::GLUniformBuffer(GLUniformBuffer&& other) noexcept
         : id_(std::exchange(other.id_, 0)) {}
 
-    UniformBuffer& UniformBuffer::operator=(UniformBuffer&& other) noexcept {
+    GLUniformBuffer& GLUniformBuffer::operator=(GLUniformBuffer&& other) noexcept {
         if (this != &other) {
             if (id_ != 0)
                 glDeleteBuffers(1, &id_);
@@ -31,7 +31,7 @@ namespace engine {
         return *this;
     }
 
-    void UniformBuffer::set_data(const void* data, const uint32_t size, const uint32_t offset) {
+    void GLUniformBuffer::set_data(const void* data, const uint32_t size, const uint32_t offset) {
         glBindBuffer(GL_UNIFORM_BUFFER, id_);
         glBufferSubData(GL_UNIFORM_BUFFER, offset, size, data);
     }

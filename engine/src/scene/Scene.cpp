@@ -6,7 +6,6 @@
 #include "scene/Scene.hpp"
 
 #include "asset/AssetManager.hpp"
-#include "core/Framebuffer.hpp"
 #include "core/Log.hpp"
 #include "core/UUID.hpp"
 #include "physics/CollisionSystem.hpp"

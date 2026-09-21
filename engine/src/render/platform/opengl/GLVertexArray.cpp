@@ -3,7 +3,8 @@
 // All rights reserved.
 //
 
-#include "render/VertexArray.hpp"
+#include "render/platform/opengl/GLVertexArray.hpp"
+#include "render/Buffer.hpp"
 
 namespace engine {
     static GLenum shader_data_type_to_opengl_base_type(ShaderDataType type) {
@@ -23,23 +24,23 @@ namespace engine {
         }
     }
 
-    VertexArray::VertexArray() {
+    GLVertexArray::GLVertexArray() {
         glGenVertexArrays(1, &id_);
     }
 
-    VertexArray::~VertexArray() {
+    GLVertexArray::~GLVertexArray() {
         if (id_ != 0) {
             glDeleteVertexArrays(1, &id_);
         }
     }
 
-    VertexArray::VertexArray(VertexArray&& other) noexcept
+    GLVertexArray::GLVertexArray(GLVertexArray&& other) noexcept
         : id_(std::exchange(other.id_, 0)),
           attribute_index_(std::exchange(other.attribute_index_, 0)),
           vertex_buffers_(std::move(other.vertex_buffers_)),
           index_buffer_(std::move(other.index_buffer_)) {}
 
-    VertexArray& VertexArray::operator=(VertexArray&& other) noexcept {
+    GLVertexArray& GLVertexArray::operator=(GLVertexArray&& other) noexcept {
         if (this != &other) {
             if (id_ != 0)
                 glDeleteVertexArrays(1, &id_);
@@ -51,15 +52,15 @@ namespace engine {
         return *this;
     }
 
-    void VertexArray::bind() const {
+    void GLVertexArray::bind() const {
         glBindVertexArray(id_);
     }
 
-    void VertexArray::unbind() const {
+    void GLVertexArray::unbind() const {
         glBindVertexArray(0);
     }
 
-    void VertexArray::add_vertex_buffer(std::shared_ptr<VertexBuffer> vertex_buffer, const BufferLayout& layout) {
+    void GLVertexArray::add_vertex_buffer(std::shared_ptr<GLVertexBuffer> vertex_buffer, const BufferLayout& layout) {
         glBindVertexArray(id_);
         vertex_buffer->bind();
 
@@ -79,13 +80,13 @@ namespace engine {
         vertex_buffers_.push_back(std::move(vertex_buffer));
     }
 
-    void VertexArray::set_index_buffer(std::shared_ptr<IndexBuffer> index_buffer) {
+    void GLVertexArray::set_index_buffer(std::shared_ptr<GLIndexBuffer> index_buffer) {
         glBindVertexArray(id_);
         index_buffer->bind();
         index_buffer_ = std::move(index_buffer);
     }
 
-    void VertexArray::add_instanced_buffer(const std::shared_ptr<VertexBuffer>& vertex_buffer, const BufferLayout& layout, uint32_t divisor) {
+    void GLVertexArray::add_instanced_buffer(const std::shared_ptr<GLVertexBuffer>& vertex_buffer, const BufferLayout& layout, uint32_t divisor) {
         glBindVertexArray(id_);
         vertex_buffer->bind();
 

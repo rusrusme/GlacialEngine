@@ -11,6 +11,8 @@
 #include <glm/glm.hpp>
 
 #include "core/UUID.hpp"
+#include "render/Buffer.hpp"
+#include "render/Framebuffer.hpp"
 #include "render/PostProcessor.hpp"
 #include "render/Shader.hpp"
 #include "render/ShaderLibrary.hpp"
@@ -19,9 +21,7 @@
 #include "render/mesh/Mesh.hpp"
 
 namespace engine {
-    class Framebuffer;
     class AssetManager;
-    class VertexBuffer;
     struct InstanceData;
     class Camera;
 
