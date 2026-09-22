@@ -2,10 +2,10 @@ Future features:
 
 - Frustum culling
     - Object
-    - Camera DONE
+    - Camera **DONE**
     - Light-space
-- Shadow mapping DONE
-- Post-processing pipeline
+- Shadow mapping **DONE**
+- Post-processing pipeline **PENDING**
 - Asset manager
     - Drag and drop textures on objects
 - More precise scene picking
@@ -14,7 +14,7 @@ Future features:
 - Environment lighting
 - Audio-subsystem
     - Wrap miniaudio to handle audio
-- Low-level RHI abstraction
+- Low-level RHI abstraction **PENDING**
 - Undo / Redo command buffer
-- File I/O
-    - Proper menus
+- File I/O **DONE**
+    - Proper menus **DONE**
