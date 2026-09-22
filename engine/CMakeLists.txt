@@ -115,10 +115,18 @@ target_include_directories(Engine
 )
 # ----------------------------------------------------------------------------
 set(RENDER_API "OPENGL" CACHE STRING "Selects the rendering backend")
+# ----------------------------------------------------------------------------
+set_property(CACHE RENDER_API PROPERTY STRINGS "OPENGL" "VULKAN" "DX12")
 if (RENDER_API STREQUAL "OPENGL")
     target_compile_definitions(Engine PUBLIC RENDER_API_OPENGL)
 elseif (RENDER_API STREQUAL "VULKAN")
     target_compile_definitions(Engine PUBLIC RENDER_API_VULKAN)
+elseif (RENDER_API STREQUAL "DX12")
+    if (NOT WIN32)
+        message(FATAL_ERROR "DirectX 12 is only supported on Windows platforms")
+    endif()
+    target_compile_definitions(Engine PUBLIC RENDER_API_DX12)
+    target_link_libraries(Engine PUBLIC d3d12.lib dxgi.lib dxguid.lib)
 else()
     message(FATAL_ERROR "Unsupported Render API: ${RENDER_API}")
 endif()

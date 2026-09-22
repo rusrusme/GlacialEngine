@@ -22,6 +22,12 @@ namespace engine {
 namespace engine {
     using RendererAPI = VulkanRendererAPI;
 }
+#elif defined(RENDER_API_DX12)
+#include "render/platform/dx12/DX12RendererAPI.hpp"
+
+namespace engine {
+    using RendererAPI = DX12RendererAPI;
+}
 #else
 #error "No Render API defined"
 #endif

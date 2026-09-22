@@ -9,7 +9,8 @@ namespace engine {
     enum class RenderAPI {
         None = 0,
         OpenGL,
-        Vulkan
+        Vulkan,
+        DX12
     };
 
     class RendererAPI {
@@ -19,6 +20,8 @@ namespace engine {
             return RenderAPI::OpenGL;
             #elif defined(RENDER_API_VULKAN)
             return RenderAPI::Vulkan;
+            #elif defined(RENDER_API_DX12)
+            return RenderAPI::DX12;
             #else
             return RenderAPI::None;
             #endif
