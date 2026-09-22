@@ -5,7 +5,10 @@
 
 #include "EditorLayer.hpp"
 
+#include <random>
+
 #include "Config.hpp"
+#include "audio/AudioLayer.hpp"
 
 namespace editor {
     EditorLayer::EditorLayer(std::shared_ptr<engine::Scene> scene, std::shared_ptr<engine::AssetManager> asset_manager)
@@ -110,10 +113,22 @@ namespace editor {
     void EditorLayer::on_event(engine::Event& event) {
         engine::EventDispatcher dispatcher(event);
 
-        // dispatcher.dispatch<engine::KeyPressedEvent>([](const engine::KeyPressedEvent& e) {
-        //     CLIENT_TRACE("Pressed Key: {0}", e.key_code());
-        //     return false;
-        // });
+        dispatcher.dispatch<engine::KeyPressedEvent>([this](const engine::KeyPressedEvent& e) {
+            // ==============================
+            // Mechanical Keyboard Simulator
+            // ==============================
+            // if (e.is_repeat()) return false;
+            // CLIENT_TRACE("Pressed Key: {0}", e.key_code());
+            //
+            // static std::random_device rd;
+            // static std::mt19937 gen(rd());
+            // static std::uniform_real_distribution pitch_dist(0.99f, 1.01f);
+            //
+            // const float random_pitch = pitch_dist(gen);
+            //
+            // audio_layer_->play_sound("assets/audio/click.wav", 1.0f, random_pitch);
+            return false;
+        });
 
         // dispatcher.dispatch<engine::MouseButtonPressedEvent>([](const engine::MouseButtonPressedEvent& e) {
         //     CLIENT_TRACE("Clicked Button: {0}", e.button());

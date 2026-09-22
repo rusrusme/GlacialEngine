@@ -15,6 +15,10 @@
 #include "render/Renderer.hpp"
 #include "scene/Scene.hpp"
 
+namespace engine {
+    class AudioLayer;
+}
+
 namespace editor {
     class EditorLayer : public engine::Layer {
     public:
@@ -34,6 +38,8 @@ namespace editor {
 
         void on_event(engine::Event& event) override;
 
+        void set_audio(engine::AudioLayer* audio_layer) { audio_layer_ = audio_layer; }
+
         [[nodiscard]] const engine::Camera& get_camera() const { return camera_; }
 
         void set_viewport_hovered(const bool hovered) { is_viewport_hovered_ = hovered; }
@@ -43,6 +49,8 @@ namespace editor {
         std::shared_ptr<engine::Scene> active_scene_;
         std::shared_ptr<engine::AssetManager> asset_manager_;
         std::unique_ptr<DebugPanel> debug_panel_;
+
+        engine::AudioLayer* audio_layer_ = nullptr;
 
         engine::Camera camera_;
         engine::CameraController camera_controller_;

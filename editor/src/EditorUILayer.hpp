@@ -15,6 +15,10 @@
 #include "render/Renderer.hpp"
 
 #ifdef ENABLE_IMGUI
+namespace engine {
+    class AudioLayer;
+}
+
 struct ImVec2;
 #endif
 
@@ -39,6 +43,7 @@ namespace editor {
 
         void set_camera(const engine::Camera* camera) { camera_ = camera; }
         void set_editor(EditorLayer* editor_layer) { editor_layer_ = editor_layer; }
+        void set_audio(engine::AudioLayer* audio_layer) { audio_layer_ = audio_layer; }
 
     private:
         #ifdef ENABLE_IMGUI
@@ -58,6 +63,7 @@ namespace editor {
 
         std::shared_ptr<engine::Scene> active_scene_ = nullptr;
         std::shared_ptr<engine::AssetManager> asset_manager_ = nullptr;
+        engine::AudioLayer* audio_layer_ = nullptr;
 
         const engine::Camera* camera_ = nullptr;
         EditorLayer* editor_layer_ = nullptr;
