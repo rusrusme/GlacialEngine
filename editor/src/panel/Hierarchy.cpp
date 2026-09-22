@@ -198,8 +198,7 @@ namespace editor {
                 entity_to_destroy = selected_entity_;
             }
             if (engine::Input::is_key_pressed(engine::Key::LEFT_CONTROL) && engine::Input::is_key_pressed_once(engine::Key::D)) {
-            entity_to_duplicate = selected_entity_;
-
+                entity_to_duplicate = selected_entity_;
             }
         }
 

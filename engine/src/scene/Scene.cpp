@@ -47,6 +47,9 @@ namespace engine {
                 continue;
             }
             if (storage.contains(source_handle)) {
+                if (storage.contains(destination_handle)) {
+                    storage.erase(destination_handle);
+                }
                 storage.push(destination_handle, storage.value(source_handle));
             }
         }
