@@ -5,10 +5,37 @@
 
 #include "panel/ObjectInspector.hpp"
 
+#ifdef _WIN32
+#define NOMINMAX
+#include <windows.h>
+
+namespace {
+    std::string open_audio_file_dialog() {
+        OPENFILENAMEA ofn;
+        char sz_file[260] = {0};
+
+        ZeroMemory(&ofn, sizeof(ofn));
+        ofn.lStructSize = sizeof(ofn);
+        ofn.hwndOwner = NULL;
+        ofn.lpstrFile = sz_file;
+        ofn.nMaxFile = sizeof(sz_file);
+        ofn.lpstrFilter = "Audio Files (*.wav;*.mp3;*.ogg;*.flac)\0*.wav;*.mp3;*.ogg;*.flac\0All Files (*.*)\0*.*\0";
+        ofn.nFilterIndex = 1;
+        ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
+
+        if (GetOpenFileNameA(&ofn) == TRUE) {
+            return std::string(ofn.lpstrFile);
+        }
+        return "";
+    }
+}
+#endif
+
 namespace editor {
-    void ObjectInspector::init(std::shared_ptr<engine::Scene> scene, std::shared_ptr<engine::AssetManager> asset_manager) {
+    void ObjectInspector::init(std::shared_ptr<engine::Scene> scene, std::shared_ptr<engine::AssetManager> asset_manager, engine::AudioLayer* audio_layer) {
         scene_ = std::move(scene);
         asset_manager_ = std::move(asset_manager);
+        audio_layer_ = audio_layer;
     }
 
     #ifdef ENABLE_IMGUI
@@ -191,6 +218,111 @@ namespace editor {
             }
         }
 
+        // --------------------
+        // Audio Source
+        // --------------------
+        if (entity.has_component<engine::AudioSourceComponent>()) {
+            if (ImGui::CollapsingHeader("Audio Source", ImGuiTreeNodeFlags_DefaultOpen)) {
+                auto& audio = entity.get_component<engine::AudioSourceComponent>();
+
+                // --- Asset Selection via AssetManager ---
+                const auto& current_meta = asset_manager_->get_metadata(audio.sound_handle);
+                std::string audio_label = current_meta.is_valid()
+                                              ? current_meta.filepath.filename().string()
+                                              : "None / Select Audio Asset";
+
+                if (ImGui::BeginCombo("Audio Asset", audio_label.c_str())) {
+                    if (ImGui::Selectable("None", audio.sound_handle == 0)) {
+                        audio.sound_handle = {0};
+                        audio.filepath = "";
+                    }
+
+                    for (const auto& [handle, meta] : asset_manager_->get_registry()) {
+                        if (meta.type != engine::AssetType::AUDIO) continue;
+
+                        const bool is_selected = (audio.sound_handle == handle);
+                        std::string item_name = meta.filepath.filename().string();
+
+                        if (ImGui::Selectable(item_name.c_str(), is_selected)) {
+                            audio.sound_handle = handle;
+                            audio.filepath = meta.filepath.string();
+                        }
+                        if (is_selected) ImGui::SetItemDefaultFocus();
+                    }
+                    ImGui::EndCombo();
+                }
+
+                // Drag & Drop target from Asset Browser
+                if (ImGui::BeginDragDropTarget()) {
+                    if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET_BROWSER_ITEM")) {
+                        engine::AssetHandle dropped_handle = *static_cast<const engine::AssetHandle*>(payload->Data);
+                        const auto& meta = asset_manager_->get_metadata(dropped_handle);
+
+                        if (meta.is_valid() && meta.type == engine::AssetType::AUDIO) {
+                            audio.sound_handle = dropped_handle;
+                            audio.filepath = meta.filepath.string();
+                        }
+                    }
+                    ImGui::EndDragDropTarget();
+                }
+
+                // Direct filepath override / manual entry with browse button
+                char path_buffer[256]{};
+                std::strncpy(path_buffer, audio.filepath.c_str(), sizeof(path_buffer) - 1);
+
+                ImGui::SetNextItemWidth(ImGui::GetContentRegionAvail().x - 35.0f);
+                if (ImGui::InputText("##FilePath", path_buffer, sizeof(path_buffer))) {
+                    audio.filepath = std::string(path_buffer);
+                }
+
+                ImGui::SameLine();
+                if (ImGui::Button("...##BrowseAudio")) {
+                    #ifdef _WIN32
+                    std::string selected_file = open_audio_file_dialog();
+                    if (!selected_file.empty()) {
+                        std::filesystem::path full_path(selected_file);
+                        std::filesystem::path current_path = std::filesystem::current_path();
+                        try {
+                            audio.filepath = std::filesystem::relative(full_path, current_path).string();
+                        }
+                        catch (...) {
+                            audio.filepath = selected_file;
+                        }
+                        audio.sound_handle = asset_manager_->get_handle_from_path(audio.filepath);
+                    }
+                    #endif
+                }
+                ImGui::SameLine();
+                ImGui::Text("File Path");
+
+                ImGui::Separator();
+
+                // --- Trigger Conditions ---
+                const char* trigger_types[] = {"Play On Awake", "On Physics Collision", "On Trigger Volume Enter", "Manual (Scripting)"};
+                int current_trigger = static_cast<int>(audio.trigger_condition);
+                if (ImGui::Combo("Play Condition", &current_trigger, trigger_types, IM_ARRAYSIZE(trigger_types))) {
+                    audio.trigger_condition = static_cast<engine::AudioTriggerCondition>(current_trigger);
+                }
+
+                // --- Playback Settings ---
+                ImGui::SliderFloat("Volume", &audio.volume, 0.0f, 1.0f);
+                ImGui::SliderFloat("Pitch", &audio.pitch, 0.1f, 2.0f);
+                ImGui::Checkbox("Looping", &audio.loop);
+                ImGui::Checkbox("Spatial (3D Audio)", &audio.is_spatial);
+
+                ImGui::Separator();
+
+                // --- Editor Audio Preview Buttons ---
+                if (ImGui::Button("Play Preview")) {
+                    audio_layer_->play_source(audio);
+                }
+                ImGui::SameLine();
+                if (ImGui::Button("Stop Preview")) {
+                    audio_layer_->stop_source(audio);
+                }
+            }
+        }
+
         ImGui::Separator();
         ImGui::Spacing();
 
@@ -202,7 +334,7 @@ namespace editor {
         }
         if (ImGui::BeginPopup("AddComponentPopup")) {
             if (!entity.has_component<engine::MaterialComponent>()) {
-                if (ImGui::MenuItem("Material Component")) {
+                if (ImGui::MenuItem("Material")) {
                     entity.add_component<engine::MaterialComponent>(glm::vec4{1.0f, 1.0f, 1.0f, 1.0f});
                     ImGui::CloseCurrentPopup();
                 }
@@ -218,6 +350,12 @@ namespace editor {
                             collider.center = (mesh->local_bounds.min + mesh->local_bounds.max) * 0.5f;
                         }
                     }
+                    ImGui::CloseCurrentPopup();
+                }
+            }
+            if (!entity.has_component<engine::AudioSourceComponent>()) {
+                if (ImGui::MenuItem("Audio Source")) {
+                    entity.add_component<engine::AudioSourceComponent>();
                     ImGui::CloseCurrentPopup();
                 }
             }

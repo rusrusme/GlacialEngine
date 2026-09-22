@@ -70,7 +70,7 @@ namespace editor {
     EditorUILayer::EditorUILayer(std::shared_ptr<engine::Scene>& scene, std::shared_ptr<engine::AssetManager> asset_manager) : active_scene_(std::move(scene)), asset_manager_(std::move(asset_manager)) {}
 
     void EditorUILayer::on_attach(engine::Renderer& renderer) {
-        object_inspector_.init(active_scene_, asset_manager_);
+        object_inspector_.init(active_scene_, asset_manager_, audio_layer_);
         hierarchy_.init(active_scene_, asset_manager_);
         asset_browser_.init(asset_manager_);
 
@@ -88,7 +88,7 @@ namespace editor {
     }
 
     void EditorUILayer::on_detach() {
-        object_inspector_.init(nullptr, nullptr);
+        object_inspector_.init(nullptr, nullptr, nullptr);
         hierarchy_.init(nullptr, nullptr);
     }
 

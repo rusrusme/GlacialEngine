@@ -12,8 +12,8 @@ Future features:
 - Simulation state management
     - Edit, Play, Pause
 - Environment lighting
-- Audio-subsystem
-    - Wrap miniaudio to handle audio
+- Audio-subsystem DONE
+    - Wrap miniaudio to handle audio DONE
 - Low-level RHI abstraction **PENDING**
 - Undo / Redo command buffer
 - File I/O **DONE**

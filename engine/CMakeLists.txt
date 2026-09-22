@@ -107,6 +107,8 @@ add_library(Engine STATIC
             include/render/platform/opengl/GLTexture2D.hpp
             include/render/platform/opengl/GLRendererAPI.hpp
             include/render/RenderCommand.hpp
+            include/audio/AudioLayer.hpp
+            src/audio/AudioLayer.cpp
 )
 # ----------------------------------------------------------------------------
 target_include_directories(Engine

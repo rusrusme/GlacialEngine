@@ -175,4 +175,44 @@ namespace engine {
         bool is_screen_space = true;
         bool is_visible = true;
     };
+
+    // ----------------------------
+    // Audio
+    // ----------------------------
+    enum class AudioTriggerCondition : uint8_t {
+        PlayOnAwake,
+        OnCollisionEnter,
+        OnTriggerEnter,
+        Manual
+    };
+
+    struct AudioSourceComponent {
+        AssetHandle sound_handle{0};
+        std::string filepath{};
+
+        float volume = 1.0f;
+        float pitch = 1.0f;
+        bool loop = false;
+        bool is_spatial = true; // true = 3D Spatial Audio, false = 2D
+
+        float min_distance = 1.0f;
+        float max_distance = 100.0f;
+
+        AudioTriggerCondition trigger_condition = AudioTriggerCondition::PlayOnAwake;
+
+        // Runtime state
+        bool is_playing = false;
+
+        // Runtime handle managed by AudioLayer
+        void* runtime_sound_ptr = nullptr;
+
+        AudioSourceComponent() = default;
+        explicit AudioSourceComponent(const AssetHandle handle) : sound_handle(handle) {}
+    };
+
+    struct AudioListenerComponent {
+        bool is_primary = true;
+
+        AudioListenerComponent() = default;
+    };
 }

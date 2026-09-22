@@ -62,6 +62,9 @@ namespace engine {
         if (ext == ".mat") {
             return AssetType::MATERIAL;
         }
+        if (ext == ".wav" || ext == ".mp3" || ext == ".ogg" || ext == ".flac") {
+            return AssetType::AUDIO;
+        }
         return AssetType::NONE;
     }
 }
