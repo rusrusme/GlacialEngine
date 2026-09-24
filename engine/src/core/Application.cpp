@@ -17,9 +17,11 @@ namespace engine {
     }
 
     int Application::run() {
+        Log::init();
+        CORE_INFO("Starting application");
         setting::configuration::load();
         if (!glfwInit()) {
-            std::cerr << "Engine error: application: failed to initialize GLFW" << std::endl;
+            CORE_CRITICAL("Application initialization failed: Could not initialize GLFW.");
             return 1;
         }
 
@@ -27,12 +29,18 @@ namespace engine {
         glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
         glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
+        CORE_INFO("Creating window: '{0}' ({1}x{2})",
+                  setting::FRAME_TITLE,
+                  setting::video::MONITOR_RESOLUTION_WIDTH,
+                  setting::video::MONITOR_RESOLUTION_HEIGHT);
+
         GLFWwindow* raw_window = glfwCreateWindow(
             setting::video::MONITOR_RESOLUTION_WIDTH,
             setting::video::MONITOR_RESOLUTION_HEIGHT,
             setting::FRAME_TITLE, nullptr, nullptr);
+
         if (!raw_window) {
-            std::cerr << "Engine error: application: failed to create window_" << std::endl;
+            CORE_CRITICAL("Application initialization failed: Could not create GLFW window");
             glfwTerminate();
             return 1;
         }
@@ -44,20 +52,21 @@ namespace engine {
         // ----------------------------------
         // Initialize core systems
         // ----------------------------------
-        Log::init();
-
         Frame::init(window_->native());
 
         if (!renderer_.on_init(window_->native())) {
-            std::cerr << "Engine error: application: failed to initialize renderer" << std::endl;
+            CORE_CRITICAL("Application initialization failed: Could not initialize renderer");
             glfwDestroyWindow(window_->native());
             glfwTerminate();
             return 1;
         }
+        CORE_INFO("Renderer successfully initialized");
 
+        CORE_INFO("Attaching application layers");
         for (const auto& layer : layers_) {
             layer->on_attach(renderer_);
         }
+        CORE_INFO("Application startup complete");
 
         // ----------------------------------
         // Run core loop
@@ -88,6 +97,7 @@ namespace engine {
             Frame::end_frame();
         }
         // In reverse
+        CORE_INFO("Detaching application layers");
         for (auto it = layers_.rbegin(); it != layers_.rend(); ++it) {
             (*it)->on_detach();
         }
@@ -99,11 +109,13 @@ namespace engine {
     void Application::on_event(Event& event) {
         EventDispatcher dispatcher(event);
         dispatcher.dispatch<WindowClosedEvent>([this](const WindowClosedEvent& _) {
+            CORE_INFO("Window close request received");
             close();
             return true;
         });
 
         dispatcher.dispatch<WindowResizedEvent>([this](const WindowResizedEvent& e) {
+            CORE_TRACE("Window resized to {0}x{1}", e.width(), e.height());
             renderer_.on_resize(e.width(), e.height());
             return false; // Forward to layer
         });
@@ -126,6 +138,8 @@ namespace engine {
     }
 
     void Application::shutdown() {
+        CORE_INFO("Shutting down engine application");
+
         setting::configuration::save();
 
         Frame::shutdown();
@@ -134,6 +148,7 @@ namespace engine {
             glfwDestroyWindow(window_->native());
         }
         glfwTerminate();
+        CORE_INFO("Engine shutdown complete");
     }
 
     Application* Application::instance_ = nullptr;

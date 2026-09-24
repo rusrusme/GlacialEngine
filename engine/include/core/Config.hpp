@@ -11,6 +11,8 @@
 #include <iterator>
 #include <string>
 
+#include "core/Log.hpp"
+
 namespace engine::setting {
     constexpr auto FRAME_TITLE = "Engine";
 
@@ -74,6 +76,7 @@ namespace engine::setting {
                     }
                 }
             }
+            CORE_TRACE("Configuration settings loaded");
         }
 
         inline void save() {
@@ -84,6 +87,8 @@ namespace engine::setting {
             }
             file << "target_fps_index " << video::target_fps_index << "\n";
             file << "is_vsync " << (video::IS_VSYNC ? 1 : 0) << "\n";
+
+            CORE_TRACE("Configuration saved");
         }
     }
 
