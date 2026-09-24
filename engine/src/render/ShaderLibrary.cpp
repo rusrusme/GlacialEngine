@@ -5,10 +5,12 @@
 
 #include "render/ShaderLibrary.hpp"
 
+#include "core/Log.hpp"
+
 namespace engine {
     void ShaderLibrary::add(const std::string& name, const std::shared_ptr<Shader>& shader) {
         if (exists(name)) {
-            std::cerr << "Engine warning: shader '" << name << "' is already registered" << std::endl;
+            CORE_WARN("Shader '{0}' is already registered", name);
             return;
         }
         shaders_[name] = shader;
@@ -21,7 +23,7 @@ namespace engine {
 
         auto shader = Shader::from_file(vertex_path, fragment_path, geometry_path);
         if (!shader) {
-            std::cerr << "Engine error: failed to load shader '" << name << "' from files" << std::endl;
+            CORE_ERROR("Failed to load shader '{0}' from files", name);
             return nullptr;
         }
 
@@ -34,7 +36,7 @@ namespace engine {
     std::shared_ptr<Shader> ShaderLibrary::get(const std::string& name) const {
         auto it = shaders_.find(name);
         if (it == shaders_.end()) {
-            std::cerr << "Engine error: shader '" << name << "' not found in library" << std::endl;
+            CORE_ERROR("Shader '{0}' not found in library", name);
             return nullptr;
         }
         return it->second;

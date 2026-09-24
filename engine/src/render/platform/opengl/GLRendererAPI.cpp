@@ -5,6 +5,7 @@
 
 #include "render/platform/opengl/GLRendererAPI.hpp"
 
+#include "core/Log.hpp"
 #include "render/mesh/InstanceData.hpp"
 #include "render/platform/opengl/GLBuffer.hpp"
 #include "render/platform/opengl/GLVertexArray.hpp"
@@ -12,7 +13,7 @@
 namespace engine {
     void GLRendererAPI::init() {
         if (!gladLoadGLLoader(reinterpret_cast<GLADloadproc>(glfwGetProcAddress))) {
-            std::cerr << "Engine error: GLRendererAPI: failed to initialize GLAD" << std::endl;
+            CORE_CRITICAL("GLRendererAPI: Failed to initialize GLAD");
             return;
         }
 

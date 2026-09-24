@@ -5,6 +5,7 @@
 
 #include "render/platform/opengl/GLShader.hpp"
 
+#include "core/Log.hpp"
 #include "util/FileIO.hpp"
 
 namespace engine {
@@ -18,13 +19,24 @@ namespace engine {
             gs = compile_shader(GL_GEOMETRY_SHADER, geometry_src);
         }
 
-        if (vs == 0 || fs == 0) return;
-        if (!geometry_src.empty() && gs == 0) return;
+        if (vs == 0 || fs == 0 || (!geometry_src.empty() && gs == 0)) {
+            if (vs != 0) {
+                glDeleteShader(vs);
+            }
+            if (fs != 0) {
+                glDeleteShader(fs);
+            }
+            if (gs != 0) {
+                glDeleteShader(gs);
+            }
+            return;
+        }
 
         id_ = glCreateProgram();
         glAttachShader(id_, vs);
-        if (gs != 0)
+        if (gs != 0) {
             glAttachShader(id_, gs);
+        }
         glAttachShader(id_, fs);
         glLinkProgram(id_);
 
@@ -33,18 +45,32 @@ namespace engine {
         if (!success) {
             char info_log[512];
             glGetProgramInfoLog(id_, 512, nullptr, info_log);
-            std::cerr << "Engine error: shader program linking failed\n" << info_log << std::endl;
+
+            CORE_ERROR("Shader program linking failed:\n{0}", info_log);
+            glDetachShader(id_, vs);
+            if (gs != 0) {
+                glDetachShader(id_, gs);
+            }
+            glDetachShader(id_, fs);
+            glDeleteShader(vs);
+            if (gs != 0) {
+                glDeleteShader(gs);
+            }
+            glDeleteShader(fs);
             glDeleteProgram(id_);
             id_ = 0;
+            return;
         }
 
         glDetachShader(id_, vs);
-        if (gs != 0)
+        if (gs != 0) {
             glDetachShader(id_, gs);
+        }
         glDetachShader(id_, fs);
         glDeleteShader(vs);
-        if (gs != 0)
+        if (gs != 0) {
             glDeleteShader(gs);
+        }
         glDeleteShader(fs);
     }
 
@@ -72,17 +98,26 @@ namespace engine {
         std::unordered_set<std::string> vs_includes;
         std::unordered_set<std::string> fs_includes;
         std::unordered_set<std::string> gs_includes;
-        const std::string vs_code = preprocess_source(vertex_path, vs_includes);
-        const std::string fs_code = preprocess_source(fragment_path, fs_includes);
-        const std::string gs_code = geometry_path.empty() ? "" : preprocess_source(geometry_path, gs_includes);
 
-        if (vs_code.empty() || fs_code.empty()) {
-            std::cerr << "Engine error: failed to load shader sources from files!" << std::endl;
+        const std::string vs_code = preprocess_source(vertex_path, vs_includes);
+        if (vs_code.empty()) {
+            CORE_ERROR("Failed to load vertex shader source: '{0}'", vertex_path);
             return nullptr;
         }
-        if (!geometry_path.empty() && gs_code.empty()) {
-            std::cerr << "Engine error: failed to load geometry shader source from file!" << std::endl;
+
+        const std::string fs_code = preprocess_source(fragment_path, fs_includes);
+        if (fs_code.empty()) {
+            CORE_ERROR("Failed to load fragment shader source: '{0}'", fragment_path);
             return nullptr;
+        }
+
+        std::string gs_code;
+        if (!geometry_path.empty()) {
+            gs_code = preprocess_source(geometry_path, gs_includes);
+            if (gs_code.empty()) {
+                CORE_ERROR("Failed to load geometry shader source: '{0}'", geometry_path);
+                return nullptr;
+            }
         }
 
         return std::make_unique<GLShader>(vs_code, fs_code, gs_code);
@@ -127,7 +162,7 @@ namespace engine {
 
         const int location = glGetUniformLocation(id_, name.c_str());
         if (location == -1) {
-            std::cerr << "Engine warning: uniform '" << name << "' does not exist or was stripped!" << std::endl;
+            CORE_WARN("Uniform '{0}' does not exist or was stripped", name);
         }
         uniform_location_cache_[name] = location;
         return location;
@@ -148,7 +183,7 @@ namespace engine {
             const std::string type_name =
                 type == GL_VERTEX_SHADER ? "Vertex" : type == GL_GEOMETRY_SHADER ? "Geometry" : "Fragment";
 
-            std::cerr << "Engine error: " << type_name << " shader compilation failed\n" << info_log << std::endl;
+            CORE_ERROR("{0} shader compilation failed:\n{1}", type_name, info_log);
             glDeleteShader(shader);
             return 0;
         }
@@ -157,20 +192,22 @@ namespace engine {
     }
 
     std::string GLShader::preprocess_source(const std::string& filepath, std::unordered_set<std::string>& included_files) {
-        if (included_files.contains(filepath)) {
+        std::string canonical_path = std::filesystem::weakly_canonical(filepath).string();
+
+        if (included_files.contains(canonical_path)) {
             return ""; // Avoid duplicate inclusion
         }
 
         if (!std::filesystem::exists(filepath)) {
-            std::cerr << "Engine error: failed to open shader file: " << filepath << std::endl;
+            CORE_ERROR("Failed to open shader file: {0}", filepath);
             return "";
         }
 
-        included_files.insert(filepath);
+        included_files.insert(canonical_path);
 
         std::ifstream file(filepath);
         if (!file.is_open()) {
-            std::cerr << "Engine error: failed to open shader file: " << filepath << std::endl;
+            CORE_ERROR("Failed to open shader file: {0}", filepath);
             return "";
         }
 

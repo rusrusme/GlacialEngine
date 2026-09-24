@@ -127,7 +127,7 @@ namespace engine {
         }
 
         if (!root.contains("entities") || !root["entities"].is_array()) {
-            CORE_ERROR("Failed to deserialize scene '{0}': Missing valid 'entities' array.", filepath);
+            CORE_ERROR("Failed to deserialize scene '{0}': Missing valid 'entities' array", filepath);
             return false;
         }
 
@@ -212,7 +212,7 @@ namespace engine {
             }
             loaded_count++;
         }
-        CORE_INFO("Successfully loaded scene '{0}' ({1} entities) from '{2}'.", scene_name, loaded_count, filepath);
+        CORE_INFO("Successfully loaded scene '{0}' ({1} entities) from '{2}'", scene_name, loaded_count, filepath);
         return true;
     }
 }

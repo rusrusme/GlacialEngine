@@ -5,6 +5,8 @@
 
 #include "ui/RmlSystemInterface.hpp"
 
+#include "core/Log.hpp"
+
 namespace engine {
     double RmlSystemInterface::GetElapsedTime() {
         return glfwGetTime();
@@ -13,13 +15,13 @@ namespace engine {
     bool RmlSystemInterface::LogMessage(const Rml::Log::Type type, const Rml::String& message) {
         switch (type) {
             case Rml::Log::LT_ERROR :
-                std::cerr << "[RmlUi Error] " << message << std::endl;
+                CORE_ERROR("[RmlUi] {0}", message);
                 break;
             case Rml::Log::LT_WARNING :
-                std::cerr << "[RmlUi Warning] " << message << std::endl;
+                CORE_WARN("[RmlUi] {0}", message);
                 break;
             default :
-                std::cout << "[RmlUi] " << message << std::endl;
+                CORE_TRACE("[RmlUi] {0}", message);
                 break;
         }
         return true;

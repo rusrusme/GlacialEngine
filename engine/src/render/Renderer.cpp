@@ -22,7 +22,7 @@ namespace engine {
         window_ = window;
 
         if (window_ == nullptr) {
-            std::cerr << "Engine error: renderer: GLFWwindow pointer is null" << std::endl;
+            CORE_CRITICAL("Renderer failed: GLFWwindow pointer is null");
             return false;
         }
 
@@ -245,7 +245,7 @@ namespace engine {
 
     Mesh Renderer::upload_mesh(const std::vector<Vertex>& vertices_in, const std::vector<uint32_t>& indices) {
         if (vertices_in.empty() || indices.empty()) {
-            std::cerr << "Engine error: renderer: cannot upload empty mesh" << std::endl;
+            CORE_WARN("Renderer: Cannot upload empty mesh");
             return {};
         }
 

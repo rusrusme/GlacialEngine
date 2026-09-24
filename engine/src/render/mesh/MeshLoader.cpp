@@ -10,6 +10,7 @@
 
 #include "render/mesh/MeshLoader.hpp"
 
+#include "core/Log.hpp"
 #include "render/Buffer.hpp"
 #include "render/BufferLayout.hpp"
 #include "render/Texture2D.hpp"
@@ -37,7 +38,7 @@ namespace engine {
         int width, height, channels;
         stbi_uc* pixels = stbi_load_from_memory(buffer_data, static_cast<int>(buffer_size), &width, &height, &channels, 4);
         if (!pixels) {
-            std::cerr << "Engine warning: Failed to decode embedded GLB texture!\n";
+            CORE_WARN("Failed to decode embedded GLB texture");
             return nullptr;
         }
 
@@ -52,7 +53,7 @@ namespace engine {
         cgltf_result result = cgltf_parse_file(&options, path.c_str(), &data);
 
         if (result != cgltf_result_success) {
-            std::cerr << "Engine error: Failed to parse glTF/GLB: " << path << "\n";
+            CORE_ERROR("Failed to parse glTF/GLB: '{0}'", path);
             return {};
         }
 
@@ -208,7 +209,7 @@ namespace engine {
 
         std::ifstream file(path);
         if (!file.is_open()) {
-            std::cerr << "Engine error: mesh loader: failed to open file: " << path << std::endl;
+            CORE_ERROR("Mesh loader failed to open file: '{0}'", path);
             return Mesh{};
         }
 
