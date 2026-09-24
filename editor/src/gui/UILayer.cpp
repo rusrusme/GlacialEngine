@@ -3,7 +3,7 @@
 // All rights reserved.
 //
 
-#include "EditorUILayer.hpp"
+#include "UILayer.hpp"
 
 #include "../EditorLayer.hpp"
 
@@ -67,9 +67,9 @@ namespace editor {
     }
     #endif
 
-    EditorUILayer::EditorUILayer(std::shared_ptr<engine::Scene>& scene, std::shared_ptr<engine::AssetManager> asset_manager) : active_scene_(std::move(scene)), asset_manager_(std::move(asset_manager)) {}
+    UILayer::UILayer(std::shared_ptr<engine::Scene>& scene, std::shared_ptr<engine::AssetManager> asset_manager) : active_scene_(std::move(scene)), asset_manager_(std::move(asset_manager)) {}
 
-    void EditorUILayer::on_attach(engine::Renderer& renderer) {
+    void UILayer::on_attach(engine::Renderer& renderer) {
         object_inspector_.init(active_scene_, asset_manager_, audio_layer_);
         hierarchy_.init(active_scene_, asset_manager_);
         asset_browser_.init(asset_manager_);
@@ -87,12 +87,12 @@ namespace editor {
         #endif
     }
 
-    void EditorUILayer::on_detach() {
+    void UILayer::on_detach() {
         object_inspector_.init(nullptr, nullptr, nullptr);
         hierarchy_.init(nullptr, nullptr);
     }
 
-    void EditorUILayer::on_update(float delta_time) {
+    void UILayer::on_update(float delta_time) {
         #ifdef ENABLE_IMGUI
         if (engine::Input::is_key_pressed_once(engine::Key::ESCAPE)) {
             // If gizmo is currently active, cancel the operation and restore initial transform
@@ -124,11 +124,11 @@ namespace editor {
         #endif
     }
 
-    void EditorUILayer::on_render(engine::Renderer& renderer, float delta_time) {
+    void UILayer::on_render(engine::Renderer& renderer, float delta_time) {
     }
 
     #ifdef ENABLE_IMGUI
-    void EditorUILayer::on_imgui_render(engine::Renderer& renderer, float delta_time) {
+    void UILayer::on_imgui_render(engine::Renderer& renderer, float delta_time) {
         draw_imgui_menu_bar();
 
         ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_PassthruCentralNode;
@@ -192,9 +192,11 @@ namespace editor {
             uint32_t current_fb_w = renderer.get_framebuffer_width();
             uint32_t current_fb_h = renderer.get_framebuffer_height();
 
-            if (current_fb_w != static_cast<uint32_t>(panel_w) ||
-                current_fb_h != static_cast<uint32_t>(panel_h)) {
+            if (current_fb_w != static_cast<uint32_t>(panel_w) || current_fb_h != static_cast<uint32_t>(panel_h)) {
                 renderer.on_resize(panel_w, panel_h);
+                if (camera_) {
+                    const_cast<engine::Camera*>(camera_)->set_aspect_ratio(panel_w / panel_h);
+                }
             }
         }
 
@@ -272,12 +274,12 @@ namespace editor {
     }
     #endif
 
-    void EditorUILayer::on_event(engine::Event& event) {
+    void UILayer::on_event(engine::Event& event) {
         engine::EventDispatcher dispatcher(event);
     }
 
     #ifdef ENABLE_IMGUI
-    void EditorUILayer::draw_imguizmo(engine::Entity selected_entity, const engine::Camera& camera, const ImVec2& viewport_pos, const ImVec2& viewport_size) {
+    void UILayer::draw_imguizmo(engine::Entity selected_entity, const engine::Camera& camera, const ImVec2& viewport_pos, const ImVec2& viewport_size) {
         if (!selected_entity || !selected_entity.has_component<engine::TransformComponent>()) {
             return;
         }
@@ -347,7 +349,7 @@ namespace editor {
         }
     }
 
-    void EditorUILayer::draw_imgui_menu_bar() {
+    void UILayer::draw_imgui_menu_bar() {
         auto update_window_title = [](const std::string& path) {
             std::string scene_name = std::filesystem::path(path).stem().string();
             engine::Application::get().window().set_title("Engine - " + scene_name);

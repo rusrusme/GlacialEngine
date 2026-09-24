@@ -20,6 +20,8 @@ namespace editor {
 
         active_scene_->on_init(renderer);
 
+        engine::DebugRenderer::on_init();
+
         camera_.apply_default_view();
         camera_controller_.reset_mouse_state();
 
@@ -41,6 +43,8 @@ namespace editor {
         if (active_scene_) {
             active_scene_->on_shutdown();
         }
+        engine::DebugRenderer::on_shutdown();
+
         config::set_value("toggle_debug_panel", debug_panel_->is_debug_panel_enabled());
         config::set_value("show_grid", debug_panel_->is_grid_enabled());
         config::save();
@@ -68,14 +72,13 @@ namespace editor {
 
     void EditorLayer::on_render(engine::Renderer& renderer, const float delta_time) {
         engine::Renderer::clear({0.12f, 0.12f, 0.12f, 1.0f});
+
         renderer.begin_scene(camera_);
+        engine::DebugRenderer::begin_scene(camera_);
+
         if (active_scene_) {
             active_scene_->on_render(renderer, camera_, *asset_manager_, delta_time);
-        }
-        if (debug_panel_ && debug_panel_->is_grid_enabled()) {
-            editor_grid_.render(renderer);
-        }
-        if (active_scene_) {
+
             auto view = active_scene_->view<engine::TransformComponent, engine::BoxColliderComponent>();
 
             for (auto entity_handle : view) {
@@ -88,19 +91,24 @@ namespace editor {
 
                 // Turn RED if colliding with another entity (> 1 because it includes itself), otherwise GREEN
                 glm::vec3 box_color = (overlaps.size() > 1) ? glm::vec3(1.0f, 0.0f, 0.0f) : glm::vec3(0.0f, 1.0f, 0.0f);
-                renderer.draw_box(world_aabb.min, world_aabb.max, box_color);
+                engine::DebugRenderer::draw_box(world_aabb.min, world_aabb.max, box_color);
+            }
+
+            auto dir_light = active_scene_->view<engine::TransformComponent, engine::DirectionalLightComponent>();
+            for (auto entity : dir_light) {
+                auto [transform, light] = dir_light.get<engine::TransformComponent, engine::DirectionalLightComponent>(entity);
+                draw_directional_light(transform.position, transform.get_forward(), light.color);
+            }
+            auto point_light = active_scene_->view<engine::TransformComponent, engine::PointLightComponent>();
+            for (auto entity : point_light) {
+                auto [transform, light] = point_light.get<engine::TransformComponent, engine::PointLightComponent>(entity);
+                engine::DebugRenderer::draw_sphere(transform.position, 0.05f, light.color, 16);
             }
         }
-        auto dir_light = active_scene_->view<engine::TransformComponent, engine::DirectionalLightComponent>();
-        for (auto entity : dir_light) {
-            auto [transform, light] = dir_light.get<engine::TransformComponent, engine::DirectionalLightComponent>(entity);
-            draw_directional_light(renderer, transform.position, transform.get_forward(), light.color);
+        if (debug_panel_ && debug_panel_->is_grid_enabled()) {
+            editor_grid_.render(renderer);
         }
-        auto point_light = active_scene_->view<engine::TransformComponent, engine::PointLightComponent>();
-        for (auto entity : point_light) {
-            auto [transform, light] = point_light.get<engine::TransformComponent, engine::PointLightComponent>(entity);
-            renderer.draw_sphere(transform.position, 0.05f, light.color, 16);
-        }
+        engine::DebugRenderer::end_scene();
         renderer.end_scene(delta_time);
     }
 
@@ -156,23 +164,23 @@ namespace editor {
         });
     }
 
-    void EditorLayer::draw_directional_light(engine::Renderer& renderer, const glm::vec3 position, const glm::vec3& direction, const glm::vec3& color) {
+    void EditorLayer::draw_directional_light(const glm::vec3 position, const glm::vec3& direction, const glm::vec3& color) {
         constexpr float ray_length = 1.5f;
         constexpr float circle_radius = 0.05f;
         const glm::vec3 dir = glm::normalize(direction);
 
-        renderer.draw_sphere(position, circle_radius, color, 16);
+        engine::DebugRenderer::draw_sphere(position, circle_radius, color, 16);
 
         const glm::vec3 main_target = position + dir * ray_length;
-        renderer.draw_line(position, main_target, color);
+        engine::DebugRenderer::draw_line(position, main_target, color);
 
         glm::vec3 up = std::abs(dir.z) < 0.999f ? glm::vec3(0, 0, 1) : glm::vec3(1, 0, 0);
         glm::vec3 right = glm::normalize(glm::cross(dir, up)) * 0.15f;
         up = glm::normalize(glm::cross(right, dir)) * 0.15f;
 
-        renderer.draw_line(main_target, main_target - dir * 0.3f + right, color);
-        renderer.draw_line(main_target, main_target - dir * 0.3f - right, color);
-        renderer.draw_line(main_target, main_target - dir * 0.3f + up, color);
-        renderer.draw_line(main_target, main_target - dir * 0.3f - up, color);
+        engine::DebugRenderer::draw_line(main_target, main_target - dir * 0.3f + right, color);
+        engine::DebugRenderer::draw_line(main_target, main_target - dir * 0.3f - right, color);
+        engine::DebugRenderer::draw_line(main_target, main_target - dir * 0.3f + up, color);
+        engine::DebugRenderer::draw_line(main_target, main_target - dir * 0.3f - up, color);
     }
 }

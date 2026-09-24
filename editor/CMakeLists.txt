@@ -13,8 +13,8 @@ add_executable(Editor
                src/gui/ObjectInspector.hpp
                src/gui/AssetBrowser.hpp
                src/gui/AssetBrowser.cpp
-               src/gui/EditorUILayer.cpp
-               src/gui/EditorUILayer.hpp
+               src/gui/UILayer.cpp
+               src/gui/UILayer.hpp
                src/editor_pch.hpp
                src/gui/DebugPanel.cpp
                src/gui/DebugPanel.hpp

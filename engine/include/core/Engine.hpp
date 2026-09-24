@@ -12,7 +12,7 @@
 // Core
 #include "core/Application.hpp"
 #include "core/Config.hpp"
-#include "../render/Framebuffer.hpp"
+#include "render/Framebuffer.hpp"
 #include "core/Layer.hpp"
 #include "core/LayerStack.hpp"
 #include "core/Log.hpp"
@@ -45,6 +45,7 @@
 #include "render/BufferLayout.hpp"
 #include "render/Camera.hpp"
 #include "render/DebugFrame.hpp"
+#include "render/DebugRenderer.hpp"
 #include "render/Frame.hpp"
 #include "render/Frustum.hpp"
 #include "render/Renderer.hpp"

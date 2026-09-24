@@ -37,7 +37,6 @@ namespace engine {
         camera_ubo_ = std::make_unique<UniformBuffer>(sizeof(CameraData), 0);
 
         shader_library_.load("mesh", "assets/shaders/engine/mesh.vert", "assets/shaders/engine/mesh.frag");
-        shader_library_.load("line", "assets/shaders/engine/line.vert", "assets/shaders/engine/line.frag");
         shader_library_.load("shadow_depth", "assets/shaders/engine/shadow/shadow_depth.vert", "assets/shaders/engine/shadow/shadow_depth.frag");
         shader_library_.load("point_shadow_depth", "assets/shaders/engine/shadow/point_shadow_depth.vert", "assets/shaders/engine/shadow/point_shadow_depth.frag", "assets/shaders/engine/shadow/point_shadow_depth.geom");
 
@@ -47,7 +46,6 @@ namespace engine {
         instance_vbo_capacity_bytes_ = 1000 * sizeof(InstanceData);
         instance_vbo_ = std::make_shared<VertexBuffer>(nullptr, instance_vbo_capacity_bytes_, true);
 
-        init_line_resources();
         return true;
     }
 
@@ -58,9 +56,6 @@ namespace engine {
         }
         shadow_framebuffer_.reset();
         point_shadow_framebuffer_.reset();
-        line_batch_buffer_.clear();
-        line_vao_.reset();
-        line_vbo_.reset();
         camera_ubo_.reset();
     }
 
@@ -71,6 +66,14 @@ namespace engine {
 
         if (post_processor_) {
             post_processor_->resize(width, height);
+        }
+    }
+
+    void Renderer::render() {
+        // Final render code here
+
+        if (post_processor_) {
+            post_processor_->render_to_screen();
         }
     }
 
@@ -90,9 +93,9 @@ namespace engine {
     }
 
     void Renderer::end_scene(const float delta_time) {
-        flush();
-        post_processor_->end_scene();
-        post_processor_->render_to_screen();
+        if (post_processor_) {
+            post_processor_->end_scene();
+        }
     }
 
     void Renderer::render_shadow_pass(Camera& camera, AssetManager& asset_manager, const std::unordered_map<UUID, std::vector<InstanceData>>& batches) {
@@ -314,6 +317,10 @@ namespace engine {
         mesh.vertex_array.reset();
     }
 
+    void Renderer::draw_mesh(const Mesh& mesh, const glm::mat4& model_matrix, const glm::vec4& color) {
+        draw_mesh_instanced(mesh, {{.transform = model_matrix, .color = color}});
+    }
+
     void Renderer::draw_mesh_instanced(const Mesh& mesh, const std::vector<InstanceData>& instances, const std::shared_ptr<Shader>& override_shader) {
         if (instances.empty() || !mesh.is_valid()) return;
 
@@ -419,112 +426,5 @@ namespace engine {
         );
 
         shader->unbind();
-    }
-
-    void Renderer::draw_mesh(const Mesh& mesh, const glm::mat4& model_matrix, const glm::vec4& color) {
-        draw_mesh_instanced(mesh, {{.transform = model_matrix, .color = color}});
-    }
-
-    void Renderer::draw_line(const glm::vec3& from, const glm::vec3& to, const glm::vec3& color) {
-        line_batch_buffer_.emplace_back(from, color);
-        line_batch_buffer_.emplace_back(to, color);
-    }
-
-    void Renderer::draw_box(const glm::vec3& min, const glm::vec3& max, const glm::vec3& color) {
-        glm::vec3 p1 = min;
-        glm::vec3 p2 = {max.x, min.y, min.z};
-        glm::vec3 p3 = {max.x, min.y, max.z};
-        glm::vec3 p4 = {min.x, min.y, max.z};
-
-        glm::vec3 p5 = {min.x, max.y, min.z};
-        glm::vec3 p6 = {max.x, max.y, min.z};
-        glm::vec3 p7 = max;
-        glm::vec3 p8 = {min.x, max.y, max.z};
-
-        draw_line(p1, p2, color);
-        draw_line(p2, p3, color);
-        draw_line(p3, p4, color);
-        draw_line(p4, p1, color);
-
-        draw_line(p5, p6, color);
-        draw_line(p6, p7, color);
-        draw_line(p7, p8, color);
-        draw_line(p8, p5, color);
-
-        draw_line(p1, p5, color);
-        draw_line(p2, p6, color);
-        draw_line(p3, p7, color);
-        draw_line(p4, p8, color);
-    }
-
-    void Renderer::draw_circle(const glm::vec3& center, const float radius, const glm::vec3& normal, const glm::vec3& color, const int segments) {
-        const glm::vec3 n = glm::normalize(normal);
-
-        const glm::vec3 helper = std::abs(n.z) < 0.999f ? glm::vec3(0, 0, 1) : glm::vec3(1, 0, 0);
-        const glm::vec3 u = glm::normalize(glm::cross(helper, n));
-        const glm::vec3 v = glm::cross(n, u);
-
-        const float angle_step = glm::two_pi<float>() / static_cast<float>(segments);
-
-        for (int i = 0; i < segments; ++i) {
-            const float a1 = static_cast<float>(i) * angle_step;
-            const float a2 = static_cast<float>(i + 1) * angle_step;
-
-            glm::vec3 p1 = center + (u * std::cos(a1) + v * std::sin(a1)) * radius;
-            glm::vec3 p2 = center + (u * std::cos(a2) + v * std::sin(a2)) * radius;
-
-            draw_line(p1, p2, color);
-        }
-    }
-
-    void Renderer::draw_sphere(const glm::vec3& center, const float radius, const glm::vec3& color, const int segments) {
-        draw_circle(center, radius, {1, 0, 0}, color, segments);
-        draw_circle(center, radius, {0, 1, 0}, color, segments);
-        draw_circle(center, radius, {0, 0, 1}, color, segments);
-    }
-
-    void Renderer::flush() {
-        auto line_shader = shader_library_.get("line");
-        if (line_batch_buffer_.empty() || !line_shader || !line_vao_) return;
-
-        const size_t bytes_needed = line_batch_buffer_.size() * sizeof(LineVertex);
-
-        if (bytes_needed > line_vbo_capacity_bytes_) {
-            line_vbo_capacity_bytes_ = bytes_needed * 2;
-            line_vbo_ = std::make_shared<VertexBuffer>(nullptr, line_vbo_capacity_bytes_, true);
-
-            line_vao_ = std::make_unique<VertexArray>();
-            const BufferLayout line_layout = {
-                {ShaderDataType::Float3, "a_position"},
-                {ShaderDataType::Float3, "a_color"}
-            };
-            line_vao_->add_vertex_buffer(line_vbo_, line_layout);
-        }
-
-        line_vbo_->set_data(line_batch_buffer_.data(), bytes_needed);
-
-        line_shader->bind();
-
-        RenderCommand::set_depth_mask(false);
-        RenderCommand::draw_lines(*line_vao_, static_cast<uint32_t>(line_batch_buffer_.size()));
-        RenderCommand::set_depth_mask(true);
-
-        line_shader->unbind();
-
-        line_batch_buffer_.clear();
-    }
-
-    void Renderer::init_line_resources() {
-        line_vbo_capacity_bytes_ = 2000 * sizeof(LineVertex);
-        line_vbo_ = std::make_shared<VertexBuffer>(nullptr, line_vbo_capacity_bytes_, true);
-
-        line_vao_ = std::make_unique<VertexArray>();
-        const BufferLayout line_layout = {
-            {ShaderDataType::Float3, "a_position"},
-            {ShaderDataType::Float3, "a_color"}
-        };
-        line_vao_->add_vertex_buffer(line_vbo_, line_layout);
-
-        line_batch_buffer_.reserve(2000);
     }
 }

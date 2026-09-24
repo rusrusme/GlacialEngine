@@ -106,6 +106,8 @@ add_library(Engine STATIC
             include/render/RenderCommand.hpp
             include/audio/AudioLayer.hpp
             src/audio/AudioLayer.cpp
+            include/render/DebugRenderer.hpp
+            src/render/DebugRenderer.cpp
 )
 # ----------------------------------------------------------------------------
 target_include_directories(Engine

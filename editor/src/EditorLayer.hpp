@@ -63,6 +63,6 @@ namespace editor {
         bool is_viewport_hovered_ = false;
         bool is_viewport_focused_ = false;
 
-        static void draw_directional_light(engine::Renderer& renderer, glm::vec3 position, const glm::vec3& direction, const glm::vec3& color);
+        static void draw_directional_light(glm::vec3 position, const glm::vec3& direction, const glm::vec3& color);
     };
 }

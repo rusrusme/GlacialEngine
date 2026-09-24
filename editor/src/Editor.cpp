@@ -6,7 +6,7 @@
 #include "Editor.hpp"
 
 #include "EditorLayer.hpp"
-#include "gui/EditorUILayer.hpp"
+#include "gui/UILayer.hpp"
 #include "audio/AudioLayer.hpp"
 
 namespace editor {
@@ -16,7 +16,7 @@ namespace editor {
 
         auto audio_layer = std::make_unique<engine::AudioLayer>(active_scene_, asset_manager_);
         auto editor_layer = std::make_unique<EditorLayer>(active_scene_, asset_manager_);
-        auto imgui_layer = std::make_unique<EditorUILayer>(active_scene_, asset_manager_);
+        auto imgui_layer = std::make_unique<UILayer>(active_scene_, asset_manager_);
 
         editor_layer->set_audio(audio_layer.get());
 

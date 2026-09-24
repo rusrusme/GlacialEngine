@@ -25,10 +25,10 @@ struct ImVec2;
 namespace editor {
     class EditorLayer;
 
-    class EditorUILayer : public engine::Layer {
+    class UILayer : public engine::Layer {
     public:
-        explicit EditorUILayer(std::shared_ptr<engine::Scene>& scene, std::shared_ptr<engine::AssetManager> asset_manager);
-        ~EditorUILayer() override = default;
+        explicit UILayer(std::shared_ptr<engine::Scene>& scene, std::shared_ptr<engine::AssetManager> asset_manager);
+        ~UILayer() override = default;
 
         void on_attach(engine::Renderer& renderer) override;
         void on_detach() override;

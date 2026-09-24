@@ -27,13 +27,6 @@ namespace engine {
     struct InstanceData;
     class Camera;
 
-    struct LineVertex {
-        glm::vec3 position;
-        glm::vec3 color;
-
-        LineVertex(const glm::vec3& pos, const glm::vec3& col) : position(pos), color(col) {}
-    };
-
     struct RenderStats {
         uint32_t draw_calls = 0;
         uint32_t instance_count = 0;
@@ -51,9 +44,9 @@ namespace engine {
         void on_shutdown();
         void on_resize(int width, int height);
 
-        // -------------------------
+        void render();
+
         // Scene
-        // -------------------------
         void begin_scene(const Camera& camera);
         void end_scene(float delta_time);
 
@@ -72,9 +65,7 @@ namespace engine {
         static void set_clear_color(const glm::vec4& color);
         static void clear(const glm::vec4& color = {0.12f, 0.12f, 0.12f, 1.0f});
 
-        // -------------------------
         // Mesh
-        // -------------------------
         [[nodiscard]] static Mesh upload_mesh(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices);
         static void destroy_mesh(Mesh& mesh);
         void draw_mesh(const Mesh& mesh, const glm::mat4& model_matrix, const glm::vec4& color);
@@ -83,13 +74,6 @@ namespace engine {
         // Frustum culling
         void set_frustum_culling_enabled(bool enabled) { frustum_culling_enabled_ = enabled; }
         [[nodiscard]] bool is_frustum_culling_enabled() const { return frustum_culling_enabled_; }
-
-        // Debug line rendering
-        void draw_line(const glm::vec3& from, const glm::vec3& to, const glm::vec3& color);
-        void draw_box(const glm::vec3& min, const glm::vec3& max, const glm::vec3& color);
-        void draw_circle(const glm::vec3& center, float radius, const glm::vec3& normal, const glm::vec3& color, int segments = 32);
-        void draw_sphere(const glm::vec3& center, float radius, const glm::vec3& color, int segments = 32);
-        void flush();
 
         // Asset access
         [[nodiscard]] ShaderLibrary& get_shader_library() { return shader_library_; }
@@ -109,11 +93,6 @@ namespace engine {
             point_lights_.clear();
         }
 
-        struct CameraData {
-            glm::mat4 view;
-            glm::mat4 projection;
-        };
-
         struct DirectionalLightData {
             glm::vec3 direction{0.0f, -1.0f, 0.0f};
             glm::vec3 color{0.0f, 0.0f, 0.0f};
@@ -125,6 +104,11 @@ namespace engine {
             glm::vec3 color{1.0f, 1.0f, 1.0f};
             float intensity{1.0f};
             float radius{10.0f};
+        };
+
+        struct CameraData {
+            glm::mat4 view;
+            glm::mat4 projection;
         };
 
         [[nodiscard]] int get_framebuffer_width() const { return framebuffer_width_; }
@@ -165,18 +149,9 @@ namespace engine {
         std::unique_ptr<Framebuffer> point_shadow_framebuffer_;
         glm::mat4 light_space_matrix_{1.0f};
 
-        // Line
-        std::vector<LineVertex> line_batch_buffer_;
-        size_t line_vbo_capacity_bytes_ = 0;
-
-        std::unique_ptr<VertexArray> line_vao_;
-        std::shared_ptr<VertexBuffer> line_vbo_;
-
         // Instanced
         std::shared_ptr<VertexBuffer> instance_vbo_;
         size_t instance_vbo_capacity_bytes_ = 0;
-
-        void init_line_resources();
 
         // Post processing
         std::unique_ptr<PostProcessor> post_processor_;
