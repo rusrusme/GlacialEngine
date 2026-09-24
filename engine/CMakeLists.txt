@@ -25,9 +25,7 @@ add_library(Engine STATIC
             include/scene/Scene.hpp
             src/scene/ecs/Entity.cpp
             include/scene/ecs/Entity.hpp
-            src/core/Layer.cpp
             include/core/Layer.hpp
-            src/scene/ecs/Components.cpp
             include/scene/ecs/Components.hpp
             src/core/UUID.cpp
             include/core/Uuid.hpp
@@ -60,7 +58,6 @@ add_library(Engine STATIC
             src/render/mesh/MeshLoader.cpp
             include/render/mesh/MeshLoader.hpp
             src/render/mesh/Mesh.cpp
-            src/asset/AssetType.cpp
             include/asset/AssetType.hpp
             src/asset/MetafileHandler.cpp
             include/asset/MetafileHandler.hpp

@@ -41,6 +41,15 @@ namespace engine {
         const std::string formatted_msg = std::format(fmt, std::forward<Args>(args)...);
         add_entry(level, category, formatted_msg);
     }
+
+    namespace util {
+        // Copy
+        std::string to_lowercase(std::string str);
+        std::string to_uppercase(std::string str);
+        // In-place
+        void to_lowercase_inplace(std::string& str);
+        void to_uppercase_inplace(std::string& str);
+    }
 }
 
 // -----------------------------------------------------------------------------------------------

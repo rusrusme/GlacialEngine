@@ -30,13 +30,13 @@ namespace engine {
 
         entity.add_component<ActiveComponent>(true);
         entity.add_component<TransformComponent>();
-        CORE_INFO("Created entity - {0} [{1}]", name, static_cast<uint64_t>(uuid));
+        CORE_TRACE("Created entity - {0} [{1}]", tag.tag, static_cast<uint64_t>(uuid));
         return entity;
     }
 
     Entity Scene::duplicate_entity(Entity source) {
-        const std::string new_name = source.has_component<LabelComponent>() ? source.get_component<LabelComponent>().tag : "Entity";
-        const Entity destination = create_entity(new_name);
+        std::string new_name = source.has_component<LabelComponent>() ? source.get_component<LabelComponent>().tag : "Entity";
+        Entity destination = create_entity(new_name);
 
         const auto source_handle = source;
         const auto destination_handle = destination;
@@ -53,19 +53,28 @@ namespace engine {
                 storage.push(destination_handle, storage.value(source_handle));
             }
         }
+        CORE_TRACE("Duplicated entity '{0}' -> new entity [{1}]", new_name, static_cast<uint64_t>(destination.get_component<IDComponent>().id));
         return destination;
     }
 
-    void Scene::destroy_entity(const Entity entity) {
-        registry_.destroy(entity);
+    void Scene::destroy_entity(Entity entity) {
+        if (registry_.valid(entity)) {
+            std::string name = entity.has_component<LabelComponent>() ? entity.get_component<LabelComponent>().tag : "Entity";
+            uint64_t uuid = entity.has_component<IDComponent>() ? static_cast<uint64_t>(entity.get_component<IDComponent>().id) : 0;
+
+            CORE_TRACE("Destroyed entity '{0}' [{1}]", name, uuid);
+            registry_.destroy(entity);
+        }
     }
 
     void Scene::on_init(Renderer& renderer) {
         collision_system_ = std::make_unique<CollisionSystem>(10.0f);
+        CORE_INFO("Scene initialized");
     }
 
     void Scene::on_shutdown() {
         collision_system_.reset();
+        CORE_INFO("Scene shutdown");
     }
 
     void Scene::on_update(float delta_time) {
@@ -158,6 +167,11 @@ namespace engine {
                     .pbr       = glm::vec2(roughness, metallic)
                 });
             }
+            else {
+                CORE_WARN("Failed to retrieve mesh asset handle {0} for entity '{1}'",
+                          static_cast<uint64_t>(target_mesh_handle),
+                          registry_.all_of<LabelComponent>(entity) ? registry_.get<LabelComponent>(entity).tag : "Entity");
+            }
         }
         // ------------------
         // Render passes
@@ -168,7 +182,9 @@ namespace engine {
     }
 
     void Scene::clear() {
+        size_t entity_count = registry_.storage<entt::entity>().size();
         registry_.clear();
         mesh_batches_.clear();
+        CORE_INFO("Scene cleared ({0} entities removed)", entity_count);
     }
 }

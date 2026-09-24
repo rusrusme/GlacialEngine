@@ -358,7 +358,7 @@ namespace editor {
 
         auto handle_new_scene = [this] {
             engine::SceneSerializer serializer(active_scene_);
-            serializer.deserialize("assets/scenes/clean.scene");
+            serializer.deserialize("assets/scenes/clean.scene", *asset_manager_);
             engine::Application::get().window().set_title(engine::setting::FRAME_TITLE);
         };
 
@@ -367,7 +367,7 @@ namespace editor {
             std::string selected_file = open_file_dialog();
             if (!selected_file.empty()) {
                 engine::SceneSerializer serializer(active_scene_);
-                serializer.deserialize(selected_file);
+                serializer.deserialize(selected_file, *asset_manager_);
                 if (std::filesystem::path(selected_file).filename() != "clean.scene") {
                     update_window_title(selected_file);
                 }
@@ -380,7 +380,7 @@ namespace editor {
             std::string selected_file = save_file_dialog();
             if (!selected_file.empty()) {
                 engine::SceneSerializer serializer(active_scene_);
-                serializer.serialize(selected_file);
+                serializer.serialize(selected_file, *asset_manager_);
                 if (std::filesystem::path(selected_file).filename() != "clean.scene") {
                     update_window_title(selected_file);
                 }

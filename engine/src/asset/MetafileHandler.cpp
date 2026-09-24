@@ -5,6 +5,8 @@
 
 #include "asset/MetafileHandler.hpp"
 
+#include "core/Log.hpp"
+
 using json = nlohmann::json;
 
 namespace engine {
@@ -35,10 +37,13 @@ namespace engine {
         metadata.handle = AssetHandle();
 
         json root;
+        auto handle = static_cast<uint64_t>(metadata.handle);
+        std::string type(asset_type_to_string(metadata.type));
         root["asset"] = {
-            {"handle", static_cast<uint64_t>(metadata.handle)},
-            {"type", std::string(asset_type_to_string(metadata.type))}
+            {"handle", handle},
+            {"type", type}
         };
+        CORE_TRACE("Created metadata for {0} asset from {1}", util::to_lowercase(type), metadata.filepath.string());
 
         std::ofstream out(meta_path);
         if (out.is_open()) {

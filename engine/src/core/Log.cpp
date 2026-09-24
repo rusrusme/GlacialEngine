@@ -40,4 +40,30 @@ namespace engine {
 
         entries_.push_back({.message = formatted, .level = level, .timestamp = time_str});
     }
+
+    std::string util::to_lowercase(std::string str) {
+        std::ranges::transform(str, str.begin(), [](unsigned char c) {
+            return std::tolower(c);
+        });
+        return str;
+    }
+
+    std::string util::to_uppercase(std::string str) {
+        std::ranges::transform(str, str.begin(), [](unsigned char c) {
+            return std::toupper(c);
+        });
+        return str;
+    }
+
+    void util::to_lowercase_inplace(std::string& str) {
+        std::ranges::transform(str, str.begin(), [](unsigned char c) {
+            return std::tolower(c);
+        });
+    }
+
+    void util::to_uppercase_inplace(std::string& str) {
+        std::ranges::transform(str, str.begin(), [](unsigned char c) {
+            return std::toupper(c);
+        });
+    }
 }

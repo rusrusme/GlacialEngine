@@ -7,8 +7,12 @@
 
 #include <asset/MetafileHandler.hpp>
 
+#include "core/Log.hpp"
+
 namespace engine {
     void AssetManager::scan_directory(const std::filesystem::path& asset_directory) {
+        CORE_INFO("Scanning asset directory: '{0}'", asset_directory.string());
+
         asset_registry_.clear();
         path_to_handle_map_.clear();
 
@@ -30,8 +34,12 @@ namespace engine {
         register_primitive("primitive://cylinder", 5);
 
         if (!std::filesystem::exists(asset_directory) || !std::filesystem::is_directory(asset_directory)) {
+            CORE_WARN("Asset scan aborted: Directory '{0}' does not exist or is invalid", asset_directory.string());
             return;
         }
+
+        size_t loaded_count = 0;
+        size_t skipped_count = 0;
 
         for (const auto& entry : std::filesystem::recursive_directory_iterator(asset_directory)) {
             if (!entry.is_regular_file()) continue;
@@ -40,10 +48,24 @@ namespace engine {
 
             AssetMetadata metadata = MetaFileHandler::get_or_create_metadata(path);
             if (metadata.is_valid()) {
+                if (asset_registry_.contains(metadata.handle)) {
+                    CORE_WARN("Asset handle collision! Handle {0} for '{1}' conflicts with existing asset",
+                              static_cast<uint64_t>(metadata.handle), path.string());
+                }
+
                 asset_registry_[metadata.handle] = metadata;
                 path_to_handle_map_[metadata.filepath] = metadata.handle;
+                loaded_count++;
+
+                CORE_TRACE("Registered asset: '{0}' [Handle: {1}]", path.string(), static_cast<uint64_t>(metadata.handle));
+            }
+            else {
+                CORE_WARN("Skipped asset '{0}': Failed to deduce type or parse metadata", path.string());
+                skipped_count++;
             }
         }
+        CORE_INFO("Asset scan complete: {0} user assets loaded ({1} skipped), {2} total registered, including primitives",
+                  loaded_count, skipped_count, asset_registry_.size());
     }
 
     const AssetMetadata& AssetManager::get_metadata(AssetHandle handle) const {
@@ -65,5 +87,10 @@ namespace engine {
             return it->second;
         }
         return {0};
+    }
+
+    std::filesystem::path AssetManager::get_path_from_handle(AssetHandle handle) const {
+        const auto& meta = get_metadata(handle);
+        return meta.is_valid() ? meta.filepath : std::filesystem::path{};
     }
 }

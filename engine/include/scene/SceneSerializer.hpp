@@ -15,8 +15,8 @@ namespace engine {
     public:
         explicit SceneSerializer(std::shared_ptr<Scene> scene) : scene_(std::move(scene)) {}
 
-        void serialize(const std::string& filepath);
-        bool deserialize(const std::string& filepath);
+        void serialize(const std::string& filepath, AssetManager& asset_manager);
+        bool deserialize(const std::string& filepath, AssetManager& asset_manager);
 
     private:
         std::shared_ptr<Scene> scene_;
