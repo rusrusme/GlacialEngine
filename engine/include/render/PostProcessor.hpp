@@ -11,7 +11,7 @@
 
 namespace engine {
     enum class ToneMapAlgorithm {
-        None = -1,
+        None       = -1,
         ACESFilmic = 0,
         Reinhard,
         Uncharted2

@@ -21,6 +21,7 @@ namespace engine {
             : type_(type) {
             resize(width, height);
         }
+
         ~GLFramebuffer() { invalidate(); }
 
         void bind() const;

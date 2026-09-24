@@ -12,22 +12,22 @@ namespace engine {
         Frustum frustum;
 
         // Left: Row 3 + Row 0
-        frustum.planes[Left].normal   = glm::vec3(vp[0][3] + vp[0][0], vp[1][3] + vp[1][0], vp[2][3] + vp[2][0]);
+        frustum.planes[Left].normal = glm::vec3(vp[0][3] + vp[0][0], vp[1][3] + vp[1][0], vp[2][3] + vp[2][0]);
         frustum.planes[Left].distance = vp[3][3] + vp[3][0];
         // Right: Row 3 - Row 0
-        frustum.planes[Right].normal   = glm::vec3(vp[0][3] - vp[0][0], vp[1][3] - vp[1][0], vp[2][3] - vp[2][0]);
+        frustum.planes[Right].normal = glm::vec3(vp[0][3] - vp[0][0], vp[1][3] - vp[1][0], vp[2][3] - vp[2][0]);
         frustum.planes[Right].distance = vp[3][3] - vp[3][0];
         // Bottom: Row 3 + Row 1
-        frustum.planes[Bottom].normal   = glm::vec3(vp[0][3] + vp[0][1], vp[1][3] + vp[1][1], vp[2][3] + vp[2][1]);
+        frustum.planes[Bottom].normal = glm::vec3(vp[0][3] + vp[0][1], vp[1][3] + vp[1][1], vp[2][3] + vp[2][1]);
         frustum.planes[Bottom].distance = vp[3][3] + vp[3][1];
         // Top: Row 3 - Row 1
-        frustum.planes[Top].normal   = glm::vec3(vp[0][3] - vp[0][1], vp[1][3] - vp[1][1], vp[2][3] - vp[2][1]);
+        frustum.planes[Top].normal = glm::vec3(vp[0][3] - vp[0][1], vp[1][3] - vp[1][1], vp[2][3] - vp[2][1]);
         frustum.planes[Top].distance = vp[3][3] - vp[3][1];
         // Near: Row 3 + Row 2 (OpenGL clip depth: [-1, 1])
-        frustum.planes[Near].normal   = glm::vec3(vp[0][3] + vp[0][2], vp[1][3] + vp[1][2], vp[2][3] + vp[2][2]);
+        frustum.planes[Near].normal = glm::vec3(vp[0][3] + vp[0][2], vp[1][3] + vp[1][2], vp[2][3] + vp[2][2]);
         frustum.planes[Near].distance = vp[3][3] + vp[3][2];
         // Far: Row 3 - Row 2
-        frustum.planes[Far].normal   = glm::vec3(vp[0][3] - vp[0][2], vp[1][3] - vp[1][2], vp[2][3] - vp[2][2]);
+        frustum.planes[Far].normal = glm::vec3(vp[0][3] - vp[0][2], vp[1][3] - vp[1][2], vp[2][3] - vp[2][2]);
         frustum.planes[Far].distance = vp[3][3] - vp[3][2];
 
         for (auto& plane : frustum.planes) {

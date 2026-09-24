@@ -11,6 +11,7 @@
 
 namespace engine {
     struct Frustum;
+
     class Camera {
     public:
         void set_target(const glm::vec3& target);

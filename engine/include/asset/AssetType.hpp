@@ -39,7 +39,7 @@ namespace engine {
         if (type_str == "Mesh") return AssetType::MESH;
         if (type_str == "Material") return AssetType::MATERIAL;
         if (type_str == "Shader") return AssetType::SHADER;
-        if (type_str == "Audio")     return AssetType::AUDIO;
+        if (type_str == "Audio") return AssetType::AUDIO;
         return AssetType::NONE;
     }
 

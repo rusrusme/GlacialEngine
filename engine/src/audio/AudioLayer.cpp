@@ -159,7 +159,8 @@ namespace engine {
 
                 if (source.is_spatial) {
                     ma_sound_set_position(sound, transform.position.x, transform.position.y, transform.position.z);
-                } else {
+                }
+                else {
                     ma_sound_set_position(sound, 0.0f, 0.0f, 0.0f);
                 }
 
