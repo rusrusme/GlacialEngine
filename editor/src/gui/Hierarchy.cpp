@@ -3,9 +3,9 @@
 // All rights reserved.
 //
 
-#include "panel/Hierarchy.hpp"
+#include "gui/Hierarchy.hpp"
 
-#include "panel/EntityIcons.hpp"
+#include "EntityIcons.hpp"
 
 namespace editor {
     void Hierarchy::init(std::shared_ptr<engine::Scene> scene, std::shared_ptr<engine::AssetManager> asset_manager) {

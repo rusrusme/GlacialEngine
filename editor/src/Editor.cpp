@@ -6,7 +6,7 @@
 #include "Editor.hpp"
 
 #include "EditorLayer.hpp"
-#include "EditorUILayer.hpp"
+#include "gui/EditorUILayer.hpp"
 #include "audio/AudioLayer.hpp"
 
 namespace editor {

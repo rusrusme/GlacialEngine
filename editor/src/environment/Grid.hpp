@@ -10,10 +10,10 @@
 #include "render/VertexArray.hpp"
 
 namespace editor {
-    class EditorGrid {
+    class Grid {
     public:
-        EditorGrid() = default;
-        ~EditorGrid() = default;
+        Grid() = default;
+        ~Grid() = default;
 
         void init(engine::Renderer& renderer);
         void render(const engine::Renderer& renderer);

@@ -5,22 +5,22 @@ add_executable(Editor
                src/EditorLayer.hpp
                src/Editor.hpp
                src/Editor.cpp
-               src/environment/EditorGrid.cpp
-               src/environment/EditorGrid.hpp
-               src/panel/Hierarchy.cpp
-               src/panel/Hierarchy.hpp
-               src/panel/ObjectInspector.cpp
-               src/panel/ObjectInspector.hpp
-               src/panel/AssetBrowser.hpp
-               src/panel/AssetBrowser.cpp
-               src/EditorUiLayer.cpp
-               src/EditorUiLayer.hpp
+               src/environment/Grid.cpp
+               src/environment/Grid.hpp
+               src/gui/Hierarchy.cpp
+               src/gui/Hierarchy.hpp
+               src/gui/ObjectInspector.cpp
+               src/gui/ObjectInspector.hpp
+               src/gui/AssetBrowser.hpp
+               src/gui/AssetBrowser.cpp
+               src/gui/EditorUILayer.cpp
+               src/gui/EditorUILayer.hpp
                src/editor_pch.hpp
-               src/panel/DebugPanel.cpp
-               src/panel/DebugPanel.hpp
-               src/panel/Console.cpp
-               src/panel/Console.hpp
-               src/panel/EntityIcons.hpp
+               src/gui/DebugPanel.cpp
+               src/gui/DebugPanel.hpp
+               src/gui/Console.cpp
+               src/gui/Console.hpp
+               src/gui/EntityIcons.hpp
                src/Config.hpp
                src/EditorComponents.hpp
 )

@@ -3,7 +3,7 @@
 // All rights reserved.
 //
 
-#include "Console.hpp"
+#include "gui/Console.hpp"
 
 namespace editor {
     #ifdef ENABLE_IMGUI

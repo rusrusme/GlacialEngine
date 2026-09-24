@@ -3,7 +3,7 @@
 // All rights reserved.
 //
 
-#include "DebugPanel.hpp"
+#include "gui/DebugPanel.hpp"
 
 namespace editor {
     #ifdef ENABLE_IMGUI

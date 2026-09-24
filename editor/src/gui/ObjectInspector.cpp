@@ -3,7 +3,7 @@
 // All rights reserved.
 //
 
-#include "panel/ObjectInspector.hpp"
+#include "gui/ObjectInspector.hpp"
 
 #ifdef _WIN32
 #define NOMINMAX

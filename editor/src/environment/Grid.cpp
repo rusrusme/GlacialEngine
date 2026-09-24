@@ -3,10 +3,10 @@
 // All rights reserved.
 //
 
-#include "EditorGrid.hpp"
+#include "Grid.hpp"
 
 namespace editor {
-    void EditorGrid::init(engine::Renderer& renderer) {
+    void Grid::init(engine::Renderer& renderer) {
         if (initialized_) return;
 
         grid_shader_ = renderer.get_shader_library().load(
@@ -19,7 +19,7 @@ namespace editor {
         initialized_ = true;
     }
 
-    void EditorGrid::render(const engine::Renderer& renderer) {
+    void Grid::render(const engine::Renderer& renderer) {
         if (!initialized_ || !grid_shader_ || !grid_vao_) return;
 
         engine::Renderer::set_blend(true);

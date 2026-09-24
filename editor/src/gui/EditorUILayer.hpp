@@ -5,12 +5,12 @@
 
 #pragma once
 
+#include "Console.hpp"
 #include "core/Layer.hpp"
 #include "event/Event.hpp"
-#include "panel/AssetBrowser.hpp"
-#include "panel/Console.hpp"
-#include "panel/Hierarchy.hpp"
-#include "panel/ObjectInspector.hpp"
+#include "gui/AssetBrowser.hpp"
+#include "gui/Hierarchy.hpp"
+#include "gui/ObjectInspector.hpp"
 #include "render/Camera.hpp"
 #include "render/Renderer.hpp"
 

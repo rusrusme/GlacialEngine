@@ -9,9 +9,9 @@
 
 #include "asset/AssetManager.hpp"
 #include "core/Layer.hpp"
-#include "environment/EditorGrid.hpp"
+#include "environment/Grid.hpp"
 #include "input/CameraController.hpp"
-#include "panel/DebugPanel.hpp"
+#include "gui/DebugPanel.hpp"
 #include "render/Renderer.hpp"
 #include "scene/Scene.hpp"
 
@@ -58,7 +58,7 @@ namespace editor {
         // -------------------------
         float total_time_ = 0.0f;
 
-        EditorGrid editor_grid_;
+        Grid editor_grid_;
 
         bool is_viewport_hovered_ = false;
         bool is_viewport_focused_ = false;

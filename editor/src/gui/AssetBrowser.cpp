@@ -3,7 +3,7 @@
 // All rights reserved.
 //
 
-#include "panel/AssetBrowser.hpp"
+#include "AssetBrowser.hpp"
 
 namespace editor {
     void AssetBrowser::init(std::shared_ptr<engine::AssetManager> asset_manager) {

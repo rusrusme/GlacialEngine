@@ -5,7 +5,7 @@
 
 #include "EditorUILayer.hpp"
 
-#include "EditorLayer.hpp"
+#include "../EditorLayer.hpp"
 
 #ifdef _WIN32
 #define NOMINMAX
