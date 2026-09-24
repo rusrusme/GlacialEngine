@@ -28,10 +28,10 @@ uniform int u_use_metallic_roughness_texture;
 
 void main() {
     // --- TEMPORARY DIAGNOSTIC DEBUG ---
-//     vec3 light_to_fragment = varying_position - u_point_lights[0].position;
-//     float raw_depth = texture(u_point_shadow_map, light_to_fragment).r;
-//     fragment_color = vec4(vec3(raw_depth), 1.0);
-//     return;
+    //     vec3 light_to_fragment = varying_position - u_point_lights[0].position;
+    //     float raw_depth = texture(u_point_shadow_map, light_to_fragment).r;
+    //     fragment_color = vec4(vec3(raw_depth), 1.0);
+    //     return;
     // ----------------------------------
 
     vec4 texture_color = (u_use_albedo_texture != 0) ? texture(u_albedo_texture, varying_uv_coordinates) : vec4(1.0);
@@ -118,14 +118,15 @@ void main() {
 
             float normal_dot_light = max(dot(normal, light_direction), 0.0);
 
-            float shadow = (i == 0) ? calculatePointShadow(varying_position, varying_normal, u_point_lights[i].position, u_point_lights[i].radius) : 0.0;
+            float shadow = (i < MAX_POINT_LIGHT_SHADOWS)
+            ? calculatePointShadow(i, varying_position, normal, u_point_lights[i].position, u_point_lights[i].radius)
+            : 0.0;
 
             outgoing_radiance += (1.0 - shadow) * (diffuse_fraction * albedo.rgb / PI + specular) * radiance * normal_dot_light;
-//            outgoing_radiance += (diffuse_fraction * albedo.rgb / PI + specular) * radiance * normal_dot_light;
         }
     }
 
-    vec3 ambient = vec3(0.01) * albedo.rgb;
+    vec3 ambient = vec3(0.05) * albedo.rgb;
     vec3 color = ambient + outgoing_radiance;
 
     color = toneMapACES(color * 1.2);

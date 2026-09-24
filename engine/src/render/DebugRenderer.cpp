@@ -9,6 +9,7 @@
 #include <glm/gtc/constants.hpp>
 
 #include "render/Camera.hpp"
+#include "render/RenderCommand.hpp"
 
 namespace engine {
     void DebugRenderer::on_init() {

@@ -15,7 +15,6 @@
 #include "render/Buffer.hpp"
 #include "render/Framebuffer.hpp"
 #include "render/PostProcessor.hpp"
-#include "render/RenderCommand.hpp"
 #include "render/Shader.hpp"
 #include "render/ShaderLibrary.hpp"
 #include "render/UniformBuffer.hpp"
@@ -80,6 +79,9 @@ namespace engine {
         [[nodiscard]] const ShaderLibrary& get_shader_library() const { return shader_library_; }
 
         // Light
+        static constexpr size_t MAX_POINT_LIGHTS = 8;
+        static constexpr size_t MAX_POINT_LIGHT_SHADOWS = 4;
+
         void add_directional_light(const DirectionalLightData& light) {
             if (directional_lights_.size() < 4) directional_lights_.push_back(light);
         }
@@ -146,7 +148,8 @@ namespace engine {
 
         // Shadow resources
         std::unique_ptr<Framebuffer> shadow_framebuffer_;
-        std::unique_ptr<Framebuffer> point_shadow_framebuffer_;
+        [[deprecated]] std::unique_ptr<Framebuffer> point_shadow_framebuffer_;
+        std::vector<std::unique_ptr<Framebuffer>> point_shadow_framebuffers_;
         glm::mat4 light_space_matrix_{1.0f};
 
         // Instanced

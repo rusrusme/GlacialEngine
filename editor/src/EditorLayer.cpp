@@ -94,15 +94,19 @@ namespace editor {
                 engine::DebugRenderer::draw_box(world_aabb.min, world_aabb.max, box_color);
             }
 
-            auto dir_light = active_scene_->view<engine::TransformComponent, engine::DirectionalLightComponent>();
+            auto dir_light = active_scene_->view<engine::TransformComponent, engine::DirectionalLightComponent, engine::ActiveComponent>();
             for (auto entity : dir_light) {
-                auto [transform, light] = dir_light.get<engine::TransformComponent, engine::DirectionalLightComponent>(entity);
-                draw_directional_light(transform.position, transform.get_forward(), light.color);
+                auto [transform, light, active] = dir_light.get<engine::TransformComponent, engine::DirectionalLightComponent, engine::ActiveComponent>(entity);
+                if (active.active) {
+                    draw_directional_light(transform.position, transform.get_forward(), light.color);
+                }
             }
-            auto point_light = active_scene_->view<engine::TransformComponent, engine::PointLightComponent>();
+            auto point_light = active_scene_->view<engine::TransformComponent, engine::PointLightComponent, engine::ActiveComponent>();
             for (auto entity : point_light) {
-                auto [transform, light] = point_light.get<engine::TransformComponent, engine::PointLightComponent>(entity);
-                engine::DebugRenderer::draw_sphere(transform.position, 0.05f, light.color, 16);
+                auto [transform, light, active] = point_light.get<engine::TransformComponent, engine::PointLightComponent, engine::ActiveComponent>(entity);
+                if (active.active) {
+                    engine::DebugRenderer::draw_sphere(transform.position, 0.05f, light.color, 16);
+                }
             }
         }
         if (debug_panel_ && debug_panel_->is_grid_enabled()) {
