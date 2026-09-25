@@ -6,8 +6,7 @@
 #include "UILayer.hpp"
 
 #include "EditorLayer.hpp"
-#include "gui/Icons.hpp"
-#include "gui/container/Toolbar.hpp"
+#include "Toolbar.hpp"
 
 namespace editor {
     #ifdef ENABLE_IMGUI

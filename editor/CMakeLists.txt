@@ -23,10 +23,10 @@ add_executable(Editor
                src/gui/Icons.hpp
                src/Config.hpp
                src/EditorComponents.hpp
-               src/gui/container/Toolbar.hpp
-               src/gui/container/Toolbar.cpp
-               src/gui/container/Menubar.cpp
-               src/gui/container/Menubar.hpp
+               src/gui/Toolbar.hpp
+               src/gui/Toolbar.cpp
+               src/gui/Menubar.cpp
+               src/gui/Menubar.hpp
 )
 # ----------------------------------------------------------------------------
 target_include_directories(Editor PRIVATE ${CMAKE_SOURCE_DIR}/editor/src)

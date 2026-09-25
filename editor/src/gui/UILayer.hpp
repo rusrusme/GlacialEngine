@@ -6,13 +6,13 @@
 #pragma once
 
 #include "Console.hpp"
+#include "Menubar.hpp"
 #include "core/Layer.hpp"
 #include "event/Event.hpp"
 #include "gui/AssetBrowser.hpp"
 #include "gui/Hierarchy.hpp"
 #include "gui/ObjectInspector.hpp"
-#include "gui/container/Menubar.hpp"
-#include "gui/container/Toolbar.hpp"
+#include "gui/Toolbar.hpp"
 #include "render/Camera.hpp"
 #include "render/Renderer.hpp"
 

@@ -6,7 +6,6 @@
 #include "Menubar.hpp"
 
 #include "platform/FileDialogAPI.hpp"
-#include "platform/win32/Win32FileDialog.hpp"
 
 namespace editor {
     Menubar::Menubar() = default;
