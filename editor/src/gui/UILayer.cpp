@@ -440,8 +440,19 @@ namespace editor {
         }
     }
 
+    enum class ToolbarButton {
+        PlayStop,
+        PauseResume
+    };
+
     void UILayer::draw_imgui_tool_bar() {
         if (!editor_layer_) return;
+
+        // Persist the order of toolbar buttons across frames
+        static std::array<ToolbarButton, 2> toolbar_order = {
+            ToolbarButton::PlayStop,
+            ToolbarButton::PauseResume
+        };
 
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 4));
         ImGuiWindowFlags flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
@@ -460,28 +471,57 @@ namespace editor {
             const bool is_play = (editor_layer_->get_scene_state() == engine::SceneState::Play);
             const bool is_pause = (editor_layer_->get_scene_state() == engine::SceneState::Pause);
 
-            // Play / Stop Button
-            if (is_play || is_pause) {
-                if (draw_icon_button("##StopBtn", draw_stop_icon, ImVec2(button_width, button_height))) {
-                    editor_layer_->on_scene_stop();
-                }
-            }
-            else {
-                if (draw_icon_button("##PlayBtn", draw_play_icon, ImVec2(button_width, button_height))) {
-                    editor_layer_->on_scene_play();
-                }
-            }
+            for (size_t i = 0; i < toolbar_order.size(); ++i) {
+                if (i > 0) ImGui::SameLine();
 
-            ImGui::SameLine();
+                ImGui::PushID(static_cast<int>(i));
+                ToolbarButton btn_type = toolbar_order[i];
 
-            // Pause / Resume Button
-            if (draw_icon_button("##PauseBtn", is_pause ? draw_play_icon : draw_pause_icon, ImVec2(button_width, button_height))) {
-                if (is_play) {
-                    editor_layer_->on_scene_pause();
+                // Render button based on current slot type
+                if (btn_type == ToolbarButton::PlayStop) {
+                    if (is_play || is_pause) {
+                        if (draw_icon_button("##StopBtn", draw_stop_icon, ImVec2(button_width, button_height))) {
+                            editor_layer_->on_scene_stop();
+                        }
+                    }
+                    else {
+                        if (draw_icon_button("##PlayBtn", draw_play_icon, ImVec2(button_width, button_height))) {
+                            editor_layer_->on_scene_play();
+                        }
+                    }
                 }
-                else if (is_pause) {
-                    editor_layer_->on_scene_play();
+                else if (btn_type == ToolbarButton::PauseResume) {
+                    if (draw_icon_button("##PauseBtn", is_pause ? draw_play_icon : draw_pause_icon, ImVec2(button_width, button_height))) {
+                        if (is_play) {
+                            editor_layer_->on_scene_pause();
+                        }
+                        else if (is_pause) {
+                            editor_layer_->on_scene_play();
+                        }
+                    }
                 }
+
+                // Drag Source: initiate drag action
+                if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
+                    ImGui::SetDragDropPayload("TOOLBAR_BUTTON_REORDER", &i, sizeof(size_t));
+
+                    // Tooltip visual feedback while dragging
+                    ImGui::TextUnformatted(btn_type == ToolbarButton::PlayStop ? "Play/Stop" : "Pause/Resume");
+                    ImGui::EndDragDropSource();
+                }
+
+                // Drag Target: swap positions upon drop
+                if (ImGui::BeginDragDropTarget()) {
+                    if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("TOOLBAR_BUTTON_REORDER")) {
+                        size_t dragged_idx = *static_cast<const size_t*>(payload->Data);
+                        if (dragged_idx != i) {
+                            std::swap(toolbar_order[dragged_idx], toolbar_order[i]);
+                        }
+                    }
+                    ImGui::EndDragDropTarget();
+                }
+
+                ImGui::PopID();
             }
         }
         ImGui::End();
