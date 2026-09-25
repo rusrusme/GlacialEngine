@@ -9,6 +9,8 @@
 #include "asset/AssetManager.hpp"
 #include "asset/AssetType.hpp"
 #include "asset/MetafileHandler.hpp"
+// Audio
+#include "audio/AudioLayer.hpp"
 // Core
 #include "core/Application.hpp"
 #include "core/Config.hpp"
