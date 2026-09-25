@@ -19,6 +19,28 @@ namespace editor {
         return entity;
     }
 
+    void Hierarchy::set_context(std::shared_ptr<engine::Scene> current_scene) {
+        if (scene_ == current_scene) return;
+
+        engine::UUID selected_uuid = 0;
+        if (selected_entity_ && selected_entity_.has_component<engine::IDComponent>()) {
+            selected_uuid = selected_entity_.get_component<engine::IDComponent>().id;
+        }
+
+        scene_ = std::move(current_scene);
+
+        selected_entity_ = {};
+        if (selected_uuid != 0 && scene_) {
+            auto view = scene_->view<engine::IDComponent>();
+            for (auto entity : view) {
+                if (view.get<engine::IDComponent>(entity).id == selected_uuid) {
+                    selected_entity_ = {entity, scene_.get()};
+                    break;
+                }
+            }
+        }
+    }
+
     #ifdef ENABLE_IMGUI
     void Hierarchy::render_imgui() {
         engine::Entity entity_to_destroy{};

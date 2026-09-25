@@ -44,6 +44,7 @@ namespace editor {
         void set_camera(const engine::Camera* camera) { camera_ = camera; }
         void set_editor(EditorLayer* editor_layer) { editor_layer_ = editor_layer; }
         void set_audio(engine::AudioLayer* audio_layer) { audio_layer_ = audio_layer; }
+        void set_scene_context(const std::shared_ptr<engine::Scene>& current_scene);
 
     private:
         #ifdef ENABLE_IMGUI

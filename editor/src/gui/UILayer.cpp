@@ -129,6 +129,10 @@ namespace editor {
 
     #ifdef ENABLE_IMGUI
     void UILayer::on_imgui_render(engine::Renderer& renderer, float delta_time) {
+        if (editor_layer_) {
+            set_scene_context(editor_layer_->get_active_scene());
+        }
+
         draw_imgui_menu_bar();
         draw_imgui_tool_bar();
 
@@ -280,6 +284,12 @@ namespace editor {
     }
 
     #ifdef ENABLE_IMGUI
+    void UILayer::set_scene_context(const std::shared_ptr<engine::Scene>& current_scene) {
+        active_scene_ = current_scene;
+        hierarchy_.set_context(current_scene);
+        object_inspector_.set_context(current_scene);
+    }
+
     void UILayer::draw_imguizmo(engine::Entity selected_entity, const engine::Camera& camera, const ImVec2& viewport_pos, const ImVec2& viewport_size) {
         if (!selected_entity || !selected_entity.has_component<engine::TransformComponent>()) {
             return;

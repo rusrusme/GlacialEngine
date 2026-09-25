@@ -27,9 +27,11 @@ namespace engine {
                 auto type_id = entt::type_hash<T>::value();
                 get_copiers()[type_id] = [](entt::registry& src, entt::registry& dst, const std::unordered_map<entt::entity, entt::entity>& map) {
                     auto view = src.view<T>();
-                    for (auto src_entity : view) {
-                        if (auto it = map.find(src_entity); it != map.end()) {
-                            dst.emplace_or_replace<T>(it->second, view.template get<T>(src_entity));
+                    // Because view iterates reversed
+                    for (auto it = view.rbegin(); it != view.rend(); ++it) {
+                        auto src_entity = *it;
+                        if (auto map_it = map.find(src_entity); map_it != map.end()) {
+                            dst.emplace_or_replace<T>(map_it->second, view.template get<T>(src_entity));
                         }
                     }
                 };

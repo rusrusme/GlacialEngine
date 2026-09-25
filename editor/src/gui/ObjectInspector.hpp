@@ -20,6 +20,8 @@ namespace editor {
         void render_imgui();
         #endif
 
+        void set_context(std::shared_ptr<engine::Scene> current_scene) { scene_ = std::move(current_scene); }
+
         void set_selected_entity(const engine::Entity entity) { selected_entity_ = entity; }
 
     private:

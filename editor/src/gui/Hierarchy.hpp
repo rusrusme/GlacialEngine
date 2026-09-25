@@ -21,6 +21,8 @@ namespace editor {
 
         engine::Entity add_entity(const std::string& name);
 
+        void set_context(std::shared_ptr<engine::Scene> current_scene);
+
         [[nodiscard]] engine::Entity get_selected_entity() const { return selected_entity_; }
         void set_selected_entity(const engine::Entity new_entity) { selected_entity_ = new_entity; }
 
