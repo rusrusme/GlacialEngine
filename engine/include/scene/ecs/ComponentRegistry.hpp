@@ -23,19 +23,20 @@ namespace engine {
     public:
         template<typename T>
         static void register_type() {
-            auto type_id = entt::type_hash<T>::value();
-            auto& copiers = get_copiers();
-
-            if (copiers.find(type_id) != copiers.end()) return;
-
-            copiers[type_id] = [](entt::registry& src, entt::registry& dst, const std::unordered_map<entt::entity, entt::entity>& map) {
-                auto view = src.view<T>();
-                for (auto src_entity : view) {
-                    if (auto it = map.find(src_entity); it != map.end()) {
-                        dst.emplace_or_replace<T>(it->second, view.template get<T>(src_entity));
+            // Hot reloading code not possible with this approach
+            static const bool registered = []() {
+                auto type_id = entt::type_hash<T>::value();
+                get_copiers()[type_id] = [](entt::registry& src, entt::registry& dst, const std::unordered_map<entt::entity, entt::entity>& map) {
+                    auto view = src.view<T>();
+                    for (auto src_entity : view) {
+                        if (auto it = map.find(src_entity); it != map.end()) {
+                            dst.emplace_or_replace<T>(it->second, view.template get<T>(src_entity));
+                        }
                     }
-                }
-            };
+                };
+                return true;
+            }();
+            (void)registered;
         }
 
         static void copy_all_components(entt::registry& src, entt::registry& dst, const std::unordered_map<entt::entity, entt::entity>& map) {
