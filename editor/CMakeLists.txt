@@ -24,6 +24,9 @@ add_executable(Editor
                src/Config.hpp
                src/EditorComponents.hpp
                src/gui/toolbar/Toolbar.hpp
+               src/gui/toolbar/Toolbar.cpp
+               src/gui/toolbar/Menubar.cpp
+               src/gui/toolbar/Menubar.hpp
 )
 # ----------------------------------------------------------------------------
 target_include_directories(Editor PRIVATE ${CMAKE_SOURCE_DIR}/editor/src)

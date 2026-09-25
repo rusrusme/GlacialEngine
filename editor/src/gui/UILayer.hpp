@@ -11,6 +11,8 @@
 #include "gui/AssetBrowser.hpp"
 #include "gui/Hierarchy.hpp"
 #include "gui/ObjectInspector.hpp"
+#include "gui/container/Menubar.hpp"
+#include "gui/container/Toolbar.hpp"
 #include "render/Camera.hpp"
 #include "render/Renderer.hpp"
 
@@ -50,11 +52,9 @@ namespace editor {
     private:
         #ifdef ENABLE_IMGUI
         void draw_imguizmo(engine::Entity selected_entity, const engine::Camera& camera, const ImVec2& viewport_pos, const ImVec2& viewport_size);
-        void draw_imgui_menu_bar();
-        void draw_imgui_tool_bar();
-        void register_default_toolbar_items();
 
-        std::vector<ToolbarSlot> toolbar_slots_;
+        Menubar menubar_{};
+        Toolbar toolbar_{};
 
         bool is_viewport_hovered_ = false;
         bool is_viewport_focused_ = false;
@@ -62,6 +62,7 @@ namespace editor {
         glm::vec2 viewport_bounds_size_{0.0f, 0.0f};
         #endif
 
+        // Gizmo
         engine::TransformComponent initial_transform_{};
         bool was_using_gizmo_ = false;
         bool gizmo_canceled_ = false;
@@ -69,10 +70,10 @@ namespace editor {
 
         std::shared_ptr<engine::Scene> active_scene_ = nullptr;
         std::shared_ptr<engine::AssetManager> asset_manager_ = nullptr;
-        engine::AudioLayer* audio_layer_ = nullptr;
 
         const engine::Camera* camera_ = nullptr;
         EditorLayer* editor_layer_ = nullptr;
+        engine::AudioLayer* audio_layer_ = nullptr;
 
         ObjectInspector object_inspector_;
         Hierarchy hierarchy_;

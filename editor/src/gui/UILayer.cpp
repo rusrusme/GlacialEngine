@@ -7,60 +7,7 @@
 
 #include "EditorLayer.hpp"
 #include "gui/Icons.hpp"
-#include "gui/toolbar/Toolbar.hpp"
-
-#ifdef _WIN32
-#define NOMINMAX
-#include <windows.h>
-// #include <commdlg.h>
-#endif
-
-#ifdef _WIN32
-namespace {
-    std::string open_file_dialog(const char* filter = "Scene Files (*.scene)\0*.scene\0All Files (*.*)\0*.*\0") {
-        OPENFILENAMEA ofn;
-        char sz_file[260] = {0};
-
-        ZeroMemory(&ofn, sizeof(ofn));
-        ofn.lStructSize = sizeof(ofn);
-        ofn.hwndOwner = nullptr; // Pass active window HWND if available
-        ofn.lpstrFile = sz_file;
-        ofn.nMaxFile = sizeof(sz_file);
-        ofn.lpstrFilter = filter;
-        ofn.nFilterIndex = 1;
-        // OFN_NOCHANGEDIR is critical to prevent Windows from altering
-        // the application's working directory when selecting files
-        ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
-
-        if (GetOpenFileNameA(&ofn) == TRUE) {
-            return {ofn.lpstrFile};
-        }
-        return "";
-    }
-
-    std::string save_file_dialog(const char* filter = "Scene Files (*.scene)\0*.scene\0All Files (*.*)\0*.*\0") {
-        OPENFILENAMEA ofn;
-        char sz_file[260] = {0};
-
-        ZeroMemory(&ofn, sizeof(ofn));
-        ofn.lStructSize = sizeof(ofn);
-        ofn.hwndOwner = nullptr;
-        ofn.lpstrFile = sz_file;
-        ofn.nMaxFile = sizeof(sz_file);
-        ofn.lpstrFilter = filter;
-        ofn.nFilterIndex = 1;
-        ofn.lpstrDefExt = "scene"; // Automatically appends .scene if omitted by user
-        // OFN_OVERWRITEPROMPT asks for confirmation before overwriting an existing file
-        ofn.Flags = OFN_PATHMUSTEXIST | OFN_OVERWRITEPROMPT | OFN_NOCHANGEDIR;
-
-        if (GetSaveFileNameA(&ofn) == TRUE) {
-            // return std::string(ofn.lpstrFile);
-            return {ofn.lpstrFile};
-        }
-        return "";
-    }
-}
-#endif
+#include "gui/container/Toolbar.hpp"
 
 namespace editor {
     #ifdef ENABLE_IMGUI
@@ -89,7 +36,7 @@ namespace editor {
         style.HatchedAxisLineThickness = 0.0f;
         #endif
 
-        register_default_toolbar_items();
+        toolbar_.register_default_items(*editor_layer_);
     }
 
     void UILayer::on_detach() {
@@ -137,8 +84,9 @@ namespace editor {
         if (editor_layer_) {
             set_scene_context(editor_layer_->get_active_scene());
         }
-
-        draw_imgui_menu_bar();
+        if (active_scene_ && asset_manager_) {
+            menubar_.render_imgui(active_scene_, asset_manager_);
+        }
 
         // Clean DockSpace across the viewport
         ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_PassthruCentralNode;
@@ -180,8 +128,9 @@ namespace editor {
 
             ImGui::DockBuilderFinish(dockspace_id);
         }
-
-        draw_imgui_tool_bar();
+        if (editor_layer_) {
+            toolbar_.render_imgui();
+        }
 
         // ------------------------------------------------------------------
         // SCENE PANEL
@@ -211,7 +160,7 @@ namespace editor {
             uint32_t current_fb_h = renderer.get_framebuffer_height();
 
             if (current_fb_w != static_cast<uint32_t>(panel_w) || current_fb_h != static_cast<uint32_t>(panel_h)) {
-                renderer.on_resize(panel_w, panel_h);
+                renderer.on_resize(static_cast<int>(panel_w), static_cast<int>(panel_h));
                 if (camera_) {
                     const_cast<engine::Camera*>(camera_)->set_aspect_ratio(panel_w / panel_h);
                 }
@@ -371,222 +320,6 @@ namespace editor {
             transform.rotation = glm::make_vec3(rotation);
             transform.scale = glm::make_vec3(scale);
         }
-    }
-
-    void UILayer::draw_imgui_menu_bar() {
-        auto update_window_title = [](const std::string& path) {
-            std::string scene_name = std::filesystem::path(path).stem().string();
-            engine::Application::get().window().set_title("Engine - " + scene_name);
-        };
-
-        const bool is_ctrl = engine::Input::is_key_pressed(engine::Key::LEFT_CONTROL) ||
-            engine::Input::is_key_pressed(engine::Key::RIGHT_CONTROL);
-
-        auto handle_new_scene = [this] {
-            engine::SceneSerializer serializer(active_scene_);
-            serializer.deserialize("assets/scenes/clean.scene", *asset_manager_);
-            engine::Application::get().window().set_title(engine::setting::FRAME_TITLE);
-        };
-
-        auto handle_load_scene = [this, update_window_title] {
-            #ifdef _WIN32
-            std::string selected_file = open_file_dialog();
-            if (!selected_file.empty()) {
-                engine::SceneSerializer serializer(active_scene_);
-                serializer.deserialize(selected_file, *asset_manager_);
-                if (std::filesystem::path(selected_file).filename() != "clean.scene") {
-                    update_window_title(selected_file);
-                }
-            }
-            #endif
-        };
-
-        auto handle_save_scene = [this, update_window_title] {
-            #ifdef _WIN32
-            std::string selected_file = save_file_dialog();
-            if (!selected_file.empty()) {
-                engine::SceneSerializer serializer(active_scene_);
-                serializer.serialize(selected_file, *asset_manager_);
-                if (std::filesystem::path(selected_file).filename() != "clean.scene") {
-                    update_window_title(selected_file);
-                }
-            }
-            #endif
-        };
-
-        if (is_ctrl && !engine::Input::is_keyboard_captured() && !ImGuizmo::IsUsing()) {
-            if (engine::Input::is_key_pressed_once(engine::Key::N)) {
-                handle_new_scene();
-            }
-            if (engine::Input::is_key_pressed_once(engine::Key::S)) {
-                handle_save_scene();
-            }
-            if (engine::Input::is_key_pressed_once(engine::Key::O)) {
-                handle_load_scene();
-            }
-        }
-
-        if (ImGui::BeginMainMenuBar()) {
-            if (ImGui::BeginMenu("File")) {
-                if (ImGui::MenuItem("New Scene", "Ctrl+N")) {
-                    handle_new_scene();
-                }
-                if (ImGui::MenuItem("Save Scene As", "Ctrl+S")) {
-                    handle_save_scene();
-                }
-                if (ImGui::MenuItem("Load Scene", "Ctrl+O")) {
-                    handle_load_scene();
-                }
-                ImGui::EndMenu();
-            }
-            ImGui::EndMainMenuBar();
-        }
-    }
-
-    // Todo: refactor to Toolbar.hpp
-    void UILayer::draw_imgui_tool_bar() {
-        if (!editor_layer_) return;
-
-        const float slot_width = 36.0f;
-        const float slot_height = 24.0f;
-        const float spacing_x = ImGui::GetStyle().ItemSpacing.x;
-
-        // 1. Determine minimum required slots
-        size_t min_required_slots = 0;
-        for (size_t i = 0; i < toolbar_slots_.size(); ++i) {
-            if (toolbar_slots_[i].item.has_value()) {
-                min_required_slots = i + 1;
-            }
-        }
-        min_required_slots = std::max<size_t>(1, min_required_slots);
-
-        // 2. Minimum window constraints
-        const float window_padding_x = 16.0f;
-        const float min_window_width = (min_required_slots * slot_width) +
-            ((min_required_slots - 1) * spacing_x) +
-            window_padding_x + 16.0f;
-
-        ImGui::SetNextWindowSizeConstraints(ImVec2(min_window_width, 32.0f), ImVec2(FLT_MAX, FLT_MAX));
-
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(8, 4));
-        ImGuiWindowFlags flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
-
-        if (ImGui::Begin("Toolbar", nullptr, flags)) {
-            const ImVec2 avail = ImGui::GetContentRegionAvail();
-
-            size_t target_slot_count = static_cast<size_t>(
-                std::floor((avail.x + spacing_x) / (slot_width + spacing_x))
-            );
-            target_slot_count = std::max(target_slot_count, min_required_slots);
-
-            if (target_slot_count != toolbar_slots_.size()) {
-                toolbar_slots_.resize(target_slot_count);
-                for (size_t i = 0; i < toolbar_slots_.size(); ++i) {
-                    if (toolbar_slots_[i].id.empty()) {
-                        toolbar_slots_[i].id = "slot_" + std::to_string(i);
-                    }
-                }
-            }
-
-            // Center vertically
-            const float center_y = ImGui::GetCursorPosY() + std::max(0.0f, (avail.y - slot_height) * 0.5f);
-            ImGui::SetCursorPosY(center_y);
-
-            // Right-align slots
-            const float total_slots_width = (slot_width * static_cast<float>(toolbar_slots_.size())) +
-                (spacing_x * static_cast<float>(toolbar_slots_.size() - 1));
-            if (avail.x >= total_slots_width) {
-                ImGui::SetCursorPosX(ImGui::GetCursorPosX() + avail.x - total_slots_width);
-            }
-
-            ImDrawList* draw_list = ImGui::GetWindowDrawList();
-
-            for (size_t i = 0; i < toolbar_slots_.size(); ++i) {
-                if (i > 0) ImGui::SameLine();
-
-                auto& slot = toolbar_slots_[i];
-                ImGui::PushID(slot.id.c_str());
-
-                ImVec2 cursor_pos = ImGui::GetCursorScreenPos();
-                ImVec2 slot_max = ImVec2(cursor_pos.x + slot_width, cursor_pos.y + slot_height);
-
-                // Render widget if occupied, otherwise invisible dummy space
-                if (slot.item.has_value()) {
-                    slot.item->render_func(ImVec2(slot_width, slot_height));
-
-                    // Drag source
-                    if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
-                        ImGui::SetDragDropPayload("TOOLBAR_SLOT_SWAP", &i, sizeof(size_t));
-                        ImGui::Text("Move: %s", slot.item->label.c_str());
-                        ImGui::EndDragDropSource();
-                    }
-                }
-                else {
-                    // Invisible layout dummy
-                    ImGui::Dummy(ImVec2(slot_width, slot_height));
-                }
-
-                // Drag target
-                if (ImGui::BeginDragDropTarget()) {
-                    // Draw custom yellow drop target box on empty slots when dragging over them
-                    if (!slot.item.has_value()) {
-                        draw_list->AddRect(cursor_pos, slot_max, IM_COL32(255, 200, 50, 230), 3.0f, 0, 1.5f);
-                    }
-
-                    // Accept payload while suppressing ImGui's default blue rectangle
-                    if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("TOOLBAR_SLOT_SWAP", ImGuiDragDropFlags_AcceptNoDrawDefaultRect)) {
-                        size_t source_idx = *static_cast<const size_t*>(payload->Data);
-                        if (source_idx != i) {
-                            std::swap(toolbar_slots_[source_idx].item, toolbar_slots_[i].item);
-                        }
-                    }
-                    ImGui::EndDragDropTarget();
-                }
-
-                ImGui::PopID();
-            }
-        }
-        ImGui::End();
-        ImGui::PopStyleVar();
-    }
-
-    void UILayer::register_default_toolbar_items() {
-        toolbar_slots_.clear();
-        toolbar_slots_.resize(6); // 6 sichtbare Slots in der Toolbar
-
-        for (size_t i = 0; i < toolbar_slots_.size(); ++i) {
-            toolbar_slots_[i].id = "slot_" + std::to_string(i);
-        }
-
-        // Slot 0 mit Play/Stop belegen
-        toolbar_slots_[0].item = ToolbarItem{
-            "play_stop", "Play / Stop", 36.0f,
-            [this](ImVec2 size) {
-                const bool is_play = (editor_layer_->get_scene_state() == engine::SceneState::Play);
-                const bool is_pause = (editor_layer_->get_scene_state() == engine::SceneState::Pause);
-
-                if (is_play || is_pause) {
-                    if (draw_icon_button("##StopBtn", draw_stop_icon, size)) editor_layer_->on_scene_stop();
-                }
-                else {
-                    if (draw_icon_button("##PlayBtn", draw_play_icon, size)) editor_layer_->on_scene_play();
-                }
-            }
-        };
-
-        // Slot 1 mit Pause/Resume belegen
-        toolbar_slots_[1].item = ToolbarItem{
-            "pause_resume", "Pause / Resume", 36.0f,
-            [this](ImVec2 size) {
-                const bool is_play = (editor_layer_->get_scene_state() == engine::SceneState::Play);
-                const bool is_pause = (editor_layer_->get_scene_state() == engine::SceneState::Pause);
-
-                if (draw_icon_button("##PauseBtn", is_pause ? draw_play_icon : draw_pause_icon, size)) {
-                    if (is_play) editor_layer_->on_scene_pause();
-                    else if (is_pause) editor_layer_->on_scene_play();
-                }
-            }
-        };
     }
     #endif
 }

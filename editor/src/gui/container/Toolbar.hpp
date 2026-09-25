@@ -14,6 +14,8 @@
 #endif
 
 namespace editor {
+    class EditorLayer;
+
     struct ToolbarItem {
         std::string id;                                    // Unique identifier for ImGui IDs
         std::string label;                                 // Display name shown during drag-and-drop
@@ -23,6 +25,21 @@ namespace editor {
 
     struct ToolbarSlot {
         std::string id;
-        std::optional<ToolbarItem> item = std::nullopt; // Leer oder belegt
+        std::optional<ToolbarItem> item = std::nullopt;
+    };
+
+    class Toolbar {
+    public:
+        Toolbar();
+        ~Toolbar();
+
+        #ifdef ENABLE_IMGUI
+        void render_imgui();
+        #endif
+
+        void register_default_items(EditorLayer& editor_layer);
+
+    private:
+        std::vector<ToolbarSlot> toolbar_slots_;
     };
 }
