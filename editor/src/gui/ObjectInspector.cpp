@@ -5,7 +5,8 @@
 
 #include "gui/ObjectInspector.hpp"
 
-#include "platform/win32/FileDialog.hpp"
+#include "platform/FileDialogAPI.hpp"
+#include "platform/win32/Win32FileDialog.hpp"
 
 namespace editor {
     void ObjectInspector::init(std::shared_ptr<engine::Scene> scene, std::shared_ptr<engine::AssetManager> asset_manager, engine::AudioLayer* audio_layer) {
@@ -263,8 +264,7 @@ namespace editor {
 
             ImGui::SameLine();
             if (ImGui::Button("...##BrowseAudio")) {
-                #ifdef _WIN32
-                std::string selected_file = win32::open_file(win32::Filter::AUDIO);
+                std::string selected_file = engine::platform::FileDialogAPI::open_file(engine::platform::FileDialogFilter::AUDIO);
                 if (!selected_file.empty()) {
                     std::filesystem::path full_path(selected_file);
                     std::filesystem::path current_path = std::filesystem::current_path();
@@ -276,7 +276,6 @@ namespace editor {
                     }
                     audio.sound_handle = asset_manager_->get_handle_from_path(audio.filepath);
                 }
-                #endif
             }
             ImGui::SameLine();
             ImGui::Text("File Path");

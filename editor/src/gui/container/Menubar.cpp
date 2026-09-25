@@ -5,7 +5,8 @@
 
 #include "Menubar.hpp"
 
-#include "platform/win32/FileDialog.hpp"
+#include "platform/FileDialogAPI.hpp"
+#include "platform/win32/Win32FileDialog.hpp"
 
 namespace editor {
     Menubar::Menubar() = default;
@@ -28,8 +29,7 @@ namespace editor {
         };
 
         auto handle_load_scene = [update_window_title, active_scene, asset_manager] {
-            #ifdef _WIN32
-            std::string selected_file = win32::open_file(win32::Filter::SCENE);
+            std::string selected_file = engine::platform::FileDialogAPI::open_file(engine::platform::FileDialogFilter::SCENE);
             if (selected_file.empty()) return;
             engine::SceneSerializer serializer(active_scene);
             serializer.deserialize(selected_file, *asset_manager);
@@ -37,12 +37,10 @@ namespace editor {
             if (path.filename() != "clean.scene") {
                 update_window_title(path.generic_string());
             }
-            #endif
         };
 
         auto handle_save_scene = [update_window_title, active_scene, asset_manager] {
-            #ifdef _WIN32
-            std::string selected_file = win32::save_file(win32::Filter::SCENE, "scene");
+            std::string selected_file = engine::platform::FileDialogAPI::save_file(engine::platform::FileDialogFilter::SCENE, "scene");
             if (selected_file.empty()) return;
             engine::SceneSerializer serializer(active_scene);
             serializer.serialize(selected_file, *asset_manager);
@@ -50,7 +48,6 @@ namespace editor {
             if (path.filename() != "clean.scene") {
                 update_window_title(path.generic_string());
             }
-            #endif
         };
 
         if (is_ctrl && !engine::Input::is_keyboard_captured() && !ImGuizmo::IsUsing()) {

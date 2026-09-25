@@ -3,7 +3,7 @@
 // All rights reserved.
 //
 
-#include "FileDialog.hpp"
+#include "platform/win32/Win32FileDialog.hpp"
 
 #ifdef _WIN32
 #define NOMINMAX

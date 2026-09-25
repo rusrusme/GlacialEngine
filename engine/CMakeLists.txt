@@ -110,6 +110,9 @@ add_library(Engine STATIC
             src/render/DebugRenderer.cpp
             include/scene/SceneState.hpp
             include/scene/ecs/ComponentRegistry.hpp
+            include/platform/FileDialogAPI.hpp
+            src/platform/win32/Win32FileDialog.cpp
+            src/platform/FileDialogAPI.cpp
 )
 # ----------------------------------------------------------------------------
 target_include_directories(Engine

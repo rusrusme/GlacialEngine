@@ -27,8 +27,6 @@ add_executable(Editor
                src/gui/container/Toolbar.cpp
                src/gui/container/Menubar.cpp
                src/gui/container/Menubar.hpp
-               src/platform/win32/FileDialog.hpp
-               src/platform/win32/FileDialog.cpp
 )
 # ----------------------------------------------------------------------------
 target_include_directories(Editor PRIVATE ${CMAKE_SOURCE_DIR}/editor/src)
