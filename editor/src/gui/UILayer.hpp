@@ -23,6 +23,7 @@ struct ImVec2;
 #endif
 
 namespace editor {
+    struct ToolbarSlot;
     class EditorLayer;
 
     class UILayer : public engine::Layer {
@@ -51,6 +52,9 @@ namespace editor {
         void draw_imguizmo(engine::Entity selected_entity, const engine::Camera& camera, const ImVec2& viewport_pos, const ImVec2& viewport_size);
         void draw_imgui_menu_bar();
         void draw_imgui_tool_bar();
+        void register_default_toolbar_items();
+
+        std::vector<ToolbarSlot> toolbar_slots_;
 
         bool is_viewport_hovered_ = false;
         bool is_viewport_focused_ = false;

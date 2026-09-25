@@ -5,13 +5,14 @@
 
 #include "UILayer.hpp"
 
-#include "../EditorLayer.hpp"
+#include "EditorLayer.hpp"
 #include "gui/Icons.hpp"
+#include "gui/toolbar/Toolbar.hpp"
 
 #ifdef _WIN32
 #define NOMINMAX
 #include <windows.h>
-#include <commdlg.h>
+// #include <commdlg.h>
 #endif
 
 #ifdef _WIN32
@@ -22,7 +23,7 @@ namespace {
 
         ZeroMemory(&ofn, sizeof(ofn));
         ofn.lStructSize = sizeof(ofn);
-        ofn.hwndOwner = NULL; // Pass active window HWND if available
+        ofn.hwndOwner = nullptr; // Pass active window HWND if available
         ofn.lpstrFile = sz_file;
         ofn.nMaxFile = sizeof(sz_file);
         ofn.lpstrFilter = filter;
@@ -32,7 +33,7 @@ namespace {
         ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
 
         if (GetOpenFileNameA(&ofn) == TRUE) {
-            return std::string(ofn.lpstrFile);
+            return {ofn.lpstrFile};
         }
         return "";
     }
@@ -43,7 +44,7 @@ namespace {
 
         ZeroMemory(&ofn, sizeof(ofn));
         ofn.lStructSize = sizeof(ofn);
-        ofn.hwndOwner = NULL;
+        ofn.hwndOwner = nullptr;
         ofn.lpstrFile = sz_file;
         ofn.nMaxFile = sizeof(sz_file);
         ofn.lpstrFilter = filter;
@@ -87,6 +88,8 @@ namespace editor {
         style.CenterCircleSize = 4.0f;
         style.HatchedAxisLineThickness = 0.0f;
         #endif
+
+        register_default_toolbar_items();
     }
 
     void UILayer::on_detach() {
@@ -290,7 +293,7 @@ namespace editor {
     #endif
 
     void UILayer::on_event(engine::Event& event) {
-        engine::EventDispatcher dispatcher(event);
+        // engine::EventDispatcher dispatcher(event);
     }
 
     #ifdef ENABLE_IMGUI
@@ -440,82 +443,101 @@ namespace editor {
         }
     }
 
-    enum class ToolbarButton {
-        PlayStop,
-        PauseResume
-    };
-
+    // Todo: refactor to Toolbar.hpp
     void UILayer::draw_imgui_tool_bar() {
         if (!editor_layer_) return;
 
-        // Persist the order of toolbar buttons across frames
-        static std::array<ToolbarButton, 2> toolbar_order = {
-            ToolbarButton::PlayStop,
-            ToolbarButton::PauseResume
-        };
+        const float slot_width = 36.0f;
+        const float slot_height = 24.0f;
+        const float spacing_x = ImGui::GetStyle().ItemSpacing.x;
 
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 4));
+        // 1. Determine minimum required slots
+        size_t min_required_slots = 0;
+        for (size_t i = 0; i < toolbar_slots_.size(); ++i) {
+            if (toolbar_slots_[i].item.has_value()) {
+                min_required_slots = i + 1;
+            }
+        }
+        min_required_slots = std::max<size_t>(1, min_required_slots);
+
+        // 2. Minimum window constraints
+        const float window_padding_x = 16.0f;
+        const float min_window_width = (min_required_slots * slot_width) +
+            ((min_required_slots - 1) * spacing_x) +
+            window_padding_x + 16.0f;
+
+        ImGui::SetNextWindowSizeConstraints(ImVec2(min_window_width, 32.0f), ImVec2(FLT_MAX, FLT_MAX));
+
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(8, 4));
         ImGuiWindowFlags flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
 
         if (ImGui::Begin("Toolbar", nullptr, flags)) {
-            const float button_width = 36.0f;
-            const float button_height = 24.0f;
-            const float spacing = ImGui::GetStyle().ItemSpacing.x;
-            const float total_width = (button_width * 2.0f) + spacing;
+            const ImVec2 avail = ImGui::GetContentRegionAvail();
 
-            float avail_width = ImGui::GetContentRegionAvail().x;
-            if (avail_width > total_width) {
-                ImGui::SetCursorPosX((avail_width - total_width) * 0.5f);
+            size_t target_slot_count = static_cast<size_t>(
+                std::floor((avail.x + spacing_x) / (slot_width + spacing_x))
+            );
+            target_slot_count = std::max(target_slot_count, min_required_slots);
+
+            if (target_slot_count != toolbar_slots_.size()) {
+                toolbar_slots_.resize(target_slot_count);
+                for (size_t i = 0; i < toolbar_slots_.size(); ++i) {
+                    if (toolbar_slots_[i].id.empty()) {
+                        toolbar_slots_[i].id = "slot_" + std::to_string(i);
+                    }
+                }
             }
 
-            const bool is_play = (editor_layer_->get_scene_state() == engine::SceneState::Play);
-            const bool is_pause = (editor_layer_->get_scene_state() == engine::SceneState::Pause);
+            // Center vertically
+            const float center_y = ImGui::GetCursorPosY() + std::max(0.0f, (avail.y - slot_height) * 0.5f);
+            ImGui::SetCursorPosY(center_y);
 
-            for (size_t i = 0; i < toolbar_order.size(); ++i) {
+            // Right-align slots
+            const float total_slots_width = (slot_width * static_cast<float>(toolbar_slots_.size())) +
+                (spacing_x * static_cast<float>(toolbar_slots_.size() - 1));
+            if (avail.x >= total_slots_width) {
+                ImGui::SetCursorPosX(ImGui::GetCursorPosX() + avail.x - total_slots_width);
+            }
+
+            ImDrawList* draw_list = ImGui::GetWindowDrawList();
+
+            for (size_t i = 0; i < toolbar_slots_.size(); ++i) {
                 if (i > 0) ImGui::SameLine();
 
-                ImGui::PushID(static_cast<int>(i));
-                ToolbarButton btn_type = toolbar_order[i];
+                auto& slot = toolbar_slots_[i];
+                ImGui::PushID(slot.id.c_str());
 
-                // Render button based on current slot type
-                if (btn_type == ToolbarButton::PlayStop) {
-                    if (is_play || is_pause) {
-                        if (draw_icon_button("##StopBtn", draw_stop_icon, ImVec2(button_width, button_height))) {
-                            editor_layer_->on_scene_stop();
-                        }
-                    }
-                    else {
-                        if (draw_icon_button("##PlayBtn", draw_play_icon, ImVec2(button_width, button_height))) {
-                            editor_layer_->on_scene_play();
-                        }
-                    }
-                }
-                else if (btn_type == ToolbarButton::PauseResume) {
-                    if (draw_icon_button("##PauseBtn", is_pause ? draw_play_icon : draw_pause_icon, ImVec2(button_width, button_height))) {
-                        if (is_play) {
-                            editor_layer_->on_scene_pause();
-                        }
-                        else if (is_pause) {
-                            editor_layer_->on_scene_play();
-                        }
+                ImVec2 cursor_pos = ImGui::GetCursorScreenPos();
+                ImVec2 slot_max = ImVec2(cursor_pos.x + slot_width, cursor_pos.y + slot_height);
+
+                // Render widget if occupied, otherwise invisible dummy space
+                if (slot.item.has_value()) {
+                    slot.item->render_func(ImVec2(slot_width, slot_height));
+
+                    // Drag source
+                    if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
+                        ImGui::SetDragDropPayload("TOOLBAR_SLOT_SWAP", &i, sizeof(size_t));
+                        ImGui::Text("Move: %s", slot.item->label.c_str());
+                        ImGui::EndDragDropSource();
                     }
                 }
-
-                // Drag Source: initiate drag action
-                if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
-                    ImGui::SetDragDropPayload("TOOLBAR_BUTTON_REORDER", &i, sizeof(size_t));
-
-                    // Tooltip visual feedback while dragging
-                    ImGui::TextUnformatted(btn_type == ToolbarButton::PlayStop ? "Play/Stop" : "Pause/Resume");
-                    ImGui::EndDragDropSource();
+                else {
+                    // Invisible layout dummy
+                    ImGui::Dummy(ImVec2(slot_width, slot_height));
                 }
 
-                // Drag Target: swap positions upon drop
+                // Drag target
                 if (ImGui::BeginDragDropTarget()) {
-                    if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("TOOLBAR_BUTTON_REORDER")) {
-                        size_t dragged_idx = *static_cast<const size_t*>(payload->Data);
-                        if (dragged_idx != i) {
-                            std::swap(toolbar_order[dragged_idx], toolbar_order[i]);
+                    // Draw custom yellow drop target box on empty slots when dragging over them
+                    if (!slot.item.has_value()) {
+                        draw_list->AddRect(cursor_pos, slot_max, IM_COL32(255, 200, 50, 230), 3.0f, 0, 1.5f);
+                    }
+
+                    // Accept payload while suppressing ImGui's default blue rectangle
+                    if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("TOOLBAR_SLOT_SWAP", ImGuiDragDropFlags_AcceptNoDrawDefaultRect)) {
+                        size_t source_idx = *static_cast<const size_t*>(payload->Data);
+                        if (source_idx != i) {
+                            std::swap(toolbar_slots_[source_idx].item, toolbar_slots_[i].item);
                         }
                     }
                     ImGui::EndDragDropTarget();
@@ -526,6 +548,45 @@ namespace editor {
         }
         ImGui::End();
         ImGui::PopStyleVar();
+    }
+
+    void UILayer::register_default_toolbar_items() {
+        toolbar_slots_.clear();
+        toolbar_slots_.resize(6); // 6 sichtbare Slots in der Toolbar
+
+        for (size_t i = 0; i < toolbar_slots_.size(); ++i) {
+            toolbar_slots_[i].id = "slot_" + std::to_string(i);
+        }
+
+        // Slot 0 mit Play/Stop belegen
+        toolbar_slots_[0].item = ToolbarItem{
+            "play_stop", "Play / Stop", 36.0f,
+            [this](ImVec2 size) {
+                const bool is_play = (editor_layer_->get_scene_state() == engine::SceneState::Play);
+                const bool is_pause = (editor_layer_->get_scene_state() == engine::SceneState::Pause);
+
+                if (is_play || is_pause) {
+                    if (draw_icon_button("##StopBtn", draw_stop_icon, size)) editor_layer_->on_scene_stop();
+                }
+                else {
+                    if (draw_icon_button("##PlayBtn", draw_play_icon, size)) editor_layer_->on_scene_play();
+                }
+            }
+        };
+
+        // Slot 1 mit Pause/Resume belegen
+        toolbar_slots_[1].item = ToolbarItem{
+            "pause_resume", "Pause / Resume", 36.0f,
+            [this](ImVec2 size) {
+                const bool is_play = (editor_layer_->get_scene_state() == engine::SceneState::Play);
+                const bool is_pause = (editor_layer_->get_scene_state() == engine::SceneState::Pause);
+
+                if (draw_icon_button("##PauseBtn", is_pause ? draw_play_icon : draw_pause_icon, size)) {
+                    if (is_play) editor_layer_->on_scene_pause();
+                    else if (is_pause) editor_layer_->on_scene_play();
+                }
+            }
+        };
     }
     #endif
 }
