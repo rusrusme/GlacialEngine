@@ -22,6 +22,9 @@ namespace editor {
         void set_grid_enabled(const bool toggle) { show_grid_ = toggle; }
 
     private:
+        void render_debug_panel(engine::Renderer& renderer, float delta_time);
+        void render_shader_library(engine::Renderer& renderer);
+
         // -----------------------------------------
         // Editor overlays
         // -----------------------------------------
