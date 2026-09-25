@@ -9,8 +9,8 @@ Future features:
 - Asset manager **PENDING**
     - Drag and drop textures on objects
 - More precise scene picking **PENDING**
-- Simulation state management
-    - Edit, Play, Pause
+- Simulation state management **DONE**
+    - Edit, Play, Pause **DONE**
 - Environment lighting
 - Audio-subsystem **DONE**
     - Wrap miniaudio to handle audio **DONE**
