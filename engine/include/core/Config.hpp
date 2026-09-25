@@ -82,7 +82,7 @@ namespace engine::setting {
         inline void save() {
             std::ofstream file(CONFIG_FILE_PATH);
             if (!file.is_open()) {
-                std::cerr << "Engine error: save config: failed to open " << CONFIG_FILE_PATH << " for writing." << std::endl;
+                CORE_ERROR("Failed to open '{0}' for writing config", CONFIG_FILE_PATH);
                 return;
             }
             file << "target_fps_index " << video::target_fps_index << "\n";

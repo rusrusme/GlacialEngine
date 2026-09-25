@@ -41,7 +41,7 @@ namespace editor::config {
     inline void save() {
         std::ofstream file(CONFIG_FILE_PATH);
         if (!file.is_open()) {
-            std::cerr << "Editor error: failed to save " << CONFIG_FILE_PATH << "\n";
+            CLIENT_ERROR("Failed to save '{0}'", CONFIG_FILE_PATH);
             return;
         }
         for (const auto& [key, value] : s_config_cache) {
