@@ -20,7 +20,7 @@ add_executable(Editor
                src/gui/DebugPanel.hpp
                src/gui/Console.cpp
                src/gui/Console.hpp
-               src/gui/EntityIcons.hpp
+               src/gui/Icons.hpp
                src/Config.hpp
                src/EditorComponents.hpp
 )

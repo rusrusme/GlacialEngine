@@ -5,7 +5,7 @@
 
 #include "gui/Hierarchy.hpp"
 
-#include "EntityIcons.hpp"
+#include "Icons.hpp"
 
 namespace editor {
     void Hierarchy::init(std::shared_ptr<engine::Scene> scene, std::shared_ptr<engine::AssetManager> asset_manager) {

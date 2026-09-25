@@ -141,4 +141,48 @@ namespace editor {
         }
     }
     #endif
+
+    #ifdef ENABLE_IMGUI
+    static void draw_play_icon(ImDrawList* draw_list, const ImVec2 pos, const ImU32 col = IM_COL32(100, 210, 110, 240)) {
+        // Right-pointing filled triangle
+        draw_list->AddTriangleFilled(
+            ImVec2(pos.x + 3.5f, pos.y + 2.5f),
+            ImVec2(pos.x + 3.5f, pos.y + 11.5f),
+            ImVec2(pos.x + 11.5f, pos.y + 7.0f),
+            col
+        );
+    }
+
+    static void draw_pause_icon(ImDrawList* draw_list, const ImVec2 pos, const ImU32 col = IM_COL32(255, 190, 60, 240)) {
+        // Two vertical parallel bars
+        draw_list->AddRectFilled(ImVec2(pos.x + 3.0f, pos.y + 2.5f), ImVec2(pos.x + 5.5f, pos.y + 11.5f), col, 1.0f);
+        draw_list->AddRectFilled(ImVec2(pos.x + 8.5f, pos.y + 2.5f), ImVec2(pos.x + 11.0f, pos.y + 11.5f), col, 1.0f);
+    }
+
+    static void draw_stop_icon(ImDrawList* draw_list, const ImVec2 pos, const ImU32 col = IM_COL32(230, 80, 80, 240)) {
+        // Filled rounded square
+        draw_list->AddRectFilled(ImVec2(pos.x + 3.0f, pos.y + 3.0f), ImVec2(pos.x + 11.0f, pos.y + 11.0f), col, 1.5f);
+    }
+
+    // Helper to render an ImGui button with a centered vector icon inside it
+    static bool draw_icon_button(const char* str_id, void (*draw_icon)(ImDrawList*, ImVec2, ImU32), const ImVec2& size = ImVec2(32, 24)) {
+        bool clicked = ImGui::Button(str_id, size);
+
+        ImDrawList* draw_list = ImGui::GetWindowDrawList();
+        ImVec2 btn_min = ImGui::GetItemRectMin();
+        ImVec2 btn_size = ImGui::GetItemRectSize();
+
+        constexpr float icon_size = 14.0f;
+        ImVec2 icon_pos = ImVec2(
+            btn_min.x + (btn_size.x - icon_size) * 0.5f,
+            btn_min.y + (btn_size.y - icon_size) * 0.5f
+        );
+
+        // Brighten color on hover
+        ImU32 col = ImGui::IsItemHovered() ? IM_COL32(255, 255, 255, 255) : IM_COL32(200, 205, 215, 230);
+        draw_icon(draw_list, icon_pos, col);
+
+        return clicked;
+    }
+    #endif
 }

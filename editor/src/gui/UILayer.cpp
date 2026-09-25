@@ -6,6 +6,7 @@
 #include "UILayer.hpp"
 
 #include "../EditorLayer.hpp"
+#include "gui/Icons.hpp"
 
 #ifdef _WIN32
 #define NOMINMAX
@@ -52,7 +53,8 @@ namespace {
         ofn.Flags = OFN_PATHMUSTEXIST | OFN_OVERWRITEPROMPT | OFN_NOCHANGEDIR;
 
         if (GetSaveFileNameA(&ofn) == TRUE) {
-            return std::string(ofn.lpstrFile);
+            // return std::string(ofn.lpstrFile);
+            return {ofn.lpstrFile};
         }
         return "";
     }
@@ -134,8 +136,8 @@ namespace editor {
         }
 
         draw_imgui_menu_bar();
-        draw_imgui_tool_bar();
 
+        // Clean DockSpace across the viewport
         ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_PassthruCentralNode;
         ImGuiID dockspace_id = ImGui::DockSpaceOverViewport(0, ImGui::GetMainViewport(), dockspace_flags);
 
@@ -146,12 +148,18 @@ namespace editor {
             ImGui::DockBuilderSetNodeSize(dockspace_id, ImGui::GetMainViewport()->WorkSize);
 
             ImGuiID dock_main_id = dockspace_id;
+
+            // Split a node at the top specifically for the Toolbar container
+            ImGuiID dock_top_id = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Up, 0.06f, nullptr, &dock_main_id);
+
             ImGuiID dock_left_bottom_id;
             ImGuiID dock_bottom_id = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Down, 0.25f, nullptr, &dock_main_id);
             ImGuiID dock_right_id = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Right, 0.15f, nullptr, &dock_main_id);
             ImGuiID dock_left_id = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Left, 0.20f, nullptr, &dock_main_id);
             ImGuiID dock_left_top_id = ImGui::DockBuilderSplitNode(dock_left_id, ImGuiDir_Up, 0.4f, nullptr, &dock_left_bottom_id);
 
+            // Dock Toolbar into the top split slot
+            ImGui::DockBuilderDockWindow("Toolbar", dock_top_id);
             ImGui::DockBuilderDockWindow("Asset Browser", dock_left_top_id);
             ImGui::DockBuilderDockWindow("Hierarchy", dock_left_bottom_id);
             ImGui::DockBuilderDockWindow("Inspector", dock_right_id);
@@ -169,6 +177,8 @@ namespace editor {
 
             ImGui::DockBuilderFinish(dockspace_id);
         }
+
+        draw_imgui_tool_bar();
 
         // ------------------------------------------------------------------
         // SCENE PANEL
@@ -431,41 +441,51 @@ namespace editor {
     }
 
     void UILayer::draw_imgui_tool_bar() {
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 2));
-        ImGui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, ImVec2(0, 0));
+        if (!editor_layer_) return;
 
-        ImGui::Begin("##Toolbar", nullptr,
-                     ImGuiWindowFlags_NoDecoration |
-                     ImGuiWindowFlags_NoScrollbar |
-                     ImGuiWindowFlags_NoScrollWithMouse
-        );
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 4));
+        ImGuiWindowFlags flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
 
-        const bool is_play = (editor_layer_->get_scene_state() == engine::SceneState::Play);
-        const bool is_pause = (editor_layer_->get_scene_state() == engine::SceneState::Pause);
+        if (ImGui::Begin("Toolbar", nullptr, flags)) {
+            const float button_width = 36.0f;
+            const float button_height = 24.0f;
+            const float spacing = ImGui::GetStyle().ItemSpacing.x;
+            const float total_width = (button_width * 2.0f) + spacing;
 
-        if (is_play || is_pause) {
-            if (ImGui::Button("Stop", ImVec2(60, 24))) {
-                editor_layer_->on_scene_stop();
+            float avail_width = ImGui::GetContentRegionAvail().x;
+            if (avail_width > total_width) {
+                ImGui::SetCursorPosX((avail_width - total_width) * 0.5f);
+            }
+
+            const bool is_play = (editor_layer_->get_scene_state() == engine::SceneState::Play);
+            const bool is_pause = (editor_layer_->get_scene_state() == engine::SceneState::Pause);
+
+            // Play / Stop Button
+            if (is_play || is_pause) {
+                if (draw_icon_button("##StopBtn", draw_stop_icon, ImVec2(button_width, button_height))) {
+                    editor_layer_->on_scene_stop();
+                }
+            }
+            else {
+                if (draw_icon_button("##PlayBtn", draw_play_icon, ImVec2(button_width, button_height))) {
+                    editor_layer_->on_scene_play();
+                }
+            }
+
+            ImGui::SameLine();
+
+            // Pause / Resume Button
+            if (draw_icon_button("##PauseBtn", is_pause ? draw_play_icon : draw_pause_icon, ImVec2(button_width, button_height))) {
+                if (is_play) {
+                    editor_layer_->on_scene_pause();
+                }
+                else if (is_pause) {
+                    editor_layer_->on_scene_play();
+                }
             }
         }
-        else {
-            if (ImGui::Button("Play", ImVec2(60, 24))) {
-                editor_layer_->on_scene_play();
-            }
-        }
-        ImGui::SameLine();
-
-        if (ImGui::Button(is_pause ? "Resume" : "Pause", ImVec2(60, 24))) {
-            if (is_play) {
-                editor_layer_->on_scene_pause();
-            }
-            else if (is_pause) {
-                editor_layer_->on_scene_play();
-            }
-        }
-
         ImGui::End();
-        ImGui::PopStyleVar(2);
+        ImGui::PopStyleVar();
     }
     #endif
 }
