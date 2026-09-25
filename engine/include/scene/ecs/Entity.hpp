@@ -6,6 +6,7 @@
 #pragma once
 
 #include "scene/Scene.hpp"
+#include "scene/ecs/ComponentRegistry.hpp"
 
 namespace engine {
     class Entity {
@@ -50,6 +51,7 @@ namespace engine {
             throw std::runtime_error("Engine error: scenes: entity already has component of this type");
         }
         T& component = scene_->registry_.emplace<T>(entity_handle_, std::forward<Args>(args)...);
+        ComponentRegistry::register_type<T>();
         return component;
     }
 

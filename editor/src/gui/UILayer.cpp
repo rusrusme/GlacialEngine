@@ -130,6 +130,7 @@ namespace editor {
     #ifdef ENABLE_IMGUI
     void UILayer::on_imgui_render(engine::Renderer& renderer, float delta_time) {
         draw_imgui_menu_bar();
+        draw_imgui_tool_bar(renderer);
 
         ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_PassthruCentralNode;
         ImGuiID dockspace_id = ImGui::DockSpaceOverViewport(0, ImGui::GetMainViewport(), dockspace_flags);
@@ -417,6 +418,44 @@ namespace editor {
             }
             ImGui::EndMainMenuBar();
         }
+    }
+
+    void UILayer::draw_imgui_tool_bar(engine::Renderer& renderer) {
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 2));
+        ImGui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, ImVec2(0, 0));
+
+        ImGui::Begin("##Toolbar", nullptr,
+                     ImGuiWindowFlags_NoDecoration |
+                     ImGuiWindowFlags_NoScrollbar |
+                     ImGuiWindowFlags_NoScrollWithMouse
+        );
+
+        const bool is_play = (editor_layer_->get_scene_state() == engine::SceneState::Play);
+        const bool is_pause = (editor_layer_->get_scene_state() == engine::SceneState::Pause);
+
+        if (is_play || is_pause) {
+            if (ImGui::Button("Stop", ImVec2(60, 24))) {
+                editor_layer_->on_scene_stop();
+            }
+        }
+        else {
+            if (ImGui::Button("Play", ImVec2(60, 24))) {
+                editor_layer_->on_scene_play(renderer);
+            }
+        }
+        ImGui::SameLine();
+
+        if (ImGui::Button(is_pause ? "Resume" : "Pause", ImVec2(60, 24))) {
+            if (is_play) {
+                editor_layer_->on_scene_pause();
+            }
+            else if (is_pause) {
+                editor_layer_->on_scene_play(renderer);
+            }
+        }
+
+        ImGui::End();
+        ImGui::PopStyleVar(2);
     }
     #endif
 }

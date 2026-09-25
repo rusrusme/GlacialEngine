@@ -8,7 +8,7 @@ Future features:
 - Post-processing pipeline **PENDING**
 - Asset manager **PENDING**
     - Drag and drop textures on objects
-- More precise scene picking
+- More precise scene picking **PENDING**
 - Simulation state management
     - Edit, Play, Pause
 - Environment lighting

@@ -5,20 +5,24 @@
 
 #include "EditorLayer.hpp"
 
+#include <memory>
 #include <random>
 
 #include "Config.hpp"
 #include "audio/AudioLayer.hpp"
+#include "scene/SceneState.hpp"
 
 namespace editor {
     EditorLayer::EditorLayer(std::shared_ptr<engine::Scene> scene, std::shared_ptr<engine::AssetManager> asset_manager)
-        : active_scene_(std::move(scene)), asset_manager_(std::move(asset_manager)) {}
+        : active_scene_(scene), editor_scene_(std::move(scene)), asset_manager_(std::move(asset_manager)) {}
 
     void EditorLayer::on_attach(engine::Renderer& renderer) {
         debug_panel_ = std::make_unique<DebugPanel>();
         editor_grid_.init(renderer);
 
-        active_scene_->on_init(renderer);
+        if (active_scene_) {
+            active_scene_->on_init(renderer);
+        }
 
         engine::DebugRenderer::on_init();
 
@@ -54,8 +58,28 @@ namespace editor {
         if (engine::Input::is_key_pressed_once(engine::Key::F3)) {
             if (debug_panel_) debug_panel_->toggle_debug_panel();
         }
-        if (active_scene_) {
+
+        if (engine::Input::is_key_pressed_once(engine::Key::SPACE)) {
+            if (scene_state_ == engine::SceneState::Edit) {
+            }
+            else {
+                on_scene_stop();
+            }
+        }
+
+        total_time_ += delta_time;
+        if (active_scene_ && scene_state_ == engine::SceneState::Play) {
+            simulation_time_ += delta_time;
             active_scene_->on_update(delta_time);
+
+            // -----------------------------------------------------------------
+            // SIMULATION TEST: Rotate all scene entities in Play mode
+            // -----------------------------------------------------------------
+            auto view = active_scene_->view<engine::TransformComponent>();
+            for (auto entity_handle : view) {
+                auto& transform = view.get<engine::TransformComponent>(entity_handle);
+                transform.rotation.y += 45.0f * delta_time; // Rotate 45 deg/sec
+            }
         }
 
         const bool can_control_camera = is_viewport_hovered_ || is_viewport_focused_ ||
@@ -67,7 +91,6 @@ namespace editor {
         else {
             camera_controller_.reset_mouse_state();
         }
-        total_time_ += delta_time;
     }
 
     void EditorLayer::on_render(engine::Renderer& renderer, const float delta_time) {
@@ -109,6 +132,31 @@ namespace editor {
                 }
             }
         }
+
+        // ---------------------------------------------------------------------
+        // SIMULATION TEST: Animated Wiggly Line Overlay
+        // ---------------------------------------------------------------------
+        if (scene_state_ == engine::SceneState::Play || scene_state_ == engine::SceneState::Pause) {
+            constexpr int segments = 60;
+            constexpr float length = 10.0f;
+            constexpr float amplitude = 1.0f;
+            constexpr float frequency = 2.0f;
+            constexpr float wave_speed = 5.0f;
+
+            for (int i = 0; i < segments; ++i) {
+                const float t1 = static_cast<float>(i) / static_cast<float>(segments);
+                const float t2 = static_cast<float>(i + 1) / static_cast<float>(segments);
+
+                const float x1 = (t1 - 0.5f) * length;
+                const float x2 = (t2 - 0.5f) * length;
+
+                const float y1 = std::sin(t1 * frequency * 6.28318f + simulation_time_ * wave_speed) * amplitude;
+                const float y2 = std::sin(t2 * frequency * 6.28318f + simulation_time_ * wave_speed) * amplitude;
+
+                engine::DebugRenderer::draw_line({x1, y1 + 4.0f, 0.0f}, {x2, y2 + 4.0f, 0.0f}, {0.0f, 0.9f, 1.0f});
+            }
+        }
+
         if (debug_panel_ && debug_panel_->is_grid_enabled()) {
             editor_grid_.render(renderer);
         }
@@ -166,6 +214,38 @@ namespace editor {
             }
             return false;
         });
+    }
+
+    void EditorLayer::on_scene_play(engine::Renderer& renderer) {
+        if (scene_state_ == engine::SceneState::Pause) {
+            scene_state_ = engine::SceneState::Play;
+            return;
+        }
+        scene_state_ = engine::SceneState::Play;
+        simulation_time_ = 0.0f;
+
+        active_scene_ = engine::Scene::copy(editor_scene_);
+        if (active_scene_) {
+            active_scene_->on_init(renderer);
+        }
+    }
+
+    void EditorLayer::on_scene_pause() {
+        if (scene_state_ == engine::SceneState::Play) {
+            scene_state_ = engine::SceneState::Pause;
+        }
+    }
+
+    void EditorLayer::on_scene_stop() {
+        if (scene_state_ == engine::SceneState::Edit) return;
+
+        scene_state_ = engine::SceneState::Edit;
+        simulation_time_ = 0.0f;
+
+        if (active_scene_) {
+            active_scene_->on_shutdown();
+        }
+        active_scene_ = editor_scene_;
     }
 
     void EditorLayer::draw_directional_light(const glm::vec3 position, const glm::vec3& direction, const glm::vec3& color) {

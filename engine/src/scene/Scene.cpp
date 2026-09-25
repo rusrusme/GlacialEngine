@@ -17,6 +17,23 @@ namespace engine {
 
     Scene::~Scene() = default;
 
+    std::shared_ptr<Scene> Scene::copy(const std::shared_ptr<Scene>& source) {
+        if (!source) return nullptr;
+
+        auto destination = std::make_shared<Scene>();
+        auto& final_registry = destination->get_registry();
+        auto& source_registry = source->get_registry();
+
+        std::unordered_map<entt::entity, entt::entity> entity_map;
+        for (auto entity : source_registry.view<entt::entity>()) {
+            entity_map[entity] = final_registry.create();
+        }
+        ComponentRegistry::copy_all_components(source_registry, final_registry, entity_map);
+
+        CORE_INFO("Copied scene with {0} entities", entity_map.size());
+        return destination;
+    }
+
     Entity Scene::create_entity(const std::string& name) {
         return create_entity_with_uuid(UUID(), name);
     }

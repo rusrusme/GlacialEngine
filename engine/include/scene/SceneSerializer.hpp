@@ -15,6 +15,7 @@ namespace engine {
     public:
         explicit SceneSerializer(std::shared_ptr<Scene> scene) : scene_(std::move(scene)) {}
 
+        // Disk file
         void serialize(const std::string& filepath, AssetManager& asset_manager);
         bool deserialize(const std::string& filepath, AssetManager& asset_manager);
 

@@ -21,6 +21,8 @@ namespace engine {
         Scene();
         ~Scene();
 
+        static std::shared_ptr<Scene> copy(const std::shared_ptr<Scene>& source);
+
         Entity create_entity(const std::string& name = "Entity");
         Entity create_entity_with_uuid(UUID uuid, const std::string& name = "Entity");
         Entity duplicate_entity(Entity entity);
@@ -39,11 +41,12 @@ namespace engine {
         template<typename... Components>
         auto clear_component() { return registry_.clear<Components...>(); }
 
-        [[deprecated]] entt::registry& get_registry() { return registry_; }
         [[nodiscard]] CollisionSystem& get_collision_system() { return *collision_system_; }
 
     private:
         friend class Entity;
+
+        [[nodiscard]] entt::registry& get_registry() { return registry_; }
 
         entt::registry registry_;
         std::unique_ptr<CollisionSystem> collision_system_ = nullptr;
