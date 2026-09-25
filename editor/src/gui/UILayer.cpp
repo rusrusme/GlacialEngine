@@ -130,7 +130,7 @@ namespace editor {
     #ifdef ENABLE_IMGUI
     void UILayer::on_imgui_render(engine::Renderer& renderer, float delta_time) {
         draw_imgui_menu_bar();
-        draw_imgui_tool_bar(renderer);
+        draw_imgui_tool_bar();
 
         ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_PassthruCentralNode;
         ImGuiID dockspace_id = ImGui::DockSpaceOverViewport(0, ImGui::GetMainViewport(), dockspace_flags);
@@ -420,7 +420,7 @@ namespace editor {
         }
     }
 
-    void UILayer::draw_imgui_tool_bar(engine::Renderer& renderer) {
+    void UILayer::draw_imgui_tool_bar() {
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 2));
         ImGui::PushStyleVar(ImGuiStyleVar_ItemInnerSpacing, ImVec2(0, 0));
 
@@ -440,7 +440,7 @@ namespace editor {
         }
         else {
             if (ImGui::Button("Play", ImVec2(60, 24))) {
-                editor_layer_->on_scene_play(renderer);
+                editor_layer_->on_scene_play();
             }
         }
         ImGui::SameLine();
@@ -450,7 +450,7 @@ namespace editor {
                 editor_layer_->on_scene_pause();
             }
             else if (is_pause) {
-                editor_layer_->on_scene_play(renderer);
+                editor_layer_->on_scene_play();
             }
         }
 

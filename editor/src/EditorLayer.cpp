@@ -21,7 +21,7 @@ namespace editor {
         editor_grid_.init(renderer);
 
         if (active_scene_) {
-            active_scene_->on_init(renderer);
+            active_scene_->on_init();
         }
 
         engine::DebugRenderer::on_init();
@@ -61,6 +61,7 @@ namespace editor {
 
         if (engine::Input::is_key_pressed_once(engine::Key::SPACE)) {
             if (scene_state_ == engine::SceneState::Edit) {
+                on_scene_play();
             }
             else {
                 on_scene_stop();
@@ -133,30 +134,6 @@ namespace editor {
             }
         }
 
-        // ---------------------------------------------------------------------
-        // SIMULATION TEST: Animated Wiggly Line Overlay
-        // ---------------------------------------------------------------------
-        if (scene_state_ == engine::SceneState::Play || scene_state_ == engine::SceneState::Pause) {
-            constexpr int segments = 60;
-            constexpr float length = 10.0f;
-            constexpr float amplitude = 1.0f;
-            constexpr float frequency = 2.0f;
-            constexpr float wave_speed = 5.0f;
-
-            for (int i = 0; i < segments; ++i) {
-                const float t1 = static_cast<float>(i) / static_cast<float>(segments);
-                const float t2 = static_cast<float>(i + 1) / static_cast<float>(segments);
-
-                const float x1 = (t1 - 0.5f) * length;
-                const float x2 = (t2 - 0.5f) * length;
-
-                const float y1 = std::sin(t1 * frequency * 6.28318f + simulation_time_ * wave_speed) * amplitude;
-                const float y2 = std::sin(t2 * frequency * 6.28318f + simulation_time_ * wave_speed) * amplitude;
-
-                engine::DebugRenderer::draw_line({x1, y1 + 4.0f, 0.0f}, {x2, y2 + 4.0f, 0.0f}, {0.0f, 0.9f, 1.0f});
-            }
-        }
-
         if (debug_panel_ && debug_panel_->is_grid_enabled()) {
             editor_grid_.render(renderer);
         }
@@ -216,7 +193,7 @@ namespace editor {
         });
     }
 
-    void EditorLayer::on_scene_play(engine::Renderer& renderer) {
+    void EditorLayer::on_scene_play() {
         if (scene_state_ == engine::SceneState::Pause) {
             scene_state_ = engine::SceneState::Play;
             return;
@@ -226,7 +203,7 @@ namespace editor {
 
         active_scene_ = engine::Scene::copy(editor_scene_);
         if (active_scene_) {
-            active_scene_->on_init(renderer);
+            active_scene_->on_init();
         }
     }
 

@@ -84,7 +84,7 @@ namespace engine {
         }
     }
 
-    void Scene::on_init(Renderer& renderer) {
+    void Scene::on_init() {
         collision_system_ = std::make_unique<CollisionSystem>(10.0f);
         CORE_INFO("Scene initialized");
     }

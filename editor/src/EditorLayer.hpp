@@ -39,7 +39,7 @@ namespace editor {
 
         void on_event(engine::Event& event) override;
 
-        void on_scene_play(engine::Renderer& renderer);
+        void on_scene_play();
         void on_scene_pause();
         void on_scene_stop();
 

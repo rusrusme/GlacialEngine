@@ -28,7 +28,7 @@ namespace engine {
         Entity duplicate_entity(Entity entity);
         void destroy_entity(Entity entity);
 
-        void on_init(Renderer& renderer);
+        void on_init();
         void on_shutdown();
         void on_update(float delta_time);
         void on_render(Renderer& renderer, Camera& camera, AssetManager& asset_manager, float delta_time);
