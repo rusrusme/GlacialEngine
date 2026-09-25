@@ -7,20 +7,21 @@
 
 #include <filesystem>
 #include <fstream>
-#include <iostream>
 #include <sstream>
 #include <string>
+
+#include "core/Log.hpp"
 
 namespace engine::util {
     inline std::string read_file_to_string(const std::string& filepath) {
         if (!std::filesystem::exists(filepath)) {
-            std::cerr << "Engine error: file: shader file does not exist: " << filepath << std::endl;
+            CORE_ERROR("Failed reading file. Shader file does not exist: {0}", filepath.c_str());
             return "";
         }
 
         const std::ifstream file(filepath, std::ios::in | std::ios::binary);
         if (!file.is_open()) {
-            std::cerr << "Engine error: file: failed to open shader file: " << filepath << std::endl;
+            CORE_ERROR("Failed to open shader file: {0}", filepath.c_str());
             return "";
         }
 
