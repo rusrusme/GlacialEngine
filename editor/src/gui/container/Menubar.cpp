@@ -5,49 +5,7 @@
 
 #include "Menubar.hpp"
 
-#ifdef _WIN32
-#define NOMINMAX
-#include <windows.h>
-#endif
-
-#ifdef _WIN32
-namespace {
-    std::string open_file_dialog(const char* filter = "Scene Files (*.scene)\0*.scene\0All Files (*.*)\0*.*\0") {
-        OPENFILENAMEA ofn;
-        char sz_file[260] = {0};
-        ZeroMemory(&ofn, sizeof(ofn));
-        ofn.lStructSize = sizeof(ofn);
-        ofn.hwndOwner = nullptr;
-        ofn.lpstrFile = sz_file;
-        ofn.nMaxFile = sizeof(sz_file);
-        ofn.lpstrFilter = filter;
-        ofn.nFilterIndex = 1;
-        ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST | OFN_NOCHANGEDIR;
-        if (GetOpenFileNameA(&ofn) == TRUE) {
-            return {ofn.lpstrFile};
-        }
-        return "";
-    }
-
-    std::string save_file_dialog(const char* filter = "Scene Files (*.scene)\0*.scene\0All Files (*.*)\0*.*\0") {
-        OPENFILENAMEA ofn;
-        char sz_file[260] = {0};
-        ZeroMemory(&ofn, sizeof(ofn));
-        ofn.lStructSize = sizeof(ofn);
-        ofn.hwndOwner = nullptr;
-        ofn.lpstrFile = sz_file;
-        ofn.nMaxFile = sizeof(sz_file);
-        ofn.lpstrFilter = filter;
-        ofn.nFilterIndex = 1;
-        ofn.lpstrDefExt = "scene";
-        ofn.Flags = OFN_PATHMUSTEXIST | OFN_OVERWRITEPROMPT | OFN_NOCHANGEDIR;
-        if (GetSaveFileNameA(&ofn) == TRUE) {
-            return {ofn.lpstrFile};
-        }
-        return "";
-    }
-}
-#endif
+#include "platform/win32/FileDialog.hpp"
 
 namespace editor {
     Menubar::Menubar() = default;
@@ -71,26 +29,26 @@ namespace editor {
 
         auto handle_load_scene = [update_window_title, active_scene, asset_manager] {
             #ifdef _WIN32
-            std::string selected_file = open_file_dialog();
-            if (!selected_file.empty()) {
-                engine::SceneSerializer serializer(active_scene);
-                serializer.deserialize(selected_file, *asset_manager);
-                if (std::filesystem::path(selected_file).filename() != "clean.scene") {
-                    update_window_title(selected_file);
-                }
+            std::string selected_file = win32::open_file(win32::Filter::SCENE);
+            if (selected_file.empty()) return;
+            engine::SceneSerializer serializer(active_scene);
+            serializer.deserialize(selected_file, *asset_manager);
+            std::filesystem::path path(selected_file);
+            if (path.filename() != "clean.scene") {
+                update_window_title(path.generic_string());
             }
             #endif
         };
 
         auto handle_save_scene = [update_window_title, active_scene, asset_manager] {
             #ifdef _WIN32
-            std::string selected_file = save_file_dialog();
-            if (!selected_file.empty()) {
-                engine::SceneSerializer serializer(active_scene);
-                serializer.serialize(selected_file, *asset_manager);
-                if (std::filesystem::path(selected_file).filename() != "clean.scene") {
-                    update_window_title(selected_file);
-                }
+            std::string selected_file = win32::save_file(win32::Filter::SCENE, "scene");
+            if (selected_file.empty()) return;
+            engine::SceneSerializer serializer(active_scene);
+            serializer.serialize(selected_file, *asset_manager);
+            std::filesystem::path path(selected_file);
+            if (path.filename() != "clean.scene") {
+                update_window_title(path.generic_string());
             }
             #endif
         };

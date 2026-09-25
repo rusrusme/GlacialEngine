@@ -27,6 +27,15 @@ namespace editor {
     private:
         #ifdef ENABLE_IMGUI
         void draw_component(engine::Entity entity) const;
+
+        void draw_header_section(engine::Entity entity) const;
+        void draw_transform_component(engine::Entity entity) const;
+        void draw_mesh_component(engine::Entity entity) const;
+        void draw_material_component(engine::Entity entity) const;
+        void draw_lighting_components(engine::Entity entity) const;
+        void draw_box_collider_component(engine::Entity entity) const;
+        void draw_audio_source_component(engine::Entity entity) const;
+        void draw_add_component_button(engine::Entity entity) const;
         #endif
 
         std::shared_ptr<engine::Scene> scene_ = nullptr;
