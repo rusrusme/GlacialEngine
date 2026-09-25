@@ -9,6 +9,8 @@
 #include "scene/ecs/Entity.hpp"
 
 namespace editor {
+    enum class EntityType;
+
     class Hierarchy {
     public:
         Hierarchy() = default;
@@ -32,5 +34,27 @@ namespace editor {
         engine::Entity selected_entity_;
 
         char name_buffer_[128] = "";
+
+        #ifdef ENABLE_IMGUI
+        void render_header_bar();
+        void render_add_entity_popup();
+        void render_entity_list(engine::Entity& out_destroy, engine::Entity& out_duplicate);
+
+        void render_primitives_submenus();
+        void render_lighting_submenu();
+        void render_imported_models_submenu();
+
+        bool menu_item_with_icon(const char* label, EntityType type);
+        void create_primitive_entity(const char* label, const char* path, EntityType type);
+        std::string resolve_entity_name(const char* default_name) const;
+
+        void render_entity_node(engine::Entity entity, engine::Entity& out_destroy, engine::Entity& out_duplicate);
+        bool render_eye_toggle_button(engine::Entity entity, bool is_active);
+        void render_entity_context_menu(engine::Entity entity, engine::Entity& out_destroy, engine::Entity& out_duplicate);
+
+        void process_shortcuts(engine::Entity& out_destroy, engine::Entity& out_duplicate);
+        void process_deferred_actions(engine::Entity entity_to_destroy, engine::Entity entity_to_duplicate);
+        void process_deselection_inputs();
+        #endif
     };
 }
