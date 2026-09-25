@@ -12,12 +12,12 @@
 // Core
 #include "core/Application.hpp"
 #include "core/Config.hpp"
-#include "render/Framebuffer.hpp"
 #include "core/Layer.hpp"
 #include "core/LayerStack.hpp"
 #include "core/Log.hpp"
 #include "core/UUID.hpp"
 #include "core/Window.hpp"
+#include "render/Framebuffer.hpp"
 // Event
 #include "event/Event.hpp"
 #include "event/KeyEvents.hpp"
@@ -35,6 +35,8 @@
 #include "physics/AABB.hpp"
 #include "physics/CollisionSystem.hpp"
 #include "physics/SpatialHashGrid.hpp"
+// Platform
+#include "platform/FileDialogAPI.hpp"
 // Render/Mesh
 #include "render/mesh/InstanceData.hpp"
 #include "render/mesh/Mesh.hpp"
@@ -48,6 +50,9 @@
 #include "render/DebugRenderer.hpp"
 #include "render/Frame.hpp"
 #include "render/Frustum.hpp"
+#include "render/PostProcessor.hpp"
+#include "render/RenderAPI.hpp"
+#include "render/RenderCommand.hpp"
 #include "render/Renderer.hpp"
 #include "render/Shader.hpp"
 #include "render/ShaderLibrary.hpp"
@@ -56,6 +61,7 @@
 #include "render/Vertex.hpp"
 #include "render/VertexArray.hpp"
 // Scene/ECS
+#include "scene/ecs/ComponentRegistry.hpp"
 #include "scene/ecs/Components.hpp"
 #include "scene/ecs/Entity.hpp"
 // Scene/System
@@ -63,6 +69,7 @@
 // Scene
 #include "scene/Scene.hpp"
 #include "scene/SceneSerializer.hpp"
+#include "scene/SceneState.hpp"
 // UI
 #include "ui/UILayer.hpp"
 #include "ui/UIManager.hpp"
