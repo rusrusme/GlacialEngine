@@ -63,5 +63,5 @@ void main() {
 
     if (alpha < 0.001) discard;
 
-    frag_color = vec4(vec3(0.85), alpha * distance_fade);
+    frag_color = vec4(vec3(0.5), alpha * distance_fade);
 }

@@ -14,7 +14,14 @@ namespace editor {
     void AssetBrowser::render_imgui() {
         ImGui::Begin("Asset Browser");
         render_header();
-        render_grid();
+
+        ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
+        if (ImGui::BeginChild("AssetGridScrollArea", ImVec2(0, 0), false)) {
+            render_grid();
+        }
+        ImGui::EndChild();
+        ImGui::PopStyleColor();
+
         ImGui::End();
     }
 
@@ -38,33 +45,70 @@ namespace editor {
     }
 
     void AssetBrowser::render_header() {
-        if (current_directory_ != root_directory_) {
-            if (ImGui::Button("← Back")) {
-                current_directory_ = current_directory_.parent_path();
+        ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(4.0f, 2.0f));
+        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(2.0f, 0.0f));
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
+
+        std::filesystem::path accumulated_path;
+        std::optional<std::filesystem::path> new_directory = std::nullopt;
+        bool first = true;
+
+        for (const auto& part : current_directory_) {
+            if (!first) {
+                ImGui::SameLine();
+                ImGui::TextDisabled("/");
+                ImGui::SameLine();
             }
-            ImGui::SameLine();
+
+            accumulated_path /= part;
+            const bool is_current = (accumulated_path == current_directory_);
+
+            ImGui::PushID(accumulated_path.string().c_str());
+
+            if (is_current) {
+                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.95f, 0.95f, 0.95f, 1.00f));
+            }
+            else {
+                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.60f, 0.63f, 0.68f, 1.00f));
+            }
+
+            if (ImGui::Button(part.string().c_str())) {
+                new_directory = accumulated_path;
+            }
+
+            ImGui::PopStyleColor();
+            ImGui::PopID();
+
+            first = false;
         }
-        ImGui::Text("%s", current_directory_.string().c_str());
+
+        ImGui::PopStyleColor();
+        ImGui::PopStyleVar(2);
+
+        if (new_directory.has_value()) {
+            current_directory_ = *new_directory;
+        }
+
         ImGui::Separator();
     }
 
     void AssetBrowser::render_grid() {
-        constexpr float padding = 16.0f;
-        constexpr float thumbnail_size = 72.0f;
-        constexpr float cell_size = thumbnail_size + padding;
+        constexpr float THUMBNAIL_SIZE = 60.0f;
+        constexpr float MIN_CELL_SIZE = 60.0f;
 
         const float panel_width = ImGui::GetContentRegionAvail().x;
-        int column_count = static_cast<int>(panel_width / cell_size);
+        int column_count = static_cast<int>(panel_width / MIN_CELL_SIZE);
         if (column_count < 1) column_count = 1;
 
         if (!std::filesystem::exists(current_directory_)) return;
 
-        if (ImGui::BeginTable("AssetGrid", column_count, ImGuiTableFlags_SizingFixedSame)) {
+        // Dynamic Stretching
+        if (ImGui::BeginTable("AssetGrid", column_count, ImGuiTableFlags_SizingStretchSame)) {
             for (const auto& entry : std::filesystem::directory_iterator(current_directory_)) {
                 if (entry.path().extension() == ".meta") continue;
 
                 ImGui::TableNextColumn();
-                render_asset_item(entry, thumbnail_size);
+                render_asset_item(entry, THUMBNAIL_SIZE);
             }
             ImGui::EndTable();
         }
@@ -77,6 +121,11 @@ namespace editor {
 
         ImGui::PushID(filename.c_str());
 
+        const float column_width = ImGui::GetColumnWidth();
+        const float x_offset = std::max(0.0f, (column_width - thumbnail_size) * 0.5f);
+        const float start_x = ImGui::GetCursorPosX() + x_offset;
+        ImGui::SetCursorPosX(start_x);
+
         // Button background colors
         ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 6.0f);
         if (is_directory) {
@@ -87,6 +136,7 @@ namespace editor {
             ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.14f, 0.14f, 0.16f, 1.00f));
             ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.22f, 0.22f, 0.25f, 1.00f));
         }
+
         // Base Button + Icon Overlay
         ImGui::Button("##thumb", ImVec2(thumbnail_size, thumbnail_size));
         draw_item_icon(ImGui::GetWindowDrawList(), ImGui::GetItemRectMin(), ImGui::GetItemRectMax(), is_directory);
@@ -107,8 +157,10 @@ namespace editor {
                 ImGui::EndDragDropSource();
             }
         }
+
         // Filename Label
-        ImGui::PushTextWrapPos(ImGui::GetCursorPos().x + thumbnail_size);
+        ImGui::SetCursorPosX(start_x);
+        ImGui::PushTextWrapPos(start_x + thumbnail_size);
         ImGui::TextUnformatted(filename.c_str());
         ImGui::PopTextWrapPos();
         ImGui::PopID();
