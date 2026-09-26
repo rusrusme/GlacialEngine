@@ -5,6 +5,10 @@
 
 #include "Toolbar.hpp"
 
+#ifdef ENABLE_IMGUI
+#include "imgui_internal.h"
+#endif
+
 #include "EditorLayer.hpp"
 #include "gui/Icons.hpp"
 #include "scene/SceneState.hpp"
@@ -16,6 +20,7 @@ namespace editor {
     #ifdef ENABLE_IMGUI
     void Toolbar::render_imgui() {
         constexpr float slot_width = 36.0f;
+        constexpr float slot_height = 24.0f;
         const float spacing_x = ImGui::GetStyle().ItemSpacing.x;
 
         // Determine minimum required slots
@@ -27,18 +32,30 @@ namespace editor {
         }
         min_required_slots = std::max<size_t>(1, min_required_slots);
 
-        // Minimum window constraints
-        constexpr float window_padding_x = 16.0f;
+        // Window width constraint based on min slots
+        constexpr float window_padding_x = 16.0f; // WindowPadding.x (8 * 2)
         const float min_window_width
-            = static_cast<float>(min_required_slots) * slot_width + static_cast<float>(min_required_slots - 1) * spacing_x + window_padding_x + 16.0f;
+            = static_cast<float>(min_required_slots) * slot_width
+            + static_cast<float>(min_required_slots - 1) * spacing_x
+            + window_padding_x + 16.0f;
 
-        ImGui::SetNextWindowSizeConstraints(ImVec2(min_window_width, 32.0f), ImVec2(FLT_MAX, FLT_MAX));
+        // Lock window max height to strictly 1 row height (padding + slot + title bar)
+        constexpr float window_padding_y = 8.0f; // WindowPadding.y (4 * 2)
+        const float fixed_window_height = slot_height + window_padding_y + ImGui::GetFrameHeight();
+
+        ImGui::SetNextWindowSizeConstraints(
+            ImVec2(min_window_width, fixed_window_height),
+            ImVec2(FLT_MAX, fixed_window_height)
+        );
+
+        ImGuiWindowClass window_class;
+        window_class.DockNodeFlagsOverrideSet = ImGuiDockNodeFlags_NoResize | ImGuiDockNodeFlags_NoSplit;
+        ImGui::SetNextWindowClass(&window_class);
 
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(8, 4));
         ImGuiWindowFlags flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
 
         if (ImGui::Begin("Toolbar", nullptr, flags)) {
-            constexpr float slot_height = 24.0f;
             const ImVec2 avail = ImGui::GetContentRegionAvail();
 
             auto target_slot_count = static_cast<size_t>(
@@ -59,11 +76,14 @@ namespace editor {
             const float center_y = ImGui::GetCursorPosY() + std::max(0.0f, (avail.y - slot_height) * 0.5f);
             ImGui::SetCursorPosY(center_y);
 
-            // Right-align slots
+            // Center horizontally so start margin equals end margin
             const float total_slots_width
-                = slot_width * static_cast<float>(toolbar_slots_.size()) + spacing_x * static_cast<float>(toolbar_slots_.size() - 1);
-            if (avail.x >= total_slots_width) {
-                ImGui::SetCursorPosX(ImGui::GetCursorPosX() + avail.x - total_slots_width);
+                = slot_width * static_cast<float>(toolbar_slots_.size())
+                + spacing_x * static_cast<float>(toolbar_slots_.size() - 1);
+
+            if (avail.x > total_slots_width) {
+                const float symmetric_offset = (avail.x - total_slots_width) * 0.5f;
+                ImGui::SetCursorPosX(ImGui::GetCursorPosX() + symmetric_offset);
             }
 
             ImDrawList* draw_list = ImGui::GetWindowDrawList();

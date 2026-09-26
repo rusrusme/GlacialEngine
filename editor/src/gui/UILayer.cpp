@@ -99,17 +99,15 @@ namespace editor {
 
             ImGuiID dock_main_id = dockspace_id;
 
-            // Split a node at the top specifically for the Toolbar container
-            ImGuiID dock_top_id = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Up, 0.06f, nullptr, &dock_main_id);
-
             ImGuiID dock_left_bottom_id;
-            ImGuiID dock_bottom_id = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Down, 0.25f, nullptr, &dock_main_id);
-            ImGuiID dock_right_id = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Right, 0.15f, nullptr, &dock_main_id);
-            ImGuiID dock_left_id = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Left, 0.20f, nullptr, &dock_main_id);
+            ImGuiID dock_bottom_id   = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Down, 0.25f, nullptr, &dock_main_id);
+            ImGuiID dock_right_id    = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Right, 0.15f, nullptr, &dock_main_id);
+            ImGuiID dock_left_id     = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Left, 0.20f, nullptr, &dock_main_id);
             ImGuiID dock_left_top_id = ImGui::DockBuilderSplitNode(dock_left_id, ImGuiDir_Up, 0.4f, nullptr, &dock_left_bottom_id);
 
-            // Dock Toolbar into the top split slot
-            ImGui::DockBuilderDockWindow("Toolbar", dock_top_id);
+            ImGuiID dock_toolbar_id = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Up, 0.08f, nullptr, &dock_main_id);
+
+            ImGui::DockBuilderDockWindow("Toolbar", dock_toolbar_id);
             ImGui::DockBuilderDockWindow("Asset Browser", dock_left_top_id);
             ImGui::DockBuilderDockWindow("Hierarchy", dock_left_bottom_id);
             ImGui::DockBuilderDockWindow("Inspector", dock_right_id);
