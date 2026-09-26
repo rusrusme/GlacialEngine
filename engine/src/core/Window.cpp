@@ -6,13 +6,46 @@
 #include <core/Window.hpp>
 
 #include "core/Config.hpp"
+#include "core/WindowAPI.hpp"
 #include "event/KeyEvents.hpp"
 #include "event/MouseEvents.hpp"
 
 namespace engine {
-    Window::Window(GLFWwindow* window) : window_(window) {
+    Window::Window() {
+        data_.title = setting::FRAME_TITLE;
+        data_.width = setting::video::WINDOW_WIDTH;
+        data_.height = setting::video::WINDOW_HEIGHT;
+
+        CORE_INFO("Creating window: '{0}' ({1}x{2})", data_.title, data_.width, data_.height);
+
+        window_ = glfwCreateWindow(data_.width, data_.height, data_.title.c_str(), nullptr, nullptr);
+        // window_handle_ = window::create_window(data_.width, data_.height, data_.title.c_str(), &data_);
+        if (!window_) {
+            CORE_CRITICAL("Could not create GLFW window!");
+            return;
+        }
+
+        // Apply saved position & window mode
+        if (setting::video::WINDOW_X >= 0 && setting::video::WINDOW_Y >= 0) {
+            glfwSetWindowPos(window_, setting::video::WINDOW_X, setting::video::WINDOW_Y);
+        }
+
+        if (setting::video::IS_MAXIMIZED) {
+            glfwMaximizeWindow(window_);
+        }
+
+        glfwMakeContextCurrent(window_);
+
         update_dimensions();
         setup_callbacks();
+    }
+
+    Window::~Window() {
+        if (window_) {
+            save_state();
+            glfwDestroyWindow(window_);
+            window_ = nullptr;
+        }
     }
 
     void Window::set_event_callback(const EventCallbackFunc& callback) {
@@ -37,6 +70,20 @@ namespace engine {
         float xscale, yscale;
         glfwGetMonitorContentScale(monitor, &xscale, &yscale);
         return xscale;
+    }
+
+    void Window::save_state() {
+        if (!window_) return;
+
+        const bool is_iconified = glfwGetWindowAttrib(window_, GLFW_ICONIFIED) != 0;
+        const bool is_max = glfwGetWindowAttrib(window_, GLFW_MAXIMIZED) != 0;
+
+        setting::video::IS_MAXIMIZED = is_max;
+
+        if (!is_iconified && !is_max) {
+            glfwGetWindowPos(window_, &setting::video::WINDOW_X, &setting::video::WINDOW_Y);
+            glfwGetWindowSize(window_, &setting::video::WINDOW_WIDTH, &setting::video::WINDOW_HEIGHT);
+        }
     }
 
     void Window::update_dimensions() {

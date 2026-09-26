@@ -7,6 +7,7 @@
 
 #include "core/Config.hpp"
 #include "core/Log.hpp"
+#include "core/WindowAPI.hpp"
 #include "event/MouseEvents.hpp"
 #include "event/WindowEvents.hpp"
 #include "render/Frame.hpp"
@@ -20,33 +21,18 @@ namespace engine {
         Log::init();
         CORE_INFO("Starting application");
         setting::configuration::load();
-        if (!glfwInit()) {
-            CORE_CRITICAL("Application initialization failed: Could not initialize GLFW.");
+
+        if (!window::init(GraphicsFramework::GLFW)) {
+            CORE_CRITICAL("Application initialization failed: Could not initialize WindowAPI");
             return 1;
         }
 
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 6);
-        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-
-        CORE_INFO("Creating window: '{0}' ({1}x{2})",
-                  setting::FRAME_TITLE,
-                  setting::video::MONITOR_RESOLUTION_WIDTH,
-                  setting::video::MONITOR_RESOLUTION_HEIGHT);
-
-        GLFWwindow* raw_window = glfwCreateWindow(
-            setting::video::MONITOR_RESOLUTION_WIDTH,
-            setting::video::MONITOR_RESOLUTION_HEIGHT,
-            setting::FRAME_TITLE, nullptr, nullptr);
-
-        if (!raw_window) {
-            CORE_CRITICAL("Application initialization failed: Could not create GLFW window");
-            glfwTerminate();
+        window_ = std::make_unique<Window>();
+        if (!window_->is_valid()) {
+            CORE_CRITICAL("Application initialization failed: Could not create window");
+            window::shutdown();
             return 1;
         }
-        glfwMakeContextCurrent(raw_window);
-
-        window_ = std::make_unique<Window>(raw_window);
         window_->set_event_callback([this](Event& event) { on_event(event); });
 
         // ----------------------------------
@@ -56,8 +42,8 @@ namespace engine {
 
         if (!renderer_.on_init(window_->native())) {
             CORE_CRITICAL("Application initialization failed: Could not initialize renderer");
-            glfwDestroyWindow(window_->native());
-            glfwTerminate();
+            window_.reset();
+            window::shutdown();
             return 1;
         }
         CORE_INFO("Renderer successfully initialized");
@@ -140,14 +126,13 @@ namespace engine {
     void Application::shutdown() {
         CORE_INFO("Shutting down engine application");
 
-        setting::configuration::save();
-
         Frame::shutdown();
         renderer_.on_shutdown();
-        if (window_ != nullptr) {
-            glfwDestroyWindow(window_->native());
-        }
-        glfwTerminate();
+
+        window_.reset();
+
+        setting::configuration::save();
+        window::shutdown();
         CORE_INFO("Engine shutdown complete");
     }
 

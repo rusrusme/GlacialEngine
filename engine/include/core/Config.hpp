@@ -9,6 +9,7 @@
 #include <fstream>
 #include <iostream>
 #include <iterator>
+#include <sstream>
 #include <string>
 
 #include "core/Log.hpp"
@@ -23,6 +24,14 @@ namespace engine::setting {
         constexpr float FPS_REFRESH_RATE_IN_SECONDS = 0.5f;
 
         inline bool IS_VSYNC = false;
+
+        // --- Window Settings ---
+        inline int WINDOW_WIDTH = 1600;
+        inline int WINDOW_HEIGHT = 900;
+        // -1 indicates default OS centered placement
+        inline int WINDOW_X = -1;
+        inline int WINDOW_Y = -1;
+        inline bool IS_MAXIMIZED = false;
 
         inline int target_fps_index = 7;
         const int fps_presets[] = {30, 60, 90, 120, 144, 165, 240, INT32_MAX};
@@ -75,6 +84,22 @@ namespace engine::setting {
                         }
                     }
                 }
+                else if (key == "window_width") {
+                    iss >> video::WINDOW_WIDTH;
+                }
+                else if (key == "window_height") {
+                    iss >> video::WINDOW_HEIGHT;
+                }
+                else if (key == "window_x") {
+                    iss >> video::WINDOW_X;
+                }
+                else if (key == "window_y") {
+                    iss >> video::WINDOW_Y;
+                }
+                else if (key == "is_maximized") {
+                    int val;
+                    if (iss >> val) video::IS_MAXIMIZED = (val != 0);
+                }
             }
             CORE_TRACE("Configuration settings loaded");
         }
@@ -87,6 +112,11 @@ namespace engine::setting {
             }
             file << "target_fps_index " << video::target_fps_index << "\n";
             file << "is_vsync " << (video::IS_VSYNC ? 1 : 0) << "\n";
+            file << "window_width " << video::WINDOW_WIDTH << "\n";
+            file << "window_height " << video::WINDOW_HEIGHT << "\n";
+            file << "window_x " << video::WINDOW_X << "\n";
+            file << "window_y " << video::WINDOW_Y << "\n";
+            file << "is_maximized " << (video::IS_MAXIMIZED ? 1 : 0) << "\n";
 
             CORE_TRACE("Configuration saved");
         }

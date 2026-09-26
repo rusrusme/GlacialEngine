@@ -113,6 +113,8 @@ add_library(Engine STATIC
             include/platform/FileDialogAPI.hpp
             src/platform/win32/Win32FileDialog.cpp
             src/platform/FileDialogAPI.cpp
+            include/core/WindowAPI.hpp
+            src/core/WindowAPI.cpp
 )
 # ----------------------------------------------------------------------------
 target_include_directories(Engine
