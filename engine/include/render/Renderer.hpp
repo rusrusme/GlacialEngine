@@ -8,7 +8,6 @@
 #include <memory>
 #include <unordered_map>
 #include <vector>
-#include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 
 #include "core/UUID.hpp"
@@ -39,7 +38,7 @@ namespace engine {
         Renderer();
         ~Renderer();
 
-        bool on_init(GLFWwindow* window);
+        bool on_init(void* window);
         void on_shutdown();
         void on_resize(int width, int height);
 
@@ -137,7 +136,7 @@ namespace engine {
         std::vector<DirectionalLightData> directional_lights_;
         std::vector<PointLightData> point_lights_;
 
-        GLFWwindow* window_ = nullptr;
+        void* window_ = nullptr;
 
         int framebuffer_width_ = 1;
         int framebuffer_height_ = 1;

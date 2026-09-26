@@ -10,7 +10,7 @@
 namespace engine {
     class Frame {
     public:
-        static void init(GLFWwindow* window);
+        static void init(void* window);
         static void shutdown();
 
         static float begin_frame();

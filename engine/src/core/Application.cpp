@@ -23,7 +23,7 @@ namespace engine {
         setting::configuration::load();
 
         if (!window::init(GraphicsFramework::GLFW)) {
-            CORE_CRITICAL("Application initialization failed: Could not initialize WindowAPI");
+            CORE_CRITICAL("Application initialization failed: Could not initialize window");
             return 1;
         }
 

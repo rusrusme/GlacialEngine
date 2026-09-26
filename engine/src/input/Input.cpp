@@ -23,14 +23,13 @@ namespace engine {
 
     bool Input::is_mouse_button_pressed(const int key) {
         auto* window = Application::get().window().native();
-        const int state = glfwGetMouseButton(window, key);
-        return state == GLFW_PRESS;
+        return window::is_mouse_button_pressed(window, key);
     }
 
     glm::vec2 Input::get_mouse_position() {
         auto* window = Application::get().window().native();
         double x, y;
-        glfwGetCursorPos(window, &x, &y);
+        window::get_mouse_position(window, &x, &y);
         return {static_cast<float>(x), static_cast<float>(y)};
     }
 
@@ -44,16 +43,15 @@ namespace engine {
 
     bool Input::is_key_pressed(const int key) {
         auto* window = Application::get().window().native();
-        const int state = glfwGetKey(window, key);
-        return state == GLFW_PRESS || state == GLFW_REPEAT;
+        return window::is_key_pressed(window, key);
     }
 
     bool Input::is_key_pressed_once(const int key) {
         static std::unordered_map<int, bool> key_states;
-        GLFWwindow* window = Application::get().window().native();
+        void* window = Application::get().window().native();
         if (!window) return false;
 
-        const bool is_pressed = glfwGetKey(window, key) == GLFW_PRESS;
+        const bool is_pressed = window::is_key_pressed(window, key);
         bool& was_pressed_last_frame = key_states[key];
 
         if (is_pressed && !was_pressed_last_frame) {

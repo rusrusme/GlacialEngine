@@ -7,9 +7,10 @@
 #include "render/DebugFrame.hpp"
 
 #include "core/Application.hpp"
+#include "../../../include/render/debug/ImguiPlatform.hpp"
 
 namespace engine {
-    void DebugFrame::init(GLFWwindow* window, const char* glsl_version) {
+    void DebugFrame::init(void* window, const char* glsl_version) {
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
 
@@ -21,7 +22,7 @@ namespace engine {
         io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;
         io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
 
-        float dpiScale = Application::get().window().get_monitor_dpi_scale();
+        const float dpiScale = Application::get().window().get_monitor_dpi_scale();
 
         io.Fonts->AddFontFromFileTTF(
             "assets/fonts/Inter-VariableFont.ttf",
@@ -130,19 +131,19 @@ namespace engine {
         colors[ImGuiCol_NavHighlight] = accent_muted;
         // -----------------------------------------
 
-        ImGui_ImplGlfw_InitForOpenGL(window, true);
+        debug::init_platform_backend(window, GraphicsFramework::GLFW);
         ImGui_ImplOpenGL3_Init(glsl_version);
     }
 
     void DebugFrame::shutdown() {
         ImGui_ImplOpenGL3_Shutdown();
-        ImGui_ImplGlfw_Shutdown();
+        debug::shutdown_platform_backend(GraphicsFramework::GLFW);
         ImGui::DestroyContext();
     }
 
     void DebugFrame::begin_frame() {
         ImGui_ImplOpenGL3_NewFrame();
-        ImGui_ImplGlfw_NewFrame();
+        debug::new_frame_platform_backend(GraphicsFramework::GLFW);
         ImGui::NewFrame();
     }
 
@@ -152,10 +153,10 @@ namespace engine {
 
         const ImGuiIO& io = ImGui::GetIO();
         if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable) {
-            GLFWwindow* current_context = glfwGetCurrentContext();
+            void* current_context = window::get_current_context();
             ImGui::UpdatePlatformWindows();
             ImGui::RenderPlatformWindowsDefault();
-            glfwMakeContextCurrent(current_context);
+            window::make_context_current(current_context);
         }
     }
 }

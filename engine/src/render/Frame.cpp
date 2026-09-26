@@ -7,7 +7,7 @@
 
 #include "core/Application.hpp"
 #include "core/Config.hpp"
-#include "render/DebugFrame.hpp"
+#include "../../include/render/debug/DebugFrame.hpp"
 
 // --------------------------------------------------------------------
 #if defined(_WIN32)
@@ -47,8 +47,8 @@ void wait_high_res(HANDLE timer, const double seconds) {
 // --------------------------------------------------------------------
 
 namespace engine {
-    void Frame::init(GLFWwindow* window) {
-        window_ = window;
+    void Frame::init(void* window) {
+        window_ = static_cast<GLFWwindow*>(window);
 
         last_frame_time_ = glfwGetTime();
         next_frame_time_ = last_frame_time_;
@@ -102,8 +102,10 @@ namespace engine {
         #endif
 
         if (window_) {
-            glfwSwapBuffers(window_);
-            glfwPollEvents();
+            window::swap_buffers(window_);
+            window::poll_events();
+            // glfwSwapBuffers(window_);
+            // glfwPollEvents();
         }
 
         limit_frame_rate();

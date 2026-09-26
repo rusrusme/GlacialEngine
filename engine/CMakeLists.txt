@@ -5,8 +5,8 @@ add_library(Engine STATIC
             include/core/Application.hpp
             src/render/Renderer.cpp
             include/render/Renderer.hpp
-            src/render/DebugFrame.cpp
-            include/render/DebugFrame.hpp
+            src/render/debug/DebugFrame.cpp
+            include/render/debug/DebugFrame.hpp
             src/math/Raycaster.cpp
             include/math/Raycaster.hpp
             src/render/Camera.cpp
@@ -106,8 +106,8 @@ add_library(Engine STATIC
             include/render/RenderCommand.hpp
             include/audio/AudioLayer.hpp
             src/audio/AudioLayer.cpp
-            include/render/DebugRenderer.hpp
-            src/render/DebugRenderer.cpp
+            include/render/debug/DebugRenderer.hpp
+            src/render/debug/DebugRenderer.cpp
             include/scene/SceneState.hpp
             include/scene/ecs/ComponentRegistry.hpp
             include/platform/FileDialogAPI.hpp
@@ -115,6 +115,8 @@ add_library(Engine STATIC
             src/platform/FileDialogAPI.cpp
             include/core/WindowAPI.hpp
             src/core/WindowAPI.cpp
+            include/render/debug/ImguiPlatform.hpp
+            src/render/debug/ImguiPlatform.cpp
 )
 # ----------------------------------------------------------------------------
 target_include_directories(Engine

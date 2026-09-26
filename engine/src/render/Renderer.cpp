@@ -7,6 +7,7 @@
 
 #include "asset/AssetManager.hpp"
 #include "core/Config.hpp"
+#include "core/WindowAPI.hpp"
 #include "render/Buffer.hpp"
 #include "render/Camera.hpp"
 #include "render/RenderCommand.hpp"
@@ -18,17 +19,19 @@ namespace engine {
     Renderer::Renderer() = default;
     Renderer::~Renderer() = default;
 
-    bool Renderer::on_init(GLFWwindow* window) {
+    bool Renderer::on_init(void* window) {
         window_ = window;
 
         if (window_ == nullptr) {
-            CORE_CRITICAL("Renderer failed: GLFWwindow pointer is null");
+            CORE_CRITICAL("Renderer failed: window pointer is null");
             return false;
         }
 
         RenderCommand::init();
 
-        glfwGetFramebufferSize(window_, &framebuffer_width_, &framebuffer_height_);
+        window::get_framebuffer_size(window_, &framebuffer_width_, &framebuffer_height_);
+        // glfwGetFramebufferSize(window_, &framebuffer_width_, &framebuffer_height_);
+
         RenderCommand::set_viewport(0, 0, static_cast<uint32_t>(framebuffer_width_), static_cast<uint32_t>(framebuffer_height_));
 
         post_processor_ = std::make_unique<PostProcessor>();

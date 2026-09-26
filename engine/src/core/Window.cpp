@@ -7,8 +7,6 @@
 
 #include "core/Config.hpp"
 #include "core/WindowAPI.hpp"
-#include "event/KeyEvents.hpp"
-#include "event/MouseEvents.hpp"
 
 namespace engine {
     Window::Window() {
@@ -18,33 +16,36 @@ namespace engine {
 
         CORE_INFO("Creating window: '{0}' ({1}x{2})", data_.title, data_.width, data_.height);
 
-        window_ = glfwCreateWindow(data_.width, data_.height, data_.title.c_str(), nullptr, nullptr);
-        // window_handle_ = window::create_window(data_.width, data_.height, data_.title.c_str(), &data_);
-        if (!window_) {
-            CORE_CRITICAL("Could not create GLFW window!");
+        window_handle_ = window::create_window(
+            data_.width,
+            data_.height,
+            data_.title.c_str(),
+            &data_
+        );
+        if (!window_handle_) {
+            CORE_CRITICAL("Could not create window");
             return;
         }
 
         // Apply saved position & window mode
         if (setting::video::WINDOW_X >= 0 && setting::video::WINDOW_Y >= 0) {
-            glfwSetWindowPos(window_, setting::video::WINDOW_X, setting::video::WINDOW_Y);
+            window::set_position(window_handle_, setting::video::WINDOW_X, setting::video::WINDOW_Y);
         }
 
         if (setting::video::IS_MAXIMIZED) {
-            glfwMaximizeWindow(window_);
+            window::maximize_window(window_handle_);
         }
 
-        glfwMakeContextCurrent(window_);
+        window::make_context_current(window_handle_);
 
         update_dimensions();
-        setup_callbacks();
     }
 
     Window::~Window() {
-        if (window_) {
+        if (window_handle_) {
             save_state();
-            glfwDestroyWindow(window_);
-            window_ = nullptr;
+            window::destroy_window(window_handle_);
+            window_handle_ = nullptr;
         }
     }
 
@@ -54,134 +55,38 @@ namespace engine {
 
     void Window::set_vsync(const bool enabled) {
         setting::video::IS_VSYNC = enabled;
-        glfwSwapInterval(enabled ? 1 : 0);
+        window::set_vsync(enabled);
     }
 
     void Window::set_title(const std::string& title) {
         data_.title = title;
-        if (window_) {
-            glfwSetWindowTitle(window_, data_.title.c_str());
+        if (window_handle_) {
+            window::set_title(window_handle_, data_.title.c_str());
         }
     }
 
-    float Window::get_monitor_dpi_scale() {
-        GLFWmonitor* monitor = glfwGetPrimaryMonitor();
-        if (!monitor) return 1.0f;
-        float xscale, yscale;
-        glfwGetMonitorContentScale(monitor, &xscale, &yscale);
-        return xscale;
+    float Window::get_monitor_dpi_scale() const {
+        if (!window_handle_) return 1.0f;
+        return window::get_monitor_dpi_scale();
     }
 
-    void Window::save_state() {
-        if (!window_) return;
+    void Window::save_state() const {
+        if (!window_handle_) return;
 
-        const bool is_iconified = glfwGetWindowAttrib(window_, GLFW_ICONIFIED) != 0;
-        const bool is_max = glfwGetWindowAttrib(window_, GLFW_MAXIMIZED) != 0;
+        const bool is_minimized = window::is_minimized(window_handle_);
+        const bool is_max = window::is_maximized(window_handle_);
 
         setting::video::IS_MAXIMIZED = is_max;
 
-        if (!is_iconified && !is_max) {
-            glfwGetWindowPos(window_, &setting::video::WINDOW_X, &setting::video::WINDOW_Y);
-            glfwGetWindowSize(window_, &setting::video::WINDOW_WIDTH, &setting::video::WINDOW_HEIGHT);
+        if (!is_minimized && !is_max) {
+            window::get_position(window_handle_, &setting::video::WINDOW_X, &setting::video::WINDOW_Y);
+            window::get_size(window_handle_, &setting::video::WINDOW_WIDTH, &setting::video::WINDOW_HEIGHT);
         }
     }
 
     void Window::update_dimensions() {
-        if (window_) {
-            glfwGetFramebufferSize(window_, &data_.width, &data_.height);
+        if (window_handle_) {
+            window::get_framebuffer_size(window_handle_, &data_.width, &data_.height);
         }
-    }
-
-    void Window::setup_callbacks() {
-        if (!window_) return;
-
-        glfwSetWindowUserPointer(window_, &data_);
-
-        // ------------------------------------------------------------------------------
-        // Window events
-        // ------------------------------------------------------------------------------
-        glfwSetFramebufferSizeCallback(window_, [](GLFWwindow* window, const int width, const int height) {
-            auto* data = static_cast<WindowData*>(glfwGetWindowUserPointer(window));
-            if (data && data->event_callback) {
-                data->width = width;
-                data->height = height;
-                WindowResizedEvent event(width, height);
-                data->event_callback(event);
-            }
-        });
-
-        glfwSetWindowCloseCallback(window_, [](GLFWwindow* window) {
-            auto* data = static_cast<WindowData*>(glfwGetWindowUserPointer(window));
-            if (data && data->event_callback) {
-                WindowClosedEvent event;
-                data->event_callback(event);
-            }
-        });
-
-        // ------------------------------------------------------------------------------
-        // Keyboard events
-        // ------------------------------------------------------------------------------
-        glfwSetKeyCallback(window_, [](GLFWwindow* window, int key, int scancode, int action, int mods) {
-            auto* data = static_cast<WindowData*>(glfwGetWindowUserPointer(window));
-            if (!data || !data->event_callback) return;
-
-            switch (action) {
-                case GLFW_PRESS : {
-                    KeyPressedEvent event(key, false);
-                    data->event_callback(event);
-                    break;
-                }
-                case GLFW_RELEASE : {
-                    KeyReleasedEvent event(key);
-                    data->event_callback(event);
-                    break;
-                }
-                case GLFW_REPEAT : {
-                    KeyPressedEvent event(key, true);
-                    data->event_callback(event);
-                    break;
-                }
-                default : break;
-            }
-        });
-
-        glfwSetCharCallback(window_, [](GLFWwindow* window, unsigned int keycode) {
-            auto* data = static_cast<WindowData*>(glfwGetWindowUserPointer(window));
-            if (!data || !data->event_callback) return;
-            KeyTypedEvent event(static_cast<int>(keycode));
-            data->event_callback(event);
-        });
-
-        // ------------------------------------------------------------------------------
-        // Mouse events
-        // ------------------------------------------------------------------------------
-        glfwSetMouseButtonCallback(window_, [](GLFWwindow* window, int button, int action, int mods) {
-            auto* data = static_cast<WindowData*>(glfwGetWindowUserPointer(window));
-            if (!data || !data->event_callback) return;
-
-            if (action == GLFW_PRESS) {
-                MouseButtonPressedEvent event(button);
-                data->event_callback(event);
-            }
-            else if (action == GLFW_RELEASE) {
-                MouseButtonReleasedEvent event(button);
-                data->event_callback(event);
-            }
-        });
-
-        glfwSetCursorPosCallback(window_, [](GLFWwindow* window, double xpos, double ypos) {
-            auto* data = static_cast<WindowData*>(glfwGetWindowUserPointer(window));
-            if (!data || !data->event_callback) return;
-            MouseMovedEvent event(static_cast<float>(xpos), static_cast<float>(ypos));
-            data->event_callback(event);
-        });
-
-        glfwSetScrollCallback(window_, [](GLFWwindow* window, const double x_offset, const double y_offset) {
-            auto* data = static_cast<WindowData*>(glfwGetWindowUserPointer(window));
-            if (data && data->event_callback) {
-                MouseScrolledEvent event(static_cast<float>(x_offset), static_cast<float>(y_offset));
-                data->event_callback(event);
-            }
-        });
     }
 }
