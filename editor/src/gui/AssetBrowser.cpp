@@ -22,7 +22,7 @@ namespace editor {
 
         ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
         if (ImGui::BeginChild("AssetGridScrollArea", ImVec2(0, 0), false)) {
-            render_grid();
+            render_assets();
         }
         ImGui::EndChild();
         ImGui::PopStyleColor();
@@ -63,11 +63,7 @@ namespace editor {
     }
 
     void AssetBrowser::render_header() {
-        const float avail_x = ImGui::GetContentRegionAvail().x;
-        constexpr float slider_width = 64.0f;
-        constexpr float controls_width = 28.0f + 4.0f + slider_width + 12.0f; // Sort btn + spacing + slider + margin
-
-        // Render Breadcrumbs
+        // --- Row 1 --- Breadcrumbs Path ---
         std::filesystem::path accumulated_path;
         std::optional<std::filesystem::path> new_directory = std::nullopt;
         bool first = true;
@@ -112,20 +108,85 @@ namespace editor {
             current_directory_ = *new_directory;
         }
 
-        // Header Right-Aligned Controls
-        if (avail_x > controls_width + 100.0f) {
-            ImGui::SameLine(avail_x - controls_width);
-        }
-        else {
-            ImGui::SameLine();
-        }
+        // Margin between rows
+        ImGui::Dummy(ImVec2(0.0f, 2.0f));
 
-        // Bulkier control styling (y++ via FramePadding.y = 3.0f)
+        // --- Row 2 --- Toolbar Controls ---
+
+        const float avail_x = ImGui::GetContentRegionAvail().x;
+        constexpr float slider_width = 64.0f;
+        constexpr float sort_btn_width = 28.0f;
+        constexpr float spacing = 4.0f;
+        constexpr float right_controls_width = sort_btn_width + spacing + slider_width;
+
         ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(4.0f, 3.0f));
         ImGui::PushStyleVar(ImGuiStyleVar_GrabMinSize, 16.0f);
 
-        // Sort Button
-        if (ImGui::Button("##sort_dir", ImVec2(28.0f, 22.0f))) {
+        // Dynamic Search Bar
+        const float search_width = std::max(80.0f, avail_x - right_controls_width - spacing);
+
+        ImGui::PushItemWidth(search_width);
+        if (search_filter_[0] != '\0') {
+            ImGui::SetNextItemAllowOverlap();
+        }
+        ImGui::InputTextWithHint("##search_filter", "Search in Assets", search_filter_, sizeof(search_filter_));
+        ImGui::PopItemWidth();
+
+        const ImVec2 search_min = ImGui::GetItemRectMin();
+        const ImVec2 search_max = ImGui::GetItemRectMax();
+
+        // Embedded Clear Button (inside search input)
+        if (search_filter_[0] != '\0') {
+            const float btn_size = search_max.y - search_min.y - 4.0f;
+            const ImVec2 clear_btn_pos(search_max.x - btn_size - 3.0f, search_min.y + 2.0f);
+
+            ImGui::SetCursorScreenPos(clear_btn_pos);
+            ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.0f, 0.0f));
+            ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 2.0f);
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(1.0f, 1.0f, 1.0f, 0.15f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(1.0f, 1.0f, 1.0f, 0.25f));
+
+            if (ImGui::Button("##clear_search", ImVec2(btn_size, btn_size))) {
+                search_filter_[0] = '\0';
+            }
+
+            const ImVec2 cb_min = ImGui::GetItemRectMin();
+            const ImVec2 cb_max = ImGui::GetItemRectMax();
+            const ImVec2 cb_center(
+                std::floor((cb_min.x + cb_max.x) * 0.5f),
+                std::floor((cb_min.y + cb_max.y) * 0.5f)
+            );
+
+            const ImU32 x_col = ImGui::IsItemHovered()
+                                    ? IM_COL32(255, 255, 255, 255)
+                                    : IM_COL32(160, 165, 175, 200);
+
+            constexpr float cross_r = 3.0f;
+            ImDrawList* draw_list = ImGui::GetWindowDrawList();
+            draw_list->AddLine(ImVec2(cb_center.x - cross_r, cb_center.y - cross_r), ImVec2(cb_center.x + cross_r, cb_center.y + cross_r), x_col, 1.2f);
+            draw_list->AddLine(ImVec2(cb_center.x + cross_r, cb_center.y - cross_r), ImVec2(cb_center.x - cross_r, cb_center.y + cross_r), x_col, 1.2f);
+
+            if (ImGui::IsItemHovered()) {
+                ImGui::SetTooltip("Clear search filter");
+            }
+
+            ImGui::PopStyleColor(3);
+            ImGui::PopStyleVar(2);
+        }
+
+        ImGui::SetCursorScreenPos(ImVec2(search_max.x, search_min.y));
+        ImGui::SameLine(0.0f, spacing);
+
+        // Right-align Sort + Slider
+        const float current_x = ImGui::GetCursorPosX();
+        const float desired_x = avail_x - right_controls_width;
+        if (desired_x > current_x) {
+            ImGui::SetCursorPosX(desired_x);
+        }
+
+        // Sort Direction Toggle Button
+        if (ImGui::Button("##sort_dir", ImVec2(sort_btn_width, 22.0f))) {
             sort_ascending_ = !sort_ascending_;
         }
         const ImVec2 btn_min = ImGui::GetItemRectMin();
@@ -145,20 +206,19 @@ namespace editor {
             ImGui::SetTooltip("Sort %s", sort_ascending_ ? "Ascending" : "Descending");
         }
 
-        ImGui::SameLine();
+        ImGui::SameLine(0.0f, spacing);
 
+        // View Size Slider
         ImGui::PushItemWidth(slider_width);
         ImGui::SliderFloat("##thumbnail_size", &thumbnail_size_, min_thumbnail_size, max_thumbnail_size, "");
 
         const bool is_list_view = (thumbnail_size_ <= min_thumbnail_size);
 
-        // Overlay list icon on grab handle when in List View
         if (is_list_view) {
             const ImVec2 slider_min = ImGui::GetItemRectMin();
             const ImVec2 slider_max = ImGui::GetItemRectMax();
             const float grab_w = std::max(ImGui::GetStyle().GrabMinSize, 16.0f);
 
-            // Calculate exact center of the grab handle with floorf pixel snapping
             const ImVec2 grab_center(
                 std::floor(slider_min.x + 2.0f + grab_w * 0.5f),
                 std::floor((slider_min.y + slider_max.y) * 0.5f)
@@ -186,20 +246,55 @@ namespace editor {
         ImGui::Separator();
     }
 
-    void AssetBrowser::render_grid() {
+    void AssetBrowser::render_assets() {
         if (!std::filesystem::exists(current_directory_)) return;
 
-        // Gather and Sort Entries
+        // Prepare lower-case search filter string
+        std::string filter_query = search_filter_;
+        std::ranges::transform(filter_query, filter_query.begin(), [](const unsigned char c) {
+            return static_cast<char>(std::tolower(c));
+        });
+
+        const bool is_searching = !filter_query.empty();
         std::vector<std::filesystem::directory_entry> entries;
-        for (const auto& entry : std::filesystem::directory_iterator(current_directory_)) {
-            if (entry.path().extension() == ".meta") continue;
+
+        auto process_entry = [&](const std::filesystem::directory_entry& entry) {
+            if (entry.path().extension() == ".meta") return;
+
+            if (is_searching) {
+                std::string filename = entry.path().filename().string();
+                std::ranges::transform(filename, filename.begin(), [](const unsigned char c) {
+                    return static_cast<char>(std::tolower(c));
+                });
+
+                if (filename.find(filter_query) == std::string::npos) {
+                    return; // Skip non-matching items
+                }
+            }
+
             entries.push_back(entry);
+        };
+
+        if (is_searching) {
+            // Recursive traversal into all child folders
+            std::error_code ec;
+            constexpr auto options = std::filesystem::directory_options::skip_permission_denied;
+            for (const auto& entry : std::filesystem::recursive_directory_iterator(current_directory_, options, ec)) {
+                process_entry(entry);
+            }
+        }
+        else {
+            // Single-level traversal for standard browsing
+            for (const auto& entry : std::filesystem::directory_iterator(current_directory_)) {
+                process_entry(entry);
+            }
         }
 
         std::ranges::sort(entries, [this](const auto& a, const auto& b) {
             const bool a_is_dir = a.is_directory();
             const bool b_is_dir = b.is_directory();
 
+            // Folders always appear at top
             if (a_is_dir != b_is_dir) {
                 return a_is_dir > b_is_dir;
             }
@@ -207,6 +302,17 @@ namespace editor {
             const std::string name_a = a.path().filename().string();
             const std::string name_b = b.path().filename().string();
 
+            // Convert strings to lowercase for case-insensitive ordering
+            std::string lower_a = name_a;
+            std::string lower_b = name_b;
+            std::ranges::transform(lower_a, lower_a.begin(), [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+            std::ranges::transform(lower_b, lower_b.begin(), [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+
+            if (lower_a != lower_b) {
+                return sort_ascending_ ? (lower_a < lower_b) : (lower_a > lower_b);
+            }
+
+            // Tie-breaker fallback if names only differ by case (e.g., "Hi" vs "hi")
             return sort_ascending_ ? (name_a < name_b) : (name_a > name_b);
         });
 
@@ -215,7 +321,7 @@ namespace editor {
         if (is_list_view) {
             ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0.0f, 2.0f));
             for (const auto& entry : entries) {
-                render_item_list(entry);
+                render_list_view(entry);
             }
             ImGui::PopStyleVar();
         }
@@ -231,7 +337,7 @@ namespace editor {
             if (ImGui::BeginTable("AssetGrid", column_count, ImGuiTableFlags_SizingStretchSame)) {
                 for (const auto& entry : entries) {
                     ImGui::TableNextColumn();
-                    render_item_grid(entry);
+                    render_grid_view(entry);
                 }
                 ImGui::EndTable();
             }
@@ -246,7 +352,7 @@ namespace editor {
         }
     }
 
-    void AssetBrowser::render_item_grid(const std::filesystem::directory_entry& entry) {
+    void AssetBrowser::render_grid_view(const std::filesystem::directory_entry& entry) {
         const auto& path = entry.path();
         const std::string filename = path.filename().string();
         const bool is_directory = entry.is_directory();
@@ -287,6 +393,10 @@ namespace editor {
             }
         }
 
+        if (search_filter_[0] != '\0' && ImGui::IsItemHovered()) {
+            ImGui::SetTooltip("%s", std::filesystem::relative(path, root_directory_).string().c_str());
+        }
+
         ImGui::SetCursorPosX(start_x);
         ImGui::PushTextWrapPos(start_x + thumbnail_size_);
         ImGui::TextUnformatted(filename.c_str());
@@ -294,7 +404,7 @@ namespace editor {
         ImGui::PopID();
     }
 
-    void AssetBrowser::render_item_list(const std::filesystem::directory_entry& entry) {
+    void AssetBrowser::render_list_view(const std::filesystem::directory_entry& entry) {
         const auto& path = entry.path();
         const std::string filename = path.filename().string();
         const bool is_directory = entry.is_directory();
@@ -336,6 +446,10 @@ namespace editor {
                 ImGui::Text("Assign %s", filename.c_str());
                 ImGui::EndDragDropSource();
             }
+        }
+
+        if (search_filter_[0] != '\0' && ImGui::IsItemHovered()) {
+            ImGui::SetTooltip("%s", std::filesystem::relative(path, root_directory_).string().c_str());
         }
 
         ImGui::PopID();

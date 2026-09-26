@@ -20,9 +20,9 @@ namespace editor {
         void render_imgui();
     private:
         void render_header();
-        void render_grid();
-        void render_item_grid(const std::filesystem::directory_entry& entry);
-        void render_item_list(const std::filesystem::directory_entry& entry);
+        void render_assets();
+        void render_grid_view(const std::filesystem::directory_entry& entry);
+        void render_list_view(const std::filesystem::directory_entry& entry);
         #endif
 
         std::shared_ptr<engine::AssetManager> asset_manager_ = nullptr;
@@ -35,5 +35,7 @@ namespace editor {
         float thumbnail_size_ = 64.0f;
         float min_thumbnail_size = 32.0f;
         float max_thumbnail_size = 96.0f;
+
+        char search_filter_[128] = "";
     };
 }
