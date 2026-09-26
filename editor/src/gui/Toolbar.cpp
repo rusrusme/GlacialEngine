@@ -33,27 +33,32 @@ namespace editor {
         min_required_slots = std::max<size_t>(1, min_required_slots);
 
         // Window width constraint based on min slots
-        constexpr float window_padding_x = 16.0f; // WindowPadding.x (8 * 2)
+        constexpr float window_padding_x = 16.0f;
         const float min_window_width
             = static_cast<float>(min_required_slots) * slot_width
             + static_cast<float>(min_required_slots - 1) * spacing_x
             + window_padding_x + 16.0f;
 
-        // Lock window max height to strictly 1 row height (padding + slot + title bar)
-        constexpr float window_padding_y = 8.0f; // WindowPadding.y (4 * 2)
-        const float fixed_window_height = slot_height + window_padding_y + ImGui::GetFrameHeight();
+        // Lock window max height to strictly 1 row height without titlebar overhead
+        constexpr float window_padding_y = 8.0f;
+        const float fixed_window_height = slot_height + window_padding_y;
 
         ImGui::SetNextWindowSizeConstraints(
             ImVec2(min_window_width, fixed_window_height),
             ImVec2(FLT_MAX, fixed_window_height)
         );
 
+        // Hide tab bar when docked, and lock node flags
         ImGuiWindowClass window_class;
-        window_class.DockNodeFlagsOverrideSet = ImGuiDockNodeFlags_NoResize | ImGuiDockNodeFlags_NoSplit;
+        window_class.DockNodeFlagsOverrideSet = ImGuiDockNodeFlags_NoResize
+            | ImGuiDockNodeFlags_NoSplit
+            | ImGuiDockNodeFlags_NoTabBar;
         ImGui::SetNextWindowClass(&window_class);
 
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(8, 4));
-        ImGuiWindowFlags flags = ImGuiWindowFlags_NoScrollbar | ImGuiWindowFlags_NoScrollWithMouse;
+        ImGuiWindowFlags flags = ImGuiWindowFlags_NoScrollbar
+            | ImGuiWindowFlags_NoScrollWithMouse
+            | ImGuiWindowFlags_NoTitleBar;
 
         if (ImGui::Begin("Toolbar", nullptr, flags)) {
             const ImVec2 avail = ImGui::GetContentRegionAvail();
@@ -114,12 +119,10 @@ namespace editor {
 
                 // Drag target
                 if (ImGui::BeginDragDropTarget()) {
-                    // Draw custom yellow drop target box on empty slots when dragging over them
                     if (!item.has_value()) {
                         draw_list->AddRect(cursor_pos, slot_max, IM_COL32(255, 200, 50, 230), 3.0f, 0, 1.5f);
                     }
 
-                    // Accept payload while suppressing ImGui's default blue rectangle
                     if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("TOOLBAR_SLOT_SWAP", ImGuiDragDropFlags_AcceptNoDrawDefaultRect)) {
                         size_t source_idx = *static_cast<const size_t*>(payload->Data);
                         if (source_idx != i) {
@@ -129,6 +132,18 @@ namespace editor {
                     ImGui::EndDragDropTarget();
                 }
                 ImGui::PopID();
+            }
+
+            // Enable dragging/undocking when clicking empty space or empty slots
+            if (ImGui::IsWindowHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
+                if (!ImGui::IsAnyItemActive()) {
+                    ImGuiWindow* window = ImGui::GetCurrentWindow();
+                    if (ImGui::IsWindowDocked()) {
+                        ImGuiContext* g = ImGui::GetCurrentContext();
+                        ImGui::DockContextProcessUndockWindow(g, window);
+                    }
+                    ImGui::StartMouseMovingWindow(window);
+                }
             }
         }
         ImGui::End();
