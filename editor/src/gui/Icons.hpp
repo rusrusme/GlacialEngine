@@ -143,6 +143,45 @@ namespace editor {
     #endif
 
     #ifdef ENABLE_IMGUI
+    static void draw_sort_icon(ImDrawList* draw_list, const ImVec2 pos, const bool sort_ascending, const ImU32 col = IM_COL32(200, 205, 215, 230)) {
+        constexpr float line_right = 7.5f;
+        constexpr float arrow_x_offset = 11.5f;
+
+        const float y_top = pos.y + 2.5f;
+        const float y_mid = pos.y + 7.0f;
+        const float y_bot = pos.y + 11.5f;
+
+        // Line lengths (Right-aligned against arrow spacing)
+        const float len_top = sort_ascending ? 6.5f : 2.5f;
+        const float len_mid = 4.5f;
+        const float len_bot = sort_ascending ? 2.5f : 6.5f;
+
+        constexpr float line_thickness = 1.4f;
+
+        // Draw 3 right-aligned horizontal bars
+        draw_list->AddLine(ImVec2(pos.x + line_right - len_top, y_top), ImVec2(pos.x + line_right, y_top), col, line_thickness);
+        draw_list->AddLine(ImVec2(pos.x + line_right - len_mid, y_mid), ImVec2(pos.x + line_right, y_mid), col, line_thickness);
+        draw_list->AddLine(ImVec2(pos.x + line_right - len_bot, y_bot), ImVec2(pos.x + line_right, y_bot), col, line_thickness);
+
+        const float arrow_x = pos.x + arrow_x_offset;
+
+        // Draw Vertical Arrow shaft & head
+        if (sort_ascending) {
+            // Arrow UP
+            draw_list->AddLine(ImVec2(arrow_x, y_bot), ImVec2(arrow_x, y_top), col, line_thickness);
+            draw_list->AddLine(ImVec2(arrow_x - 2.5f, y_top + 2.5f), ImVec2(arrow_x, y_top), col, line_thickness);
+            draw_list->AddLine(ImVec2(arrow_x + 2.5f, y_top + 2.5f), ImVec2(arrow_x, y_top), col, line_thickness);
+        }
+        else {
+            // Arrow DOWN
+            draw_list->AddLine(ImVec2(arrow_x, y_top), ImVec2(arrow_x, y_bot), col, line_thickness);
+            draw_list->AddLine(ImVec2(arrow_x - 2.5f, y_bot - 2.5f), ImVec2(arrow_x, y_bot), col, line_thickness);
+            draw_list->AddLine(ImVec2(arrow_x + 2.5f, y_bot - 2.5f), ImVec2(arrow_x, y_bot), col, line_thickness);
+        }
+    }
+    #endif
+
+    #ifdef ENABLE_IMGUI
     static void draw_play_icon(ImDrawList* draw_list, const ImVec2 pos, const ImU32 col = IM_COL32(100, 210, 110, 240)) {
         // Right-pointing filled triangle
         draw_list->AddTriangleFilled(

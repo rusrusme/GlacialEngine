@@ -5,6 +5,11 @@
 
 #include "AssetBrowser.hpp"
 
+#include <algorithm>
+#include <vector>
+
+#include "gui/Icons.hpp"
+
 namespace editor {
     void AssetBrowser::init(std::shared_ptr<engine::AssetManager> asset_manager) {
         asset_manager_ = std::move(asset_manager);
@@ -27,31 +32,48 @@ namespace editor {
 
     static void draw_item_icon(ImDrawList* draw_list, const ImVec2 p0, const ImVec2 p1, const bool is_directory) {
         const auto center = ImVec2((p0.x + p1.x) * 0.5f, (p0.y + p1.y) * 0.5f);
+        const float w = p1.x - p0.x;
+        const float h = p1.y - p0.y;
+        const float scale = std::clamp(std::min(w, h) / 52.0f, 0.35f, 2.0f);
 
         if (is_directory) {
-            // Folder Tab (Muted Amber)
             constexpr ImU32 FOLDER_COLOR = IM_COL32(210, 170, 90, 220);
-            draw_list->AddRectFilled(ImVec2(center.x - 18, center.y - 14), ImVec2(center.x - 4, center.y - 10), FOLDER_COLOR, 2.0f);
-            draw_list->AddRectFilled(ImVec2(center.x - 18, center.y - 10), ImVec2(center.x + 18, center.y + 12), FOLDER_COLOR, 3.0f);
+            draw_list->AddRectFilled(
+                ImVec2(center.x - 14.0f * scale, center.y - 11.0f * scale),
+                ImVec2(center.x - 3.0f * scale, center.y - 8.0f * scale),
+                FOLDER_COLOR, 2.0f * scale
+            );
+            draw_list->AddRectFilled(
+                ImVec2(center.x - 14.0f * scale, center.y - 8.0f * scale),
+                ImVec2(center.x + 14.0f * scale, center.y + 9.0f * scale),
+                FOLDER_COLOR, 2.0f * scale
+            );
         }
         else {
-            // Document Paper (Slate White)
             constexpr ImU32 FILE_COLOR = IM_COL32(180, 185, 195, 200);
-            draw_list->AddRectFilled(ImVec2(center.x - 12, center.y - 15), ImVec2(center.x + 12, center.y + 15), FILE_COLOR, 2.0f);
-            draw_list->AddLine(ImVec2(center.x - 7, center.y - 6), ImVec2(center.x + 7, center.y - 6), IM_COL32(100, 105, 115, 255), 1.5f);
-            draw_list->AddLine(ImVec2(center.x - 7, center.y), ImVec2(center.x + 5, center.y), IM_COL32(100, 105, 115, 255), 1.5f);
-            draw_list->AddLine(ImVec2(center.x - 7, center.y + 6), ImVec2(center.x + 2, center.y + 6), IM_COL32(100, 105, 115, 255), 1.5f);
+            draw_list->AddRectFilled(
+                ImVec2(center.x - 9.0f * scale, center.y - 12.0f * scale),
+                ImVec2(center.x + 9.0f * scale, center.y + 12.0f * scale),
+                FILE_COLOR, 2.0f * scale
+            );
+            draw_list->AddLine(ImVec2(center.x - 5.0f * scale, center.y - 5.0f * scale), ImVec2(center.x + 5.0f * scale, center.y - 5.0f * scale), IM_COL32(100, 105, 115, 255), 1.2f * scale);
+            draw_list->AddLine(ImVec2(center.x - 5.0f * scale, center.y), ImVec2(center.x + 3.0f * scale, center.y), IM_COL32(100, 105, 115, 255), 1.2f * scale);
+            draw_list->AddLine(ImVec2(center.x - 5.0f * scale, center.y + 5.0f * scale), ImVec2(center.x + 1.0f * scale, center.y + 5.0f * scale), IM_COL32(100, 105, 115, 255), 1.2f * scale);
         }
     }
 
     void AssetBrowser::render_header() {
-        ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(4.0f, 2.0f));
-        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(2.0f, 0.0f));
-        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
+        const float avail_x = ImGui::GetContentRegionAvail().x;
+        constexpr float controls_width = 145.0f;
 
+        // Render Breadcrumbs
         std::filesystem::path accumulated_path;
         std::optional<std::filesystem::path> new_directory = std::nullopt;
         bool first = true;
+
+        ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(4.0f, 2.0f));
+        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(2.0f, 0.0f));
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
 
         for (const auto& part : current_directory_) {
             if (!first) {
@@ -89,32 +111,115 @@ namespace editor {
             current_directory_ = *new_directory;
         }
 
+        // Header Right-Aligned Controls: Sort Toggle + View Size Slider
+        if (avail_x > controls_width + 100.0f) {
+            ImGui::SameLine(avail_x - controls_width);
+        }
+        else {
+            ImGui::SameLine();
+        }
+
+        ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(4.0f, 1.0f));
+
+        if (ImGui::Button("##sort_dir", ImVec2(28.0f, 20.0f))) {
+            sort_ascending_ = !sort_ascending_;
+        }
+        const ImVec2 btn_min = ImGui::GetItemRectMin();
+        const ImVec2 btn_size = ImGui::GetItemRectSize();
+        const ImVec2 icon_pos(
+            btn_min.x + (btn_size.x - 14.0f) * 0.5f,
+            btn_min.y + (btn_size.y - 14.0f) * 0.5f
+        );
+
+        const ImU32 icon_col = ImGui::IsItemHovered()
+                                   ? IM_COL32(255, 255, 255, 255)
+                                   : IM_COL32(180, 185, 195, 220);
+
+        draw_sort_icon(ImGui::GetWindowDrawList(), icon_pos, sort_ascending_, icon_col);
+
+        if (ImGui::IsItemHovered()) {
+            ImGui::SetTooltip("Sort %s", sort_ascending_ ? "Ascending" : "Descending");
+        }
+
+        ImGui::SameLine();
+
+        ImGui::PushItemWidth(90.0f);
+        ImGui::SliderFloat("##thumbnail_size", &thumbnail_size_, min_thumbnail_size, max_thumbnail_size, "");
+        if (ImGui::IsItemHovered()) {
+            if (thumbnail_size_ <= min_thumbnail_size) {
+                ImGui::SetTooltip("List View");
+            }
+            else {
+                ImGui::SetTooltip("Size %.0f", thumbnail_size_);
+            }
+        }
+        ImGui::PopItemWidth();
+        ImGui::PopStyleVar();
+
         ImGui::Separator();
     }
 
     void AssetBrowser::render_grid() {
-        constexpr float THUMBNAIL_SIZE = 60.0f;
-        constexpr float MIN_CELL_SIZE = 64.0f;
-
-        const float panel_width = ImGui::GetContentRegionAvail().x;
-        int column_count = static_cast<int>(panel_width / MIN_CELL_SIZE);
-        if (column_count < 1) column_count = 1;
-
         if (!std::filesystem::exists(current_directory_)) return;
 
-        // Dynamic Stretching
-        if (ImGui::BeginTable("AssetGrid", column_count, ImGuiTableFlags_SizingStretchSame)) {
-            for (const auto& entry : std::filesystem::directory_iterator(current_directory_)) {
-                if (entry.path().extension() == ".meta") continue;
+        // Gather and Sort Entries
+        std::vector<std::filesystem::directory_entry> entries;
+        for (const auto& entry : std::filesystem::directory_iterator(current_directory_)) {
+            if (entry.path().extension() == ".meta") continue;
+            entries.push_back(entry);
+        }
 
-                ImGui::TableNextColumn();
-                render_asset_item(entry, THUMBNAIL_SIZE);
+        std::ranges::sort(entries, [this](const auto& a, const auto& b) {
+            const bool a_is_dir = a.is_directory();
+            const bool b_is_dir = b.is_directory();
+
+            if (a_is_dir != b_is_dir) {
+                return a_is_dir > b_is_dir;
             }
-            ImGui::EndTable();
+
+            const std::string name_a = a.path().filename().string();
+            const std::string name_b = b.path().filename().string();
+
+            return sort_ascending_ ? (name_a < name_b) : (name_a > name_b);
+        });
+
+        const bool is_list_view = (thumbnail_size_ <= min_thumbnail_size);
+
+        if (is_list_view) {
+            ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0.0f, 2.0f));
+            for (const auto& entry : entries) {
+                render_item_list(entry);
+            }
+            ImGui::PopStyleVar();
+        }
+        else {
+            const float cell_size = thumbnail_size_ + 12.0f;
+            const float panel_width = ImGui::GetContentRegionAvail().x;
+            int column_count = static_cast<int>(panel_width / cell_size);
+            if (column_count < 1) column_count = 1;
+
+            ImGui::PushStyleVar(ImGuiStyleVar_CellPadding, ImVec2(2.0f, 4.0f));
+            ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(4.0f, 2.0f));
+
+            if (ImGui::BeginTable("AssetGrid", column_count, ImGuiTableFlags_SizingStretchSame)) {
+                for (const auto& entry : entries) {
+                    ImGui::TableNextColumn();
+                    render_item_grid(entry);
+                }
+                ImGui::EndTable();
+            }
+
+            ImGui::PopStyleVar(2);
+        }
+
+        // Apply deferred navigation safely outside loop
+        if (pending_directory_change_.has_value()) {
+            current_directory_ = *pending_directory_change_;
+            pending_directory_change_ = std::nullopt;
         }
     }
 
-    void AssetBrowser::render_asset_item(const std::filesystem::directory_entry& entry, const float thumbnail_size) {
+    void AssetBrowser::render_item_grid(const std::filesystem::directory_entry& entry) {
         const auto& path = entry.path();
         const std::string filename = path.filename().string();
         const bool is_directory = entry.is_directory();
@@ -122,12 +227,11 @@ namespace editor {
         ImGui::PushID(filename.c_str());
 
         const float column_width = ImGui::GetColumnWidth();
-        const float x_offset = std::max(0.0f, (column_width - thumbnail_size) * 0.5f);
+        const float x_offset = std::max(0.0f, (column_width - thumbnail_size_) * 0.5f);
         const float start_x = ImGui::GetCursorPosX() + x_offset;
         ImGui::SetCursorPosX(start_x);
 
-        // Button background colors
-        ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 6.0f);
+        ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 4.0f);
         if (is_directory) {
             ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.20f, 0.22f, 0.26f, 1.00f));
             ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.28f, 0.30f, 0.36f, 1.00f));
@@ -137,18 +241,16 @@ namespace editor {
             ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.22f, 0.22f, 0.25f, 1.00f));
         }
 
-        // Base Button + Icon Overlay
-        ImGui::Button("##thumb", ImVec2(thumbnail_size, thumbnail_size));
+        ImGui::Button("##thumb", ImVec2(thumbnail_size_, thumbnail_size_));
         draw_item_icon(ImGui::GetWindowDrawList(), ImGui::GetItemRectMin(), ImGui::GetItemRectMax(), is_directory);
 
         ImGui::PopStyleColor(2);
         ImGui::PopStyleVar();
 
-        // Double-click folder navigation
         if (is_directory && ImGui::IsItemHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
-            current_directory_ /= path.filename();
+            pending_directory_change_ = path;
         }
-        // Drag & Drop payload source
+
         if (!is_directory && asset_manager_) {
             engine::AssetHandle handle = asset_manager_->get_handle_from_path(path);
             if (handle != 0 && ImGui::BeginDragDropSource()) {
@@ -158,11 +260,57 @@ namespace editor {
             }
         }
 
-        // Filename Label
         ImGui::SetCursorPosX(start_x);
-        ImGui::PushTextWrapPos(start_x + thumbnail_size);
+        ImGui::PushTextWrapPos(start_x + thumbnail_size_);
         ImGui::TextUnformatted(filename.c_str());
         ImGui::PopTextWrapPos();
+        ImGui::PopID();
+    }
+
+    void AssetBrowser::render_item_list(const std::filesystem::directory_entry& entry) {
+        const auto& path = entry.path();
+        const std::string filename = path.filename().string();
+        const bool is_directory = entry.is_directory();
+
+        ImGui::PushID(filename.c_str());
+
+        const float row_height = 24.0f;
+        const float avail_x = ImGui::GetContentRegionAvail().x;
+        const ImVec2 cursor_pos = ImGui::GetCursorScreenPos();
+
+        // Use Selectable for clean row selection & automatic line advancing
+        ImGui::Selectable("##row", false, ImGuiSelectableFlags_AllowDoubleClick, ImVec2(avail_x, row_height));
+        const bool is_row_hovered = ImGui::IsItemHovered();
+
+        ImDrawList* draw_list = ImGui::GetWindowDrawList();
+        const ImVec2 p0 = cursor_pos;
+        const ImVec2 p1 = ImVec2(p0.x + avail_x, p0.y + row_height);
+
+        // Render Icon on the left
+        draw_item_icon(draw_list, ImVec2(p0.x + 4.0f, p0.y + 2.0f), ImVec2(p0.x + 22.0f, p1.y - 2.0f), is_directory);
+
+        // Standard text color for both folders and files
+        const ImU32 text_color = ImGui::GetColorU32(ImGuiCol_Text);
+
+        draw_list->AddText(
+            ImVec2(p0.x + 28.0f, p0.y + (row_height - ImGui::GetTextLineHeight()) * 0.5f),
+            text_color,
+            filename.c_str()
+        );
+
+        if (is_directory && is_row_hovered && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
+            pending_directory_change_ = path;
+        }
+
+        if (!is_directory && asset_manager_) {
+            engine::AssetHandle handle = asset_manager_->get_handle_from_path(path);
+            if (handle != 0 && is_row_hovered && ImGui::BeginDragDropSource()) {
+                ImGui::SetDragDropPayload("ASSET_BROWSER_ITEM", &handle, sizeof(engine::AssetHandle));
+                ImGui::Text("Assign %s", filename.c_str());
+                ImGui::EndDragDropSource();
+            }
+        }
+
         ImGui::PopID();
     }
     #endif
