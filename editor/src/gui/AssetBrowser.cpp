@@ -64,7 +64,8 @@ namespace editor {
 
     void AssetBrowser::render_header() {
         const float avail_x = ImGui::GetContentRegionAvail().x;
-        constexpr float controls_width = 145.0f;
+        constexpr float slider_width = 64.0f;
+        constexpr float controls_width = 28.0f + 4.0f + slider_width + 12.0f; // Sort btn + spacing + slider + margin
 
         // Render Breadcrumbs
         std::filesystem::path accumulated_path;
@@ -111,7 +112,7 @@ namespace editor {
             current_directory_ = *new_directory;
         }
 
-        // Header Right-Aligned Controls: Sort Toggle + View Size Slider
+        // Header Right-Aligned Controls
         if (avail_x > controls_width + 100.0f) {
             ImGui::SameLine(avail_x - controls_width);
         }
@@ -119,9 +120,12 @@ namespace editor {
             ImGui::SameLine();
         }
 
-        ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(4.0f, 1.0f));
+        // Bulkier control styling (y++ via FramePadding.y = 3.0f)
+        ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(4.0f, 3.0f));
+        ImGui::PushStyleVar(ImGuiStyleVar_GrabMinSize, 16.0f);
 
-        if (ImGui::Button("##sort_dir", ImVec2(28.0f, 20.0f))) {
+        // Sort Button
+        if (ImGui::Button("##sort_dir", ImVec2(28.0f, 22.0f))) {
             sort_ascending_ = !sort_ascending_;
         }
         const ImVec2 btn_min = ImGui::GetItemRectMin();
@@ -131,11 +135,11 @@ namespace editor {
             btn_min.y + (btn_size.y - 14.0f) * 0.5f
         );
 
-        const ImU32 icon_col = ImGui::IsItemHovered()
-                                   ? IM_COL32(255, 255, 255, 255)
-                                   : IM_COL32(180, 185, 195, 220);
+        const ImU32 sort_icon_col = ImGui::IsItemHovered()
+                                        ? IM_COL32(255, 255, 255, 255)
+                                        : IM_COL32(180, 185, 195, 220);
 
-        draw_sort_icon(ImGui::GetWindowDrawList(), icon_pos, sort_ascending_, icon_col);
+        draw_sort_icon(ImGui::GetWindowDrawList(), icon_pos, sort_ascending_, sort_icon_col);
 
         if (ImGui::IsItemHovered()) {
             ImGui::SetTooltip("Sort %s", sort_ascending_ ? "Ascending" : "Descending");
@@ -143,18 +147,41 @@ namespace editor {
 
         ImGui::SameLine();
 
-        ImGui::PushItemWidth(90.0f);
+        ImGui::PushItemWidth(slider_width);
         ImGui::SliderFloat("##thumbnail_size", &thumbnail_size_, min_thumbnail_size, max_thumbnail_size, "");
+
+        const bool is_list_view = (thumbnail_size_ <= min_thumbnail_size);
+
+        // Overlay list icon on grab handle when in List View
+        if (is_list_view) {
+            const ImVec2 slider_min = ImGui::GetItemRectMin();
+            const ImVec2 slider_max = ImGui::GetItemRectMax();
+            const float grab_w = std::max(ImGui::GetStyle().GrabMinSize, 16.0f);
+
+            // Calculate exact center of the grab handle with floorf pixel snapping
+            const ImVec2 grab_center(
+                std::floor(slider_min.x + 2.0f + grab_w * 0.5f),
+                std::floor((slider_min.y + slider_max.y) * 0.5f)
+            );
+
+            const ImU32 list_icon_col = (ImGui::IsItemHovered() || ImGui::IsItemActive())
+                                            ? IM_COL32(255, 255, 255, 255)
+                                            : IM_COL32(180, 185, 195, 220);
+
+            draw_list_icon(ImGui::GetWindowDrawList(), grab_center, list_icon_col);
+        }
+
         if (ImGui::IsItemHovered()) {
-            if (thumbnail_size_ <= min_thumbnail_size) {
+            if (is_list_view) {
                 ImGui::SetTooltip("List View");
             }
             else {
                 ImGui::SetTooltip("Size %.0f", thumbnail_size_);
             }
         }
+
         ImGui::PopItemWidth();
-        ImGui::PopStyleVar();
+        ImGui::PopStyleVar(2);
 
         ImGui::Separator();
     }

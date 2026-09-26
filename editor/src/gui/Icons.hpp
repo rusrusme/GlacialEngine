@@ -101,9 +101,7 @@ namespace editor {
             }
         }
     }
-    #endif
 
-    #ifdef ENABLE_IMGUI
     static void draw_eye_icon(ImDrawList* draw_list, const ImVec2 pos, const bool is_active, const bool is_hovered = false) {
         constexpr float size = 14.0f;
         const auto center = ImVec2(pos.x + size * 0.5f, pos.y + size * 0.5f);
@@ -140,9 +138,7 @@ namespace editor {
             draw_list->AddLine(ImVec2(pos.x + 2.0f, pos.y + 12.0f), ImVec2(pos.x + 12.0f, pos.y + 2.0f), slash_col, 1.5f);
         }
     }
-    #endif
 
-    #ifdef ENABLE_IMGUI
     static void draw_sort_icon(ImDrawList* draw_list, const ImVec2 pos, const bool sort_ascending, const ImU32 col = IM_COL32(200, 205, 215, 230)) {
         constexpr float line_right = 7.5f;
         constexpr float arrow_x_offset = 11.5f;
@@ -179,9 +175,23 @@ namespace editor {
             draw_list->AddLine(ImVec2(arrow_x + 2.5f, y_bot - 2.5f), ImVec2(arrow_x, y_bot), col, line_thickness);
         }
     }
-    #endif
 
-    #ifdef ENABLE_IMGUI
+    static void draw_list_icon(ImDrawList* draw_list, const ImVec2 center, const ImU32 col = IM_COL32(200, 205, 215, 230)) {
+        constexpr float line_half_w = 5.0f; // 10px total line length
+        constexpr float line_thickness = 1.3f;
+
+        const float x0 = center.x - line_half_w;
+        const float x1 = center.x + line_half_w;
+
+        const float y_top = center.y - 4.0f;
+        const float y_mid = center.y;
+        const float y_bot = center.y + 4.0f;
+
+        draw_list->AddLine(ImVec2(x0, y_top), ImVec2(x1, y_top), col, line_thickness);
+        draw_list->AddLine(ImVec2(x0, y_mid), ImVec2(x1, y_mid), col, line_thickness);
+        draw_list->AddLine(ImVec2(x0, y_bot), ImVec2(x1, y_bot), col, line_thickness);
+    }
+
     static void draw_play_icon(ImDrawList* draw_list, const ImVec2 pos, const ImU32 col = IM_COL32(100, 210, 110, 240)) {
         // Right-pointing filled triangle
         draw_list->AddTriangleFilled(
