@@ -29,15 +29,15 @@ namespace editor {
         const auto center = ImVec2((p0.x + p1.x) * 0.5f, (p0.y + p1.y) * 0.5f);
 
         if (is_directory) {
-            // Folder Tab + Body (Muted Amber)
-            ImU32 folder_col = IM_COL32(210, 170, 90, 220);
-            draw_list->AddRectFilled(ImVec2(center.x - 18, center.y - 14), ImVec2(center.x - 4, center.y - 10), folder_col, 2.0f);
-            draw_list->AddRectFilled(ImVec2(center.x - 18, center.y - 10), ImVec2(center.x + 18, center.y + 12), folder_col, 3.0f);
+            // Folder Tab (Muted Amber)
+            constexpr ImU32 FOLDER_COLOR = IM_COL32(210, 170, 90, 220);
+            draw_list->AddRectFilled(ImVec2(center.x - 18, center.y - 14), ImVec2(center.x - 4, center.y - 10), FOLDER_COLOR, 2.0f);
+            draw_list->AddRectFilled(ImVec2(center.x - 18, center.y - 10), ImVec2(center.x + 18, center.y + 12), FOLDER_COLOR, 3.0f);
         }
         else {
             // Document Paper (Slate White)
-            ImU32 file_col = IM_COL32(180, 185, 195, 200);
-            draw_list->AddRectFilled(ImVec2(center.x - 12, center.y - 15), ImVec2(center.x + 12, center.y + 15), file_col, 2.0f);
+            constexpr ImU32 FILE_COLOR = IM_COL32(180, 185, 195, 200);
+            draw_list->AddRectFilled(ImVec2(center.x - 12, center.y - 15), ImVec2(center.x + 12, center.y + 15), FILE_COLOR, 2.0f);
             draw_list->AddLine(ImVec2(center.x - 7, center.y - 6), ImVec2(center.x + 7, center.y - 6), IM_COL32(100, 105, 115, 255), 1.5f);
             draw_list->AddLine(ImVec2(center.x - 7, center.y), ImVec2(center.x + 5, center.y), IM_COL32(100, 105, 115, 255), 1.5f);
             draw_list->AddLine(ImVec2(center.x - 7, center.y + 6), ImVec2(center.x + 2, center.y + 6), IM_COL32(100, 105, 115, 255), 1.5f);
@@ -94,7 +94,7 @@ namespace editor {
 
     void AssetBrowser::render_grid() {
         constexpr float THUMBNAIL_SIZE = 60.0f;
-        constexpr float MIN_CELL_SIZE = 60.0f;
+        constexpr float MIN_CELL_SIZE = 64.0f;
 
         const float panel_width = ImGui::GetContentRegionAvail().x;
         int column_count = static_cast<int>(panel_width / MIN_CELL_SIZE);
