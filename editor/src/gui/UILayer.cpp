@@ -105,7 +105,7 @@ namespace editor {
             ImGuiID dock_left_id     = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Left, 0.20f, nullptr, &dock_main_id);
             ImGuiID dock_left_top_id = ImGui::DockBuilderSplitNode(dock_left_id, ImGuiDir_Up, 0.4f, nullptr, &dock_left_bottom_id);
 
-            ImGuiID dock_toolbar_id = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Up, 0.08f, nullptr, &dock_main_id);
+            ImGuiID dock_toolbar_id = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Up, 0.05f, nullptr, &dock_main_id);
 
             ImGui::DockBuilderDockWindow("Toolbar", dock_toolbar_id);
             ImGui::DockBuilderDockWindow("Asset Browser", dock_left_top_id);

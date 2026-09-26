@@ -21,7 +21,8 @@ namespace editor {
     void Toolbar::render_imgui() {
         constexpr float slot_width = 36.0f;
         constexpr float slot_height = 24.0f;
-        const float spacing_x = ImGui::GetStyle().ItemSpacing.x;
+        const ImGuiStyle& style = ImGui::GetStyle();
+        const float spacing_x = style.ItemSpacing.x;
 
         // Determine minimum required slots
         size_t min_required_slots = 0;
@@ -33,15 +34,14 @@ namespace editor {
         min_required_slots = std::max<size_t>(1, min_required_slots);
 
         // Window width constraint based on min slots
-        constexpr float window_padding_x = 16.0f;
+        const float window_padding_x = style.FramePadding.x * 2.0f;
         const float min_window_width
             = static_cast<float>(min_required_slots) * slot_width
             + static_cast<float>(min_required_slots - 1) * spacing_x
             + window_padding_x + 16.0f;
 
-        // Lock window max height to strictly 1 row height without titlebar overhead
         constexpr float window_padding_y = 8.0f;
-        const float fixed_window_height = slot_height + window_padding_y;
+        constexpr float fixed_window_height = slot_height + window_padding_y;
 
         ImGui::SetNextWindowSizeConstraints(
             ImVec2(min_window_width, fixed_window_height),
@@ -55,7 +55,8 @@ namespace editor {
             | ImGuiDockNodeFlags_NoTabBar;
         ImGui::SetNextWindowClass(&window_class);
 
-        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(8, 4));
+        // Align left window padding with ImGui's default frame/tab padding
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(style.FramePadding.x, 4.0f));
         ImGuiWindowFlags flags = ImGuiWindowFlags_NoScrollbar
             | ImGuiWindowFlags_NoScrollWithMouse
             | ImGuiWindowFlags_NoTitleBar;
@@ -80,16 +81,6 @@ namespace editor {
             // Center vertically
             const float center_y = ImGui::GetCursorPosY() + std::max(0.0f, (avail.y - slot_height) * 0.5f);
             ImGui::SetCursorPosY(center_y);
-
-            // Center horizontally so start margin equals end margin
-            const float total_slots_width
-                = slot_width * static_cast<float>(toolbar_slots_.size())
-                + spacing_x * static_cast<float>(toolbar_slots_.size() - 1);
-
-            if (avail.x > total_slots_width) {
-                const float symmetric_offset = (avail.x - total_slots_width) * 0.5f;
-                ImGui::SetCursorPosX(ImGui::GetCursorPosX() + symmetric_offset);
-            }
 
             ImDrawList* draw_list = ImGui::GetWindowDrawList();
 
@@ -135,7 +126,7 @@ namespace editor {
             }
 
             // Enable dragging/undocking when clicking empty space or empty slots
-            if (ImGui::IsWindowHovered() && ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
+            if (ImGui::IsWindowHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
                 if (!ImGui::IsAnyItemActive()) {
                     ImGuiWindow* window = ImGui::GetCurrentWindow();
                     if (ImGui::IsWindowDocked()) {
