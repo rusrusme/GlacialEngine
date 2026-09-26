@@ -102,8 +102,8 @@ namespace editor {
             ImGuiID dock_left_bottom_id;
             ImGuiID dock_bottom_id   = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Down, 0.25f, nullptr, &dock_main_id);
             ImGuiID dock_right_id    = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Right, 0.2f, nullptr, &dock_main_id);
-            ImGuiID dock_left_id     = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Left, 0.15f, nullptr, &dock_main_id);
-            ImGuiID dock_left_top_id = ImGui::DockBuilderSplitNode(dock_left_id, ImGuiDir_Up, 0.3f, nullptr, &dock_left_bottom_id);
+            ImGuiID dock_left_id     = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Left, 0.17f, nullptr, &dock_main_id);
+            ImGuiID dock_left_top_id = ImGui::DockBuilderSplitNode(dock_left_id, ImGuiDir_Up, 0.37f, nullptr, &dock_left_bottom_id);
 
             ImGuiID dock_toolbar_id = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Up, 0.05f, nullptr, &dock_main_id);
 

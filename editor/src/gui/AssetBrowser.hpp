@@ -20,7 +20,7 @@ namespace editor {
         void render_imgui();
     private:
         void render_header();
-        void render_assets();
+        void render_assets_view();
         void render_grid_view(const std::filesystem::directory_entry& entry);
         void render_list_view(const std::filesystem::directory_entry& entry);
         #endif

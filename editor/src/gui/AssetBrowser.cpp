@@ -22,7 +22,7 @@ namespace editor {
 
         ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
         if (ImGui::BeginChild("AssetGridScrollArea", ImVec2(0, 0), false)) {
-            render_assets();
+            render_assets_view();
         }
         ImGui::EndChild();
         ImGui::PopStyleColor();
@@ -112,7 +112,6 @@ namespace editor {
         ImGui::Dummy(ImVec2(0.0f, 2.0f));
 
         // --- Row 2 --- Toolbar Controls ---
-
         const float avail_x = ImGui::GetContentRegionAvail().x;
         constexpr float slider_width = 64.0f;
         constexpr float sort_btn_width = 28.0f;
@@ -122,63 +121,22 @@ namespace editor {
         ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(4.0f, 3.0f));
         ImGui::PushStyleVar(ImGuiStyleVar_GrabMinSize, 16.0f);
 
-        // Dynamic Search Bar
+        // Search Bar
         const float search_width = std::max(80.0f, avail_x - right_controls_width - spacing);
 
         ImGui::PushItemWidth(search_width);
         if (search_filter_[0] != '\0') {
-            ImGui::SetNextItemAllowOverlap();
+            ImGui::SetNextItemAllowOverlap(); // Allow clear button overlay to capture clicks
         }
-        ImGui::InputTextWithHint("##search_filter", "Search in Assets", search_filter_, sizeof(search_filter_));
+        ImGui::InputTextWithHint("##search_filter", "Search Assets", search_filter_, sizeof(search_filter_));
         ImGui::PopItemWidth();
 
         const ImVec2 search_min = ImGui::GetItemRectMin();
         const ImVec2 search_max = ImGui::GetItemRectMax();
 
-        // Embedded Clear Button (inside search input)
-        if (search_filter_[0] != '\0') {
-            const float btn_size = search_max.y - search_min.y - 4.0f;
-            const ImVec2 clear_btn_pos(search_max.x - btn_size - 3.0f, search_min.y + 2.0f);
-
-            ImGui::SetCursorScreenPos(clear_btn_pos);
-            ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.0f, 0.0f));
-            ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 2.0f);
-            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
-            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(1.0f, 1.0f, 1.0f, 0.15f));
-            ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(1.0f, 1.0f, 1.0f, 0.25f));
-
-            if (ImGui::Button("##clear_search", ImVec2(btn_size, btn_size))) {
-                search_filter_[0] = '\0';
-            }
-
-            const ImVec2 cb_min = ImGui::GetItemRectMin();
-            const ImVec2 cb_max = ImGui::GetItemRectMax();
-            const ImVec2 cb_center(
-                std::floor((cb_min.x + cb_max.x) * 0.5f),
-                std::floor((cb_min.y + cb_max.y) * 0.5f)
-            );
-
-            const ImU32 x_col = ImGui::IsItemHovered()
-                                    ? IM_COL32(255, 255, 255, 255)
-                                    : IM_COL32(160, 165, 175, 200);
-
-            constexpr float cross_r = 3.0f;
-            ImDrawList* draw_list = ImGui::GetWindowDrawList();
-            draw_list->AddLine(ImVec2(cb_center.x - cross_r, cb_center.y - cross_r), ImVec2(cb_center.x + cross_r, cb_center.y + cross_r), x_col, 1.2f);
-            draw_list->AddLine(ImVec2(cb_center.x + cross_r, cb_center.y - cross_r), ImVec2(cb_center.x - cross_r, cb_center.y + cross_r), x_col, 1.2f);
-
-            if (ImGui::IsItemHovered()) {
-                ImGui::SetTooltip("Clear search filter");
-            }
-
-            ImGui::PopStyleColor(3);
-            ImGui::PopStyleVar(2);
-        }
-
-        ImGui::SetCursorScreenPos(ImVec2(search_max.x, search_min.y));
+        // Direct SameLine chain maintains deterministic vertical alignment
         ImGui::SameLine(0.0f, spacing);
 
-        // Right-align Sort + Slider
         const float current_x = ImGui::GetCursorPosX();
         const float desired_x = avail_x - right_controls_width;
         if (desired_x > current_x) {
@@ -241,12 +199,50 @@ namespace editor {
         }
 
         ImGui::PopItemWidth();
-        ImGui::PopStyleVar(2);
 
+        const ImVec2 post_row_cursor = ImGui::GetCursorScreenPos();
+        // --- Overlay Pass --- Embedded Clear Button ---
+        if (search_filter_[0] != '\0') {
+            const float clear_btn_size = search_max.y - search_min.y - 4.0f;
+            const ImVec2 clear_btn_pos(search_max.x - clear_btn_size - 3.0f, search_min.y + 2.0f);
+
+            ImGui::SetCursorScreenPos(clear_btn_pos);
+            ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(0.0f, 0.0f));
+            ImGui::PushStyleVar(ImGuiStyleVar_FrameRounding, 2.0f);
+            ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(1.0f, 1.0f, 1.0f, 0.15f));
+            ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(1.0f, 1.0f, 1.0f, 0.25f));
+
+            if (ImGui::Button("##clear_search", ImVec2(clear_btn_size, clear_btn_size))) {
+                search_filter_[0] = '\0';
+            }
+
+            const ImVec2 cb_min = ImGui::GetItemRectMin();
+            const ImVec2 cb_max = ImGui::GetItemRectMax();
+            const ImVec2 cb_center(
+                std::floor((cb_min.x + cb_max.x) * 0.5f),
+                std::floor((cb_min.y + cb_max.y) * 0.5f)
+            );
+
+            const ImU32 x_col = ImGui::IsItemHovered()
+                                    ? IM_COL32(255, 255, 255, 255)
+                                    : IM_COL32(160, 165, 175, 200);
+
+            constexpr float cross_r = 3.0f;
+            ImDrawList* draw_list = ImGui::GetWindowDrawList();
+            draw_list->AddLine(ImVec2(cb_center.x - cross_r, cb_center.y - cross_r), ImVec2(cb_center.x + cross_r, cb_center.y + cross_r), x_col, 1.2f);
+            draw_list->AddLine(ImVec2(cb_center.x + cross_r, cb_center.y - cross_r), ImVec2(cb_center.x - cross_r, cb_center.y + cross_r), x_col, 1.2f);
+
+            ImGui::PopStyleColor(3);
+            ImGui::PopStyleVar(2);
+        }
+
+        ImGui::SetCursorScreenPos(post_row_cursor);
+        ImGui::PopStyleVar(2);
         ImGui::Separator();
     }
 
-    void AssetBrowser::render_assets() {
+    void AssetBrowser::render_assets_view() {
         if (!std::filesystem::exists(current_directory_)) return;
 
         // Prepare lower-case search filter string
@@ -326,7 +322,7 @@ namespace editor {
             ImGui::PopStyleVar();
         }
         else {
-            const float cell_size = thumbnail_size_ + 12.0f;
+            const float cell_size = thumbnail_size_ + 10.0f;
             const float panel_width = ImGui::GetContentRegionAvail().x;
             int column_count = static_cast<int>(panel_width / cell_size);
             if (column_count < 1) column_count = 1;
