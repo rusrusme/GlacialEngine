@@ -27,9 +27,11 @@ namespace engine {
     namespace window {
         bool init(GraphicsFramework framework = GraphicsFramework::GLFW);
         void shutdown();
+
         void poll_events();
         void swap_buffers(void* window_handle);
         double get_time();
+        void* get_proc_address(const char* procname);
 
         void* create_window(int width, int height, const char* title, WindowNativeData* window_data);
         void destroy_window(void* window_handle);

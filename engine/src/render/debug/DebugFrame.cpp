@@ -6,6 +6,8 @@
 #ifdef ENABLE_IMGUI
 #include "render/debug/DebugFrame.hpp"
 
+#include <imgui_impl_opengl3.h>
+
 #include "core/Application.hpp"
 #include "render/debug/ImguiPlatform.hpp"
 

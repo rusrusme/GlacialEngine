@@ -7,7 +7,7 @@
 
 #include "core/Application.hpp"
 #include "core/Config.hpp"
-#include "../../include/render/debug/DebugFrame.hpp"
+#include "render/debug/DebugFrame.hpp"
 
 // --------------------------------------------------------------------
 #if defined(_WIN32)

@@ -5,6 +5,8 @@
 
 #include "render/debug/ImguiPlatform.hpp"
 
+#include <imgui_impl_glfw.h>
+
 #include "core/WindowAPI.hpp"
 
 #ifdef ENABLE_IMGUI

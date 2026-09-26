@@ -19,7 +19,7 @@
 #include "core/Log.hpp"
 #include "core/UUID.hpp"
 #include "core/Window.hpp"
-#include "render/Framebuffer.hpp"
+#include "core/WindowAPI.hpp"
 // Event
 #include "event/Event.hpp"
 #include "event/KeyEvents.hpp"
@@ -39,6 +39,10 @@
 #include "physics/SpatialHashGrid.hpp"
 // Platform
 #include "platform/FileDialogAPI.hpp"
+// Render/Debug
+#include "render/debug/DebugFrame.hpp"
+#include "render/debug/DebugRenderer.hpp"
+#include "render/debug/ImguiPlatform.hpp"
 // Render/Mesh
 #include "render/mesh/InstanceData.hpp"
 #include "render/mesh/Mesh.hpp"
@@ -48,9 +52,8 @@
 #include "render/Buffer.hpp"
 #include "render/BufferLayout.hpp"
 #include "render/Camera.hpp"
-#include "../render/debug/DebugFrame.hpp"
-#include "../render/debug/DebugRenderer.hpp"
 #include "render/Frame.hpp"
+#include "render/Framebuffer.hpp"
 #include "render/Frustum.hpp"
 #include "render/PostProcessor.hpp"
 #include "render/RenderAPI.hpp"

@@ -5,7 +5,7 @@
 
 #pragma once
 
-// STL
+// STL Core & Utility
 #include <algorithm>
 #include <array>
 #include <chrono>
@@ -20,27 +20,26 @@
 #include <random>
 #include <sstream>
 #include <string>
+#include <utility>
+
+// STL Containers
 #include <unordered_map>
 #include <unordered_set>
-#include <utility>
 #include <vector>
 
-// Third-Party
-#ifdef ENABLE_IMGUI
-#include <imgui.h>
-#include <imgui_impl_glfw.h>
-#include <imgui_impl_opengl3.h>
-#endif
-
+// Third-Party Core
 #include <entt/entt.hpp>
 #include <glad/glad.h>
-#include <GLFW/glfw3.h>
+#include <nlohmann/json.hpp>
+
+// GLM
 #include <glm/glm.hpp>
-#include <glm/vec3.hpp>
-#include <glm/vec4.hpp>
 #include <glm/ext/matrix_clip_space.hpp>
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/gtc/matrix_inverse.hpp>
 #include <glm/gtc/type_ptr.hpp>
-#include <nlohmann/json.hpp>
-#include <nlohmann/json_fwd.hpp>
+
+// Dear ImGui
+#ifdef ENABLE_IMGUI
+#include <imgui.h>
+#endif

@@ -94,6 +94,14 @@ namespace engine::window {
         return 0.0;
     }
 
+    void* get_proc_address(const char* procname) {
+        if (active_framework == GraphicsFramework::GLFW) {
+            return reinterpret_cast<void*>(glfwGetProcAddress(procname));
+        }
+        CORE_WARN("No valid graphics framework found");
+        return nullptr;
+    }
+
     void* create_window(int width, int height, const char* title, WindowNativeData* window_data) {
         if (active_framework == GraphicsFramework::GLFW) {
             GLFWwindow* window = glfwCreateWindow(width, height, title, nullptr, nullptr);
