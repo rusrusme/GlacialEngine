@@ -8,11 +8,23 @@
 #include <algorithm>
 #include <vector>
 
+#include "Config.hpp"
 #include "gui/Icons.hpp"
 
 namespace editor {
     void AssetBrowser::init(std::shared_ptr<engine::AssetManager> asset_manager) {
         asset_manager_ = std::move(asset_manager);
+
+        const float thumbnail_size = config::get_value("asset_thumbnail_size", thumbnail_size_);
+        thumbnail_size_ = thumbnail_size;
+
+        const bool sort_order = config::get_value("asset_sort_ascending", sort_ascending_);
+        sort_ascending_ = sort_order;
+    }
+
+    void AssetBrowser::save_config() {
+        config::set_value("asset_thumbnail_size", thumbnail_size_);
+        config::set_value("asset_sort_ascending", sort_ascending_);
     }
 
     #ifdef ENABLE_IMGUI

@@ -18,7 +18,7 @@ namespace editor {
 
     UILayer::UILayer(std::shared_ptr<engine::Scene>& scene, std::shared_ptr<engine::AssetManager> asset_manager) : active_scene_(std::move(scene)), asset_manager_(std::move(asset_manager)) {}
 
-    void UILayer::on_attach(engine::Renderer& renderer) {
+    void UILayer::on_attach(engine::Renderer& _) {
         object_inspector_.init(active_scene_, asset_manager_, audio_layer_);
         hierarchy_.init(active_scene_, asset_manager_);
         asset_browser_.init(asset_manager_);
@@ -39,6 +39,8 @@ namespace editor {
     }
 
     void UILayer::on_detach() {
+        asset_browser_.save_config();
+        asset_browser_.init(nullptr);
         object_inspector_.init(nullptr, nullptr, nullptr);
         hierarchy_.init(nullptr, nullptr);
     }
@@ -151,7 +153,7 @@ namespace editor {
         viewport_bounds_min_ = ImGui::GetCursorScreenPos();
         viewport_bounds_size_ = {panel_w, panel_h};
 
-        // 1. Framebuffer Resizing
+        // Framebuffer Resizing
         if (editor_layer_) {
             uint32_t current_fb_w = renderer.get_framebuffer_width();
             uint32_t current_fb_h = renderer.get_framebuffer_height();

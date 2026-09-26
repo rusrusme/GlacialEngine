@@ -5,8 +5,22 @@
 
 #include "gui/DebugPanel.hpp"
 
+#include "Config.hpp"
+
 namespace editor {
     #ifdef ENABLE_IMGUI
+    void DebugPanel::load_config() {
+        const int toggle_debug_panel = config::get_value("toggle_debug_panel", show_debug_panel_);
+        const int show_grid = config::get_value("show_grid", show_grid_);
+        show_debug_panel_ = toggle_debug_panel;
+        show_grid_ = show_grid;
+    }
+
+    void DebugPanel::save_config() {
+        config::set_value("toggle_debug_panel", show_debug_panel_);
+        config::set_value("show_grid", show_grid_);
+    }
+
     void DebugPanel::render_imgui(engine::Renderer& renderer, const float delta_time) {
         if (!show_debug_panel_) return;
 

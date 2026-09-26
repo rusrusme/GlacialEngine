@@ -33,7 +33,7 @@ namespace editor {
         explicit UILayer(std::shared_ptr<engine::Scene>& scene, std::shared_ptr<engine::AssetManager> asset_manager);
         ~UILayer() override = default;
 
-        void on_attach(engine::Renderer& renderer) override;
+        void on_attach(engine::Renderer& _) override;
         void on_detach() override;
         void on_update(float delta_time) override;
         void on_render(engine::Renderer& renderer, float delta_time) override;

@@ -15,10 +15,14 @@ namespace editor {
         AssetBrowser() = default;
 
         void init(std::shared_ptr<engine::AssetManager> asset_manager);
+        void save_config();
 
         #ifdef ENABLE_IMGUI
         void render_imgui();
+        #endif
+
     private:
+        #ifdef ENABLE_IMGUI
         void render_header();
         void render_assets_view();
         void render_grid_view(const std::filesystem::directory_entry& entry);

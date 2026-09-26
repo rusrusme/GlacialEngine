@@ -10,6 +10,9 @@ namespace editor {
     public:
         DebugPanel() = default;
 
+        void load_config();
+        void save_config();
+
         #ifdef ENABLE_IMGUI
         void render_imgui(engine::Renderer& renderer, float delta_time);
         #endif

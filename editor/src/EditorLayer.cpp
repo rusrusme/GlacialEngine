@@ -37,10 +37,7 @@ namespace editor {
         asset_manager_->scan_directory("assets");
 
         config::load();
-        const int toggle_debug_panel = config::get_value("toggle_debug_panel");
-        const int show_grid = config::get_value("show_grid");
-        debug_panel_->set_debug_panel_enabled(toggle_debug_panel);
-        debug_panel_->set_grid_enabled(show_grid);
+        debug_panel_->load_config();
     }
 
     void EditorLayer::on_detach() {
@@ -48,9 +45,7 @@ namespace editor {
             active_scene_->on_shutdown();
         }
         engine::DebugRenderer::on_shutdown();
-
-        config::set_value("toggle_debug_panel", debug_panel_->is_debug_panel_enabled());
-        config::set_value("show_grid", debug_panel_->is_grid_enabled());
+        debug_panel_->save_config();
         config::save();
     }
 
