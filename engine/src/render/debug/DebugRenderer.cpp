@@ -3,7 +3,7 @@
 // All rights reserved.
 //
 
-#include "../../../include/render/debug/DebugRenderer.hpp"
+#include "render/debug/DebugRenderer.hpp"
 
 #include <glm/vec3.hpp>
 #include <glm/gtc/constants.hpp>

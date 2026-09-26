@@ -3,7 +3,7 @@
 // All rights reserved.
 //
 
-#include "../../../include/render/debug/ImguiPlatform.hpp"
+#include "render/debug/ImguiPlatform.hpp"
 
 #include "core/WindowAPI.hpp"
 

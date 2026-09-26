@@ -4,10 +4,10 @@
 //
 
 #ifdef ENABLE_IMGUI
-#include "render/DebugFrame.hpp"
+#include "render/debug/DebugFrame.hpp"
 
 #include "core/Application.hpp"
-#include "../../../include/render/debug/ImguiPlatform.hpp"
+#include "render/debug/ImguiPlatform.hpp"
 
 namespace engine {
     void DebugFrame::init(void* window, const char* glsl_version) {
