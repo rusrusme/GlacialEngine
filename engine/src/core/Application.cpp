@@ -50,7 +50,7 @@ namespace engine {
 
         CORE_INFO("Attaching application layers");
         for (const auto& layer : layers_) {
-            layer->on_attach(renderer_);
+            layer->on_attach(context_);
         }
         CORE_INFO("Application startup complete");
 
@@ -64,18 +64,18 @@ namespace engine {
             // Update pass
             // ----------------------------------
             for (const auto& layer : layers_) {
-                layer->on_update(delta_time);
+                layer->on_update(context_, delta_time);
             }
 
             // ----------------------------------
             // Render pass
             // ----------------------------------
             for (const auto& layer : layers_) {
-                layer->on_render(renderer_, delta_time);
+                layer->on_render(context_, delta_time);
             }
             #ifdef ENABLE_IMGUI
             for (const auto& layer : layers_) {
-                layer->on_imgui_render(renderer_, delta_time);
+                layer->on_imgui_render(context_, delta_time);
             }
             #endif
             // ----------------------------------
@@ -85,7 +85,7 @@ namespace engine {
         // In reverse
         CORE_INFO("Detaching application layers");
         for (auto it = layers_.rbegin(); it != layers_.rend(); ++it) {
-            (*it)->on_detach();
+            (*it)->on_detach(context_);
         }
 
         shutdown();
@@ -111,7 +111,7 @@ namespace engine {
             if (event.handled) {
                 break; // Event consumed
             }
-            (*it)->on_event(event);
+            (*it)->on_event(context_, event);
         }
     }
 

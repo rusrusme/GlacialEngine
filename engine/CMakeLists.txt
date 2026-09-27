@@ -119,12 +119,22 @@ add_library(Engine STATIC
             src/render/debug/ImguiPlatform.cpp
             src/scene/SimulationState.cpp
             include/scene/SimulationState.hpp
+            include/core/SystemContext.hpp
+            src/audio/AudioSystem.cpp
+            include/audio/AudioSystem.hpp
+            src/scene/SceneManager.cpp
+            include/scene/SceneManager.hpp
 )
 # ----------------------------------------------------------------------------
 target_include_directories(Engine
                            PUBLIC ${CMAKE_SOURCE_DIR}/engine/include
                            PRIVATE ${CMAKE_SOURCE_DIR}/engine/src
 )
+# ----------------------------------------------------------------------------
+if (WIN32)
+    target_compile_definitions(Engine PUBLIC NOMINMAX WIN32_LEAN_AND_MEAN)
+    target_link_libraries(Engine PUBLIC comdlg32.lib)
+endif()
 # ----------------------------------------------------------------------------
 set(RENDER_API "OPENGL" CACHE STRING "Selects the rendering backend")
 # ----------------------------------------------------------------------------

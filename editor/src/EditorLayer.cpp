@@ -18,9 +18,9 @@ namespace editor {
         : initial_scene_(std::move(scene)), asset_manager_(std::move(asset_manager)) {
     }
 
-    void EditorLayer::on_attach(engine::Renderer& renderer) {
+    void EditorLayer::on_attach(engine::SystemContext& context) {
         debug_panel_ = std::make_unique<DebugPanel>();
-        editor_grid_.init(renderer);
+        editor_grid_.init(context.renderer);
 
         if (initial_scene_) {
             simulation_state_.on_init(initial_scene_);
@@ -42,14 +42,14 @@ namespace editor {
         debug_panel_->load_config();
     }
 
-    void EditorLayer::on_detach() {
+    void EditorLayer::on_detach(engine::SystemContext& context) {
         simulation_state_.on_shutdown();
         engine::DebugRenderer::on_shutdown();
         debug_panel_->save_config();
         config::save();
     }
 
-    void EditorLayer::on_update(const float delta_time) {
+    void EditorLayer::on_update(engine::SystemContext& context, const float delta_time) {
         if (engine::Input::is_key_pressed_once(engine::Key::F3)) {
             if (debug_panel_) debug_panel_->toggle_debug_panel();
         }
@@ -90,14 +90,14 @@ namespace editor {
         }
     }
 
-    void EditorLayer::on_render(engine::Renderer& renderer, const float delta_time) {
+    void EditorLayer::on_render(engine::SystemContext& context, const float delta_time) {
         engine::Renderer::clear({0.12f, 0.12f, 0.12f, 1.0f});
 
-        renderer.begin_scene(camera_);
+        context.renderer.begin_scene(camera_);
         engine::DebugRenderer::begin_scene(camera_);
 
         if (auto scene = active_scene()) {
-            scene->on_render(renderer, camera_, *asset_manager_, delta_time);
+            scene->on_render(context.renderer, camera_, *asset_manager_, delta_time);
 
             auto view = scene->view<engine::TransformComponent, engine::BoxColliderComponent>();
 
@@ -131,19 +131,19 @@ namespace editor {
         }
 
         if (debug_panel_ && debug_panel_->is_grid_enabled()) {
-            editor_grid_.render(renderer);
+            editor_grid_.render(context.renderer);
         }
         engine::DebugRenderer::end_scene();
-        renderer.end_scene(delta_time);
+        context.renderer.end_scene(delta_time);
     }
 
     #ifdef ENABLE_IMGUI
-    void EditorLayer::on_imgui_render(engine::Renderer& renderer, const float delta_time) {
-        debug_panel_->render_imgui(renderer, delta_time);
+    void EditorLayer::on_imgui_render(engine::SystemContext& context, const float delta_time) {
+        debug_panel_->render_imgui(context.renderer, delta_time);
     }
     #endif
 
-    void EditorLayer::on_event(engine::Event& event) {
+    void EditorLayer::on_event(engine::SystemContext& context, engine::Event& event) {
         engine::EventDispatcher dispatcher(event);
 
         // dispatcher.dispatch<engine::KeyPressedEvent>([this](const engine::KeyPressedEvent& e) {

@@ -8,6 +8,8 @@
 #include "Layer.hpp"
 
 namespace engine {
+    struct SystemContext;
+
     class LayerStack {
     public:
         LayerStack() = default;
@@ -16,8 +18,8 @@ namespace engine {
         void push_layer(std::unique_ptr<Layer> layer);
         void push_overlay(std::unique_ptr<Layer> overlay);
 
-        std::unique_ptr<Layer> pop_layer(Layer* layer);
-        std::unique_ptr<Layer> pop_overlay(Layer* overlay);
+        std::unique_ptr<Layer> pop_layer(Layer* layer, SystemContext& context);
+        std::unique_ptr<Layer> pop_overlay(Layer* overlay, SystemContext& context);
 
         std::vector<std::unique_ptr<Layer>>::iterator begin() { return layers_.begin(); }
         std::vector<std::unique_ptr<Layer>>::iterator end() { return layers_.end(); }

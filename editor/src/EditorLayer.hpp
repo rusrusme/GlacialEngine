@@ -27,18 +27,18 @@ namespace editor {
         explicit EditorLayer(std::shared_ptr<engine::Scene> scene, std::shared_ptr<engine::AssetManager> asset_manager);
         ~EditorLayer() override = default;
 
-        void on_attach(engine::Renderer& renderer) override;
-        void on_detach() override;
+        void on_attach(engine::SystemContext& context) override;
+        void on_detach(engine::SystemContext& context) override;
 
-        void on_update(float delta_time) override;
+        void on_update(engine::SystemContext& context, float delta_time) override;
 
-        void on_render(engine::Renderer& renderer, float delta_time) override;
+        void on_render(engine::SystemContext& context, float delta_time) override;
 
         #ifdef ENABLE_IMGUI
-        void on_imgui_render(engine::Renderer& renderer, float delta_time) override;
+        void on_imgui_render(engine::SystemContext& context, float delta_time) override;
         #endif
 
-        void on_event(engine::Event& event) override;
+        void on_event(engine::SystemContext& context, engine::Event& event) override;
 
         void on_scene_play() { simulation_state_.on_scene_play(); }
 

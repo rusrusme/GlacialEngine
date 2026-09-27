@@ -33,16 +33,13 @@ namespace editor {
         explicit UILayer(std::shared_ptr<engine::Scene>& scene, std::shared_ptr<engine::AssetManager> asset_manager);
         ~UILayer() override = default;
 
-        void on_attach(engine::Renderer& _) override;
-        void on_detach() override;
-        void on_update(float delta_time) override;
-        void on_render(engine::Renderer& renderer, float delta_time) override;
+        void on_attach(engine::SystemContext& context) override;
+        void on_detach(engine::SystemContext& context) override;
+        void on_update(engine::SystemContext& context, float delta_time) override;
 
         #ifdef ENABLE_IMGUI
-        void on_imgui_render(engine::Renderer& renderer, float delta_time) override;
+        void on_imgui_render(engine::SystemContext& context, float delta_time) override;
         #endif
-
-        void on_event(engine::Event& event) override;
 
         void set_camera(const engine::Camera* camera) { camera_ = camera; }
         void set_editor(EditorLayer* editor_layer) { editor_layer_ = editor_layer; }

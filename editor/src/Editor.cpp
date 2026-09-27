@@ -14,7 +14,7 @@ namespace editor {
         active_scene_ = std::make_shared<engine::Scene>();
         asset_manager_ = std::make_unique<engine::AssetManager>();
 
-        auto audio_layer = std::make_unique<engine::AudioLayer>(active_scene_, asset_manager_);
+        auto audio_layer = std::make_unique<engine::AudioLayer>(active_scene_, context());
         auto editor_layer = std::make_unique<EditorLayer>(active_scene_, asset_manager_);
         auto imgui_layer = std::make_unique<UILayer>(active_scene_, asset_manager_);
 

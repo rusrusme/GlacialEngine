@@ -6,8 +6,9 @@
 #include "platform/win32/Win32FileDialog.hpp"
 
 #ifdef _WIN32
-#define NOMINMAX
 #include <windows.h>
+
+#include <commdlg.h>
 
 namespace win32 {
     std::string open_file(const char* filter) {

@@ -18,7 +18,7 @@ namespace editor {
 
     UILayer::UILayer(std::shared_ptr<engine::Scene>& scene, std::shared_ptr<engine::AssetManager> asset_manager) : active_scene_(std::move(scene)), asset_manager_(std::move(asset_manager)) {}
 
-    void UILayer::on_attach(engine::Renderer& _) {
+    void UILayer::on_attach(engine::SystemContext& context) {
         object_inspector_.init(active_scene_, asset_manager_, audio_layer_);
         hierarchy_.init(active_scene_, asset_manager_);
         asset_browser_.init(asset_manager_);
@@ -38,14 +38,14 @@ namespace editor {
         toolbar_.register_default_items(*editor_layer_);
     }
 
-    void UILayer::on_detach() {
+    void UILayer::on_detach(engine::SystemContext& context) {
         asset_browser_.save_config();
         asset_browser_.init(nullptr);
         object_inspector_.init(nullptr, nullptr, nullptr);
         hierarchy_.init(nullptr, nullptr);
     }
 
-    void UILayer::on_update(float delta_time) {
+    void UILayer::on_update(engine::SystemContext& context, float delta_time) {
         #ifdef ENABLE_IMGUI
         if (engine::Input::is_key_pressed_once(engine::Key::ESCAPE)) {
             // If gizmo is currently active, cancel the operation and restore initial transform
@@ -77,11 +77,8 @@ namespace editor {
         #endif
     }
 
-    void UILayer::on_render(engine::Renderer& renderer, float delta_time) {
-    }
-
     #ifdef ENABLE_IMGUI
-    void UILayer::on_imgui_render(engine::Renderer& renderer, float delta_time) {
+    void UILayer::on_imgui_render(engine::SystemContext& context, float delta_time) {
         if (editor_layer_) {
             set_scene_context(editor_layer_->active_scene());
         }
@@ -155,11 +152,11 @@ namespace editor {
 
         // Framebuffer Resizing
         if (editor_layer_) {
-            uint32_t current_fb_w = renderer.get_framebuffer_width();
-            uint32_t current_fb_h = renderer.get_framebuffer_height();
+            uint32_t current_fb_w = context.renderer.get_framebuffer_width();
+            uint32_t current_fb_h = context.renderer.get_framebuffer_height();
 
             if (current_fb_w != static_cast<uint32_t>(panel_w) || current_fb_h != static_cast<uint32_t>(panel_h)) {
-                renderer.on_resize(static_cast<int>(panel_w), static_cast<int>(panel_h));
+                context.renderer.on_resize(static_cast<int>(panel_w), static_cast<int>(panel_h));
                 if (camera_) {
                     const_cast<engine::Camera*>(camera_)->set_aspect_ratio(panel_w / panel_h);
                 }
@@ -167,7 +164,7 @@ namespace editor {
         }
 
         // Szene-Textur zeichnen
-        uint32_t texture_id = renderer.get_final_color_texture();
+        uint32_t texture_id = context.renderer.get_final_color_texture();
         if (texture_id != 0) {
             ImGui::Image(texture_id, viewport_panel_size, ImVec2(0, 1), ImVec2(1, 0));
         }
@@ -239,10 +236,6 @@ namespace editor {
         console_.render_imgui();
     }
     #endif
-
-    void UILayer::on_event(engine::Event& event) {
-        // engine::EventDispatcher dispatcher(event);
-    }
 
     #ifdef ENABLE_IMGUI
     void UILayer::set_scene_context(const std::shared_ptr<engine::Scene>& current_scene) {

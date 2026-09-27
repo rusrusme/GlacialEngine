@@ -8,25 +8,26 @@
 #include <string>
 
 #include "event/Event.hpp"
-#include "render/Renderer.hpp"
 
 namespace engine {
+    struct SystemContext;
+
     class Layer {
     public:
-        explicit Layer(std::string name = "Layer") : debug_name_(std::move(name)) {}
+        explicit Layer(std::string name = "Layer") : name_(std::move(name)) {}
         virtual ~Layer() = default;
 
-        virtual void on_attach(Renderer& renderer) {}
-        virtual void on_detach() {}
+        virtual void on_attach(SystemContext& context) {}
+        virtual void on_detach(SystemContext& context) {}
 
-        virtual void on_update(float delta_time) {}
+        virtual void on_update(SystemContext& context, float delta_time) {}
 
-        virtual void on_render(Renderer& renderer, float delta_time) {}
-        virtual void on_imgui_render(Renderer& renderer, float delta_time) {}
+        virtual void on_render(SystemContext& context, float delta_time) {}
+        virtual void on_imgui_render(SystemContext& context, float delta_time) {}
 
-        virtual void on_event(Event& event) {}
+        virtual void on_event(SystemContext& context, Event& event) {}
 
     protected:
-        std::string debug_name_;
+        std::string name_;
     };
 };
