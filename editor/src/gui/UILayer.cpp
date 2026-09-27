@@ -83,7 +83,7 @@ namespace editor {
     #ifdef ENABLE_IMGUI
     void UILayer::on_imgui_render(engine::Renderer& renderer, float delta_time) {
         if (editor_layer_) {
-            set_scene_context(editor_layer_->get_active_scene());
+            set_scene_context(editor_layer_->active_scene());
         }
         if (active_scene_ && asset_manager_) {
             menubar_.render_imgui(active_scene_, asset_manager_);

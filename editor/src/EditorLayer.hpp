@@ -15,6 +15,7 @@
 #include "render/Renderer.hpp"
 #include "scene/Scene.hpp"
 #include "scene/SceneState.hpp"
+#include "scene/SimulationState.hpp"
 
 namespace engine {
     class AudioLayer;
@@ -39,14 +40,16 @@ namespace editor {
 
         void on_event(engine::Event& event) override;
 
-        void on_scene_play();
-        void on_scene_pause();
-        void on_scene_stop();
+        void on_scene_play() { simulation_state_.on_scene_play(); }
+
+        void on_scene_pause() { simulation_state_.on_scene_pause(); }
+
+        void on_scene_stop() { simulation_state_.on_scene_stop(); }
 
         void set_audio(engine::AudioLayer* audio_layer) { audio_layer_ = audio_layer; }
 
-        [[nodiscard]] engine::SceneState get_scene_state() const { return scene_state_; }
-        [[nodiscard]] std::shared_ptr<engine::Scene> get_active_scene() const { return active_scene_; }
+        [[nodiscard]] std::shared_ptr<engine::Scene> active_scene() const { return simulation_state_.active_scene(); }
+        [[nodiscard]] engine::SceneState scene_state() const { return simulation_state_.current_state(); }
 
         [[nodiscard]] const engine::Camera& get_camera() const { return camera_; }
 
@@ -54,9 +57,9 @@ namespace editor {
         void set_viewport_focused(const bool focused) { is_viewport_focused_ = focused; }
 
     private:
-        std::shared_ptr<engine::Scene> active_scene_;
-        std::shared_ptr<engine::Scene> editor_scene_;
-        engine::SceneState scene_state_{engine::SceneState::Edit};
+        // Todo: add SceneManager in engine
+        std::shared_ptr<engine::Scene> initial_scene_ = nullptr;
+        engine::SimulationState simulation_state_{};
 
         std::shared_ptr<engine::AssetManager> asset_manager_;
         std::unique_ptr<DebugPanel> debug_panel_;
@@ -68,7 +71,6 @@ namespace editor {
 
         // -------------------------
         float total_time_ = 0.0f;
-        float simulation_time_ = 0.0f;
 
         Grid editor_grid_;
 

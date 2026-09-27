@@ -117,6 +117,8 @@ add_library(Engine STATIC
             src/core/WindowAPI.cpp
             include/render/debug/ImguiPlatform.hpp
             src/render/debug/ImguiPlatform.cpp
+            src/scene/SimulationState.cpp
+            include/scene/SimulationState.hpp
 )
 # ----------------------------------------------------------------------------
 target_include_directories(Engine

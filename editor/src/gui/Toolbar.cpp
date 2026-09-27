@@ -153,8 +153,8 @@ namespace editor {
         toolbar_slots_[0].item = ToolbarItem{
             "play_stop", "Play / Stop", 36.0f,
             [&editor_layer](ImVec2 size) {
-                const bool is_play = (editor_layer.get_scene_state() == engine::SceneState::Play);
-                const bool is_pause = (editor_layer.get_scene_state() == engine::SceneState::Pause);
+                const bool is_play = (editor_layer.scene_state() == engine::SceneState::Play);
+                const bool is_pause = (editor_layer.scene_state() == engine::SceneState::Pause);
 
                 if (is_play || is_pause) {
                     if (draw_icon_button("##StopBtn", draw_stop_icon, size)) editor_layer.on_scene_stop();
@@ -168,8 +168,8 @@ namespace editor {
         toolbar_slots_[1].item = ToolbarItem{
             "pause_resume", "Pause / Resume", 36.0f,
             [&editor_layer](ImVec2 size) {
-                const bool is_play = (editor_layer.get_scene_state() == engine::SceneState::Play);
-                const bool is_pause = (editor_layer.get_scene_state() == engine::SceneState::Pause);
+                const bool is_play = (editor_layer.scene_state() == engine::SceneState::Play);
+                const bool is_pause = (editor_layer.scene_state() == engine::SceneState::Pause);
 
                 if (draw_icon_button("##PauseBtn", is_pause ? draw_play_icon : draw_pause_icon, size)) {
                     if (is_play) editor_layer.on_scene_pause();

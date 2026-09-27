@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <random>
+#include <utility>
 
 #include "Config.hpp"
 #include "audio/AudioLayer.hpp"
@@ -14,14 +15,15 @@
 
 namespace editor {
     EditorLayer::EditorLayer(std::shared_ptr<engine::Scene> scene, std::shared_ptr<engine::AssetManager> asset_manager)
-        : active_scene_(scene), editor_scene_(std::move(scene)), asset_manager_(std::move(asset_manager)) {}
+        : initial_scene_(std::move(scene)), asset_manager_(std::move(asset_manager)) {
+    }
 
     void EditorLayer::on_attach(engine::Renderer& renderer) {
         debug_panel_ = std::make_unique<DebugPanel>();
         editor_grid_.init(renderer);
 
-        if (active_scene_) {
-            active_scene_->on_init();
+        if (initial_scene_) {
+            simulation_state_.on_init(initial_scene_);
         }
 
         engine::DebugRenderer::on_init();
@@ -41,9 +43,7 @@ namespace editor {
     }
 
     void EditorLayer::on_detach() {
-        if (active_scene_) {
-            active_scene_->on_shutdown();
-        }
+        simulation_state_.on_shutdown();
         engine::DebugRenderer::on_shutdown();
         debug_panel_->save_config();
         config::save();
@@ -55,7 +55,7 @@ namespace editor {
         }
 
         if (engine::Input::is_key_pressed_once(engine::Key::SPACE)) {
-            if (scene_state_ == engine::SceneState::Edit) {
+            if (scene_state() == engine::SceneState::Edit) {
                 on_scene_play();
             }
             else {
@@ -64,14 +64,15 @@ namespace editor {
         }
 
         total_time_ += delta_time;
-        if (active_scene_ && scene_state_ == engine::SceneState::Play) {
-            simulation_time_ += delta_time;
-            active_scene_->on_update(delta_time);
 
+        simulation_state_.on_update(delta_time);
+        auto scene = active_scene();
+
+        if (scene && simulation_state_.current_state() == engine::SceneState::Play) {
             // -----------------------------------------------------------------
             // SIMULATION TEST: Rotate all scene entities in Play mode
             // -----------------------------------------------------------------
-            auto view = active_scene_->view<engine::TransformComponent>();
+            auto view = scene->view<engine::TransformComponent>();
             for (auto entity_handle : view) {
                 auto& transform = view.get<engine::TransformComponent>(entity_handle);
                 transform.rotation.y += 45.0f * delta_time; // Rotate 45 deg/sec
@@ -95,10 +96,10 @@ namespace editor {
         renderer.begin_scene(camera_);
         engine::DebugRenderer::begin_scene(camera_);
 
-        if (active_scene_) {
-            active_scene_->on_render(renderer, camera_, *asset_manager_, delta_time);
+        if (auto scene = active_scene()) {
+            scene->on_render(renderer, camera_, *asset_manager_, delta_time);
 
-            auto view = active_scene_->view<engine::TransformComponent, engine::BoxColliderComponent>();
+            auto view = scene->view<engine::TransformComponent, engine::BoxColliderComponent>();
 
             for (auto entity_handle : view) {
                 auto [transform, collider] = view.get<engine::TransformComponent, engine::BoxColliderComponent>(entity_handle);
@@ -106,21 +107,21 @@ namespace editor {
 
                 // Calculate World Space AABB
                 engine::AABB world_aabb = collider.get_world_aabb(transform.position, transform.scale);
-                auto overlaps = active_scene_->get_collision_system().query_aabb(*active_scene_, world_aabb);
+                auto overlaps = scene->get_collision_system().query_aabb(*scene, world_aabb);
 
                 // Turn RED if colliding with another entity (> 1 because it includes itself), otherwise GREEN
                 glm::vec3 box_color = (overlaps.size() > 1) ? glm::vec3(1.0f, 0.0f, 0.0f) : glm::vec3(0.0f, 1.0f, 0.0f);
                 engine::DebugRenderer::draw_box(world_aabb.min, world_aabb.max, box_color);
             }
 
-            auto dir_light = active_scene_->view<engine::TransformComponent, engine::DirectionalLightComponent, engine::ActiveComponent>();
+            auto dir_light = scene->view<engine::TransformComponent, engine::DirectionalLightComponent, engine::ActiveComponent>();
             for (auto entity : dir_light) {
                 auto [transform, light, active] = dir_light.get<engine::TransformComponent, engine::DirectionalLightComponent, engine::ActiveComponent>(entity);
                 if (active.active) {
                     draw_directional_light(transform.position, transform.get_forward(), light.color);
                 }
             }
-            auto point_light = active_scene_->view<engine::TransformComponent, engine::PointLightComponent, engine::ActiveComponent>();
+            auto point_light = scene->view<engine::TransformComponent, engine::PointLightComponent, engine::ActiveComponent>();
             for (auto entity : point_light) {
                 auto [transform, light, active] = point_light.get<engine::TransformComponent, engine::PointLightComponent, engine::ActiveComponent>(entity);
                 if (active.active) {
@@ -145,22 +146,22 @@ namespace editor {
     void EditorLayer::on_event(engine::Event& event) {
         engine::EventDispatcher dispatcher(event);
 
-        dispatcher.dispatch<engine::KeyPressedEvent>([this](const engine::KeyPressedEvent& e) {
-            // ==============================
-            // Mechanical Keyboard Simulator
-            // ==============================
-            // if (e.is_repeat()) return false;
-            // CLIENT_TRACE("Pressed Key: {0}", e.key_code());
-            //
-            // static std::random_device rd;
-            // static std::mt19937 gen(rd());
-            // static std::uniform_real_distribution pitch_dist(0.99f, 1.01f);
-            //
-            // const float random_pitch = pitch_dist(gen);
-            //
-            // audio_layer_->play_sound("assets/audio/click.wav", 1.0f, random_pitch);
-            return false;
-        });
+        // dispatcher.dispatch<engine::KeyPressedEvent>([this](const engine::KeyPressedEvent& e) {
+        // ==============================
+        // Mechanical Keyboard Simulator
+        // ==============================
+        // if (e.is_repeat()) return false;
+        // CLIENT_TRACE("Pressed Key: {0}", e.key_code());
+        //
+        // static std::random_device rd;
+        // static std::mt19937 gen(rd());
+        // static std::uniform_real_distribution pitch_dist(0.99f, 1.01f);
+        //
+        // const float random_pitch = pitch_dist(gen);
+        //
+        // audio_layer_->play_sound("assets/audio/click.wav", 1.0f, random_pitch);
+        // return false;
+        // });
 
         // dispatcher.dispatch<engine::MouseButtonPressedEvent>([](const engine::MouseButtonPressedEvent& e) {
         //     CLIENT_TRACE("Clicked Button: {0}", e.button());
@@ -186,38 +187,6 @@ namespace editor {
             }
             return false;
         });
-    }
-
-    void EditorLayer::on_scene_play() {
-        if (scene_state_ == engine::SceneState::Pause) {
-            scene_state_ = engine::SceneState::Play;
-            return;
-        }
-        scene_state_ = engine::SceneState::Play;
-        simulation_time_ = 0.0f;
-
-        active_scene_ = engine::Scene::copy(editor_scene_);
-        if (active_scene_) {
-            active_scene_->on_init();
-        }
-    }
-
-    void EditorLayer::on_scene_pause() {
-        if (scene_state_ == engine::SceneState::Play) {
-            scene_state_ = engine::SceneState::Pause;
-        }
-    }
-
-    void EditorLayer::on_scene_stop() {
-        if (scene_state_ == engine::SceneState::Edit) return;
-
-        scene_state_ = engine::SceneState::Edit;
-        simulation_time_ = 0.0f;
-
-        if (active_scene_) {
-            active_scene_->on_shutdown();
-        }
-        active_scene_ = editor_scene_;
     }
 
     void EditorLayer::draw_directional_light(const glm::vec3 position, const glm::vec3& direction, const glm::vec3& color) {
