@@ -14,16 +14,14 @@
 #include "scene/SceneState.hpp"
 
 namespace editor {
-    EditorLayer::EditorLayer(std::shared_ptr<engine::Scene> scene, std::shared_ptr<engine::AssetManager> asset_manager)
-        : initial_scene_(std::move(scene)), asset_manager_(std::move(asset_manager)) {
-    }
+    EditorLayer::EditorLayer(std::shared_ptr<engine::Scene> scene) : initial_scene_(std::move(scene)) {}
 
     void EditorLayer::on_attach(engine::SystemContext& context) {
         debug_panel_ = std::make_unique<DebugPanel>();
         editor_grid_.init(context.renderer);
 
         if (initial_scene_) {
-            simulation_state_.on_init(initial_scene_);
+            context.scenes.on_attach(initial_scene_);
         }
 
         engine::DebugRenderer::on_init();
@@ -36,14 +34,13 @@ namespace editor {
         camera_.set_aspect_ratio(static_cast<float>(width) / static_cast<float>(height));
         camera_.set_projection_params(45.0f, 0.1f, 2000.0f);
 
-        asset_manager_->scan_directory("assets");
+        context.assets.scan_directory("assets");
 
         config::load();
         debug_panel_->load_config();
     }
 
     void EditorLayer::on_detach(engine::SystemContext& context) {
-        simulation_state_.on_shutdown();
         engine::DebugRenderer::on_shutdown();
         debug_panel_->save_config();
         config::save();
@@ -55,11 +52,11 @@ namespace editor {
         }
 
         if (engine::Input::is_key_pressed_once(engine::Key::SPACE)) {
-            if (scene_state() == engine::SceneState::Edit) {
-                on_scene_play();
+            if (context.scenes.scene_state() == engine::SceneState::Edit) {
+                context.scenes.on_play();
             }
             else {
-                on_scene_stop();
+                context.scenes.on_stop();
             }
         }
 
@@ -68,7 +65,7 @@ namespace editor {
         simulation_state_.on_update(delta_time);
         auto scene = active_scene();
 
-        if (scene && simulation_state_.current_state() == engine::SceneState::Play) {
+        if (scene && simulation_state_.state() == engine::SceneState::Play) {
             // -----------------------------------------------------------------
             // SIMULATION TEST: Rotate all scene entities in Play mode
             // -----------------------------------------------------------------

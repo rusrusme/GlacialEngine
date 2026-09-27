@@ -131,6 +131,7 @@ namespace engine {
 
         Frame::shutdown();
         renderer_.on_detach();
+        scene_manager_.on_detach();
         audio_system_.on_detach(context_);
 
         window_.reset();
