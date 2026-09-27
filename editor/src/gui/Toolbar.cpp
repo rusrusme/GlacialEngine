@@ -142,7 +142,7 @@ namespace editor {
     }
     #endif
 
-    void Toolbar::register_default_items(EditorLayer& editor_layer) {
+    void Toolbar::register_default_items(engine::SystemContext& context) {
         toolbar_slots_.clear();
         toolbar_slots_.resize(4);
 
@@ -151,29 +151,29 @@ namespace editor {
         }
 
         toolbar_slots_[0].item = ToolbarItem{
-            "play_stop", "Play / Stop", 36.0f,
-            [&editor_layer](ImVec2 size) {
-                const bool is_play = (editor_layer.scene_state() == engine::SceneState::Play);
-                const bool is_pause = (editor_layer.scene_state() == engine::SceneState::Pause);
+            .id          = "play_stop", .label = "Play / Stop", .width = 36.0f,
+            .render_func = [context](ImVec2 size) {
+                const bool is_play = context.scenes.scene_state() == engine::SceneState::Play;
+                const bool is_pause = context.scenes.scene_state() == engine::SceneState::Pause;
 
                 if (is_play || is_pause) {
-                    if (draw_icon_button("##StopBtn", draw_stop_icon, size)) editor_layer.on_scene_stop();
+                    if (draw_icon_button("##StopBtn", draw_stop_icon, size)) context.scenes.on_stop();
                 }
                 else {
-                    if (draw_icon_button("##PlayBtn", draw_play_icon, size)) editor_layer.on_scene_play();
+                    if (draw_icon_button("##PlayBtn", draw_play_icon, size)) context.scenes.on_play();
                 }
             }
         };
 
         toolbar_slots_[1].item = ToolbarItem{
-            "pause_resume", "Pause / Resume", 36.0f,
-            [&editor_layer](ImVec2 size) {
-                const bool is_play = (editor_layer.scene_state() == engine::SceneState::Play);
-                const bool is_pause = (editor_layer.scene_state() == engine::SceneState::Pause);
+            .id          = "pause_resume", .label = "Pause / Resume", .width = 36.0f,
+            .render_func = [context](ImVec2 size) {
+                const bool is_play = context.scenes.scene_state() == engine::SceneState::Play;
+                const bool is_pause = context.scenes.scene_state() == engine::SceneState::Pause;
 
                 if (draw_icon_button("##PauseBtn", is_pause ? draw_play_icon : draw_pause_icon, size)) {
-                    if (is_play) editor_layer.on_scene_pause();
-                    else if (is_pause) editor_layer.on_scene_play();
+                    if (is_play) context.scenes.on_pause();
+                    else if (is_pause) context.scenes.on_play();
                 }
             }
         };

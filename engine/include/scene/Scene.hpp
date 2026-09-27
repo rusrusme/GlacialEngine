@@ -19,6 +19,8 @@ namespace engine {
     class Scene {
     public:
         Scene();
+        explicit Scene(const std::string& name);
+
         ~Scene();
 
         static std::shared_ptr<Scene> copy(const std::shared_ptr<Scene>& source);
@@ -44,6 +46,8 @@ namespace engine {
         [[nodiscard]] CollisionSystem& get_collision_system() { return *collision_system_; }
 
     private:
+        std::string name_;
+
         friend class Entity;
 
         [[nodiscard]] entt::registry& get_registry() { return registry_; }

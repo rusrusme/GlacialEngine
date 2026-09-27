@@ -36,7 +36,7 @@ namespace editor {
 
         void on_event(engine::SystemContext& context, engine::Event& event) override;
 
-        [[nodiscard]] const engine::Camera& get_camera() const { return camera_; }
+        [[nodiscard]] engine::Camera& get_camera() { return camera_; }
 
         void set_viewport_hovered(const bool hovered) { is_viewport_hovered_ = hovered; }
         void set_viewport_focused(const bool focused) { is_viewport_focused_ = focused; }
@@ -44,14 +44,14 @@ namespace editor {
     private:
         std::shared_ptr<engine::Scene> initial_scene_ = nullptr;
 
-        std::unique_ptr<DebugPanel> debug_panel_;
         engine::Camera camera_;
         engine::CameraController camera_controller_;
 
         // -------------------------
         float total_time_ = 0.0f;
 
-        Grid editor_grid_;
+        DebugPanel debug_panel_{};
+        Grid editor_grid_{};
 
         bool is_viewport_hovered_ = false;
         bool is_viewport_focused_ = false;

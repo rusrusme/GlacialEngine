@@ -12,7 +12,9 @@ namespace editor {
     Menubar::~Menubar() = default;
 
     #ifdef ENABLE_IMGUI
-    void Menubar::render_imgui(const std::shared_ptr<engine::Scene>& active_scene, const std::shared_ptr<engine::AssetManager>& asset_manager) {
+    void Menubar::render_imgui(std::shared_ptr<engine::Scene> scene, engine::AssetManager& assets) {
+        if (!scene) return;
+
         auto update_window_title = [](const std::string& path) {
             std::string scene_name = std::filesystem::path(path).stem().string();
             engine::Application::get().window().set_title("Engine - " + scene_name);
@@ -21,28 +23,28 @@ namespace editor {
         const bool is_ctrl = engine::Input::is_key_pressed(engine::Key::LEFT_CONTROL) ||
             engine::Input::is_key_pressed(engine::Key::RIGHT_CONTROL);
 
-        auto handle_new_scene = [active_scene, asset_manager] {
-            engine::SceneSerializer serializer(active_scene);
-            serializer.deserialize("assets/scenes/clean.scene", *asset_manager);
+        auto handle_new_scene = [scene, &assets] {
+            engine::SceneSerializer serializer(scene);
+            serializer.deserialize("assets/scenes/clean.scene", assets);
             engine::Application::get().window().set_title(engine::setting::FRAME_TITLE);
         };
 
-        auto handle_load_scene = [update_window_title, active_scene, asset_manager] {
+        auto handle_load_scene = [update_window_title, scene, &assets] {
             std::string selected_file = engine::platform::FileDialogAPI::open_file(engine::platform::FileDialogFilter::SCENE);
             if (selected_file.empty()) return;
-            engine::SceneSerializer serializer(active_scene);
-            serializer.deserialize(selected_file, *asset_manager);
+            engine::SceneSerializer serializer(scene);
+            serializer.deserialize(selected_file, assets);
             std::filesystem::path path(selected_file);
             if (path.filename() != "clean.scene") {
                 update_window_title(path.generic_string());
             }
         };
 
-        auto handle_save_scene = [update_window_title, active_scene, asset_manager] {
+        auto handle_save_scene = [update_window_title, scene, &assets] {
             std::string selected_file = engine::platform::FileDialogAPI::save_file(engine::platform::FileDialogFilter::SCENE, "scene");
             if (selected_file.empty()) return;
-            engine::SceneSerializer serializer(active_scene);
-            serializer.serialize(selected_file, *asset_manager);
+            engine::SceneSerializer serializer(scene);
+            serializer.serialize(selected_file, assets);
             std::filesystem::path path(selected_file);
             if (path.filename() != "clean.scene") {
                 update_window_title(path.generic_string());

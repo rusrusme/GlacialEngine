@@ -17,7 +17,6 @@ namespace editor {
     EditorLayer::EditorLayer(std::shared_ptr<engine::Scene> scene) : initial_scene_(std::move(scene)) {}
 
     void EditorLayer::on_attach(engine::SystemContext& context) {
-        debug_panel_ = std::make_unique<DebugPanel>();
         editor_grid_.init(context.renderer);
 
         if (initial_scene_) {
@@ -37,18 +36,18 @@ namespace editor {
         context.assets.scan_directory("assets");
 
         config::load();
-        debug_panel_->load_config();
+        debug_panel_.load_config();
     }
 
     void EditorLayer::on_detach(engine::SystemContext& context) {
         engine::DebugRenderer::on_shutdown();
-        debug_panel_->save_config();
+        debug_panel_.save_config();
         config::save();
     }
 
     void EditorLayer::on_update(engine::SystemContext& context, const float delta_time) {
         if (engine::Input::is_key_pressed_once(engine::Key::F3)) {
-            if (debug_panel_) debug_panel_->toggle_debug_panel();
+            debug_panel_.toggle_debug_panel();
         }
 
         if (engine::Input::is_key_pressed_once(engine::Key::SPACE)) {
@@ -62,10 +61,8 @@ namespace editor {
 
         total_time_ += delta_time;
 
-        simulation_state_.on_update(delta_time);
-        auto scene = active_scene();
-
-        if (scene && simulation_state_.state() == engine::SceneState::Play) {
+        auto scene = context.scenes.active_scene();
+        if (scene && context.scenes.scene_state() == engine::SceneState::Play) {
             // -----------------------------------------------------------------
             // SIMULATION TEST: Rotate all scene entities in Play mode
             // -----------------------------------------------------------------
@@ -93,8 +90,8 @@ namespace editor {
         context.renderer.begin_scene(camera_);
         engine::DebugRenderer::begin_scene(camera_);
 
-        if (auto scene = active_scene()) {
-            scene->on_render(context.renderer, camera_, *asset_manager_, delta_time);
+        if (auto scene = context.scenes.active_scene()) {
+            scene->on_render(context.renderer, camera_, context.assets, delta_time);
 
             auto view = scene->view<engine::TransformComponent, engine::BoxColliderComponent>();
 
@@ -127,7 +124,7 @@ namespace editor {
             }
         }
 
-        if (debug_panel_ && debug_panel_->is_grid_enabled()) {
+        if (debug_panel_.is_grid_enabled()) {
             editor_grid_.render(context.renderer);
         }
         engine::DebugRenderer::end_scene();
@@ -136,7 +133,7 @@ namespace editor {
 
     #ifdef ENABLE_IMGUI
     void EditorLayer::on_imgui_render(engine::SystemContext& context, const float delta_time) {
-        debug_panel_->render_imgui(context.renderer, delta_time);
+        debug_panel_.render_imgui(context.renderer, delta_time);
     }
     #endif
 

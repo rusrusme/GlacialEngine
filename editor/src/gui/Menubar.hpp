@@ -19,7 +19,7 @@ namespace editor {
         ~Menubar();
 
         #ifdef ENABLE_IMGUI
-        void render_imgui(const std::shared_ptr<engine::Scene>& active_scene, const std::shared_ptr<engine::AssetManager>& asset_manager);
+        void render_imgui(std::shared_ptr<engine::Scene> scene, engine::AssetManager& assets);
         #endif
     };
 }

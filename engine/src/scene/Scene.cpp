@@ -15,6 +15,8 @@
 namespace engine {
     Scene::Scene() = default;
 
+    Scene::Scene(const std::string& name) : name_(name) {}
+
     Scene::~Scene() = default;
 
     std::shared_ptr<Scene> Scene::copy(const std::shared_ptr<Scene>& source) {

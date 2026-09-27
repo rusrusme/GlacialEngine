@@ -37,7 +37,7 @@ namespace editor {
         void render_imgui();
         #endif
 
-        void register_default_items(EditorLayer& editor_layer);
+        void register_default_items(engine::SystemContext& context);
 
     private:
         std::vector<ToolbarSlot> toolbar_slots_;

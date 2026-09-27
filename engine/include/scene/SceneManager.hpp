@@ -17,6 +17,8 @@ namespace engine {
 
         void on_update(float delta_time);
 
+        [[maybe_unused]] std::shared_ptr<Scene> set_scene(std::shared_ptr<Scene> scene);
+
         void on_play();
         void on_pause();
         void on_stop();

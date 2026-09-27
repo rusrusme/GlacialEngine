@@ -10,14 +10,16 @@
 
 namespace editor {
     Editor::Editor() {
-        active_scene_ = std::make_shared<engine::Scene>();
-        asset_manager_ = std::make_unique<engine::AssetManager>();
+        auto scene = std::make_shared<engine::Scene>();
+        if (!scene) {
+            CLIENT_ERROR("Could not create editor scene");
+            return;
+        }
+        auto editor_layer = std::make_unique<EditorLayer>(scene);
+        auto imgui_layer = std::make_unique<UILayer>();
 
-        auto editor_layer = std::make_unique<EditorLayer>(active_scene_, asset_manager_);
-        auto imgui_layer = std::make_unique<UILayer>(active_scene_, asset_manager_);
-
-        imgui_layer->set_camera(&editor_layer->get_camera());
-        imgui_layer->set_editor(editor_layer.get());
+        imgui_layer->set_camera(editor_layer->get_camera());
+        imgui_layer->set_editor(*editor_layer);
 
         push_layer(std::move(editor_layer));
         push_layer(std::move(imgui_layer));

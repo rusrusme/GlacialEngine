@@ -12,8 +12,8 @@
 #include "gui/Icons.hpp"
 
 namespace editor {
-    void AssetBrowser::init(std::shared_ptr<engine::AssetManager> asset_manager) {
-        asset_manager_ = std::move(asset_manager);
+    void AssetBrowser::init(engine::SystemContext& context) {
+        assets = &context.assets;
 
         const float thumbnail_size = config::get_value("asset_thumbnail_size", thumbnail_size_);
         thumbnail_size_ = thumbnail_size;
@@ -392,8 +392,8 @@ namespace editor {
             pending_directory_change_ = path;
         }
 
-        if (!is_directory && asset_manager_) {
-            engine::AssetHandle handle = asset_manager_->get_handle_from_path(path);
+        if (!is_directory && assets) {
+            engine::AssetHandle handle = assets->get_handle_from_path(path);
             if (handle != 0 && ImGui::BeginDragDropSource()) {
                 ImGui::SetDragDropPayload("ASSET_BROWSER_ITEM", &handle, sizeof(engine::AssetHandle));
                 ImGui::Text("Assign %s", filename.c_str());
@@ -447,8 +447,8 @@ namespace editor {
             pending_directory_change_ = path;
         }
 
-        if (!is_directory && asset_manager_) {
-            engine::AssetHandle handle = asset_manager_->get_handle_from_path(path);
+        if (!is_directory && assets) {
+            engine::AssetHandle handle = assets->get_handle_from_path(path);
             if (handle != 0 && is_row_hovered && ImGui::BeginDragDropSource()) {
                 ImGui::SetDragDropPayload("ASSET_BROWSER_ITEM", &handle, sizeof(engine::AssetHandle));
                 ImGui::Text("Assign %s", filename.c_str());

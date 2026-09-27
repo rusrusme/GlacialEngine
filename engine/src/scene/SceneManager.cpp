@@ -8,19 +8,6 @@
 #include "core/Log.hpp"
 
 namespace engine {
-    // void SimulationState::on_init(std::shared_ptr<Scene> scene) {
-    //     scene_ = std::move(scene);
-    //     if (scene_) {
-    //         scene_->on_init();
-    //     }
-    // }
-    //
-    // void SimulationState::on_shutdown() {
-    //     stop();
-    //     scene_->on_shutdown();
-    //     scene_.reset();
-    // }
-
     void SceneManager::on_attach(std::shared_ptr<Scene> scene) {
         if (scene_) {
             scene_->on_shutdown();
@@ -44,6 +31,13 @@ namespace engine {
         if (scene_state() == SceneState::Play && simulation_scene_) {
             simulation_scene_->on_update(delta_time);
         }
+    }
+
+    std::shared_ptr<Scene> SceneManager::set_scene(std::shared_ptr<Scene> scene) {
+        if (!scene) return nullptr;
+        on_stop();
+        scene_ = std::move(scene);
+        return scene_;
     }
 
     void SceneManager::on_play() {

@@ -16,12 +16,15 @@ namespace editor {
     }
     #endif
 
-    UILayer::UILayer(std::shared_ptr<engine::Scene>& scene, std::shared_ptr<engine::AssetManager> asset_manager) : active_scene_(std::move(scene)), asset_manager_(std::move(asset_manager)) {}
+    UILayer::UILayer() = default;
 
     void UILayer::on_attach(engine::SystemContext& context) {
-        object_inspector_.init(active_scene_, asset_manager_, audio_layer_);
-        hierarchy_.init(active_scene_, asset_manager_);
-        asset_browser_.init(asset_manager_);
+        auto scene = context.scenes.active_scene();
+
+        if (!scene) return;
+        object_inspector_.init(context);
+        hierarchy_.init(context);
+        asset_browser_.init(context);
 
         #ifdef ENABLE_IMGUI
         ImGuiIO& io = ImGui::GetIO();
@@ -35,18 +38,16 @@ namespace editor {
         style.HatchedAxisLineThickness = 0.0f;
         #endif
 
-        toolbar_.register_default_items(*editor_layer_);
+        toolbar_.register_default_items(context);
     }
 
     void UILayer::on_detach(engine::SystemContext& context) {
         asset_browser_.save_config();
-        asset_browser_.init(nullptr);
-        object_inspector_.init(nullptr, nullptr, nullptr);
-        hierarchy_.init(nullptr, nullptr);
     }
 
     void UILayer::on_update(engine::SystemContext& context, float delta_time) {
         #ifdef ENABLE_IMGUI
+
         if (engine::Input::is_key_pressed_once(engine::Key::ESCAPE)) {
             // If gizmo is currently active, cancel the operation and restore initial transform
             if (was_using_gizmo_ || ImGuizmo::IsUsing()) {
@@ -79,12 +80,10 @@ namespace editor {
 
     #ifdef ENABLE_IMGUI
     void UILayer::on_imgui_render(engine::SystemContext& context, float delta_time) {
-        if (editor_layer_) {
-            set_scene_context(editor_layer_->active_scene());
-        }
-        if (active_scene_ && asset_manager_) {
-            menubar_.render_imgui(active_scene_, asset_manager_);
-        }
+        auto scene = context.scenes.active_scene();
+        auto& assets = context.assets;
+        if (!scene) return;
+        if (!editor_layer_) return;
 
         // Clean DockSpace across the viewport
         ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_PassthruCentralNode;
@@ -99,9 +98,9 @@ namespace editor {
             ImGuiID dock_main_id = dockspace_id;
 
             ImGuiID dock_left_bottom_id;
-            ImGuiID dock_bottom_id   = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Down, 0.25f, nullptr, &dock_main_id);
-            ImGuiID dock_right_id    = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Right, 0.2f, nullptr, &dock_main_id);
-            ImGuiID dock_left_id     = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Left, 0.17f, nullptr, &dock_main_id);
+            ImGuiID dock_bottom_id = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Down, 0.25f, nullptr, &dock_main_id);
+            ImGuiID dock_right_id = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Right, 0.2f, nullptr, &dock_main_id);
+            ImGuiID dock_left_id = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Left, 0.17f, nullptr, &dock_main_id);
             ImGuiID dock_left_top_id = ImGui::DockBuilderSplitNode(dock_left_id, ImGuiDir_Up, 0.37f, nullptr, &dock_left_bottom_id);
 
             ImGuiID dock_toolbar_id = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Up, 0.05f, nullptr, &dock_main_id);
@@ -124,9 +123,6 @@ namespace editor {
 
             ImGui::DockBuilderFinish(dockspace_id);
         }
-        if (editor_layer_) {
-            toolbar_.render_imgui();
-        }
 
         // ------------------------------------------------------------------
         // SCENE PANEL
@@ -136,10 +132,8 @@ namespace editor {
 
         is_viewport_hovered_ = ImGui::IsWindowHovered();
         is_viewport_focused_ = ImGui::IsWindowFocused();
-        if (editor_layer_) {
-            editor_layer_->set_viewport_hovered(is_viewport_hovered_);
-            editor_layer_->set_viewport_focused(is_viewport_focused_);
-        }
+        editor_layer_->set_viewport_hovered(is_viewport_hovered_);
+        editor_layer_->set_viewport_focused(is_viewport_focused_);
 
         ImVec2 viewport_panel_size = ImGui::GetContentRegionAvail();
         float panel_w = viewport_panel_size.x;
@@ -151,15 +145,13 @@ namespace editor {
         viewport_bounds_size_ = {panel_w, panel_h};
 
         // Framebuffer Resizing
-        if (editor_layer_) {
-            uint32_t current_fb_w = context.renderer.get_framebuffer_width();
-            uint32_t current_fb_h = context.renderer.get_framebuffer_height();
+        uint32_t current_fb_w = context.renderer.get_framebuffer_width();
+        uint32_t current_fb_h = context.renderer.get_framebuffer_height();
 
-            if (current_fb_w != static_cast<uint32_t>(panel_w) || current_fb_h != static_cast<uint32_t>(panel_h)) {
-                context.renderer.on_resize(static_cast<int>(panel_w), static_cast<int>(panel_h));
-                if (camera_) {
-                    const_cast<engine::Camera*>(camera_)->set_aspect_ratio(panel_w / panel_h);
-                }
+        if (current_fb_w != static_cast<uint32_t>(panel_w) || current_fb_h != static_cast<uint32_t>(panel_h)) {
+            context.renderer.on_resize(static_cast<int>(panel_w), static_cast<int>(panel_h));
+            if (camera_) {
+                camera_->set_aspect_ratio(panel_w / panel_h);
             }
         }
 
@@ -175,11 +167,11 @@ namespace editor {
         if (ImGui::BeginDragDropTarget()) {
             if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET_BROWSER_ITEM")) {
                 engine::AssetHandle dropped_handle = *static_cast<const engine::AssetHandle*>(payload->Data);
-                const auto& meta = asset_manager_->get_metadata(dropped_handle);
+                const auto& meta = assets.get_metadata(dropped_handle);
 
                 if (meta.is_valid() && meta.type == engine::AssetType::MESH) {
                     std::string entity_name = meta.filepath.stem().string();
-                    auto entity = active_scene_->create_entity(entity_name);
+                    auto entity = scene->create_entity(entity_name);
                     entity.add_component<engine::MeshComponent>(dropped_handle);
                     entity.add_component<engine::MaterialComponent>(glm::vec4{1.0f, 1.0f, 1.0f, 1.0f});
 
@@ -218,7 +210,7 @@ namespace editor {
 
             const engine::Ray ray = camera_->screen_point_to_ray(local_mouse, viewport_bounds_size_);
 
-            if (auto hit = engine::CollisionSystem::raycast(*active_scene_, ray, 1000.0f, asset_manager_.get())) {
+            if (auto hit = engine::CollisionSystem::raycast(*scene, ray, 1000.0f, &assets)) {
                 hierarchy_.set_selected_entity(hit->entity);
             }
             else {
@@ -229,8 +221,15 @@ namespace editor {
         ImGui::End();
         ImGui::PopStyleVar();
 
-        hierarchy_.render_imgui();
+        menubar_.render_imgui(scene, assets);
+        toolbar_.render_imgui();
+
+        hierarchy_.update_context(scene);
+        object_inspector_.update_context(scene);
+
         object_inspector_.set_selected_entity(hierarchy_.get_selected_entity());
+
+        hierarchy_.render_imgui();
         object_inspector_.render_imgui(context);
         asset_browser_.render_imgui();
         console_.render_imgui();
@@ -238,12 +237,6 @@ namespace editor {
     #endif
 
     #ifdef ENABLE_IMGUI
-    void UILayer::set_scene_context(const std::shared_ptr<engine::Scene>& current_scene) {
-        active_scene_ = current_scene;
-        hierarchy_.set_context(current_scene);
-        object_inspector_.set_context(current_scene);
-    }
-
     void UILayer::draw_imguizmo(engine::Entity selected_entity, const engine::Camera& camera, const ImVec2& viewport_pos, const ImVec2& viewport_size) {
         if (!selected_entity || !selected_entity.has_component<engine::TransformComponent>()) {
             return;

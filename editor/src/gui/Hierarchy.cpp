@@ -8,9 +8,12 @@
 #include "Icons.hpp"
 
 namespace editor {
-    void Hierarchy::init(std::shared_ptr<engine::Scene> scene, std::shared_ptr<engine::AssetManager> asset_manager) {
-        scene_ = std::move(scene);
-        asset_manager_ = std::move(asset_manager);
+    void Hierarchy::init(engine::SystemContext& context) {
+        auto scene = context.scenes.active_scene();
+        if (scene) {
+            scene_ = scene;
+        }
+        assets = &context.assets;
     }
 
     engine::Entity Hierarchy::add_entity(const std::string& name) {
@@ -19,7 +22,7 @@ namespace editor {
         return entity;
     }
 
-    void Hierarchy::set_context(std::shared_ptr<engine::Scene> current_scene) {
+    void Hierarchy::update_context(std::shared_ptr<engine::Scene> current_scene) {
         if (scene_ == current_scene) return;
 
         engine::UUID selected_uuid = 0;
@@ -112,7 +115,7 @@ namespace editor {
         if (!ImGui::BeginMenu("Imported Models")) return;
 
         bool found_any = false;
-        for (const auto& [handle, meta] : asset_manager_->get_registry()) {
+        for (const auto& [handle, meta] : assets->get_registry()) {
             const bool is_mesh = (meta.type == engine::AssetType::MESH);
             const bool is_user_model = !meta.filepath.string().starts_with("primitive://");
 
@@ -149,7 +152,7 @@ namespace editor {
     void Hierarchy::create_primitive_entity(const char* label, const char* path, EntityType type) {
         if (menu_item_with_icon(label, type)) {
             auto entity = scene_->create_entity(resolve_entity_name(label));
-            auto handle = asset_manager_->get_handle_from_path(path);
+            auto handle = assets->get_handle_from_path(path);
 
             entity.add_component<engine::MeshComponent>(handle);
             entity.add_component<engine::MaterialComponent>(glm::vec4{1.0f, 0.5f, 0.2f, 1.0f});
@@ -166,14 +169,15 @@ namespace editor {
         ImGui::PushID(entity.uuid());
 
         bool is_active = entity.has_component<engine::ActiveComponent>()
-            ? entity.get_component<engine::ActiveComponent>().active
-            : true;
+                             ? entity.get_component<engine::ActiveComponent>().active
+                             : true;
 
         // Visibility Button
         if (render_eye_toggle_button(entity, is_active)) {
             if (!entity.has_component<engine::ActiveComponent>()) {
                 entity.add_component<engine::ActiveComponent>(!is_active);
-            } else {
+            }
+            else {
                 entity.get_component<engine::ActiveComponent>().active = !is_active;
             }
         }
@@ -228,7 +232,7 @@ namespace editor {
 
     void Hierarchy::render_entity_context_menu(engine::Entity entity, engine::Entity& out_destroy, engine::Entity& out_duplicate) {
         if (ImGui::BeginPopupContextItem()) {
-            if (ImGui::MenuItem("Delete"))    out_destroy = entity;
+            if (ImGui::MenuItem("Delete")) out_destroy = entity;
             if (ImGui::MenuItem("Duplicate")) out_duplicate = entity;
             ImGui::EndPopup();
         }

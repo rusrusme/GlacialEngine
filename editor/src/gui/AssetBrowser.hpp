@@ -5,8 +5,6 @@
 
 #pragma once
 
-#include <memory>
-
 #include "asset/AssetManager.hpp"
 
 namespace editor {
@@ -14,7 +12,7 @@ namespace editor {
     public:
         AssetBrowser() = default;
 
-        void init(std::shared_ptr<engine::AssetManager> asset_manager);
+        void init(engine::SystemContext& context);
         void save_config();
 
         #ifdef ENABLE_IMGUI
@@ -29,7 +27,7 @@ namespace editor {
         void render_list_view(const std::filesystem::directory_entry& entry);
         #endif
 
-        std::shared_ptr<engine::AssetManager> asset_manager_ = nullptr;
+        engine::AssetManager* assets = nullptr;
         std::filesystem::path root_directory_{"assets"};
         std::filesystem::path current_directory_{root_directory_};
         std::optional<std::filesystem::path> pending_directory_change_ = std::nullopt;
