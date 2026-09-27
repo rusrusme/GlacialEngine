@@ -10,25 +10,24 @@
 #include <miniaudio.h>
 #include <string>
 
+#include "scene/ecs/Components.hpp"
+
 namespace engine {
-    struct AudioSourceComponent;
     class Scene;
 
-    class AudioLayer : public Layer {
+    class AudioSystem {
     public:
-        explicit AudioLayer(std::shared_ptr<Scene> scene, std::shared_ptr<AssetManager> asset_manager);
+        AudioSystem() = default;
+        ~AudioSystem() = default;
 
-        ~AudioLayer() override = default;
-
-        void on_attach(Renderer& _) override;
-        void on_detach() override;
-        void on_update(float delta_time) override;
-        void on_event(Event& event) override;
+        void on_attach();
+        void on_detach(SystemContext& context);
+        void on_update(SystemContext& context, float delta_time);
 
         // -----------------------------------
         // Audio source component controls
         // -----------------------------------
-        void play_source(AudioSourceComponent& source);
+        void play_source(SystemContext& context, AudioSourceComponent& source);
         void stop_source(AudioSourceComponent& source);
         void pause_source(AudioSourceComponent& source);
         [[nodiscard]] bool is_source_playing(const AudioSourceComponent& source) const;
@@ -41,21 +40,18 @@ namespace engine {
         void set_listener_position(float x, float y, float z);
 
     private:
-        std::shared_ptr<Scene> active_scene_;
-        std::shared_ptr<AssetManager> asset_manager_;
-
         ma_engine m_engine{};
         bool m_initialized{false};
 
         std::vector<ma_sound*> m_one_shot_sounds;
 
         // -----------------------------------
-        void update_listener();
-        void update_sources();
+        void update_listener(SystemContext& context);
+        void update_sources(SystemContext& context);
         void cleanup_finished_sounds();
 
         // -----------------------------------
-        bool init_component_sound(AudioSourceComponent& source);
+        bool init_component_sound(SystemContext& context, AudioSourceComponent& source);
         void free_component_sound(AudioSourceComponent& source);
     };
 }

@@ -231,7 +231,7 @@ namespace editor {
 
         hierarchy_.render_imgui();
         object_inspector_.set_selected_entity(hierarchy_.get_selected_entity());
-        object_inspector_.render_imgui();
+        object_inspector_.render_imgui(context);
         asset_browser_.render_imgui();
         console_.render_imgui();
     }

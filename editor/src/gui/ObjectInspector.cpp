@@ -6,32 +6,31 @@
 #include "gui/ObjectInspector.hpp"
 
 #include "platform/FileDialogAPI.hpp"
-#include "platform/win32/Win32FileDialog.hpp"
 
 namespace editor {
-    void ObjectInspector::init(std::shared_ptr<engine::Scene> scene, std::shared_ptr<engine::AssetManager> asset_manager, engine::AudioLayer* audio_layer) {
+    void ObjectInspector::init(std::shared_ptr<engine::Scene> scene, std::shared_ptr<engine::AssetManager> asset_manager, engine::AudioSystem* audio_layer) {
         scene_ = std::move(scene);
         asset_manager_ = std::move(asset_manager);
         audio_layer_ = audio_layer;
     }
 
     #ifdef ENABLE_IMGUI
-    void ObjectInspector::render_imgui() {
+    void ObjectInspector::render_imgui(engine::SystemContext& context) {
         ImGui::Begin("Inspector");
         if (selected_entity_) {
-            draw_component(selected_entity_);
+            draw_component(selected_entity_, context);
         }
         ImGui::End();
     }
 
-    void ObjectInspector::draw_component(engine::Entity entity) const {
+    void ObjectInspector::draw_component(engine::Entity entity, engine::SystemContext& context) const {
         draw_header_section(entity);
         draw_transform_component(entity);
         draw_mesh_component(entity);
         draw_material_component(entity);
         draw_lighting_components(entity);
         draw_box_collider_component(entity);
-        draw_audio_source_component(entity);
+        draw_audio_source_component(entity, context);
 
         ImGui::Separator();
         ImGui::Spacing();
@@ -206,7 +205,7 @@ namespace editor {
         }
     }
 
-    void ObjectInspector::draw_audio_source_component(engine::Entity entity) const {
+    void ObjectInspector::draw_audio_source_component(engine::Entity entity, engine::SystemContext& context) const {
         if (!entity.has_component<engine::AudioSourceComponent>()) return;
 
         if (ImGui::CollapsingHeader("Audio Source", ImGuiTreeNodeFlags_DefaultOpen)) {
@@ -298,7 +297,7 @@ namespace editor {
 
             // Audio Preview Controls
             if (ImGui::Button("Play Preview")) {
-                audio_layer_->play_source(audio);
+                audio_layer_->play_source(context, audio);
             }
             ImGui::SameLine();
             if (ImGui::Button("Stop Preview")) {

@@ -10,7 +10,7 @@
 #include <utility>
 
 #include "Config.hpp"
-#include "audio/AudioLayer.hpp"
+#include "audio/AudioSystem.hpp"
 #include "scene/SceneState.hpp"
 
 namespace editor {

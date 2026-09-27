@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "audio/AudioLayer.hpp"
+#include "audio/AudioSystem.hpp"
 #include "scene/Scene.hpp"
 #include "scene/ecs/Entity.hpp"
 
@@ -14,10 +14,10 @@ namespace editor {
     public:
         ObjectInspector() = default;
 
-        void init(std::shared_ptr<engine::Scene> scene, std::shared_ptr<engine::AssetManager> asset_manager, engine::AudioLayer* audio_layer);
+        void init(std::shared_ptr<engine::Scene> scene, std::shared_ptr<engine::AssetManager> asset_manager, engine::AudioSystem* audio_layer);
 
         #ifdef ENABLE_IMGUI
-        void render_imgui();
+        void render_imgui(engine::SystemContext& context);
         #endif
 
         void set_context(std::shared_ptr<engine::Scene> current_scene) { scene_ = std::move(current_scene); }
@@ -26,7 +26,7 @@ namespace editor {
 
     private:
         #ifdef ENABLE_IMGUI
-        void draw_component(engine::Entity entity) const;
+        void draw_component(engine::Entity entity, engine::SystemContext& context) const;
 
         void draw_header_section(engine::Entity entity) const;
         void draw_transform_component(engine::Entity entity) const;
@@ -34,13 +34,13 @@ namespace editor {
         void draw_material_component(engine::Entity entity) const;
         void draw_lighting_components(engine::Entity entity) const;
         void draw_box_collider_component(engine::Entity entity) const;
-        void draw_audio_source_component(engine::Entity entity) const;
+        void draw_audio_source_component(engine::Entity entity, engine::SystemContext& context) const;
         void draw_add_component_button(engine::Entity entity) const;
         #endif
 
         std::shared_ptr<engine::Scene> scene_ = nullptr;
         std::shared_ptr<engine::AssetManager> asset_manager_ = nullptr;
-        engine::AudioLayer* audio_layer_ = nullptr;
+        engine::AudioSystem* audio_layer_ = nullptr;
 
         engine::Entity selected_entity_{};
     };

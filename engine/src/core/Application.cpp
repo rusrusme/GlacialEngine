@@ -40,13 +40,14 @@ namespace engine {
         // ----------------------------------
         Frame::init(window_->native());
 
-        if (!renderer_.on_init(window_->native())) {
+        if (!renderer_.on_attach(window_->native())) {
             CORE_CRITICAL("Application initialization failed: Could not initialize renderer");
             window_.reset();
             window::shutdown();
             return 1;
         }
-        CORE_INFO("Renderer successfully initialized");
+
+        audio_system_.on_attach();
 
         CORE_INFO("Attaching application layers");
         for (const auto& layer : layers_) {
@@ -63,6 +64,8 @@ namespace engine {
             // ----------------------------------
             // Update pass
             // ----------------------------------
+            audio_system_.on_update(context_, delta_time);
+
             for (const auto& layer : layers_) {
                 layer->on_update(context_, delta_time);
             }
@@ -127,7 +130,8 @@ namespace engine {
         CORE_INFO("Shutting down engine application");
 
         Frame::shutdown();
-        renderer_.on_shutdown();
+        renderer_.on_detach();
+        audio_system_.on_detach(context_);
 
         window_.reset();
 

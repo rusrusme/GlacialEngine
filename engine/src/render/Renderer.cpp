@@ -19,7 +19,7 @@ namespace engine {
     Renderer::Renderer() = default;
     Renderer::~Renderer() = default;
 
-    bool Renderer::on_init(void* window) {
+    bool Renderer::on_attach(void* window) {
         window_ = window;
 
         if (window_ == nullptr) {
@@ -52,10 +52,11 @@ namespace engine {
         instance_vbo_capacity_bytes_ = 1000 * sizeof(InstanceData);
         instance_vbo_ = std::make_shared<VertexBuffer>(nullptr, instance_vbo_capacity_bytes_, true);
 
+        CORE_INFO("Renderer successfully initialized");
         return true;
     }
 
-    void Renderer::on_shutdown() {
+    void Renderer::on_detach() {
         if (post_processor_) {
             post_processor_->shutdown();
             post_processor_.reset();

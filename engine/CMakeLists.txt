@@ -104,8 +104,8 @@ add_library(Engine STATIC
             include/render/platform/opengl/GLTexture2D.hpp
             include/render/platform/opengl/GLRendererAPI.hpp
             include/render/RenderCommand.hpp
-            include/audio/AudioLayer.hpp
-            src/audio/AudioLayer.cpp
+            include/audio/AudioSystem.hpp
+            src/audio/AudioSystem.cpp
             include/render/debug/DebugRenderer.hpp
             src/render/debug/DebugRenderer.cpp
             include/scene/SceneState.hpp
@@ -120,8 +120,6 @@ add_library(Engine STATIC
             src/scene/SimulationState.cpp
             include/scene/SimulationState.hpp
             include/core/SystemContext.hpp
-            src/audio/AudioSystem.cpp
-            include/audio/AudioSystem.hpp
             src/scene/SceneManager.cpp
             include/scene/SceneManager.hpp
 )

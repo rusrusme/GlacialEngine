@@ -18,7 +18,7 @@
 #include "scene/SimulationState.hpp"
 
 namespace engine {
-    class AudioLayer;
+    class AudioSystem;
 }
 
 namespace editor {
@@ -46,7 +46,7 @@ namespace editor {
 
         void on_scene_stop() { simulation_state_.on_scene_stop(); }
 
-        void set_audio(engine::AudioLayer* audio_layer) { audio_layer_ = audio_layer; }
+        void set_audio(engine::AudioSystem* audio_layer) { audio_layer_ = audio_layer; }
 
         [[nodiscard]] std::shared_ptr<engine::Scene> active_scene() const { return simulation_state_.active_scene(); }
         [[nodiscard]] engine::SceneState scene_state() const { return simulation_state_.current_state(); }
@@ -64,7 +64,7 @@ namespace editor {
         std::shared_ptr<engine::AssetManager> asset_manager_;
         std::unique_ptr<DebugPanel> debug_panel_;
 
-        engine::AudioLayer* audio_layer_ = nullptr;
+        engine::AudioSystem* audio_layer_ = nullptr;
 
         engine::Camera camera_;
         engine::CameraController camera_controller_;

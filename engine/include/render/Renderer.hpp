@@ -38,8 +38,8 @@ namespace engine {
         Renderer();
         ~Renderer();
 
-        bool on_init(void* window);
-        void on_shutdown();
+        bool on_attach(void* window);
+        void on_detach();
         void on_resize(int width, int height);
 
         void render();
