@@ -10,7 +10,7 @@
 #include "event/MouseEvents.hpp"
 #include "input/Input.hpp"
 #include "input/KeyCodes.hpp"
-#include "render/debug/DebugRenderer.hpp"
+#include "render/RenderScope.hpp"
 #include "scene/SceneManager.hpp"
 #include "scene/ecs/Entity.hpp"
 
@@ -46,12 +46,12 @@ void SandboxLayer::on_update(engine::SystemContext& context, float delta_time) {
 void SandboxLayer::on_render(engine::SystemContext& context, float delta_time) {
     engine::Renderer::clear({0.12f, 0.12f, 0.12f, 1.0f});
 
-    context.renderer.begin_scene(camera_);
+    engine::RenderScope scope{context.renderer, delta_time};
+    scope.begin(camera_);
     if (auto scene = context.scenes.active_scene()) {
         scene->on_render(context.renderer, camera_, context.assets, delta_time);
     }
-    context.renderer.end_scene(delta_time);
-    context.renderer.render();
+    scope.end();
 }
 
 void SandboxLayer::on_event(engine::SystemContext& context, engine::Event& event) {

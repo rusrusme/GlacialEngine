@@ -59,6 +59,7 @@
 #include "render/RenderAPI.hpp"
 #include "render/RenderCommand.hpp"
 #include "render/Renderer.hpp"
+#include "render/RenderScope.hpp"
 #include "render/Shader.hpp"
 #include "render/ShaderLibrary.hpp"
 #include "render/Texture2D.hpp"

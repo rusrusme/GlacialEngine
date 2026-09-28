@@ -43,10 +43,11 @@ namespace engine {
         void on_resize(int width, int height);
 
         void render();
+        void bind_camera(const Camera& camera);
 
         // Scene
-        void begin_scene(const Camera& camera);
-        void end_scene(float delta_time);
+        void begin_scene();
+        void end_scene();
 
         void render_shadow_pass(Camera& camera, AssetManager& asset_manager, const std::unordered_map<UUID, std::vector<InstanceData>>& batches);
         void render_point_shadow_pass(AssetManager& asset_manager, const std::unordered_map<UUID, std::vector<InstanceData>>& batches);
@@ -127,14 +128,13 @@ namespace engine {
         void reset_stats() { stats_ = RenderStats{}; }
 
         // Post processing
-        [[nodiscard]] PostProcessSettings& get_post_process_settings() {
-            return post_processor_->get_settings();
-        }
+        [[nodiscard]] PostProcessSettings& get_post_process_settings() { return post_processor_->get_settings(); }
 
         // Texture handle for ImGui Editor Viewports
-        [[nodiscard]] uint32_t get_final_color_texture() const {
-            return post_processor_->get_final_color_texture();
-        }
+        [[nodiscard]] uint32_t get_final_color_texture() const { return post_processor_->get_final_color_texture(); }
+
+        void set_present_to_screen(const bool enable) { should_render = enable; }
+        [[nodiscard]] bool should_render_to_screen() const { return should_render; }
 
     private:
         RenderStats stats_;
@@ -166,5 +166,6 @@ namespace engine {
 
         // Post processing
         std::unique_ptr<PostProcessor> post_processor_;
+        bool should_render = true;
     };
 }

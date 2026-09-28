@@ -84,14 +84,8 @@ namespace engine {
         }
     }
 
-    void Renderer::begin_scene(const Camera& camera) {
-        reset_stats();
-        clear_lights();
-
-        post_processor_->begin_scene();
-
+    void Renderer::bind_camera(const Camera& camera) {
         current_frustum_ = camera.get_frustum();
-
         const CameraData camera_data{
             .view       = camera.get_view_matrix(),
             .projection = camera.get_projection_matrix()
@@ -99,7 +93,15 @@ namespace engine {
         camera_ubo_->set_data(&camera_data, sizeof(CameraData));
     }
 
-    void Renderer::end_scene(const float delta_time) {
+    void Renderer::begin_scene() {
+        reset_stats();
+        clear_lights();
+        if (post_processor_) {
+            post_processor_->begin_scene();
+        }
+    }
+
+    void Renderer::end_scene() {
         if (post_processor_) {
             post_processor_->end_scene();
         }
@@ -204,17 +206,17 @@ namespace engine {
             const glm::mat4 shadow_projection = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, far_plane);
 
             const glm::mat4 shadow_matrices[6] = {
-                shadow_projection * glm::lookAt(light_pos, light_pos + glm::vec3( 1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
-                shadow_projection * glm::lookAt(light_pos, light_pos + glm::vec3(-1.0f,  0.0f,  0.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
-                shadow_projection * glm::lookAt(light_pos, light_pos + glm::vec3( 0.0f,  1.0f,  0.0f), glm::vec3(0.0f,  0.0f,  1.0f)),
-                shadow_projection * glm::lookAt(light_pos, light_pos + glm::vec3( 0.0f, -1.0f,  0.0f), glm::vec3(0.0f,  0.0f, -1.0f)),
-                shadow_projection * glm::lookAt(light_pos, light_pos + glm::vec3( 0.0f,  0.0f,  1.0f), glm::vec3(0.0f, -1.0f,  0.0f)),
-                shadow_projection * glm::lookAt(light_pos, light_pos + glm::vec3( 0.0f,  0.0f, -1.0f), glm::vec3(0.0f, -1.0f,  0.0f))
+                shadow_projection * glm::lookAt(light_pos, light_pos + glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f)),
+                shadow_projection * glm::lookAt(light_pos, light_pos + glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f)),
+                shadow_projection * glm::lookAt(light_pos, light_pos + glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)),
+                shadow_projection * glm::lookAt(light_pos, light_pos + glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f)),
+                shadow_projection * glm::lookAt(light_pos, light_pos + glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, -1.0f, 0.0f)),
+                shadow_projection * glm::lookAt(light_pos, light_pos + glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, -1.0f, 0.0f))
             };
 
             auto& fbo = point_shadow_framebuffers_[light_index];
             fbo->bind();
-            RenderCommand::set_viewport(0,0, fbo->get_width(), fbo->get_height());
+            RenderCommand::set_viewport(0, 0, fbo->get_width(), fbo->get_height());
 
             point_shadow_shader->bind();
             point_shadow_shader->set_vec3("u_light_position", light_pos);

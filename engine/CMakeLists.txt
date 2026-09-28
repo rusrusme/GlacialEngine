@@ -128,6 +128,8 @@ add_library(Engine STATIC
             include/core/SystemContext.hpp
             src/scene/SceneManager.cpp
             include/scene/SceneManager.hpp
+            src/render/RenderScope.cpp
+            include/render/RenderScope.hpp
 )
 # ----------------------------------------------------------------------------
 target_include_directories(Engine

@@ -17,6 +17,7 @@ namespace editor {
     EditorLayer::EditorLayer(std::shared_ptr<engine::Scene> scene) : initial_scene_(std::move(scene)) {}
 
     void EditorLayer::on_attach(engine::SystemContext& context) {
+        context.renderer.set_present_to_screen(false);
         editor_grid_.init(context.renderer);
 
         if (initial_scene_) {
@@ -84,8 +85,8 @@ namespace editor {
     void EditorLayer::on_render(engine::SystemContext& context, const float delta_time) {
         engine::Renderer::clear({0.12f, 0.12f, 0.12f, 1.0f});
 
-        context.renderer.begin_scene(camera_);
-        engine::DebugRenderer::begin_scene(camera_);
+        engine::RenderScope scope{context.renderer, delta_time};
+        scope.begin(camera_);
 
         if (auto scene = context.scenes.active_scene()) {
             scene->on_render(context.renderer, camera_, context.assets, delta_time);
@@ -124,8 +125,7 @@ namespace editor {
         if (debug_panel_.is_grid_enabled()) {
             editor_grid_.render();
         }
-        engine::DebugRenderer::end_scene();
-        context.renderer.end_scene(delta_time);
+        scope.end();
     }
 
     #ifdef ENABLE_IMGUI
