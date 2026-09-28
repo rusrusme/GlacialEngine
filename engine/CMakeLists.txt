@@ -15,6 +15,7 @@ add_library(Engine STATIC
             include/render/mesh/Mesh.hpp
             include/render/Vertex.hpp
             src/input/CameraController.cpp
+            include/input/CameraController.hpp
             include/input/Input.hpp
             include/core/Config.hpp
             src/core/Log.cpp
@@ -28,27 +29,28 @@ add_library(Engine STATIC
             include/core/Layer.hpp
             include/scene/ecs/Components.hpp
             src/core/UUID.cpp
-            include/core/Uuid.hpp
+            include/core/UUID.hpp
             include/core/Engine.hpp
             src/core/LayerStack.cpp
             include/core/LayerStack.hpp
             src/scene/system/CameraSystem.cpp
             include/scene/system/CameraSystem.hpp
             include/input/KeyCodes.hpp
+            src/core/Window.cpp
             include/core/Window.hpp
             include/event/Event.hpp
             include/event/WindowEvents.hpp
             include/event/MouseEvents.hpp
-            src/core/Window.cpp
             include/render/Buffer.hpp
             src/render/BufferLayout.cpp
             include/render/BufferLayout.hpp
             include/render/VertexArray.hpp
             include/render/Shader.hpp
             include/render/UniformBuffer.hpp
-            include/util/FileIo.hpp
+            include/util/FileIO.hpp
             include/event/KeyEvents.hpp
             src/input/Input.cpp
+            include/input/Input.hpp
             include/input/MouseCodes.hpp
             src/render/ShaderLibrary.cpp
             include/render/ShaderLibrary.hpp
@@ -58,6 +60,7 @@ add_library(Engine STATIC
             src/render/mesh/MeshLoader.cpp
             include/render/mesh/MeshLoader.hpp
             src/render/mesh/Mesh.cpp
+            include/render/mesh/Mesh.hpp
             include/asset/AssetType.hpp
             src/asset/MetafileHandler.cpp
             include/asset/MetafileHandler.hpp
@@ -65,58 +68,61 @@ add_library(Engine STATIC
             src/asset/AssetManager.cpp
             include/physics/AABB.hpp
             include/physics/SpatialHashGrid.hpp
+            src/physics/SpatialHashGrid.cpp
             include/physics/CollisionSystem.hpp
             src/physics/CollisionSystem.cpp
-            src/physics/SpatialHashGrid.cpp
             include/render/mesh/InstanceData.hpp
             src/ui/RmlRenderInterface.cpp
             src/ui/RmlRenderInterface.hpp
-            src/ui/UiSystem.cpp
+            src/ui/UISystem.cpp
             src/ui/UISystem.hpp
             src/ui/RmlSystemInterface.cpp
             src/ui/RmlSystemInterface.hpp
-            src/ui/UiLayer.cpp
-            include/ui/UiLayer.hpp
-            include/ui/UIManager.hpp
+            src/ui/UILayer.cpp
+            include/ui/UILayer.hpp
             src/ui/UIManager.cpp
+            include/ui/UIManager.hpp
             include/render/Framebuffer.hpp
             src/physics/AABB.cpp
+            include/physics/AABB.hpp
             src/render/mesh/PrimitiveMesh.cpp
+            include/render/mesh/PrimitiveMesh.hpp
             include/render/Texture2D.hpp
             src/util/stb_image.cpp
-            include/render/Frustum.hpp
             src/render/Frustum.cpp
+            include/render/Frustum.hpp
             src/render/PostProcessor.cpp
             include/render/PostProcessor.hpp
             src/render/platform/opengl/GlFramebuffer.cpp
             include/render/platform/opengl/GlFramebuffer.hpp
             include/render/RenderAPI.hpp
             src/render/platform/opengl/GLRendererAPI.cpp
+            include/render/platform/opengl/GLRendererAPI.hpp
             src/render/platform/opengl/GLShader.cpp
+            include/render/platform/opengl/GLShader.hpp
             src/render/platform/opengl/GLTexture2D.cpp
+            include/render/platform/opengl/GLTexture2D.hpp
             src/render/platform/opengl/GLUniformBuffer.cpp
+            include/render/platform/opengl/GLUniformBuffer.hpp
             src/render/platform/opengl/GLVertexArray.cpp
+            include/render/platform/opengl/GLVertexArray.hpp
             src/render/platform/opengl/GLBuffer.cpp
             include/render/platform/opengl/GLBuffer.hpp
-            include/render/platform/opengl/GLShader.hpp
-            include/render/platform/opengl/GLVertexArray.hpp
-            include/render/platform/opengl/GLUniformBuffer.hpp
-            include/render/platform/opengl/GLTexture2D.hpp
-            include/render/platform/opengl/GLRendererAPI.hpp
             include/render/RenderCommand.hpp
-            include/audio/AudioSystem.hpp
             src/audio/AudioSystem.cpp
-            include/render/debug/DebugRenderer.hpp
+            include/audio/AudioSystem.hpp
             src/render/debug/DebugRenderer.cpp
+            include/render/debug/DebugRenderer.hpp
             include/scene/SceneState.hpp
             include/scene/ecs/ComponentRegistry.hpp
+            src/platform/FileDialogAPI.cpp
             include/platform/FileDialogAPI.hpp
             src/platform/win32/Win32FileDialog.cpp
-            src/platform/FileDialogAPI.cpp
-            include/core/WindowAPI.hpp
+            include/platform/win32/Win32FileDialog.hpp
             src/core/WindowAPI.cpp
-            include/render/debug/ImguiPlatform.hpp
+            include/core/WindowAPI.hpp
             src/render/debug/ImguiPlatform.cpp
+            include/render/debug/ImguiPlatform.hpp
             src/scene/SimulationState.cpp
             include/scene/SimulationState.hpp
             include/core/SystemContext.hpp

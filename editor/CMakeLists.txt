@@ -1,10 +1,10 @@
 # editor/CMakeLists.txt
 # ----------------------------------------------------------------------------
 add_executable(Editor
+               src/Editor.cpp
+               src/Editor.hpp
                src/EditorLayer.cpp
                src/EditorLayer.hpp
-               src/Editor.hpp
-               src/Editor.cpp
                src/environment/Grid.cpp
                src/environment/Grid.hpp
                src/gui/Hierarchy.cpp
@@ -23,8 +23,8 @@ add_executable(Editor
                src/gui/Icons.hpp
                src/Config.hpp
                src/EditorComponents.hpp
-               src/gui/Toolbar.hpp
                src/gui/Toolbar.cpp
+               src/gui/Toolbar.hpp
                src/gui/Menubar.cpp
                src/gui/Menubar.hpp
 )
