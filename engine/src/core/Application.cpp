@@ -3,6 +3,8 @@
 // All rights reserved.
 //
 
+#include <utility>
+
 #include "core/Application.hpp"
 
 #include "core/Config.hpp"
@@ -13,7 +15,9 @@
 #include "render/Frame.hpp"
 
 namespace engine {
-    Application::Application() {
+    Application::Application() : Application(setting::ENGINE_TITLE_) {}
+
+    Application::Application(std::string title) : title_(std::move(title)) {
         instance_ = this;
     }
 
@@ -27,7 +31,7 @@ namespace engine {
             return 1;
         }
 
-        window_ = std::make_unique<Window>();
+        window_ = std::make_unique<Window>(title_);
         if (!window_->is_valid()) {
             CORE_CRITICAL("Application initialization failed: Could not create window");
             window::shutdown();

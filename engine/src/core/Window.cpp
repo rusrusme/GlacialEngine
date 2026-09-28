@@ -4,16 +4,17 @@
 //
 
 #include <core/Window.hpp>
+#include <utility>
 
 #include "core/Config.hpp"
 #include "core/WindowAPI.hpp"
 
 namespace engine {
-    Window::Window() {
-        data_.title = setting::FRAME_TITLE;
-        data_.width = setting::video::WINDOW_WIDTH;
-        data_.height = setting::video::WINDOW_HEIGHT;
-
+    Window::Window(std::string title) : data_{
+        .title  = std::move(title),
+        .width  = setting::video::WINDOW_WIDTH,
+        .height = setting::video::WINDOW_HEIGHT
+    } {
         CORE_INFO("Creating window: '{0}' ({1}x{2})", data_.title, data_.width, data_.height);
 
         window_handle_ = window::create_window(

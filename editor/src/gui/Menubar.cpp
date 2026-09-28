@@ -26,7 +26,7 @@ namespace editor {
         auto handle_new_scene = [scene, &assets] {
             engine::SceneSerializer serializer(scene);
             serializer.deserialize("assets/scenes/clean.scene", assets);
-            engine::Application::get().window().set_title(engine::setting::FRAME_TITLE);
+            engine::Application::get().window().set_title(engine::setting::ENGINE_TITLE_);
         };
 
         auto handle_load_scene = [update_window_title, scene, &assets] {

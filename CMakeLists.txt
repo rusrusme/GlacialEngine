@@ -35,6 +35,7 @@ target_include_directories(stb_image INTERFACE lib/stb_image)
 # ----------------------------------------------------------------------------
 add_subdirectory(Engine)
 add_subdirectory(Editor)
+add_subdirectory(Sandbox)
 # ----------------------------------------------------------------------------
 
 

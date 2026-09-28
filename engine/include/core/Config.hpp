@@ -15,7 +15,7 @@
 #include "core/Log.hpp"
 
 namespace engine::setting {
-    constexpr auto FRAME_TITLE = "Engine";
+    constexpr auto ENGINE_TITLE_ = "Basis Engine";
 
     namespace video {
         constexpr int MONITOR_RESOLUTION_WIDTH = 1920;

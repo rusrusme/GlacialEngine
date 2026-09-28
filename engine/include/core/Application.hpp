@@ -17,6 +17,7 @@ namespace engine {
     class Application {
     public:
         Application();
+        explicit Application(std::string title);
         virtual ~Application() = default;
 
         int run();
@@ -37,6 +38,8 @@ namespace engine {
         void shutdown();
 
         static Application* instance_;
+        std::string title_;
+
         std::unique_ptr<Window> window_;
 
         AudioSystem audio_system_;

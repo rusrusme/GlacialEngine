@@ -17,7 +17,7 @@ namespace engine {
     public:
         using EventCallbackFunc = std::function<void(Event&)>;
 
-        Window();
+        explicit Window(std::string title);
         ~Window();
 
         Window(const Window&) = delete;
