@@ -174,3 +174,12 @@ target_compile_definitions(Engine PRIVATE GLFW_INCLUDE_NONE)
 target_precompile_headers(Engine PRIVATE src/core/core_pch.hpp)
 # ----------------------------------------------------------------------------
 include(PackageDistribution.cmake)
+# ----------------------------------------------------------------------------
+add_custom_command(
+        TARGET Engine POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        "${CMAKE_SOURCE_DIR}/assets"
+        "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/assets"
+        COMMENT "Copying assets to runtime output directory"
+)
+# ----------------------------------------------------------------------------
