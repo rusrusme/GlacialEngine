@@ -19,7 +19,7 @@ namespace engine {
         render_interface_ = std::make_unique<RmlRenderInterface>(renderer);
         render_interface_->set_viewport(width, height);
 
-        renderer.get_shader_library().load("ui", "assets/shaders/engine/ui.vert", "assets/shaders/engine/ui.frag");
+        renderer.load_shader("ui", "assets/shaders/engine/ui.vert", "assets/shaders/engine/ui.frag");
 
         Rml::SetSystemInterface(&system_interface_);
         Rml::SetRenderInterface(render_interface_.get());

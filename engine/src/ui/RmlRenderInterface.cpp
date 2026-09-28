@@ -49,7 +49,7 @@ namespace engine {
         auto* geom = reinterpret_cast<RmlGeometry*>(geometry);
         if (!geom || geom->num_indices == 0) return;
 
-        const auto ui_shader = renderer_.get_shader_library().get("ui");
+        const auto ui_shader = renderer_.get_shader("ui");
         if (!ui_shader) return;
 
         ui_shader->bind();

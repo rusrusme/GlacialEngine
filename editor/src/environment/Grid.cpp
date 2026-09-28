@@ -9,7 +9,7 @@ namespace editor {
     void Grid::init(engine::Renderer& renderer) {
         if (initialized_) return;
 
-        grid_shader_ = renderer.get_shader_library().load(
+        grid_shader_ = renderer.load_shader(
             "grid",
             "assets/shaders/editor/grid.vert",
             "assets/shaders/editor/grid.frag"
@@ -19,7 +19,7 @@ namespace editor {
         initialized_ = true;
     }
 
-    void Grid::render(const engine::Renderer& renderer) {
+    void Grid::render() {
         if (!initialized_ || !grid_shader_ || !grid_vao_) return;
 
         engine::Renderer::set_blend(true);

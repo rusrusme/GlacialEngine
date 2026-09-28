@@ -16,18 +16,17 @@ namespace editor {
         void save_config();
 
         #ifdef ENABLE_IMGUI
-        void render_imgui();
+        void render_imgui(engine::SystemContext& context);
         #endif
 
     private:
         #ifdef ENABLE_IMGUI
         void render_header();
-        void render_assets_view();
-        void render_grid_view(const std::filesystem::directory_entry& entry);
-        void render_list_view(const std::filesystem::directory_entry& entry);
+        void render_assets_view(engine::SystemContext& context);
+        void render_grid_view(const std::filesystem::directory_entry& entry, engine::SystemContext& context);
+        void render_list_view(const std::filesystem::directory_entry& entry, engine::SystemContext& context);
         #endif
 
-        engine::AssetManager* assets = nullptr;
         std::filesystem::path root_directory_{"assets"};
         std::filesystem::path current_directory_{root_directory_};
         std::optional<std::filesystem::path> pending_directory_change_ = std::nullopt;

@@ -229,9 +229,9 @@ namespace editor {
 
         object_inspector_.set_selected_entity(hierarchy_.get_selected_entity());
 
-        hierarchy_.render_imgui();
+        hierarchy_.render_imgui(context);
         object_inspector_.render_imgui(context);
-        asset_browser_.render_imgui();
+        asset_browser_.render_imgui(context);
         console_.render_imgui();
     }
     #endif

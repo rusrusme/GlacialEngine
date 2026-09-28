@@ -125,7 +125,7 @@ namespace editor {
         }
 
         if (debug_panel_.is_grid_enabled()) {
-            editor_grid_.render(context.renderer);
+            editor_grid_.render();
         }
         engine::DebugRenderer::end_scene();
         context.renderer.end_scene(delta_time);

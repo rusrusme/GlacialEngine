@@ -47,7 +47,6 @@ namespace editor {
         engine::Camera camera_;
         engine::CameraController camera_controller_;
 
-        // -------------------------
         float total_time_ = 0.0f;
 
         DebugPanel debug_panel_{};

@@ -18,7 +18,7 @@ namespace editor {
         void init(engine::SystemContext& context);
 
         #ifdef ENABLE_IMGUI
-        void render_imgui();
+        void render_imgui(engine::SystemContext& context);
         #endif
 
         engine::Entity add_entity(const std::string& name);
@@ -29,23 +29,23 @@ namespace editor {
         void set_selected_entity(const engine::Entity new_entity) { selected_entity_ = new_entity; }
 
     private:
+        // Todo: refactor scene_ to SystemContext to remove update_context()
         std::shared_ptr<engine::Scene> scene_ = nullptr;
-        engine::AssetManager* assets = nullptr;
         engine::Entity selected_entity_{};
 
         char name_buffer_[128] = "";
 
         #ifdef ENABLE_IMGUI
         void render_header_bar();
-        void render_add_entity_popup();
+        void render_add_entity_popup(engine::SystemContext& context);
         void render_entity_list(engine::Entity& out_destroy, engine::Entity& out_duplicate);
 
-        void render_primitives_submenus();
+        void render_primitives_submenus(engine::SystemContext& context);
         void render_lighting_submenu();
-        void render_imported_models_submenu();
+        void render_imported_models_submenu(engine::SystemContext& context);
 
         bool menu_item_with_icon(const char* label, EntityType type);
-        void create_primitive_entity(const char* label, const char* path, EntityType type);
+        void create_primitive_entity(const char* label, const char* path, EntityType type, engine::SystemContext& context);
         std::string resolve_entity_name(const char* default_name) const;
 
         void render_entity_node(engine::Entity entity, engine::Entity& out_destroy, engine::Entity& out_duplicate);

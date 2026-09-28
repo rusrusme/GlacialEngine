@@ -29,16 +29,16 @@ namespace editor {
 
         void draw_header_section(engine::Entity entity) const;
         void draw_transform_component(engine::Entity entity) const;
-        void draw_mesh_component(engine::Entity entity) const;
-        void draw_material_component(engine::Entity entity) const;
+        void draw_mesh_component(engine::Entity entity, engine::SystemContext& context) const;
+        void draw_material_component(engine::Entity entity, engine::SystemContext& context) const;
         void draw_lighting_components(engine::Entity entity) const;
-        void draw_box_collider_component(engine::Entity entity) const;
+        void draw_box_collider_component(engine::Entity entity, engine::SystemContext& context) const;
         void draw_audio_source_component(engine::Entity entity, engine::SystemContext& context) const;
-        void draw_add_component_button(engine::Entity entity) const;
+        void draw_add_component_button(engine::Entity entity, engine::SystemContext& context) const;
         #endif
 
+        // Todo: refactor scene_ to SystemContext to remove update_context()
         std::shared_ptr<engine::Scene> scene_ = nullptr;
-        engine::AssetManager* assets = nullptr;
 
         engine::Entity selected_entity_{};
     };

@@ -70,7 +70,7 @@ namespace editor {
 
     void DebugPanel::render_shader_library(engine::Renderer& renderer) {
         if (ImGui::Begin("Shader Library Inspector")) {
-            const auto& shaders = renderer.get_shader_library().get_shaders();
+            const auto& shaders = renderer.get_shaders();
 
             ImGui::Text("Registered Shaders: %zu", shaders.size());
             ImGui::Separator();

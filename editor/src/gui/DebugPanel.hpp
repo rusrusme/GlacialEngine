@@ -24,6 +24,9 @@ namespace editor {
         [[nodiscard]] bool is_grid_enabled() const { return show_grid_; }
         void set_grid_enabled(const bool toggle) { show_grid_ = toggle; }
 
+        void set_gizmo_enabled(const bool toggle) { show_gizmo_ = toggle; }
+        [[nodiscard]] bool is_gizmo_enabled() const { return show_gizmo_; }
+
     private:
         void render_debug_panel(engine::Renderer& renderer, float delta_time);
         void render_shader_library(engine::Renderer& renderer);
@@ -34,13 +37,5 @@ namespace editor {
         bool show_grid_ = true;
         bool show_gizmo_ = true;
         bool show_debug_panel_ = true;
-
-        // -------------------------
-        // Debug controls
-        // -------------------------
-
-        void set_gizmo_enabled(const bool toggle) { show_gizmo_ = toggle; }
-        [[nodiscard]] bool is_gizmo_enabled() const { return show_gizmo_; }
-        // -------------------------
     };
 }

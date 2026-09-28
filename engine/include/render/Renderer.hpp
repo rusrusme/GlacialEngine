@@ -75,7 +75,16 @@ namespace engine {
 
         // Asset access
         [[nodiscard]] ShaderLibrary& get_shader_library() { return shader_library_; }
-        [[nodiscard]] const ShaderLibrary& get_shader_library() const { return shader_library_; }
+
+        std::shared_ptr<Shader> load_shader(const std::string& name,
+                                            const std::string& vertex_path,
+                                            const std::string& fragment_path,
+                                            const std::string& geometry_path = "") {
+            return shader_library_.load(name, vertex_path, fragment_path, geometry_path);
+        }
+
+        [[nodiscard]] std::shared_ptr<Shader> get_shader(const std::string& name) { return shader_library_.get(name); }
+        [[nodiscard]] const std::unordered_map<std::string, std::shared_ptr<Shader>>& get_shaders() { return shader_library_.get_shaders(); }
 
         // Light
         static constexpr size_t MAX_POINT_LIGHTS = 8;

@@ -13,7 +13,6 @@ namespace editor {
         if (scene) {
             scene_ = scene;
         }
-        assets = &context.assets;
     }
 
     #ifdef ENABLE_IMGUI
@@ -28,16 +27,16 @@ namespace editor {
     void ObjectInspector::draw_component(engine::Entity entity, engine::SystemContext& context) const {
         draw_header_section(entity);
         draw_transform_component(entity);
-        draw_mesh_component(entity);
-        draw_material_component(entity);
+        draw_mesh_component(entity, context);
+        draw_material_component(entity, context);
         draw_lighting_components(entity);
-        draw_box_collider_component(entity);
+        draw_box_collider_component(entity, context);
         draw_audio_source_component(entity, context);
 
         ImGui::Separator();
         ImGui::Spacing();
 
-        draw_add_component_button(entity);
+        draw_add_component_button(entity, context);
     }
 
     void ObjectInspector::draw_header_section(engine::Entity entity) const {
@@ -83,17 +82,17 @@ namespace editor {
         }
     }
 
-    void ObjectInspector::draw_mesh_component(engine::Entity entity) const {
+    void ObjectInspector::draw_mesh_component(engine::Entity entity, engine::SystemContext& context) const {
         if (!entity.has_component<engine::MeshComponent>()) return;
 
         if (ImGui::CollapsingHeader("Mesh", ImGuiTreeNodeFlags_DefaultOpen)) {
             auto& mesh_comp = entity.get_component<engine::MeshComponent>();
-            const auto& current_meta = assets->get_metadata(mesh_comp.handle);
+            const auto& current_meta = context.assets.get_metadata(mesh_comp.handle);
 
             std::string current_label = current_meta.is_valid() ? current_meta.filepath.filename().string() : "None / Select Mesh";
 
             if (ImGui::BeginCombo("Mesh Asset", current_label.c_str())) {
-                for (const auto& [handle, meta] : assets->get_registry()) {
+                for (const auto& [handle, meta] : context.assets.get_registry()) {
                     if (meta.type != engine::AssetType::MESH) continue;
                     const bool is_selected = (mesh_comp.handle == handle);
                     std::string item_name = meta.filepath.filename().string();
@@ -108,7 +107,7 @@ namespace editor {
         }
     }
 
-    void ObjectInspector::draw_material_component(engine::Entity entity) const {
+    void ObjectInspector::draw_material_component(engine::Entity entity, engine::SystemContext& context) const {
         if (!entity.has_component<engine::MaterialComponent>()) return;
 
         if (ImGui::CollapsingHeader("Material", ImGuiTreeNodeFlags_DefaultOpen)) {
@@ -119,7 +118,7 @@ namespace editor {
             ImGui::SliderFloat("Metallic", &material.metallic, 0.0f, 1.0f);
             ImGui::Separator();
 
-            const auto& current_tex_meta = assets->get_metadata(material.texture_handle);
+            const auto& current_tex_meta = context.assets.get_metadata(material.texture_handle);
             std::string tex_label = current_tex_meta.is_valid()
                                         ? current_tex_meta.filepath.filename().string()
                                         : "None / Select Texture";
@@ -129,7 +128,7 @@ namespace editor {
                     material.texture_handle = {0};
                 }
 
-                for (const auto& [handle, meta] : assets->get_registry()) {
+                for (const auto& [handle, meta] : context.assets.get_registry()) {
                     if (meta.type != engine::AssetType::TEXTURE_2D) continue;
 
                     const bool is_selected = (material.texture_handle == handle);
@@ -146,7 +145,7 @@ namespace editor {
             if (ImGui::BeginDragDropTarget()) {
                 if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET_BROWSER_ITEM")) {
                     engine::AssetHandle dropped_handle = *static_cast<const engine::AssetHandle*>(payload->Data);
-                    const auto& meta = assets->get_metadata(dropped_handle);
+                    const auto& meta = context.assets.get_metadata(dropped_handle);
 
                     if (meta.is_valid() && meta.type == engine::AssetType::TEXTURE_2D) {
                         material.texture_handle = dropped_handle;
@@ -184,7 +183,7 @@ namespace editor {
         }
     }
 
-    void ObjectInspector::draw_box_collider_component(engine::Entity entity) const {
+    void ObjectInspector::draw_box_collider_component(engine::Entity entity, engine::SystemContext& context) const {
         if (!entity.has_component<engine::BoxColliderComponent>()) return;
 
         if (ImGui::CollapsingHeader("Box Collider", ImGuiTreeNodeFlags_DefaultOpen)) {
@@ -198,7 +197,7 @@ namespace editor {
             if (entity.has_component<engine::MeshComponent>()) {
                 if (ImGui::Button("Fit to Mesh")) {
                     const auto& mesh_comp = entity.get_component<engine::MeshComponent>();
-                    if (auto mesh = assets->get_asset<engine::Mesh>(mesh_comp.handle)) {
+                    if (auto mesh = context.assets.get_asset<engine::Mesh>(mesh_comp.handle)) {
                         collider.size = mesh->local_bounds.max - mesh->local_bounds.min;
                         collider.center = (mesh->local_bounds.min + mesh->local_bounds.max) * 0.5f;
                     }
@@ -214,7 +213,7 @@ namespace editor {
             auto& audio = entity.get_component<engine::AudioSourceComponent>();
 
             // Asset Selection via AssetManager Combo
-            const auto& current_meta = assets->get_metadata(audio.sound_handle);
+            const auto& current_meta = context.assets.get_metadata(audio.sound_handle);
             std::string audio_label = current_meta.is_valid()
                                           ? current_meta.filepath.filename().string()
                                           : "None / Select Audio Asset";
@@ -225,7 +224,7 @@ namespace editor {
                     audio.filepath = "";
                 }
 
-                for (const auto& [handle, meta] : assets->get_registry()) {
+                for (const auto& [handle, meta] : context.assets.get_registry()) {
                     if (meta.type != engine::AssetType::AUDIO) continue;
 
                     const bool is_selected = (audio.sound_handle == handle);
@@ -244,7 +243,7 @@ namespace editor {
             if (ImGui::BeginDragDropTarget()) {
                 if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET_BROWSER_ITEM")) {
                     engine::AssetHandle dropped_handle = *static_cast<const engine::AssetHandle*>(payload->Data);
-                    const auto& meta = assets->get_metadata(dropped_handle);
+                    const auto& meta = context.assets.get_metadata(dropped_handle);
 
                     if (meta.is_valid() && meta.type == engine::AssetType::AUDIO) {
                         audio.sound_handle = dropped_handle;
@@ -275,7 +274,7 @@ namespace editor {
                     catch (...) {
                         audio.filepath = selected_file;
                     }
-                    audio.sound_handle = assets->get_handle_from_path(audio.filepath);
+                    audio.sound_handle = context.assets.get_handle_from_path(audio.filepath);
                 }
             }
             ImGui::SameLine();
@@ -308,7 +307,7 @@ namespace editor {
         }
     }
 
-    void ObjectInspector::draw_add_component_button(engine::Entity entity) const {
+    void ObjectInspector::draw_add_component_button(engine::Entity entity, engine::SystemContext& context) const {
         if (ImGui::Button("+ Add Component")) {
             ImGui::OpenPopup("AddComponentPopup");
         }
@@ -326,7 +325,7 @@ namespace editor {
 
                     if (entity.has_component<engine::MeshComponent>()) {
                         const auto& mesh_comp = entity.get_component<engine::MeshComponent>();
-                        if (auto mesh = assets->get_asset<engine::Mesh>(mesh_comp.handle)) {
+                        if (auto mesh = context.assets.get_asset<engine::Mesh>(mesh_comp.handle)) {
                             collider.size = mesh->local_bounds.max - mesh->local_bounds.min;
                             collider.center = (mesh->local_bounds.min + mesh->local_bounds.max) * 0.5f;
                         }

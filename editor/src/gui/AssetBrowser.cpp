@@ -13,8 +13,6 @@
 
 namespace editor {
     void AssetBrowser::init(engine::SystemContext& context) {
-        assets = &context.assets;
-
         const float thumbnail_size = config::get_value("asset_thumbnail_size", thumbnail_size_);
         thumbnail_size_ = thumbnail_size;
 
@@ -28,13 +26,13 @@ namespace editor {
     }
 
     #ifdef ENABLE_IMGUI
-    void AssetBrowser::render_imgui() {
+    void AssetBrowser::render_imgui(engine::SystemContext& context) {
         ImGui::Begin("Asset Browser");
         render_header();
 
         ImGui::PushStyleColor(ImGuiCol_ChildBg, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
         if (ImGui::BeginChild("AssetGridScrollArea", ImVec2(0, 0), false)) {
-            render_assets_view();
+            render_assets_view(context);
         }
         ImGui::EndChild();
         ImGui::PopStyleColor();
@@ -254,7 +252,7 @@ namespace editor {
         ImGui::Separator();
     }
 
-    void AssetBrowser::render_assets_view() {
+    void AssetBrowser::render_assets_view(engine::SystemContext& context) {
         if (!std::filesystem::exists(current_directory_)) return;
 
         // Prepare lower-case search filter string
@@ -329,7 +327,7 @@ namespace editor {
         if (is_list_view) {
             ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(0.0f, 2.0f));
             for (const auto& entry : entries) {
-                render_list_view(entry);
+                render_list_view(entry, context);
             }
             ImGui::PopStyleVar();
         }
@@ -345,7 +343,7 @@ namespace editor {
             if (ImGui::BeginTable("AssetGrid", column_count, ImGuiTableFlags_SizingStretchSame)) {
                 for (const auto& entry : entries) {
                     ImGui::TableNextColumn();
-                    render_grid_view(entry);
+                    render_grid_view(entry, context);
                 }
                 ImGui::EndTable();
             }
@@ -360,7 +358,7 @@ namespace editor {
         }
     }
 
-    void AssetBrowser::render_grid_view(const std::filesystem::directory_entry& entry) {
+    void AssetBrowser::render_grid_view(const std::filesystem::directory_entry& entry, engine::SystemContext& context) {
         const auto& path = entry.path();
         const std::string filename = path.filename().string();
         const bool is_directory = entry.is_directory();
@@ -392,8 +390,8 @@ namespace editor {
             pending_directory_change_ = path;
         }
 
-        if (!is_directory && assets) {
-            engine::AssetHandle handle = assets->get_handle_from_path(path);
+        if (!is_directory) {
+            engine::AssetHandle handle = context.assets.get_handle_from_path(path);
             if (handle != 0 && ImGui::BeginDragDropSource()) {
                 ImGui::SetDragDropPayload("ASSET_BROWSER_ITEM", &handle, sizeof(engine::AssetHandle));
                 ImGui::Text("Assign %s", filename.c_str());
@@ -412,7 +410,7 @@ namespace editor {
         ImGui::PopID();
     }
 
-    void AssetBrowser::render_list_view(const std::filesystem::directory_entry& entry) {
+    void AssetBrowser::render_list_view(const std::filesystem::directory_entry& entry, engine::SystemContext& context) {
         const auto& path = entry.path();
         const std::string filename = path.filename().string();
         const bool is_directory = entry.is_directory();
@@ -447,8 +445,8 @@ namespace editor {
             pending_directory_change_ = path;
         }
 
-        if (!is_directory && assets) {
-            engine::AssetHandle handle = assets->get_handle_from_path(path);
+        if (!is_directory) {
+            engine::AssetHandle handle = context.assets.get_handle_from_path(path);
             if (handle != 0 && is_row_hovered && ImGui::BeginDragDropSource()) {
                 ImGui::SetDragDropPayload("ASSET_BROWSER_ITEM", &handle, sizeof(engine::AssetHandle));
                 ImGui::Text("Assign %s", filename.c_str());

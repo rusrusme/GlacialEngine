@@ -5,7 +5,6 @@
 
 #pragma once
 
-#include "render/Renderer.hpp"
 #include "render/Shader.hpp"
 #include "render/VertexArray.hpp"
 
@@ -16,7 +15,7 @@ namespace editor {
         ~Grid() = default;
 
         void init(engine::Renderer& renderer);
-        void render(const engine::Renderer& renderer);
+        void render();
 
     private:
         std::shared_ptr<engine::Shader> grid_shader_;
