@@ -17,7 +17,7 @@ namespace editor {
     EditorLayer::EditorLayer(std::shared_ptr<engine::Scene> scene) : initial_scene_(std::move(scene)) {}
 
     void EditorLayer::on_attach(engine::SystemContext& context) {
-        context.renderer.set_present_to_screen(false);
+        context.renderer.set_render_to_screen(false);
         editor_grid_.init(context.renderer);
 
         if (initial_scene_) {
