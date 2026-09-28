@@ -78,8 +78,7 @@ namespace engine {
 
     void Renderer::render() {
         // Final render code here
-
-        if (post_processor_) {
+        if (should_render_ && post_processor_) {
             post_processor_->render_to_screen();
         }
     }

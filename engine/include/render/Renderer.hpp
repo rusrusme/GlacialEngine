@@ -133,8 +133,8 @@ namespace engine {
         // Texture handle for ImGui Editor Viewports
         [[nodiscard]] uint32_t get_final_color_texture() const { return post_processor_->get_final_color_texture(); }
 
-        void set_present_to_screen(const bool enable) { should_render = enable; }
-        [[nodiscard]] bool should_render_to_screen() const { return should_render; }
+        void set_present_to_screen(const bool enable) { should_render_ = enable; }
+        [[nodiscard]] bool should_render_to_screen() const { return should_render_; }
 
     private:
         RenderStats stats_;
@@ -166,6 +166,6 @@ namespace engine {
 
         // Post processing
         std::unique_ptr<PostProcessor> post_processor_;
-        bool should_render = true;
+        bool should_render_ = true;
     };
 }
