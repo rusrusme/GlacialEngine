@@ -1,25 +1,13 @@
 # Basis Engine
 
-### C++ 3D simulation engine built with OpenGL 4.6.
-
----
-
-## Tech Stack & Dependencies
-
-* **Language:** C++20
-* **Graphics API:** OpenGL 4.6 (via GLAD)
-* **Windowing & Input:** GLFW
-* **Mathematics:** GLM
-* **Build System:** CMake
-
----
+### 3D simulation engine
 
 ## Getting Started
 
 ### Prerequisites
 
-* C++20 compatible compiler (MSVC 2022 / GCC 11+ / Clang 13+)
-* CMake 3.20 or higher
+* C++20 compatible compiler
+* CMake 4.3 or higher
 
 ### Building the Project
 
@@ -32,8 +20,4 @@
     ```bash
     cmake -B build
     cmake --build build
-    ```
-3. Packaging the engine distribution (engine-lib/)
-    ```bash
-    .\Deploy.cmd
     ```
