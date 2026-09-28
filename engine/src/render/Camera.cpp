@@ -5,6 +5,7 @@
 
 #include "render/Camera.hpp"
 
+#include "core/Application.hpp"
 #include "core/Config.hpp"
 #include "render/Frustum.hpp"
 
@@ -14,6 +15,16 @@ namespace engine {
 
         constexpr float deg_to_rad(const float degrees) {
             return degrees * PI / 180.0f;
+        }
+    }
+
+    void Camera::init(const float fov_degrees, const float near_p, const float far_p) {
+        apply_default_view();
+        set_projection_params(fov_degrees, near_p, far_p);
+
+        const auto& window = Application::get().window();
+        if (window.get_height() > 0) {
+            set_aspect_ratio(static_cast<float>(window.get_width()) / static_cast<float>(window.get_height()));
         }
     }
 

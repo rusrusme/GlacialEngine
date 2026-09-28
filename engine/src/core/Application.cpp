@@ -13,6 +13,7 @@
 #include "event/MouseEvents.hpp"
 #include "event/WindowEvents.hpp"
 #include "render/Frame.hpp"
+#include "render/debug/DebugRenderer.hpp"
 
 namespace engine {
     Application::Application() : Application(setting::ENGINE_TITLE_) {}
@@ -43,15 +44,16 @@ namespace engine {
         // Initialize core systems
         // ----------------------------------
         Frame::init(window_->native());
-
         if (!renderer_.on_attach(window_->native())) {
             CORE_CRITICAL("Application initialization failed: Could not initialize renderer");
             window_.reset();
             window::shutdown();
             return 1;
         }
+        DebugRenderer::on_attach();
 
         audio_system_.on_attach();
+        asset_manager_.scan_directory("assets");
 
         CORE_INFO("Attaching application layers");
         for (const auto& layer : layers_) {
@@ -134,6 +136,7 @@ namespace engine {
         CORE_INFO("Shutting down engine application");
 
         Frame::shutdown();
+        DebugRenderer::on_detach();
         renderer_.on_detach();
         scene_manager_.on_detach();
         audio_system_.on_detach(context_);

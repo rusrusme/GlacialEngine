@@ -28,8 +28,8 @@ namespace engine {
 
     class DebugRenderer {
     public:
-        static void on_init();
-        static void on_shutdown();
+        static void on_attach();
+        static void on_detach();
 
         static void begin_scene(const Camera& camera);
         static void end_scene();
@@ -42,6 +42,6 @@ namespace engine {
     private:
         static void flush();
 
-        inline static DebugData s_data_;
+        inline static DebugData data_;
     };
 }

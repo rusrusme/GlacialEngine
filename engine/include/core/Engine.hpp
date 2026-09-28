@@ -73,8 +73,10 @@
 #include "scene/system/CameraSystem.hpp"
 // Scene
 #include "scene/Scene.hpp"
+#include "scene/SceneManager.hpp"
 #include "scene/SceneSerializer.hpp"
 #include "scene/SceneState.hpp"
+#include "scene/SimulationState.hpp"
 // UI
 #include "ui/UILayer.hpp"
 #include "ui/UIManager.hpp"

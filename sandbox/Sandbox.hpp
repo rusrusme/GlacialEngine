@@ -5,10 +5,10 @@
 
 #pragma once
 
-#include "core/Application.hpp"
+#include "core/Engine.hpp"
 
 class Sandbox : public engine::Application {
 public:
     Sandbox();
-    ~Sandbox() override = default;
+    ~Sandbox() override;
 };

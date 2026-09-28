@@ -206,4 +206,21 @@ namespace engine {
         mesh_batches_.clear();
         CORE_INFO("Scene cleared ({0} entities removed)", entity_count);
     }
+
+    Entity Scene::create_cube(const std::string& name, const glm::vec4& color) {
+        Entity entity = create_entity(name);
+
+        entity.add_component<MeshComponent>(AssetHandle(3));
+        entity.add_component<MaterialComponent>(color);
+        return entity;
+    }
+
+    Entity Scene::create_point_light(const std::string& name, const glm::vec3& position, const glm::vec3& color, float intensity, float radius) {
+        Entity light = create_entity(name);
+        auto& transform = light.get_component<TransformComponent>();
+        transform.position = position;
+
+        light.add_component<PointLightComponent>(color, intensity, radius);
+        return light;
+    }
 }

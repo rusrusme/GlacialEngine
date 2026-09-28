@@ -5,6 +5,8 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 add_executable(Sandbox
                Sandbox.cpp
-               Sandbox.hpp)
+               Sandbox.hpp
+               SandboxLayer.cpp
+               SandboxLayer.hpp)
 
 target_link_libraries(Sandbox PRIVATE Engine)

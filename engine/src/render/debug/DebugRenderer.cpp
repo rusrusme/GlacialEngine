@@ -12,29 +12,29 @@
 #include "render/RenderCommand.hpp"
 
 namespace engine {
-    void DebugRenderer::on_init() {
-        s_data_.line_vbo_capacity_bytes = 2000 * sizeof(LineVertex);
-        s_data_.line_vbo = std::make_shared<VertexBuffer>(nullptr, s_data_.line_vbo_capacity_bytes, true);
+    void DebugRenderer::on_attach() {
+        data_.line_vbo_capacity_bytes = 2000 * sizeof(LineVertex);
+        data_.line_vbo = std::make_shared<VertexBuffer>(nullptr, data_.line_vbo_capacity_bytes, true);
 
-        s_data_.line_vao = std::make_unique<VertexArray>();
+        data_.line_vao = std::make_unique<VertexArray>();
         const BufferLayout line_layout = {
             {ShaderDataType::Float3, "a_position"},
             {ShaderDataType::Float3, "a_color"}
         };
-        s_data_.line_vao->add_vertex_buffer(s_data_.line_vbo, line_layout);
+        data_.line_vao->add_vertex_buffer(data_.line_vbo, line_layout);
 
-        s_data_.line_shader = GLShader::from_file(
+        data_.line_shader = GLShader::from_file(
             "assets/shaders/engine/debug/line.vert",
             "assets/shaders/engine/debug/line.frag"
         );
-        s_data_.line_batch_buffer.reserve(2000);
+        data_.line_batch_buffer.reserve(2000);
     }
 
-    void DebugRenderer::on_shutdown() {
-        s_data_.line_batch_buffer.clear();
-        s_data_.line_vao.reset();
-        s_data_.line_vbo.reset();
-        s_data_.line_shader.reset();
+    void DebugRenderer::on_detach() {
+        data_.line_batch_buffer.clear();
+        data_.line_vao.reset();
+        data_.line_vbo.reset();
+        data_.line_shader.reset();
     }
 
     void DebugRenderer::begin_scene(const Camera& camera) {
@@ -46,8 +46,8 @@ namespace engine {
     }
 
     void DebugRenderer::draw_line(const glm::vec3& from, const glm::vec3& to, const glm::vec3& color) {
-        s_data_.line_batch_buffer.emplace_back(from, color);
-        s_data_.line_batch_buffer.emplace_back(to, color);
+        data_.line_batch_buffer.emplace_back(from, color);
+        data_.line_batch_buffer.emplace_back(to, color);
     }
 
     void DebugRenderer::draw_box(const glm::vec3& min, const glm::vec3& max, const glm::vec3& color) {
@@ -104,31 +104,31 @@ namespace engine {
     }
 
     void DebugRenderer::flush() {
-        if (s_data_.line_batch_buffer.empty() || !s_data_.line_shader || !s_data_.line_vao) return;
+        if (data_.line_batch_buffer.empty() || !data_.line_shader || !data_.line_vao) return;
 
-        const size_t bytes_needed = s_data_.line_batch_buffer.size() * sizeof(LineVertex);
+        const size_t bytes_needed = data_.line_batch_buffer.size() * sizeof(LineVertex);
 
-        if (bytes_needed > s_data_.line_vbo_capacity_bytes) {
-            s_data_.line_vbo_capacity_bytes = bytes_needed * 2;
-            s_data_.line_vbo = std::make_shared<VertexBuffer>(nullptr, s_data_.line_vbo_capacity_bytes, true);
+        if (bytes_needed > data_.line_vbo_capacity_bytes) {
+            data_.line_vbo_capacity_bytes = bytes_needed * 2;
+            data_.line_vbo = std::make_shared<VertexBuffer>(nullptr, data_.line_vbo_capacity_bytes, true);
 
-            s_data_.line_vao = std::make_unique<VertexArray>();
+            data_.line_vao = std::make_unique<VertexArray>();
             const BufferLayout line_layout = {
                 {ShaderDataType::Float3, "a_position"},
                 {ShaderDataType::Float3, "a_color"}
             };
-            s_data_.line_vao->add_vertex_buffer(s_data_.line_vbo, line_layout);
+            data_.line_vao->add_vertex_buffer(data_.line_vbo, line_layout);
         }
 
-        s_data_.line_vbo->set_data(s_data_.line_batch_buffer.data(), bytes_needed);
+        data_.line_vbo->set_data(data_.line_batch_buffer.data(), bytes_needed);
 
-        s_data_.line_shader->bind();
+        data_.line_shader->bind();
 
         RenderCommand::set_depth_mask(false);
-        RenderCommand::draw_lines(*s_data_.line_vao, static_cast<uint32_t>(s_data_.line_batch_buffer.size()));
+        RenderCommand::draw_lines(*data_.line_vao, static_cast<uint32_t>(data_.line_batch_buffer.size()));
         RenderCommand::set_depth_mask(true);
 
-        s_data_.line_shader->unbind();
-        s_data_.line_batch_buffer.clear();
+        data_.line_shader->unbind();
+        data_.line_batch_buffer.clear();
     }
 }

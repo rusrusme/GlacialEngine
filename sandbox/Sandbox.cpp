@@ -5,10 +5,16 @@
 
 #include "Sandbox.hpp"
 
-Sandbox::Sandbox(): Application("Sandbox") {}
+#include "SandboxLayer.hpp"
+
+Sandbox::Sandbox() : Application("Sandbox") {
+    auto sandbox_layer = std::make_unique<SandboxLayer>();
+    push_layer(std::move(sandbox_layer));
+}
+
+Sandbox::~Sandbox() = default;
 
 int main() {
     Sandbox sandbox;
     sandbox.run();
 }
-

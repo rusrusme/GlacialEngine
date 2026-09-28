@@ -14,10 +14,10 @@ namespace engine {
 
     class Camera {
     public:
+        void init(float fov_degrees = 45.0f, float near_p = 0.1f, float far_p = 2000.0f);
+
         void set_target(const glm::vec3& target);
-
         void set_distance(float distance);
-
         void set_yaw_pitch(float yaw_degrees, float pitch_degrees);
 
         void apply_default_view();
@@ -31,20 +31,15 @@ namespace engine {
         // ---------------------------
 
         [[nodiscard]] glm::mat4 get_view_matrix() const;
-
         [[nodiscard]] glm::mat4 get_projection_matrix() const;
-
         [[nodiscard]] glm::vec3 get_position() const;
-
         [[nodiscard]] Frustum get_frustum() const;
-
         [[nodiscard]] glm::vec3 get_target() const { return target_; }
 
         [[nodiscard]] float get_fov() const;
         [[nodiscard]] float get_aspect_ratio() const;
         [[nodiscard]] float get_near_clip() const;
         [[nodiscard]] float get_far_clip() const;
-
         [[nodiscard]] float get_distance() const;
 
         void set_aspect_ratio(float aspect);

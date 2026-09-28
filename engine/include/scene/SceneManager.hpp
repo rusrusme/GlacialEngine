@@ -15,9 +15,10 @@ namespace engine {
         void on_attach(std::shared_ptr<Scene> scene);
         void on_detach();
 
-        void on_update(float delta_time);
+        // --- Scene Management ---
+        std::shared_ptr<Scene> create(const std::string& name = "Untitled Scene");
 
-        [[maybe_unused]] std::shared_ptr<Scene> set_scene(std::shared_ptr<Scene> scene);
+        void on_update(float delta_time);
 
         void on_play();
         void on_pause();

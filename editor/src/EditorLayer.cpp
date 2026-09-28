@@ -23,8 +23,6 @@ namespace editor {
             context.scenes.on_attach(initial_scene_);
         }
 
-        engine::DebugRenderer::on_init();
-
         camera_.apply_default_view();
         camera_controller_.reset_mouse_state();
 
@@ -40,7 +38,6 @@ namespace editor {
     }
 
     void EditorLayer::on_detach(engine::SystemContext& context) {
-        engine::DebugRenderer::on_shutdown();
         debug_panel_.save_config();
         config::save();
     }

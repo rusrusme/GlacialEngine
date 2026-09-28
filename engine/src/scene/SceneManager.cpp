@@ -26,18 +26,17 @@ namespace engine {
         }
     }
 
+    std::shared_ptr<Scene> SceneManager::create(const std::string& name) {
+        auto scene = std::make_shared<Scene>(name);
+        on_attach(scene);
+        return scene_;
+    }
+
     void SceneManager::on_update(float delta_time) {
         simulation_state_.on_update(delta_time);
         if (scene_state() == SceneState::Play && simulation_scene_) {
             simulation_scene_->on_update(delta_time);
         }
-    }
-
-    std::shared_ptr<Scene> SceneManager::set_scene(std::shared_ptr<Scene> scene) {
-        if (!scene) return nullptr;
-        on_stop();
-        scene_ = std::move(scene);
-        return scene_;
     }
 
     void SceneManager::on_play() {
