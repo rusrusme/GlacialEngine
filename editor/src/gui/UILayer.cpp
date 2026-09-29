@@ -221,7 +221,7 @@ namespace editor {
         ImGui::End();
         ImGui::PopStyleVar();
 
-        menubar_.render_imgui(scene, assets);
+        menubar_.render_imgui(context);
         toolbar_.render_imgui();
 
         object_inspector_.set_selected_entity(hierarchy_.get_selected_entity());

@@ -15,7 +15,7 @@
 
 1. Clone the repository:
     ```bash
-    git clone https://github.com/rusrusme/CoreEngine.git
+    git clone https://github.com/rusrusme/BasisEngine.git
     ```
 
 2. Standard Build (Engine + Editor)

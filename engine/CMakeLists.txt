@@ -130,6 +130,10 @@ add_library(Engine STATIC
             include/scene/SceneManager.hpp
             src/render/RenderScope.cpp
             include/render/RenderScope.hpp
+            src/platform/ShellApi.cpp
+            include/platform/ShellApi.hpp
+            src/platform/win32/Win32Shell.cpp
+            include/platform/win32/Win32Shell.hpp
 )
 # ----------------------------------------------------------------------------
 target_include_directories(Engine

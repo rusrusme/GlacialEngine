@@ -5,8 +5,6 @@
 
 #pragma once
 
-#include <memory>
-
 namespace engine {
     class Scene;
     class AssetManager;
@@ -19,7 +17,11 @@ namespace editor {
         ~Menubar();
 
         #ifdef ENABLE_IMGUI
-        void render_imgui(std::shared_ptr<engine::Scene> scene, engine::AssetManager& assets);
+        static void file_menu(const engine::SystemContext& context);
+        static void edit_menu(const engine::SystemContext& context);
+        static void window_menu(const engine::SystemContext& context);
+        static void help_menu(const engine::SystemContext& context);
+        void render_imgui(const engine::SystemContext& context);
         #endif
     };
 }

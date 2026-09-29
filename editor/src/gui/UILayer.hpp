@@ -9,7 +9,6 @@
 #include "Menubar.hpp"
 #include "core/Layer.hpp"
 #include "gui/AssetBrowser.hpp"
-#include "gui/DebugPanel.hpp"
 #include "gui/Hierarchy.hpp"
 #include "gui/ObjectInspector.hpp"
 #include "gui/Toolbar.hpp"
