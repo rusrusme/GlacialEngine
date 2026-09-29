@@ -8,15 +8,10 @@
 #include "Icons.hpp"
 
 namespace editor {
-    void Hierarchy::init(engine::SystemContext& context) {
-        auto scene = context.scenes.active_scene();
-        if (scene) {
-            scene_ = scene;
-        }
-    }
-
     #ifdef ENABLE_IMGUI
-    void Hierarchy::render_imgui(engine::SystemContext& context) {
+    void Hierarchy::render_imgui(const engine::SystemContext& context) {
+        const auto scene = context.scenes.active_scene();
+        if (!scene) return;
         engine::Entity entity_to_destroy{};
         engine::Entity entity_to_duplicate{};
 
@@ -30,41 +25,41 @@ namespace editor {
         }
         ImGui::Separator();
 
-        render_entity_list(entity_to_destroy, entity_to_duplicate);
+        render_entity_list(entity_to_destroy, entity_to_duplicate, scene);
 
         process_shortcuts(entity_to_destroy, entity_to_duplicate);
-        process_deferred_actions(entity_to_destroy, entity_to_duplicate);
+        process_deferred_actions(entity_to_destroy, entity_to_duplicate, scene);
         process_deselection_inputs();
 
         ImGui::End();
     }
     #endif
 
-    engine::Entity Hierarchy::add_entity(const std::string& name) {
-        const engine::Entity entity = scene_->create_entity(name);
-        CLIENT_INFO("Created entity - {0}", name.c_str());
-        return entity;
-    }
-
-    void Hierarchy::update_context(std::shared_ptr<engine::Scene> current_scene) {
-        if (scene_ == current_scene) return;
-
-        engine::UUID selected_uuid = 0;
-        if (selected_entity_ && selected_entity_.has_component<engine::IDComponent>()) {
-            selected_uuid = selected_entity_.get_component<engine::IDComponent>().id;
-        }
-
-        scene_ = std::move(current_scene);
+    void Hierarchy::update_context(const std::shared_ptr<engine::Scene>& active_scene) {
+        if (!active_scene) return;
 
         selected_entity_ = {};
-        if (selected_uuid != 0 && scene_) {
-            auto view = scene_->view<engine::IDComponent>();
+        if (selected_uuid_ != 0) {
+            bool found = false;
+            auto view = active_scene->view<engine::IDComponent>();
             for (auto entity : view) {
-                if (view.get<engine::IDComponent>(entity).id == selected_uuid) {
-                    selected_entity_ = {entity, scene_.get()};
+                if (view.get<engine::IDComponent>(entity).id == selected_uuid_) {
+                    selected_entity_ = {entity, active_scene.get()};
+                    found = true;
                     break;
                 }
             }
+            if (!found) { selected_uuid_ = 0; }
+        }
+    }
+
+    void Hierarchy::set_selected_entity(const engine::Entity new_entity) {
+        selected_entity_ = new_entity;
+        if (selected_entity_ && selected_entity_.has_component<engine::IDComponent>()) {
+            selected_uuid_ = selected_entity_.get_component<engine::IDComponent>().id;
+        }
+        else {
+            selected_uuid_ = 0;
         }
     }
 
@@ -78,37 +73,40 @@ namespace editor {
         ImGui::InputText("##NameInput", name_buffer_, sizeof(name_buffer_));
     }
 
-    void Hierarchy::render_add_entity_popup(engine::SystemContext& context) {
+    void Hierarchy::render_add_entity_popup(const engine::SystemContext& context) {
+        const auto scene = context.scenes.active_scene();
+        if (!scene) return;
         if (menu_item_with_icon("Entity", EntityType::Transform)) {
-            scene_->create_entity(resolve_entity_name("Entity"));
+            scene->create_entity(resolve_entity_name("Entity"));
         }
         ImGui::Separator();
         render_primitives_submenus(context);
 
         ImGui::Separator();
         if (menu_item_with_icon("Camera", EntityType::Camera)) {
-            auto entity = scene_->create_entity(resolve_entity_name("Camera"));
+            auto entity = scene->create_entity(resolve_entity_name("Camera"));
             entity.add_component<engine::CameraComponent>();
         }
         ImGui::Separator();
-        render_lighting_submenu();
+        render_lighting_submenu(scene);
 
         ImGui::Separator();
         render_imported_models_submenu(context);
     }
 
-    void Hierarchy::render_entity_list(engine::Entity& out_destroy, engine::Entity& out_duplicate) {
+    void Hierarchy::render_entity_list(engine::Entity& out_destroy, engine::Entity& out_duplicate, const std::shared_ptr<engine::Scene>& active_scene) {
+        if (!active_scene) return;
         ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(2.0f, 1.0f));
 
-        auto view = scene_->view<engine::LabelComponent>();
+        auto view = active_scene->view<engine::LabelComponent>();
         for (auto raw_entity : view) {
-            engine::Entity entity{raw_entity, scene_.get()};
+            engine::Entity entity{raw_entity, active_scene.get()};
             render_entity_node(entity, out_destroy, out_duplicate);
         }
         ImGui::PopStyleVar();
     }
 
-    void Hierarchy::render_primitives_submenus(engine::SystemContext& context) {
+    void Hierarchy::render_primitives_submenus(const engine::SystemContext& context) {
         create_primitive_entity("Plane", "primitive://plane", EntityType::Mesh2D, context);
         create_primitive_entity("Circle", "primitive://circle", EntityType::Mesh2D, context);
         ImGui::Separator();
@@ -117,9 +115,10 @@ namespace editor {
         create_primitive_entity("Cylinder", "primitive://cylinder", EntityType::Mesh3D, context);
     }
 
-    void Hierarchy::render_lighting_submenu() {
+    void Hierarchy::render_lighting_submenu(const std::shared_ptr<engine::Scene>& active_scene) {
+        if (!active_scene) return;
         if (menu_item_with_icon("Directional Light", EntityType::Light)) {
-            auto entity = scene_->create_entity(resolve_entity_name("Sun"));
+            auto entity = active_scene->create_entity(resolve_entity_name("Sun"));
             auto& transform = entity.get_component<engine::TransformComponent>();
             transform.rotation = glm::vec3(-90.0f, 135.0f, -45.0f);
             transform.position = glm::vec3(10.0f, 10.0f, 0.0f);
@@ -127,7 +126,7 @@ namespace editor {
         }
 
         if (menu_item_with_icon("Point Light", EntityType::Light)) {
-            auto entity = scene_->create_entity(resolve_entity_name("Light"));
+            auto entity = active_scene->create_entity(resolve_entity_name("Light"));
             auto& transform = entity.get_component<engine::TransformComponent>();
             transform.rotation = glm::vec3(0.0f);
             transform.position = glm::vec3(0.0f);
@@ -135,7 +134,9 @@ namespace editor {
         }
     }
 
-    void Hierarchy::render_imported_models_submenu(engine::SystemContext& context) {
+    void Hierarchy::render_imported_models_submenu(const engine::SystemContext& context) {
+        const auto scene = context.scenes.active_scene();
+        if (!scene) return;
         if (!ImGui::BeginMenu("Imported Models")) return;
 
         bool found_any = false;
@@ -148,7 +149,7 @@ namespace editor {
                 std::string filename = meta.filepath.filename().string();
 
                 if (menu_item_with_icon(filename.c_str(), EntityType::Mesh3D)) {
-                    auto entity = scene_->create_entity(resolve_entity_name(meta.filepath.stem().string().c_str()));
+                    auto entity = scene->create_entity(resolve_entity_name(meta.filepath.stem().string().c_str()));
                     entity.add_component<engine::MeshComponent>(handle);
                     entity.add_component<engine::MaterialComponent>(glm::vec4{1.0f, 1.0f, 1.0f, 1.0f});
                 }
@@ -173,9 +174,11 @@ namespace editor {
         return clicked;
     }
 
-    void Hierarchy::create_primitive_entity(const char* label, const char* path, EntityType type, engine::SystemContext& context) {
+    void Hierarchy::create_primitive_entity(const char* label, const char* path, EntityType type, const engine::SystemContext& context) {
+        const auto scene = context.scenes.active_scene();
+        if (!scene) return;
         if (menu_item_with_icon(label, type)) {
-            auto entity = scene_->create_entity(resolve_entity_name(label));
+            auto entity = scene->create_entity(resolve_entity_name(label));
             auto handle = context.assets.get_handle_from_path(path);
 
             entity.add_component<engine::MeshComponent>(handle);
@@ -197,7 +200,7 @@ namespace editor {
                              : true;
 
         // Visibility Button
-        if (render_eye_toggle_button(entity, is_active)) {
+        if (render_eye_toggle_button(is_active)) {
             if (!entity.has_component<engine::ActiveComponent>()) {
                 entity.add_component<engine::ActiveComponent>(!is_active);
             }
@@ -223,7 +226,7 @@ namespace editor {
         }
 
         if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen()) {
-            selected_entity_ = entity;
+            set_selected_entity(entity);
         }
 
         render_entity_context_menu(entity, out_destroy, out_duplicate);
@@ -234,7 +237,7 @@ namespace editor {
         ImGui::PopID();
     }
 
-    bool Hierarchy::render_eye_toggle_button(engine::Entity entity, bool is_active) {
+    bool Hierarchy::render_eye_toggle_button(bool is_active) {
         const ImVec2 eye_button_size(20.0f, ImGui::GetFrameHeight());
 
         ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0, 0, 0, 0));
@@ -254,7 +257,7 @@ namespace editor {
         return toggled;
     }
 
-    void Hierarchy::render_entity_context_menu(engine::Entity entity, engine::Entity& out_destroy, engine::Entity& out_duplicate) {
+    void Hierarchy::render_entity_context_menu(const engine::Entity entity, engine::Entity& out_destroy, engine::Entity& out_duplicate) {
         if (ImGui::BeginPopupContextItem()) {
             if (ImGui::MenuItem("Delete")) out_destroy = entity;
             if (ImGui::MenuItem("Duplicate")) out_duplicate = entity;
@@ -273,15 +276,16 @@ namespace editor {
         }
     }
 
-    void Hierarchy::process_deferred_actions(engine::Entity entity_to_destroy, engine::Entity entity_to_duplicate) {
+    void Hierarchy::process_deferred_actions(engine::Entity entity_to_destroy, engine::Entity entity_to_duplicate, const std::shared_ptr<engine::Scene>& active_scene) {
+        if (!active_scene) return;
         if (entity_to_duplicate) {
-            selected_entity_ = scene_->duplicate_entity(entity_to_duplicate);
+            set_selected_entity(active_scene->duplicate_entity(entity_to_duplicate));
         }
         if (entity_to_destroy) {
             if (selected_entity_ == entity_to_destroy) {
-                selected_entity_ = {};
+                set_selected_entity({});
             }
-            scene_->destroy_entity(entity_to_destroy);
+            active_scene->destroy_entity(entity_to_destroy);
         }
     }
 
@@ -290,7 +294,7 @@ namespace editor {
         const bool pressed_escape = ImGui::IsWindowFocused() && engine::Input::is_key_pressed_once(engine::Key::ESCAPE);
 
         if (clicked_empty_space || pressed_escape) {
-            selected_entity_ = {};
+            set_selected_entity({});
         }
     }
     #endif

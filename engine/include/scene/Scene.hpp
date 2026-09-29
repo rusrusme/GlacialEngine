@@ -19,7 +19,7 @@ namespace engine {
     class Scene {
     public:
         Scene();
-        explicit Scene(const std::string& name);
+        explicit Scene(std::string  name);
 
         ~Scene();
 

@@ -5,6 +5,8 @@
 
 #include "scene/Scene.hpp"
 
+#include <utility>
+
 #include "asset/AssetManager.hpp"
 #include "core/Log.hpp"
 #include "core/UUID.hpp"
@@ -15,7 +17,7 @@
 namespace engine {
     Scene::Scene() = default;
 
-    Scene::Scene(const std::string& name) : name_(name) {}
+    Scene::Scene(std::string  name) : name_(std::move(name)) {}
 
     Scene::~Scene() = default;
 

@@ -22,8 +22,6 @@ namespace editor {
         auto scene = context.scenes.active_scene();
 
         if (!scene) return;
-        object_inspector_.init(context);
-        hierarchy_.init(context);
         asset_browser_.init(context);
 
         #ifdef ENABLE_IMGUI
@@ -84,6 +82,8 @@ namespace editor {
         auto& assets = context.assets;
         if (!scene) return;
         if (!editor_layer_) return;
+
+        hierarchy_.update_context(scene);
 
         // Clean DockSpace across the viewport
         ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_PassthruCentralNode;
@@ -223,9 +223,6 @@ namespace editor {
 
         menubar_.render_imgui(scene, assets);
         toolbar_.render_imgui();
-
-        hierarchy_.update_context(scene);
-        object_inspector_.update_context(scene);
 
         object_inspector_.set_selected_entity(hierarchy_.get_selected_entity());
 
