@@ -94,11 +94,11 @@ namespace {
         if (!scene) return;
         // const std::string& current_path = scene->get_file_path();
         // if (!current_path.empty() && std::filesystem::path(current_path).filename() != "clean.scene") {
-            // engine::SceneSerializer serializer(scene);
-            // serializer.serialize(current_path, assets);
+        // engine::SceneSerializer serializer(scene);
+        // serializer.serialize(current_path, assets);
         // }
         // else {
-            // handle_save_scene_as(scene, assets);
+        // handle_save_scene_as(scene, assets);
         // }
     }
 
