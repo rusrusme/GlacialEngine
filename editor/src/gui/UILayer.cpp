@@ -45,6 +45,7 @@ namespace editor {
 
     void UILayer::on_update(engine::SystemContext& context, float delta_time) {
         #ifdef ENABLE_IMGUI
+        settings_.on_update(context, delta_time);
 
         if (engine::Input::is_key_pressed_once(engine::Key::ESCAPE)) {
             // If gizmo is currently active, cancel the operation and restore initial transform

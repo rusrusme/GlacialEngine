@@ -8,6 +8,31 @@
 #include <cmath>
 
 namespace editor {
+    void Settings::on_update(const engine::SystemContext& context, float delta_time) {
+        if (!auto_save_enabled_) {
+            auto_save_timer_ = 0.0f;
+            return;
+        }
+
+        auto_save_timer_ += delta_time;
+        const float interval_seconds = static_cast<float>(auto_save_interval_minutes_) * 60.0f;
+
+        if (auto_save_timer_ < interval_seconds) return;
+        auto_save_timer_ = 0.0f;
+
+        if (context.scenes.scene_state() != engine::SceneState::Edit) return;
+
+        auto scene = context.scenes.active_scene();
+        if (!scene) return;
+
+        const std::string& current_path = scene->get_path();
+        if (!current_path.empty() && std::filesystem::path(current_path).filename() != "clean.scene") {
+            CLIENT_INFO("Auto saving...");
+            engine::SceneSerializer serializer(scene);
+            serializer.serialize(current_path, context.assets);
+        }
+    }
+
     #ifdef ENABLE_IMGUI
     void Settings::ui_scale() {
         int current_percent = static_cast<int>(std::lround(ui_scale_ * 100.0f));
@@ -16,25 +41,41 @@ namespace editor {
         ImGui::Text("UI Scale");
         ImGui::SameLine(150.0f);
 
-        const ImVec2 widget_start_pos = ImGui::GetCursorScreenPos();
-        const float input_width = 75.0f;
-        const float arrow_width = ImGui::GetFrameHeight();
-        const float total_width = input_width + arrow_width;
+        const ImVec2 pos = ImGui::GetCursorScreenPos();
+        const float total_width = 85.0f;
+        const float arrow_width = 20.0f;
+        const float height = ImGui::GetFrameHeight();
 
-        ImGui::SetNextItemWidth(input_width);
-        if (ImGui::InputInt("##ui_scale_input", &current_percent, 0, 0, *"%d%%")) {
+        ImGui::SetNextItemWidth(total_width);
+        if (ImGui::InputScalar("##ui_scale_input", ImGuiDataType_S32, &current_percent, nullptr, nullptr, "%d%%")) {
             current_percent = std::clamp(current_percent, 25, 300);
             ui_scale_ = static_cast<float>(current_percent) / 100.0f;
             ImGui::GetIO().FontGlobalScale = ui_scale_;
         }
 
-        ImGui::SameLine(0.0f, 0.0f);
+        const ImVec2 arrow_min(pos.x + total_width - arrow_width, pos.y);
+        const ImVec2 arrow_max(pos.x + total_width, pos.y + height);
+        const bool is_arrow_hovered = ImGui::IsMouseHoveringRect(arrow_min, arrow_max);
 
-        if (ImGui::ArrowButton("##ui_scale_arrow", ImGuiDir_Down)) {
+        if (is_arrow_hovered && ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
             ImGui::OpenPopup("##ui_scale_popup");
         }
 
-        ImGui::SetNextWindowPos(ImVec2(widget_start_pos.x, widget_start_pos.y + ImGui::GetFrameHeight()));
+        const ImU32 arrow_color = is_arrow_hovered
+                                      ? ImGui::GetColorU32(ImGuiCol_Text)
+                                      : ImGui::GetColorU32(ImGuiCol_TextDisabled);
+
+        const ImVec2 center(pos.x + total_width - (arrow_width * 0.5f), pos.y + (height * 0.5f));
+        const float arrow_size = 3.5f;
+
+        ImGui::GetWindowDrawList()->AddTriangleFilled(
+            ImVec2(center.x - arrow_size, center.y - (arrow_size * 0.5f)),
+            ImVec2(center.x + arrow_size, center.y - (arrow_size * 0.5f)),
+            ImVec2(center.x, center.y + (arrow_size * 0.7f)),
+            arrow_color
+        );
+
+        ImGui::SetNextWindowPos(ImVec2(pos.x, pos.y + height + 2.0f));
         ImGui::SetNextWindowSizeConstraints(ImVec2(total_width, 0.0f), ImVec2(total_width, 300.0f));
 
         if (ImGui::BeginPopup("##ui_scale_popup")) {
@@ -85,12 +126,12 @@ namespace editor {
 
                     ImGui::Spacing();
 
-                    static bool auto_save = false;
-                    ImGui::Checkbox("Enable Auto-Save", &auto_save);
+                    if (ImGui::Checkbox("Enable Auto-Save", &auto_save_enabled_)) {
+                        auto_save_timer_ = 0.0f;
+                    }
 
-                    static int autosave_interval = 5;
-                    if (auto_save) {
-                        ImGui::SliderInt("Auto-Save Interval (minutes)", &autosave_interval, 1, 30);
+                    if (auto_save_enabled_) {
+                        ImGui::SliderInt("Auto-Save Interval (minutes)", &auto_save_interval_minutes_, 1, 30);
                     }
 
                     ImGui::EndTabItem();
