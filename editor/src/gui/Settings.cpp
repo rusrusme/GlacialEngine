@@ -30,12 +30,14 @@ namespace editor {
 
         ImGui::SameLine(0.0f, 0.0f);
 
-        const auto popup_pos = ImVec2(widget_start_pos.x, widget_start_pos.y + ImGui::GetFrameHeight());
-        ImGui::SetNextWindowPos(popup_pos, ImGuiCond_Appearing);
-        ImGui::SetNextWindowSizeConstraints(ImVec2(total_width, 0.0f), ImVec2(FLT_MAX, FLT_MAX));
+        if (ImGui::ArrowButton("##ui_scale_arrow", ImGuiDir_Down)) {
+            ImGui::OpenPopup("##ui_scale_popup");
+        }
 
-        ImGui::SetNextItemWidth(arrow_width);
-        if (ImGui::BeginCombo("##ui_scale_combo", nullptr, ImGuiComboFlags_NoPreview)) {
+        ImGui::SetNextWindowPos(ImVec2(widget_start_pos.x, widget_start_pos.y + ImGui::GetFrameHeight()));
+        ImGui::SetNextWindowSizeConstraints(ImVec2(total_width, 0.0f), ImVec2(total_width, 300.0f));
+
+        if (ImGui::BeginPopup("##ui_scale_popup")) {
             static const int presets[] = {70, 80, 90, 100, 110, 125, 150, 175, 200};
             for (int preset : presets) {
                 char label[32];
@@ -45,13 +47,14 @@ namespace editor {
                 if (ImGui::Selectable(label, is_selected)) {
                     ui_scale_ = static_cast<float>(preset) / 100.0f;
                     ImGui::GetIO().FontGlobalScale = ui_scale_;
+                    ImGui::CloseCurrentPopup();
                 }
 
                 if (is_selected) {
                     ImGui::SetItemDefaultFocus();
                 }
             }
-            ImGui::EndCombo();
+            ImGui::EndPopup();
         }
     }
 
