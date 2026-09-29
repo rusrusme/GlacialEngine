@@ -11,17 +11,21 @@ namespace engine {
 }
 
 namespace editor {
+    class Settings;
+
     class Menubar {
     public:
         Menubar();
         ~Menubar();
 
         #ifdef ENABLE_IMGUI
-        void file_menu(const engine::SystemContext& context);
+        void render_imgui(const engine::SystemContext& context, Settings& settings);
+
+    private:
+        void file_menu(const engine::SystemContext& context, Settings& settings);
         void edit_menu(const engine::SystemContext& context);
         void window_menu(const engine::SystemContext& context);
         void help_menu(const engine::SystemContext& context);
-        void render_imgui(const engine::SystemContext& context);
         #endif
     };
 }

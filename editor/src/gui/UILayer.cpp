@@ -221,7 +221,7 @@ namespace editor {
         ImGui::End();
         ImGui::PopStyleVar();
 
-        menubar_.render_imgui(context);
+        menubar_.render_imgui(context, settings_);
         toolbar_.render_imgui();
 
         object_inspector_.set_selected_entity(hierarchy_.get_selected_entity());
@@ -230,6 +230,7 @@ namespace editor {
         object_inspector_.render_imgui(context);
         asset_browser_.render_imgui(context);
         console_.render_imgui();
+        settings_.render_imgui(context);
     }
     #endif
 

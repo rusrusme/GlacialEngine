@@ -5,6 +5,7 @@
 
 #include "Menubar.hpp"
 
+#include "gui/Settings.hpp"
 #include "platform/FileDialogAPI.hpp"
 #include "platform/ShellAPI.hpp"
 
@@ -106,8 +107,8 @@ namespace {
     //
     // Settings Handler
     //
-    void handle_open_settings() {
-        // TODO
+    void handle_open_settings(editor::Settings& settings) {
+        settings.open();
     }
 }
 
@@ -116,7 +117,7 @@ namespace editor {
     Menubar::~Menubar() = default;
 
     #ifdef ENABLE_IMGUI
-    void Menubar::file_menu(const engine::SystemContext& context) {
+    void Menubar::file_menu(const engine::SystemContext& context, Settings& settings) {
         const auto scene = context.scenes.active_scene();
         auto& assets = context.assets;
 
@@ -152,7 +153,7 @@ namespace editor {
             ImGui::Separator();
 
             if (ImGui::MenuItem("Settings...", "Ctrl+Alt+S")) {
-                handle_open_settings();
+                handle_open_settings(settings);
             }
 
             ImGui::Separator();
@@ -189,7 +190,7 @@ namespace editor {
         }
     }
 
-    void Menubar::render_imgui(const engine::SystemContext& context) {
+    void Menubar::render_imgui(const engine::SystemContext& context, Settings& settings) {
         const auto scene = context.scenes.active_scene();
         auto& assets = context.assets;
 
@@ -208,7 +209,7 @@ namespace editor {
             }
             else if (is_alt) {
                 if (engine::Input::is_key_pressed_once(engine::Key::S)) {
-                    handle_open_settings();
+                    handle_open_settings(settings);
                 }
             }
             else {
@@ -226,7 +227,7 @@ namespace editor {
 
         if (ImGui::BeginMainMenuBar()) {
             ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(10.0f, 10.0f));
-            file_menu(context);
+            file_menu(context, settings);
             edit_menu(context);
             window_menu(context);
             help_menu(context);
