@@ -19,7 +19,7 @@ namespace engine {
     class Scene {
     public:
         Scene();
-        explicit Scene(std::string  name);
+        explicit Scene(std::string name);
 
         ~Scene();
 
@@ -48,8 +48,15 @@ namespace engine {
 
         [[nodiscard]] CollisionSystem& get_collision_system() { return *collision_system_; }
 
+        [[nodiscard]] const std::string& get_name() const { return name_; }
+        void set_name(const std::string& name) { name_ = name; }
+
+        [[nodiscard]] const std::string& get_path() const { return path_; }
+        void set_path(const std::string& path) { path_ = path; }
+
     private:
-        std::string name_;
+        std::string name_{"Untitled"};
+        std::string path_;
 
         friend class Entity;
 

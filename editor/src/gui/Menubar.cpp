@@ -92,14 +92,15 @@ namespace {
 
     void handle_save_scene(const std::shared_ptr<engine::Scene>& scene, engine::AssetManager& assets) {
         if (!scene) return;
-        // const std::string& current_path = scene->get_file_path();
-        // if (!current_path.empty() && std::filesystem::path(current_path).filename() != "clean.scene") {
-        // engine::SceneSerializer serializer(scene);
-        // serializer.serialize(current_path, assets);
-        // }
-        // else {
-        // handle_save_scene_as(scene, assets);
-        // }
+        const std::string& current_path = scene->get_path();
+        if (!current_path.empty() && std::filesystem::path(current_path).filename() != "clean.scene") {
+            engine::SceneSerializer serializer(scene);
+            serializer.serialize(current_path, assets);
+            update_window_title(current_path);
+        }
+        else {
+            handle_save_scene_as(scene, assets);
+        }
     }
 
     //

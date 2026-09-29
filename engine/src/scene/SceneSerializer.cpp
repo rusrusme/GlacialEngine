@@ -21,8 +21,13 @@ namespace engine {
     void SceneSerializer::serialize(const std::string& filepath, AssetManager& asset_manager) {
         CORE_INFO("Serializing scene to '{0}'", filepath);
 
+        std::string scene_name = std::filesystem::path(filepath).stem().string();
+        scene_->set_name(scene_name);
+        scene_->set_path(filepath);
+
         json root;
-        root["scene"] = "Untitled";
+        root["scene"] = scene_name;
+        root["path"] = filepath;
         root["entities"] = json::array();
 
         size_t entity_count = 0;
@@ -133,7 +138,10 @@ namespace engine {
 
         scene_->clear();
 
-        const std::string scene_name = root.value("scene", "Untitled");
+        scene_->set_path(filepath);
+        std::string scene_name = root.value("scene", std::filesystem::path(filepath).stem().string());
+        scene_->set_name(scene_name);
+
         size_t loaded_count = 0;
 
         for (const auto& entity_json : root["entities"]) {

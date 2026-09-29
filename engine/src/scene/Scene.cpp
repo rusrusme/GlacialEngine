@@ -34,7 +34,7 @@ namespace engine {
         }
         ComponentRegistry::copy_all_components(source_registry, final_registry, entity_map);
 
-        CORE_INFO("Copied scene with {0} entities", entity_map.size());
+        CORE_TRACE("Copied scene with {0} entities", entity_map.size());
         return destination;
     }
 
@@ -90,12 +90,12 @@ namespace engine {
 
     void Scene::on_init() {
         collision_system_ = std::make_unique<CollisionSystem>(10.0f);
-        CORE_INFO("Scene initialized");
+        CORE_TRACE("Scene initialized");
     }
 
     void Scene::on_shutdown() {
         collision_system_.reset();
-        CORE_INFO("Scene shutdown");
+        CORE_TRACE("Scene shutdown");
     }
 
     void Scene::on_update(float delta_time) {
@@ -206,7 +206,7 @@ namespace engine {
         size_t entity_count = registry_.storage<entt::entity>().size();
         registry_.clear();
         mesh_batches_.clear();
-        CORE_INFO("Scene cleared ({0} entities removed)", entity_count);
+        CORE_TRACE("Scene cleared ({0} entities removed)", entity_count);
     }
 
     Entity Scene::create_cube(const std::string& name, const glm::vec4& color) {
