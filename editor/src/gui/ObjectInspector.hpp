@@ -6,7 +6,6 @@
 #pragma once
 
 #include "audio/AudioSystem.hpp"
-#include "scene/Scene.hpp"
 #include "scene/ecs/Entity.hpp"
 
 namespace editor {
@@ -14,13 +13,10 @@ namespace editor {
     public:
         ObjectInspector() = default;
 
-        void init(engine::SystemContext& context);
-
         #ifdef ENABLE_IMGUI
         void render_imgui(engine::SystemContext& context);
         #endif
 
-        void update_context(std::shared_ptr<engine::Scene> current_scene) { scene_ = std::move(current_scene); }
         void set_selected_entity(const engine::Entity entity) { selected_entity_ = entity; }
 
     private:
@@ -36,9 +32,6 @@ namespace editor {
         void draw_audio_source_component(engine::Entity entity, engine::SystemContext& context) const;
         void draw_add_component_button(engine::Entity entity, engine::SystemContext& context) const;
         #endif
-
-        // Todo: refactor scene_ to SystemContext to remove update_context()
-        std::shared_ptr<engine::Scene> scene_ = nullptr;
 
         engine::Entity selected_entity_{};
     };
