@@ -1,7 +1,10 @@
 #pragma once
 
 layout(binding = 3) uniform sampler2DShadow u_shadow_map;
-uniform mat4 u_light_space_matrix;
+
+layout(binding = 5) uniform {
+    mat4 u_light_space_matrix;
+};
 
 float calculateShadow(vec3 world_pos, vec3 N, vec3 L) {
     float NdotL = dot(N, L);
