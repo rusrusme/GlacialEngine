@@ -77,6 +77,9 @@ namespace engine {
         if (ext == ".wav" || ext == ".mp3" || ext == ".ogg" || ext == ".flac") {
             return AssetType::AUDIO;
         }
+        if (ext == ".ttf") {
+            return AssetType::FONT;
+        }
         return AssetType::NONE;
     }
 }
