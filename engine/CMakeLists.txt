@@ -136,6 +136,8 @@ add_library(Engine STATIC
             include/platform/win32/Win32Shell.hpp
             src/render/BSHLoader.cpp
             include/render/BSHLoader.hpp
+            src/project/Project.cpp
+            include/project/Project.hpp
 )
 # ----------------------------------------------------------------------------
 target_include_directories(Engine

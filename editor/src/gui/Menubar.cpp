@@ -9,8 +9,11 @@
 #include "misc/StressTests.hpp"
 #include "platform/FileDialogAPI.hpp"
 #include "platform/ShellAPI.hpp"
+#include "project/Project.hpp"
 
 namespace {
+    void handle_save_scene(const std::shared_ptr<engine::Scene>& scene, engine::AssetManager& assets);
+
     //
     // Helper Functions
     //
@@ -24,11 +27,32 @@ namespace {
     //
     void handle_new_project(const engine::SystemContext& context) {
         std::string selected_file = engine::platform::FileDialogAPI::save_file(
-            engine::platform::FileDialogFilter::PROJECT, "project");
+            engine::platform::FileDialogFilter::PROJECT, "basis");
         if (selected_file.empty()) return;
 
-        // TODO: Initialize a new project file/structure at selected_file
-        // engine::Project::create_new(selected_file);
+        auto project = engine::Project::create_new(selected_file);
+        if (!project) return;
+
+        // Flush old project's assets and scan new project directory
+        context.assets.clear_cache();
+        context.assets.scan_directory(engine::Project::get_asset_directory());
+
+        if (const auto scene = context.scenes.active_scene()) {
+            scene->clear(context); // Reset entity registry
+
+            const std::filesystem::path default_scene_path = engine::Project::get_asset_directory() / "scenes" / "clean.scene";
+
+            if (std::filesystem::exists(default_scene_path)) {
+                engine::SceneSerializer serializer(scene);
+                serializer.deserialize(default_scene_path.string(), context);
+            }
+            else {
+                engine::SceneSerializer serializer(scene);
+                serializer.serialize(default_scene_path.string(), context.assets);
+            }
+        }
+
+        update_window_title(project->get_config().name + " - Engine");
     }
 
     void handle_open_project(const engine::SystemContext& context) {
@@ -36,13 +60,23 @@ namespace {
             engine::platform::FileDialogFilter::PROJECT);
         if (selected_file.empty()) return;
 
-        // TODO: Load project configuration and active scene
-        // engine::Project::load(selected_file);
-    }
+        auto project = engine::Project::load(selected_file);
+        if (!project) return;
 
-    void handle_save_project(const engine::SystemContext& context) {
-        // TODO: Save active project settings
-        // engine::Project::save_active();
+        context.assets.clear_cache();
+        context.assets.scan_directory(engine::Project::get_asset_directory());
+
+        if (const auto scene = context.scenes.active_scene()) {
+            scene->clear(context);
+
+            const auto& start_scene = project->get_config().initial_scene;
+            if (std::filesystem::exists(start_scene)) {
+                engine::SceneSerializer serializer(scene);
+                serializer.deserialize(start_scene.string(), context);
+            }
+        }
+
+        update_window_title(project->get_config().name + " - Engine");
     }
 
     void handle_save_project_as(const engine::SystemContext& context) {
@@ -50,8 +84,25 @@ namespace {
             engine::platform::FileDialogFilter::PROJECT, "basis");
         if (selected_file.empty()) return;
 
-        // TODO: Serialize project settings to new location
-        // engine::Project::save_as(selected_file);
+        if (engine::Project::save_as(selected_file)) {
+            if (auto project = engine::Project::get_active()) {
+                update_window_title(project->get_config().name + " - Engine");
+            }
+        }
+    }
+
+    void handle_save_project(const engine::SystemContext& context) {
+        if (engine::Project::get_active()) {
+            engine::Project::save_active();
+
+            // Also save current active scene alongside project settings
+            if (const auto scene = context.scenes.active_scene()) {
+                handle_save_scene(scene, context.assets);
+            }
+        }
+        else {
+            handle_save_project_as(context);
+        }
     }
 
     //
