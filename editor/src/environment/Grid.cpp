@@ -11,8 +11,7 @@ namespace editor {
 
         grid_shader_ = renderer.load_shader(
             "grid",
-            "assets/shaders/editor/grid.vert",
-            "assets/shaders/editor/grid.frag"
+            "assets/shaders/editor/grid.bsh"
         );
 
         grid_vao_ = std::make_unique<engine::VertexArray>();

@@ -39,9 +39,9 @@ namespace engine {
 
         camera_ubo_ = std::make_unique<UniformBuffer>(sizeof(CameraData), 0);
 
-        shader_library_.load("mesh", "assets/shaders/engine/mesh.vert", "assets/shaders/engine/mesh.frag");
-        shader_library_.load("shadow_depth", "assets/shaders/engine/shadow/shadow_depth.vert", "assets/shaders/engine/shadow/shadow_depth.frag");
-        shader_library_.load("point_shadow_depth", "assets/shaders/engine/shadow/point_shadow_depth.vert", "assets/shaders/engine/shadow/point_shadow_depth.frag", "assets/shaders/engine/shadow/point_shadow_depth.geom");
+        shader_library_.load("mesh", "assets/shaders/engine/mesh.bsh");
+        shader_library_.load("shadow_depth", "assets/shaders/engine/shadow/shadow_depth.bsh");
+        shader_library_.load("point_shadow_depth", "assets/shaders/engine/shadow/point_shadow_depth.bsh");
 
         shadow_framebuffer_ = std::make_unique<Framebuffer>(4096, 4096, FramebufferType::ShadowMap);
         point_shadow_framebuffers_.clear();

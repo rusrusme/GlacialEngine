@@ -146,7 +146,7 @@ target_include_directories(Engine
 if (WIN32)
     target_compile_definitions(Engine PUBLIC NOMINMAX WIN32_LEAN_AND_MEAN)
     target_link_libraries(Engine PUBLIC comdlg32.lib)
-endif()
+endif ()
 # ----------------------------------------------------------------------------
 set(RENDER_API "OPENGL" CACHE STRING "Selects the rendering backend")
 # ----------------------------------------------------------------------------
@@ -190,11 +190,11 @@ target_precompile_headers(Engine PRIVATE src/core/core_pch.hpp)
 # ----------------------------------------------------------------------------
 include(PackageDistribution.cmake)
 # ----------------------------------------------------------------------------
-add_custom_command(
-        TARGET Engine POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_directory
-        "${CMAKE_SOURCE_DIR}/assets"
-        "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/assets"
-        COMMENT "Copying assets to runtime output directory"
+add_custom_target(CopyAssets ALL
+                  COMMAND ${CMAKE_COMMAND} -E copy_directory
+                  "${CMAKE_SOURCE_DIR}/assets"
+                  "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/assets"
+                  COMMENT "Copying assets to runtime output directory"
 )
+add_dependencies(Engine CopyAssets)
 # ----------------------------------------------------------------------------

@@ -1,0 +1,25 @@
+//@depth_test = true
+//@depth_write = true
+//@cull_mode = back
+//@blend_mode = opaque
+
+#vert
+#version 450 core
+
+layout(location = 0) in vec3 a_position;
+layout(location = 4) in mat4 a_instance_transform;
+
+layout(binding = 0) uniform ShadowData {
+    mat4 u_light_space_matrix;
+};
+
+void main() {
+    gl_Position = u_light_space_matrix * a_instance_transform * vec4(a_position, 1.0);
+}
+
+#frag
+#version 450 core
+
+void main() {
+    // Empty fragment shader: depth is written automatically by hardware
+}

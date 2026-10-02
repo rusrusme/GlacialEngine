@@ -1,0 +1,58 @@
+//@depth_test = true
+//@depth_write = true
+//@cull_mode = none
+//@blend_mode = opaque
+
+#vert
+#version 450 core
+
+layout(location = 0) in vec3 a_position;
+layout(location = 4) in mat4 a_instance_model;
+
+void main() {
+    gl_Position = a_instance_model * vec4(a_position, 1.0);
+}
+
+#geom
+#version 450 core
+
+layout (triangles) in;
+layout (triangle_strip, max_vertices = 18) out;
+
+layout(binding = 0) uniform PointShadowMatrices {
+    mat4 u_shadow_matrices[6];
+};
+
+layout(location = 0) out vec4 FragPos;
+
+void main() {
+    for (int face = 0; face < 6; ++face) {
+        // Route this emitted primitive to the correct cubemap face
+        gl_Layer = face;
+
+        for (int i = 0; i < 3; ++i) {
+            FragPos = gl_in[i].gl_Position;
+            gl_Position = u_shadow_matrices[face] * FragPos;
+            EmitVertex();
+        }
+        EndPrimitive();
+    }
+}
+
+#frag
+#version 450 core
+
+layout(location = 0) in vec4 FragPos;
+
+layout(binding = 1) uniform PointShadowParams {
+    vec3 u_light_position;
+    float u_far_plane;
+};
+
+void main() {
+    // Calculate true 3D Euclidean distance to the light source
+    float light_distance = length(FragPos.xyz - u_light_position);
+
+    // Normalize and clamp to valid depth range [0.0, 1.0]
+    gl_FragDepth = clamp(light_distance / u_far_plane, 0.0, 1.0);
+}

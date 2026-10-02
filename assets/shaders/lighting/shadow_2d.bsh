@@ -1,7 +1,6 @@
-#ifndef SHADOW_2D_GLSL
-#define SHADOW_2D_GLSL
+#pragma once
 
-uniform sampler2DShadow u_shadow_map;
+layout(binding = 3) uniform sampler2DShadow u_shadow_map;
 uniform mat4 u_light_space_matrix;
 
 float calculateShadow(vec3 world_pos, vec3 N, vec3 L) {
@@ -32,5 +31,3 @@ float calculateShadow(vec3 world_pos, vec3 N, vec3 L) {
     }
     return 1.0 - (visibility / 9.0);
 }
-
-#endif

@@ -1,0 +1,69 @@
+//@depth_test = false
+//@depth_write = false
+//@cull_mode = none
+//@blend_mode = opaque
+
+#vert
+#version 450 core
+
+layout(location = 0) out vec2 v_uv;
+
+void main() {
+    // Generates UVs: (0,0), (2,0), (0,2) across 3 vertices
+    v_uv = vec2((gl_VertexID << 1) & 2, gl_VertexID & 2);
+
+    // Maps UV coordinates to Normalized Device Coordinates [-1, 1] for X/Y
+    gl_Position = vec4(v_uv * 2.0 - 1.0, 0.0, 1.0);
+}
+
+#frag
+#version 450 core
+
+#include "../../common/math.bsh"
+
+layout(location = 0) in vec2 v_uv;
+layout(location = 0) out vec4 frag_color;
+
+layout(binding = 0) uniform sampler2D u_hdr_scene;
+
+layout(binding = 0) uniform CompositeParams {
+    float u_exposure;
+    float u_gamma;
+    int u_tone_mapper;
+    bool u_enable_vignette;
+    float u_vignette_radius;
+    float u_vignette_softness;
+    bool u_enable_chromatic_aberration;
+    float u_chromatic_strength;
+};
+
+vec3 Reinhard(vec3 x) {
+    return x / (x + vec3(1.0));
+}
+
+void main() {
+    vec3 color;
+
+    if (u_enable_chromatic_aberration) {
+        vec2 off = (v_uv - vec2(0.5)) * u_chromatic_strength;
+        color.r = texture(u_hdr_scene, v_uv + off).r;
+        color.g = texture(u_hdr_scene, v_uv).g;
+        color.b = texture(u_hdr_scene, v_uv - off).b;
+    } else {
+        color = texture(u_hdr_scene, v_uv).rgb;
+    }
+
+    if (u_tone_mapper != -1) {
+        color *= u_exposure;
+        if (u_tone_mapper == 0)      color = toneMapACES(color);
+        else if (u_tone_mapper == 1) color = Reinhard(color);
+        color = pow(color, vec3(1.0 / u_gamma));
+    }
+
+    if (u_enable_vignette) {
+        float dist = length(v_uv - vec2(0.5));
+        color *= smoothstep(u_vignette_radius, u_vignette_radius - u_vignette_softness, dist);
+    }
+
+    frag_color = vec4(color, 1.0);
+}

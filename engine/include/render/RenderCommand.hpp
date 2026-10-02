@@ -40,6 +40,7 @@ namespace engine {
         }
 
         static void set_viewport(const uint32_t x, const uint32_t y, const uint32_t width, const uint32_t height) {
+            if (width == 0 || height == 0) return;
             RendererAPI::set_viewport(x, y, width, height);
         }
 

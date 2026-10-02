@@ -1,39 +1,78 @@
+//@depth_test = true
+//@depth_write = true
+//@cull_mode = back
+//@blend_mode = opaque
+
+#vert
 #version 450 core
 
-out vec4 fragment_color;
+#include "../common/camera.bsh"
 
-in vec3 varying_position;
-in vec3 varying_normal;
-in vec2 varying_uv_coordinates;
-in vec3 varying_tangent;
-in vec4 varying_color;
-in vec2 varying_pbr_properties;
-in vec4 varying_light_space_position;
+layout (location = 0) in vec3 attribute_position;
+layout (location = 1) in vec3 attribute_normal;
+layout (location = 2) in vec2 attribute_uv_coordinates;
+layout (location = 3) in vec3 attribute_tangent;
 
-#include "common/camera.glsl"
-#include "common/math.glsl"
-#include "lighting/lights.glsl"
-#include "lighting/pbr.glsl"
-#include "lighting/shadow_2d.glsl"   // Slot 3
-#include "lighting/shadow_cube.glsl" // Slot 4
+layout (location = 4) in mat4 attribute_instance_model_matrix;
+layout (location = 8) in vec4 attribute_instance_color;
+layout (location = 9) in vec2 attribute_instance_pbr_properties;
 
-uniform sampler2D u_albedo_texture;
+uniform mat4 u_light_space_matrix;
+
+layout (location = 0) out vec3 varying_position;
+layout (location = 1) out vec3 varying_normal;
+layout (location = 2) out vec2 varying_uv_coordinates;
+layout (location = 3) out vec3 varying_tangent;
+layout (location = 4) out vec4 varying_color;
+layout (location = 5) out vec2 varying_pbr_properties;
+layout (location = 6) out vec4 varying_light_space_position;
+
+void main() {
+    vec4 world_position = attribute_instance_model_matrix * vec4(attribute_position, 1.0);
+    varying_position = world_position.xyz;
+
+    mat3 normal_matrix = mat3(transpose(inverse(attribute_instance_model_matrix)));
+    varying_normal = normal_matrix * attribute_normal;
+    varying_tangent = normal_matrix * attribute_tangent;
+
+    varying_uv_coordinates = attribute_uv_coordinates;
+    varying_color = attribute_instance_color;
+    varying_pbr_properties = attribute_instance_pbr_properties;
+
+    varying_light_space_position = u_light_space_matrix * world_position;
+
+    gl_Position = u_projection * u_view * world_position;
+}
+
+#frag
+#version 450 core
+
+#include "../common/math.bsh"
+#include "../lighting/lights.bsh"
+#include "../lighting/pbr.bsh"
+#include "../lighting/shadow_2d.bsh"   // Slot 3
+#include "../lighting/shadow_cube.bsh" // Slot 4
+
+layout (location = 0) in vec3 varying_position;
+layout (location = 1) in vec3 varying_normal;
+layout (location = 2) in vec2 varying_uv_coordinates;
+layout (location = 3) in vec3 varying_tangent;
+layout (location = 4) in vec4 varying_color;
+layout (location = 5) in vec2 varying_pbr_properties;
+layout (location = 6) in vec4 varying_light_space_position;
+
+layout (location = 0) out vec4 fragment_color;
+
+layout (binding = 0) uniform sampler2D u_albedo_texture;
 uniform int u_use_albedo_texture;
 
-uniform sampler2D u_normal_texture;
+layout (binding = 1) uniform sampler2D u_normal_texture;
 uniform int u_use_normal_texture;
 
-uniform sampler2D u_metallic_roughness_texture;
+layout (binding = 2) uniform sampler2D u_metallic_roughness_texture;
 uniform int u_use_metallic_roughness_texture;
 
 void main() {
-    // --- TEMPORARY DIAGNOSTIC DEBUG ---
-    //     vec3 light_to_fragment = varying_position - u_point_lights[0].position;
-    //     float raw_depth = texture(u_point_shadow_map, light_to_fragment).r;
-    //     fragment_color = vec4(vec3(raw_depth), 1.0);
-    //     return;
-    // ----------------------------------
-
     vec4 texture_color = (u_use_albedo_texture != 0) ? texture(u_albedo_texture, varying_uv_coordinates) : vec4(1.0);
     vec4 albedo = varying_color * texture_color;
 

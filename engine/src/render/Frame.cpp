@@ -104,8 +104,6 @@ namespace engine {
         if (window_) {
             window::swap_buffers(window_);
             window::poll_events();
-            // glfwSwapBuffers(window_);
-            // glfwPollEvents();
         }
 
         limit_frame_rate();

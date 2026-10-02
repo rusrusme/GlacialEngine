@@ -1,16 +1,15 @@
-#ifndef SHADOW_CUBE_GLSL
-#define SHADOW_CUBE_GLSL
+#pragma once
 
 #define MAX_POINT_LIGHT_SHADOWS 4
 
-uniform samplerCube u_point_shadow_maps[4];
+layout(binding = 4) uniform samplerCube u_point_shadow_maps[4];
 
 const vec3 sample_directions[20] = vec3[](
-        vec3( 1.0,  1.0,  1.0), vec3( 1.0, -1.0,  1.0), vec3(-1.0, -1.0,  1.0), vec3(-1.0,  1.0,  1.0),
-        vec3( 1.0,  1.0, -1.0), vec3( 1.0, -1.0, -1.0), vec3(-1.0, -1.0, -1.0), vec3(-1.0,  1.0, -1.0),
-        vec3( 1.0,  1.0,  0.0), vec3( 1.0, -1.0,  0.0), vec3(-1.0, -1.0,  0.0), vec3(-1.0,  1.0,  0.0),
-        vec3( 1.0,  0.0,  1.0), vec3(-1.0,  0.0,  1.0), vec3( 1.0,  0.0, -1.0), vec3(-1.0,  0.0, -1.0),
-        vec3( 0.0,  1.0,  1.0), vec3( 0.0, -1.0,  1.0), vec3( 0.0, -1.0, -1.0), vec3( 0.0,  1.0, -1.0)
+    vec3( 1.0,  1.0,  1.0), vec3( 1.0, -1.0,  1.0), vec3(-1.0, -1.0,  1.0), vec3(-1.0,  1.0,  1.0),
+    vec3( 1.0,  1.0, -1.0), vec3( 1.0, -1.0, -1.0), vec3(-1.0, -1.0, -1.0), vec3(-1.0,  1.0, -1.0),
+    vec3( 1.0,  1.0,  0.0), vec3( 1.0, -1.0,  0.0), vec3(-1.0, -1.0,  0.0), vec3(-1.0,  1.0,  0.0),
+    vec3( 1.0,  0.0,  1.0), vec3(-1.0,  0.0,  1.0), vec3( 1.0,  0.0, -1.0), vec3(-1.0,  0.0, -1.0),
+    vec3( 0.0,  1.0,  1.0), vec3( 0.0, -1.0,  1.0), vec3( 0.0, -1.0, -1.0), vec3( 0.0,  1.0, -1.0)
 );
 
 float samplePointShadowMap(int index, vec3 sample_dir) {
@@ -67,5 +66,3 @@ float calculatePointShadow(int light_index, vec3 fragment_world_position, vec3 n
 
     return shadow_accumulator / float(total_samples);
 }
-
-#endif

@@ -1,5 +1,4 @@
-#ifndef LIGHTS_GLSL
-#define LIGHTS_GLSL
+#pragma once
 
 struct DirLight {
     vec3 direction;
@@ -22,5 +21,3 @@ uniform int u_num_dir_lights;
 
 uniform PointLight u_point_lights[MAX_POINT_LIGHTS];
 uniform int u_num_point_lights;
-
-#endif

@@ -31,6 +31,9 @@ namespace engine {
     }
 
     void GLRendererAPI::clear(bool clear_color, bool clear_depth) {
+        if (clear_depth) {
+            glDepthMask(GL_TRUE);
+        }
         GLbitfield mask = 0;
         if (clear_color) mask |= GL_COLOR_BUFFER_BIT;
         if (clear_depth) mask |= GL_DEPTH_BUFFER_BIT;
