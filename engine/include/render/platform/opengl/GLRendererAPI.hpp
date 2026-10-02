@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include <memory>
+#include <BSH.hpp>
 #include <glm/glm.hpp>
 
 namespace engine {
@@ -20,6 +20,8 @@ namespace engine {
         static void clear(bool clear_color = true, bool clear_depth = true);
 
         // Render States
+        static void apply_shader_header(const bshc::BSHHeader& header);
+
         static void set_depth_test(bool enable);
         static void set_depth_mask(bool enable);
         static void set_cull_face(bool enable, bool front_face = false);

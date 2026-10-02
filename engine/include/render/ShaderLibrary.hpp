@@ -23,6 +23,7 @@ namespace engine {
         void add(const std::string& name, const std::shared_ptr<Shader>& shader);
 
         std::shared_ptr<Shader> load(const std::string& name, const std::string& vertex_path, const std::string& fragment_path, const std::string& geometry_path = "");
+        std::shared_ptr<Shader> load(const std::string& name, const std::string& bsh_path);
 
         [[nodiscard]] std::shared_ptr<Shader> get(const std::string& name) const;
 

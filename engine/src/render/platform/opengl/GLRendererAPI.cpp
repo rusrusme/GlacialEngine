@@ -37,6 +37,36 @@ namespace engine {
         glClear(mask);
     }
 
+    void GLRendererAPI::apply_shader_header(const bshc::BSHHeader& header) {
+        // Depth Test
+        set_depth_test(header.depth_test != 0);
+
+        // Depth Mask
+        set_depth_mask(header.depth_write != 0);
+
+        // Cull Mode (0 = None, 1 = Front, 2 = Back)
+        if (header.cull_mode == 0) {
+            set_cull_face(false);
+        }
+        else {
+            set_cull_face(true, header.cull_mode == 1);
+        }
+
+        // Blend Mode (0 = Opaque, 1 = Alpha, 2 = Additive)
+        if (header.blend_mode == 0) {
+            set_blend(false);
+        }
+        else {
+            glEnable(GL_BLEND);
+            if (header.blend_mode == 1) { // Alpha
+                glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            }
+            else if (header.blend_mode == 2) { // Additive
+                glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+            }
+        }
+    }
+
     void GLRendererAPI::set_depth_test(bool enable) {
         if (enable)
             glEnable(GL_DEPTH_TEST);

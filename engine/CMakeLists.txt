@@ -130,6 +130,8 @@ add_library(Engine STATIC
             include/scene/SceneManager.hpp
             src/render/RenderScope.cpp
             include/render/RenderScope.hpp
+            src/render/BSHLoader.cpp
+            include/render/BSHLoader.hpp
 )
 # ----------------------------------------------------------------------------
 target_include_directories(Engine
@@ -171,6 +173,7 @@ target_link_libraries(Engine PUBLIC
                       OpenGL::GL
                       miniaudio
                       nlohmann_json::nlohmann_json
+                      bshc_core
 )
 # ----------------------------------------------------------------------------
 if (ENABLE_IMGUI)

@@ -113,7 +113,15 @@ FetchContent_MakeAvailable(json)
 FetchContent_Declare(
         miniaudio
         GIT_REPOSITORY https://github.com/mackron/miniaudio.git
-        GIT_TAG        0.11.25
+        GIT_TAG 0.11.25
 )
 FetchContent_MakeAvailable(miniaudio)
+# ----------------------------------------------------------------------------
+# Fetch BSHC
+FetchContent_Declare(
+        BasisShaderCompiler
+        GIT_REPOSITORY https://github.com/rusrusme/BasisShaderCompiler.git
+        GIT_TAG v0.1.2
+)
+FetchContent_MakeAvailable(BasisShaderCompiler)
 # ----------------------------------------------------------------------------

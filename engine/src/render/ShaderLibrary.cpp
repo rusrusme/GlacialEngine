@@ -33,6 +33,22 @@ namespace engine {
         return shared_shader;
     }
 
+    std::shared_ptr<Shader> ShaderLibrary::load(const std::string& name, const std::string& bsh_path) {
+        if (exists(name)) {
+            return shaders_[name];
+        }
+
+        auto shader = Shader::from_bsh(bsh_path);
+        if (!shader) {
+            CORE_ERROR("Failed to load BSH shader '{0}' from file '{1}'", name, bsh_path);
+            return nullptr;
+        }
+
+        std::shared_ptr shared_shader = std::move(shader);
+        shaders_[name] = shared_shader;
+        return shared_shader;
+    }
+
     std::shared_ptr<Shader> ShaderLibrary::get(const std::string& name) const {
         auto it = shaders_.find(name);
         if (it == shaders_.end()) {

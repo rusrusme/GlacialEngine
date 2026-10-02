@@ -6,6 +6,7 @@
 #include "render/platform/opengl/GLShader.hpp"
 
 #include "core/Log.hpp"
+#include "render/BSHLoader.hpp"
 #include "util/FileIO.hpp"
 
 namespace engine {
@@ -13,30 +14,25 @@ namespace engine {
         const uint32_t vs = compile_shader(GL_VERTEX_SHADER, vertex_src);
         const uint32_t fs = compile_shader(GL_FRAGMENT_SHADER, fragment_src);
 
-        // A geometry shader is optional (only point-light cubemap maps need it).
         uint32_t gs = 0;
         if (!geometry_src.empty()) {
             gs = compile_shader(GL_GEOMETRY_SHADER, geometry_src);
         }
 
         if (vs == 0 || fs == 0 || (!geometry_src.empty() && gs == 0)) {
-            if (vs != 0) {
+            if (vs != 0)
                 glDeleteShader(vs);
-            }
-            if (fs != 0) {
+            if (fs != 0)
                 glDeleteShader(fs);
-            }
-            if (gs != 0) {
+            if (gs != 0)
                 glDeleteShader(gs);
-            }
             return;
         }
 
         id_ = glCreateProgram();
         glAttachShader(id_, vs);
-        if (gs != 0) {
+        if (gs != 0)
             glAttachShader(id_, gs);
-        }
         glAttachShader(id_, fs);
         glLinkProgram(id_);
 
@@ -45,33 +41,67 @@ namespace engine {
         if (!success) {
             char info_log[512];
             glGetProgramInfoLog(id_, 512, nullptr, info_log);
-
             CORE_ERROR("Shader program linking failed:\n{0}", info_log);
-            glDetachShader(id_, vs);
-            if (gs != 0) {
-                glDetachShader(id_, gs);
-            }
-            glDetachShader(id_, fs);
-            glDeleteShader(vs);
-            if (gs != 0) {
-                glDeleteShader(gs);
-            }
-            glDeleteShader(fs);
             glDeleteProgram(id_);
             id_ = 0;
-            return;
         }
 
         glDetachShader(id_, vs);
-        if (gs != 0) {
+        if (gs != 0)
             glDetachShader(id_, gs);
-        }
         glDetachShader(id_, fs);
         glDeleteShader(vs);
-        if (gs != 0) {
+        if (gs != 0)
             glDeleteShader(gs);
-        }
         glDeleteShader(fs);
+    }
+
+    GLShader::GLShader(const LoadedBSHData& bsh_data)
+        : header_(bsh_data.header) {
+        if (!bsh_data.valid) {
+            CORE_ERROR("Attempted to construct GLShader with invalid LoadedBSHData");
+            return;
+        }
+
+        std::vector<uint32_t> attached_shaders;
+        id_ = glCreateProgram();
+
+        for (const auto& stage : bsh_data.stages) {
+            GLenum gl_type = GL_VERTEX_SHADER;
+            switch (stage.stage_type) {
+                case bshc::ShaderStage::VERTEX : gl_type = GL_VERTEX_SHADER;
+                    break;
+                case bshc::ShaderStage::FRAGMENT : gl_type = GL_FRAGMENT_SHADER;
+                    break;
+                case bshc::ShaderStage::GEOMETRY : gl_type = GL_GEOMETRY_SHADER;
+                    break;
+                case bshc::ShaderStage::COMPUTE : gl_type = GL_COMPUTE_SHADER;
+                    break;
+            }
+
+            uint32_t shader_id = compile_spirv_shader(gl_type, stage.data);
+            if (shader_id != 0) {
+                glAttachShader(id_, shader_id);
+                attached_shaders.push_back(shader_id);
+            }
+        }
+
+        glLinkProgram(id_);
+
+        int success = 0;
+        glGetProgramiv(id_, GL_LINK_STATUS, &success);
+        if (!success) {
+            char info_log[512];
+            glGetProgramInfoLog(id_, 512, nullptr, info_log);
+            CORE_ERROR("SPIR-V Shader program linking failed:\n{0}", info_log);
+            glDeleteProgram(id_);
+            id_ = 0;
+        }
+
+        for (uint32_t shader_id : attached_shaders) {
+            glDetachShader(id_, shader_id);
+            glDeleteShader(shader_id);
+        }
     }
 
     GLShader::~GLShader() {
@@ -82,6 +112,7 @@ namespace engine {
 
     GLShader::GLShader(GLShader&& other) noexcept
         : id_(std::exchange(other.id_, 0)),
+          header_(other.header_),
           uniform_location_cache_(std::move(other.uniform_location_cache_)) {}
 
     GLShader& GLShader::operator=(GLShader&& other) noexcept {
@@ -89,6 +120,7 @@ namespace engine {
             if (id_ != 0)
                 glDeleteProgram(id_);
             id_ = std::exchange(other.id_, 0);
+            header_ = other.header_;
             uniform_location_cache_ = std::move(other.uniform_location_cache_);
         }
         return *this;
@@ -123,6 +155,15 @@ namespace engine {
         return std::make_unique<GLShader>(vs_code, fs_code, gs_code);
     }
 
+    std::unique_ptr<GLShader> GLShader::from_bsh(const std::string& bsh_path) {
+        LoadedBSHData data = BSHLoader::load_from_file(bsh_path);
+        if (!data.valid) {
+            CORE_ERROR("Failed to load BSH shader asset: {0}", bsh_path);
+            return nullptr;
+        }
+        return std::make_unique<GLShader>(data);
+    }
+
     void GLShader::bind() const {
         glUseProgram(id_);
     }
@@ -131,27 +172,27 @@ namespace engine {
         glUseProgram(0);
     }
 
-    void GLShader::set_int(const std::string& name, const int value) {
+    void GLShader::set_int(const std::string& name, const int value) const {
         glUniform1i(get_uniform_location(name), value);
     }
 
-    void GLShader::set_float(const std::string& name, const float value) {
+    void GLShader::set_float(const std::string& name, const float value) const {
         glUniform1f(get_uniform_location(name), value);
     }
 
-    void GLShader::set_vec2(const std::string& name, const glm::vec2& value) {
+    void GLShader::set_vec2(const std::string& name, const glm::vec2& value) const {
         glUniform2fv(get_uniform_location(name), 1, glm::value_ptr(value));
     }
 
-    void GLShader::set_vec3(const std::string& name, const glm::vec3& value) {
+    void GLShader::set_vec3(const std::string& name, const glm::vec3& value) const {
         glUniform3fv(get_uniform_location(name), 1, glm::value_ptr(value));
     }
 
-    void GLShader::set_vec4(const std::string& name, const glm::vec4& value) {
+    void GLShader::set_vec4(const std::string& name, const glm::vec4& value) const {
         glUniform4fv(get_uniform_location(name), 1, glm::value_ptr(value));
     }
 
-    void GLShader::set_mat4(const std::string& name, const glm::mat4& value) {
+    void GLShader::set_mat4(const std::string& name, const glm::mat4& value) const {
         glUniformMatrix4fv(get_uniform_location(name), 1, GL_FALSE, glm::value_ptr(value));
     }
 
@@ -191,6 +232,25 @@ namespace engine {
         return shader;
     }
 
+    uint32_t GLShader::compile_spirv_shader(unsigned int type, const std::vector<uint8_t>& spirv_data) {
+        const uint32_t shader = glCreateShader(type);
+
+        glShaderBinary(1, &shader, GL_SHADER_BINARY_FORMAT_SPIR_V, spirv_data.data(), static_cast<GLsizei>(spirv_data.size()));
+        glSpecializeShader(shader, "main", 0, nullptr, nullptr);
+
+        int success = 0;
+        glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
+        if (!success) {
+            char info_log[512];
+            glGetShaderInfoLog(shader, 512, nullptr, info_log);
+            CORE_ERROR("SPIR-V Shader specialization failed:\n{0}", info_log);
+            glDeleteShader(shader);
+            return 0;
+        }
+
+        return shader;
+    }
+
     std::string GLShader::preprocess_source(const std::string& filepath, std::unordered_set<std::string>& included_files) {
         std::string canonical_path = std::filesystem::weakly_canonical(filepath).string();
 
@@ -211,7 +271,7 @@ namespace engine {
             return "";
         }
 
-        std::string directory = "";
+        std::string directory;
         const size_t last_slash = filepath.find_last_of("/\\");
         if (last_slash != std::string::npos) {
             directory = filepath.substr(0, last_slash + 1);
