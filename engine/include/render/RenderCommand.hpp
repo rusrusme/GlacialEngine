@@ -52,6 +52,10 @@ namespace engine {
         }
 
         // Render States
+        static void apply_shader_header(const bshc::BSHHeader& header) {
+            RendererAPI::apply_shader_header(header);
+        }
+
         static void set_depth_test(const bool enable) {
             RendererAPI::set_depth_test(enable);
         }

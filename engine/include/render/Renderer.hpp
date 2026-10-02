@@ -77,6 +77,10 @@ namespace engine {
         // Asset access
         [[nodiscard]] ShaderLibrary& get_shader_library() { return shader_library_; }
 
+        std::shared_ptr<Shader> load_shader(const std::string& name, const std::string& bsh_path) {
+            return shader_library_.load(name, bsh_path);
+        }
+
         std::shared_ptr<Shader> load_shader(const std::string& name,
                                             const std::string& vertex_path,
                                             const std::string& fragment_path,
