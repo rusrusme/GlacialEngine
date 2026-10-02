@@ -7,8 +7,8 @@
 
 #include <random>
 
-#include "scene/Scene.hpp"
-#include "scene/ecs/Entity.hpp"
+#include "project/scene/Scene.hpp"
+#include "project/scene/ecs/Entity.hpp"
 
 namespace editor {
     static void generate_large_test_scene(const engine::SystemContext& context, const std::shared_ptr<engine::Scene>& scene, size_t count = 10000) {

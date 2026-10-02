@@ -7,11 +7,11 @@
 
 #include <memory>
 
-#include "asset/AssetManager.hpp"
 #include "core/Layer.hpp"
 #include "environment/Grid.hpp"
 #include "gui/DebugPanel.hpp"
 #include "input/CameraController.hpp"
+#include "project/scene/Scene.hpp"
 
 namespace engine {
     class AudioSystem;

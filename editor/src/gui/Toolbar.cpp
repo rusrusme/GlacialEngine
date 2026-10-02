@@ -9,9 +9,10 @@
 #include "imgui_internal.h"
 #endif
 
-#include "EditorLayer.hpp"
+#include "core/SystemContext.hpp"
 #include "gui/Icons.hpp"
-#include "scene/SceneState.hpp"
+#include "project/scene/SceneManager.hpp"
+#include "project/scene/SceneState.hpp"
 
 namespace editor {
     Toolbar::Toolbar() = default;

@@ -7,8 +7,8 @@
 
 #include <entt/entt.hpp>
 
+#include "project/scene/ecs/Components.hpp"
 #include "render/Renderer.hpp"
-#include "scene/ecs/Components.hpp"
 
 namespace engine {
     class AssetManager;

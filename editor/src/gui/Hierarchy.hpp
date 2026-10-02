@@ -5,8 +5,8 @@
 
 #pragma once
 
-#include "scene/Scene.hpp"
-#include "scene/ecs/Entity.hpp"
+#include "project/scene/Scene.hpp"
+#include "project/scene/ecs/Entity.hpp"
 
 namespace editor {
     enum class EntityType;

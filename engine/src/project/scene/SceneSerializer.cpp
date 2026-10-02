@@ -3,14 +3,14 @@
 // All rights reserved.
 //
 
-#include "scene/SceneSerializer.hpp"
+#include "project/scene/SceneSerializer.hpp"
 
 #include <future>
 
 #include "asset/AssetManager.hpp"
 #include "core/Log.hpp"
 #include "core/SystemContext.hpp"
-#include "scene/ecs/Entity.hpp"
+#include "project/scene/ecs/Entity.hpp"
 
 using json = nlohmann::json;
 

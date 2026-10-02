@@ -11,7 +11,7 @@
 #include "core/SystemContext.hpp"
 #include "core/Window.hpp"
 #include "render/Renderer.hpp"
-#include "scene/SceneManager.hpp"
+#include "project/scene/SceneManager.hpp"
 
 namespace engine {
     class Application {

@@ -10,8 +10,7 @@
 #include <utility>
 
 #include "Config.hpp"
-#include "audio/AudioSystem.hpp"
-#include "scene/SceneState.hpp"
+#include "core/Engine.hpp"
 
 namespace editor {
     EditorLayer::EditorLayer(std::shared_ptr<engine::Scene> scene) : initial_scene_(std::move(scene)) {}

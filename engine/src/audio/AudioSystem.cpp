@@ -11,8 +11,8 @@
 #include "asset/AssetManager.hpp"
 #include "core/Log.hpp"
 #include "core/SystemContext.hpp"
-#include "scene/Scene.hpp"
-#include "scene/SceneManager.hpp"
+#include "project/scene/Scene.hpp"
+#include "project/scene/SceneManager.hpp"
 
 namespace engine {
     void AudioSystem::on_attach() {

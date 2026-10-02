@@ -3,7 +3,7 @@
 // All rights reserved.
 //
 
-#include "scene/SceneManager.hpp"
+#include "project/scene/SceneManager.hpp"
 
 #include "core/Log.hpp"
 

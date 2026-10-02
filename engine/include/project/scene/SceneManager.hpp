@@ -5,9 +5,9 @@
 
 #pragma once
 
-#include "scene/Scene.hpp"
-#include "scene/SceneState.hpp"
-#include "scene/SimulationState.hpp"
+#include "project/scene/Scene.hpp"
+#include "project/scene/SceneState.hpp"
+#include "project/scene/SimulationState.hpp"
 
 namespace engine {
     class SceneManager {

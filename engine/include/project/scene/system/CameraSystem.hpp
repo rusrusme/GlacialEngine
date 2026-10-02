@@ -6,7 +6,7 @@
 #pragma once
 
 #include "input/CameraController.hpp"
-#include "scene/Scene.hpp"
+#include "project/scene/Scene.hpp"
 
 namespace engine {
     class Camera;

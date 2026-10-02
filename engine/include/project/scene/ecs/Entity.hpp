@@ -5,8 +5,8 @@
 
 #pragma once
 
-#include "scene/Scene.hpp"
-#include "scene/ecs/ComponentRegistry.hpp"
+#include "project/scene/Scene.hpp"
+#include "project/scene/ecs/ComponentRegistry.hpp"
 
 namespace engine {
     class Entity {

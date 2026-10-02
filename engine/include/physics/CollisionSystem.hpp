@@ -8,7 +8,7 @@
 #include <optional>
 
 #include "physics/SpatialHashGrid.hpp"
-#include "scene/ecs/Entity.hpp"
+#include "project/scene/ecs/Entity.hpp"
 
 namespace engine {
     struct AABB;

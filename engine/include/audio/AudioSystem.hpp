@@ -10,7 +10,7 @@
 #include <miniaudio.h>
 #include <string>
 
-#include "scene/ecs/Components.hpp"
+#include "project/scene/ecs/Components.hpp"
 
 namespace engine {
     class Scene;

@@ -8,7 +8,7 @@
 #include <memory>
 #include <utility>
 
-#include "scene/Scene.hpp"
+#include "project/scene/Scene.hpp"
 
 namespace engine {
     class SceneSerializer {

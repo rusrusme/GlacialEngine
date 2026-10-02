@@ -22,19 +22,19 @@ add_library(Engine STATIC
             include/core/Log.hpp
             include/render/Frame.hpp
             src/render/Frame.cpp
-            src/scene/Scene.cpp
-            include/scene/Scene.hpp
-            src/scene/ecs/Entity.cpp
-            include/scene/ecs/Entity.hpp
+            src/project/scene/Scene.cpp
+            include/project/scene/Scene.hpp
+            src/project/scene/ecs/Entity.cpp
+            include/project/scene/ecs/Entity.hpp
             include/core/Layer.hpp
-            include/scene/ecs/Components.hpp
+            include/project/scene/ecs/Components.hpp
             src/core/UUID.cpp
             include/core/UUID.hpp
             include/core/Engine.hpp
             src/core/LayerStack.cpp
             include/core/LayerStack.hpp
-            src/scene/system/CameraSystem.cpp
-            include/scene/system/CameraSystem.hpp
+            src/project/scene/system/CameraSystem.cpp
+            include/project/scene/system/CameraSystem.hpp
             include/input/KeyCodes.hpp
             src/core/Window.cpp
             include/core/Window.hpp
@@ -55,8 +55,8 @@ add_library(Engine STATIC
             src/render/ShaderLibrary.cpp
             include/render/ShaderLibrary.hpp
             include/render/mesh/PrimitiveMesh.hpp
-            src/scene/SceneSerializer.cpp
-            include/scene/SceneSerializer.hpp
+            src/project/scene/SceneSerializer.cpp
+            include/project/scene/SceneSerializer.hpp
             src/render/mesh/MeshLoader.cpp
             include/render/mesh/MeshLoader.hpp
             src/render/mesh/Mesh.cpp
@@ -113,8 +113,8 @@ add_library(Engine STATIC
             include/audio/AudioSystem.hpp
             src/render/debug/DebugRenderer.cpp
             include/render/debug/DebugRenderer.hpp
-            include/scene/SceneState.hpp
-            include/scene/ecs/ComponentRegistry.hpp
+            include/project/scene/SceneState.hpp
+            include/project/scene/ecs/ComponentRegistry.hpp
             src/platform/FileDialogAPI.cpp
             include/platform/FileDialogAPI.hpp
             src/platform/win32/Win32FileDialog.cpp
@@ -123,11 +123,11 @@ add_library(Engine STATIC
             include/core/WindowAPI.hpp
             src/render/debug/ImguiPlatform.cpp
             include/render/debug/ImguiPlatform.hpp
-            src/scene/SimulationState.cpp
-            include/scene/SimulationState.hpp
+            src/project/scene/SimulationState.cpp
+            include/project/scene/SimulationState.hpp
             include/core/SystemContext.hpp
-            src/scene/SceneManager.cpp
-            include/scene/SceneManager.hpp
+            src/project/scene/SceneManager.cpp
+            include/project/scene/SceneManager.hpp
             src/render/RenderScope.cpp
             include/render/RenderScope.hpp
             src/platform/ShellApi.cpp

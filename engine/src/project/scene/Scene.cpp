@@ -3,7 +3,7 @@
 // All rights reserved.
 //
 
-#include "scene/Scene.hpp"
+#include "project/scene/Scene.hpp"
 
 #include <utility>
 
@@ -12,8 +12,8 @@
 #include "core/SystemContext.hpp"
 #include "core/UUID.hpp"
 #include "physics/CollisionSystem.hpp"
+#include "project/scene/ecs/Entity.hpp"
 #include "render/mesh/InstanceData.hpp"
-#include "scene/ecs/Entity.hpp"
 
 namespace engine {
     Scene::Scene() = default;

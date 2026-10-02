@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "scene/SceneState.hpp"
+#include "project/scene/SceneState.hpp"
 
 namespace engine {
     class SimulationState {

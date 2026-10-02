@@ -6,7 +6,7 @@
 #pragma once
 
 #include "audio/AudioSystem.hpp"
-#include "scene/ecs/Entity.hpp"
+#include "project/scene/ecs/Entity.hpp"
 
 namespace editor {
     class ObjectInspector {
