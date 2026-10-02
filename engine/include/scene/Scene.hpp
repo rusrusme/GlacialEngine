@@ -15,6 +15,7 @@ namespace engine {
     class Camera;
     class CollisionSystem;
     class Entity;
+    struct SystemContext;
 
     class Scene {
     public:
@@ -35,7 +36,7 @@ namespace engine {
         void on_update(float delta_time);
         void on_render(Renderer& renderer, Camera& camera, AssetManager& asset_manager, float delta_time);
 
-        void clear();
+        void clear(const SystemContext& context);
 
         template<typename... Components>
         auto view() { return registry_.view<Components...>(); }

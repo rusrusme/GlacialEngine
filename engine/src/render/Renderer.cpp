@@ -294,6 +294,12 @@ namespace engine {
         RenderCommand::clear(true, true);
     }
 
+    void Renderer::reset_buffers() {
+        // Reset instance buffer capacity back to default (1000 instances)
+        instance_vbo_capacity_bytes_ = 1000 * sizeof(InstanceData);
+        instance_vbo_ = std::make_shared<VertexBuffer>(nullptr, instance_vbo_capacity_bytes_, true);
+    }
+
     Mesh Renderer::upload_mesh(const std::vector<Vertex>& vertices_in, const std::vector<uint32_t>& indices) {
         if (vertices_in.empty() || indices.empty()) {
             CORE_WARN("Renderer: Cannot upload empty mesh");

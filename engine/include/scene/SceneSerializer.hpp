@@ -17,7 +17,7 @@ namespace engine {
 
         // Disk file
         void serialize(const std::string& filepath, AssetManager& asset_manager);
-        bool deserialize(const std::string& filepath, AssetManager& asset_manager);
+        bool deserialize(const std::string& filepath, const SystemContext& context);
 
     private:
         std::shared_ptr<Scene> scene_;

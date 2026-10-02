@@ -26,6 +26,7 @@ namespace editor {
         void edit_menu(const engine::SystemContext& context);
         void window_menu(const engine::SystemContext& context);
         void help_menu(const engine::SystemContext& context);
+        void debug_menu(const engine::SystemContext& context);
         #endif
     };
 }

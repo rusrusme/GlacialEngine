@@ -6,6 +6,7 @@
 #include "Menubar.hpp"
 
 #include "gui/Settings.hpp"
+#include "misc/StressTests.hpp"
 #include "platform/FileDialogAPI.hpp"
 #include "platform/ShellAPI.hpp"
 
@@ -56,20 +57,20 @@ namespace {
     //
     // Scene Handlers
     //
-    void handle_new_scene(const std::shared_ptr<engine::Scene>& scene, engine::AssetManager& assets) {
+    void handle_new_scene(const std::shared_ptr<engine::Scene>& scene, const engine::SystemContext& context) {
         if (!scene) return;
         engine::SceneSerializer serializer(scene);
-        serializer.deserialize("assets/scenes/clean.scene", assets);
+        serializer.deserialize("assets/scenes/clean.scene", context);
         engine::Application::get().window().set_title(engine::setting::ENGINE_TITLE_);
     }
 
-    void handle_open_scene(const std::shared_ptr<engine::Scene>& scene, engine::AssetManager& assets) {
+    void handle_open_scene(const std::shared_ptr<engine::Scene>& scene, const engine::SystemContext& context) {
         if (!scene) return;
         std::string selected_file = engine::platform::FileDialogAPI::open_file(engine::platform::FileDialogFilter::SCENE);
         if (selected_file.empty()) return;
 
         engine::SceneSerializer serializer(scene);
-        serializer.deserialize(selected_file, assets);
+        serializer.deserialize(selected_file, context);
 
         std::filesystem::path path(selected_file);
         if (path.filename() != "clean.scene") {
@@ -138,7 +139,7 @@ namespace editor {
             ImGui::Separator();
 
             if (ImGui::MenuItem("New Scene", "Ctrl+N")) {
-                handle_new_scene(scene, assets);
+                handle_new_scene(scene, context);
             }
             if (ImGui::MenuItem("Save Scene", "Ctrl+S")) {
                 handle_save_scene(scene, assets);
@@ -147,7 +148,7 @@ namespace editor {
                 handle_save_scene_as(scene, assets);
             }
             if (ImGui::MenuItem("Open Scene...", "Ctrl+O")) {
-                handle_open_scene(scene, assets);
+                handle_open_scene(scene, context);
             }
 
             ImGui::Separator();
@@ -190,6 +191,17 @@ namespace editor {
         }
     }
 
+    void Menubar::debug_menu(const engine::SystemContext& context) {
+        auto scene = context.scenes.active_scene();
+
+        if (ImGui::BeginMenu("Debug")) {
+            if (ImGui::MenuItem("Generate 10k Random Entities")) {
+                generate_large_test_scene(context, scene, 10000);
+            }
+            ImGui::EndMenu();
+        }
+    }
+
     void Menubar::render_imgui(const engine::SystemContext& context, Settings& settings) {
         const auto scene = context.scenes.active_scene();
         auto& assets = context.assets;
@@ -214,13 +226,13 @@ namespace editor {
             }
             else {
                 if (engine::Input::is_key_pressed_once(engine::Key::N)) {
-                    handle_new_scene(scene, assets);
+                    handle_new_scene(scene, context);
                 }
                 if (engine::Input::is_key_pressed_once(engine::Key::S)) {
                     handle_save_scene(scene, assets);
                 }
                 if (engine::Input::is_key_pressed_once(engine::Key::O)) {
-                    handle_open_scene(scene, assets);
+                    handle_open_scene(scene, context);
                 }
             }
         }
@@ -231,6 +243,7 @@ namespace editor {
             edit_menu(context);
             window_menu(context);
             help_menu(context);
+            debug_menu(context);
             ImGui::PopStyleVar();
             ImGui::EndMainMenuBar();
         }

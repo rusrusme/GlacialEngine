@@ -29,6 +29,7 @@ add_executable(Editor
                src/gui/Menubar.hpp
                src/gui/Settings.cpp
                src/gui/Settings.hpp
+               src/misc/StressTests.hpp
 )
 # ----------------------------------------------------------------------------
 target_include_directories(Editor PRIVATE ${CMAKE_SOURCE_DIR}/editor/src)

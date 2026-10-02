@@ -9,6 +9,7 @@
 
 #include "asset/AssetManager.hpp"
 #include "core/Log.hpp"
+#include "core/SystemContext.hpp"
 #include "core/UUID.hpp"
 #include "physics/CollisionSystem.hpp"
 #include "render/mesh/InstanceData.hpp"
@@ -202,10 +203,15 @@ namespace engine {
         renderer.render_mesh_batches(asset_manager, mesh_batches_);
     }
 
-    void Scene::clear() {
+    void Scene::clear(const SystemContext& context) {
         size_t entity_count = registry_.storage<entt::entity>().size();
+
         registry_.clear();
+        registry_.compact();
         mesh_batches_.clear();
+
+        context.renderer.reset_buffers();
+
         CORE_TRACE("Scene cleared ({0} entities removed)", entity_count);
     }
 

@@ -5,8 +5,11 @@
 
 #include "scene/SceneSerializer.hpp"
 
+#include <future>
+
 #include "asset/AssetManager.hpp"
 #include "core/Log.hpp"
+#include "core/SystemContext.hpp"
 #include "scene/ecs/Entity.hpp"
 
 using json = nlohmann::json;
@@ -19,6 +22,7 @@ namespace engine {
     static glm::vec4 deserialize_vec4(const json& j) { return {j[0], j[1], j[2], j[3]}; }
 
     void SceneSerializer::serialize(const std::string& filepath, AssetManager& asset_manager) {
+        // MAIN THREAD: Build JSON in memory (fast, avoids data races)
         CORE_INFO("Serializing scene to '{0}'", filepath);
 
         std::string scene_name = std::filesystem::path(filepath).stem().string();
@@ -104,17 +108,21 @@ namespace engine {
             entity_count++;
         }
 
-        std::ofstream out(filepath);
-        if (!out.is_open()) {
-            CORE_ERROR("Failed to serialize scene: Could not open file for writing at '{0}'", filepath);
-            return;
-        }
-        out << root.dump(4);
-        CORE_INFO("Successfully saved scene '{0}' ({1} entities)", filepath, entity_count);
+        // BACKGROUND THREAD: Offload disk I/O
+        std::thread([filepath, root = std::move(root), entity_count]() {
+            std::ofstream out(filepath);
+            if (!out.is_open()) {
+                CORE_ERROR("Failed to serialize scene: Could not open file for writing at '{0}'", filepath);
+                return;
+            }
+            out << root.dump(4);
+            CORE_INFO("Successfully saved scene '{0}' ({1} entities) [Background Thread]", filepath, entity_count);
+        }).detach();
     }
 
-    bool SceneSerializer::deserialize(const std::string& filepath, AssetManager& asset_manager) {
+    bool SceneSerializer::deserialize(const std::string& filepath, const SystemContext& context) {
         CORE_INFO("Deserializing scene from '{0}'", filepath);
+        auto& asset_manager = context.assets;
 
         std::ifstream in(filepath);
         if (!in.is_open()) {
@@ -136,7 +144,7 @@ namespace engine {
             return false;
         }
 
-        scene_->clear();
+        scene_->clear(context);
 
         scene_->set_path(filepath);
         std::string scene_name = root.value("scene", std::filesystem::path(filepath).stem().string());

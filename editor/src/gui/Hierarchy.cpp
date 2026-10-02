@@ -96,13 +96,27 @@ namespace editor {
 
     void Hierarchy::render_entity_list(engine::Entity& out_destroy, engine::Entity& out_duplicate, const std::shared_ptr<engine::Scene>& active_scene) {
         if (!active_scene) return;
-        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(2.0f, 1.0f));
 
         auto view = active_scene->view<engine::LabelComponent>();
+
+        std::vector<entt::entity> entities;
+        entities.reserve(view.size());
         for (auto raw_entity : view) {
-            engine::Entity entity{raw_entity, active_scene.get()};
-            render_entity_node(entity, out_destroy, out_duplicate);
+            entities.push_back(raw_entity);
         }
+
+        ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(2.0f, 1.0f));
+
+        ImGuiListClipper clipper;
+        clipper.Begin(static_cast<int>(entities.size()));
+
+        while (clipper.Step()) {
+            for (int i = clipper.DisplayStart; i < clipper.DisplayEnd; ++i) {
+                engine::Entity entity{entities[i], active_scene.get()};
+                render_entity_node(entity, out_destroy, out_duplicate);
+            }
+        }
+
         ImGui::PopStyleVar();
     }
 

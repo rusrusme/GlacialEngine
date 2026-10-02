@@ -63,6 +63,7 @@ namespace engine {
 
         static void set_clear_color(const glm::vec4& color);
         static void clear(const glm::vec4& color = {0.12f, 0.12f, 0.12f, 1.0f});
+        void reset_buffers();
 
         // Mesh
         [[nodiscard]] static Mesh upload_mesh(const std::vector<Vertex>& vertices, const std::vector<uint32_t>& indices);
