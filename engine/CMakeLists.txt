@@ -177,7 +177,6 @@ target_link_libraries(Engine PUBLIC
                       OpenGL::GL
                       miniaudio
                       nlohmann_json::nlohmann_json
-                      bshc_core
 )
 # ----------------------------------------------------------------------------
 if (ENABLE_IMGUI)
