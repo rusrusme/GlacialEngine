@@ -171,7 +171,19 @@ namespace editor {
         const auto scene = context.scenes.active_scene();
         auto& assets = context.assets;
 
+        // Todo: Edit
         if (ImGui::BeginMenu("Edit")) {
+            if (ImGui::MenuItem("Undo", "Ctrl+Z")) {
+            }
+            if (ImGui::MenuItem("Redo", "Ctrl+Shift+Z")) {
+            }
+            ImGui::Separator();
+            if (ImGui::MenuItem("Cut", "Ctrl+X")) {
+            }
+            if (ImGui::MenuItem("Copy", "Ctrl+C")) {
+            }
+            if (ImGui::MenuItem("Paste", "Ctrl+V")) {
+            }
             ImGui::EndMenu();
         }
     }
