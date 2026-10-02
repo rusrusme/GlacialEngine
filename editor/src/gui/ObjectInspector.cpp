@@ -8,13 +8,6 @@
 #include "platform/FileDialogAPI.hpp"
 
 namespace editor {
-    void ObjectInspector::init(engine::SystemContext& context) {
-        auto scene = context.scenes.active_scene();
-        if (scene) {
-            scene_ = scene;
-        }
-    }
-
     #ifdef ENABLE_IMGUI
     void ObjectInspector::render_imgui(engine::SystemContext& context) {
         ImGui::Begin("Inspector");

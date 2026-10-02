@@ -11,7 +11,6 @@ namespace engine {
     enum class GLFramebufferType {
         Default = 0,
         ShadowMap,
-        // Todo: WIP PointShadow
         PointShadowMap
     };
 

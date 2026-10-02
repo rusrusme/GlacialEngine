@@ -130,6 +130,10 @@ add_library(Engine STATIC
             include/scene/SceneManager.hpp
             src/render/RenderScope.cpp
             include/render/RenderScope.hpp
+            src/platform/ShellApi.cpp
+            include/platform/ShellApi.hpp
+            src/platform/win32/Win32Shell.cpp
+            include/platform/win32/Win32Shell.hpp
             src/render/BSHLoader.cpp
             include/render/BSHLoader.hpp
 )
@@ -173,7 +177,6 @@ target_link_libraries(Engine PUBLIC
                       OpenGL::GL
                       miniaudio
                       nlohmann_json::nlohmann_json
-                      bshc_core
 )
 # ----------------------------------------------------------------------------
 if (ENABLE_IMGUI)
