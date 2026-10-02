@@ -5,7 +5,10 @@
 
 #include "scene/system/CameraSystem.hpp"
 
+#include <complex>
+
 #include "render/Camera.hpp"
+#include "scene/Scene.hpp"
 #include "scene/ecs/Components.hpp"
 
 namespace engine {
@@ -13,8 +16,9 @@ namespace engine {
         controller_.reset_mouse_state();
     }
 
-    void CameraSystem::update(entt::registry& registry, float delta_time) {
-        auto view = registry.view<TransformComponent, CameraComponent>();
+    void CameraSystem::update(const std::shared_ptr<Scene>& scene, float delta_time) {
+        if (!scene) return;
+        auto view = scene->view<TransformComponent, CameraComponent>();
 
         for (auto entity : view) {
             const auto& [transform, camera_comp] = view.get<TransformComponent, CameraComponent>(entity);
@@ -26,8 +30,8 @@ namespace engine {
         }
     }
 
-    void CameraSystem::on_scroll(entt::registry& registry, double y_offset) {
-        auto view = registry.view<CameraComponent>();
+    void CameraSystem::on_scroll(const std::shared_ptr<Scene>& scene, double y_offset) {
+        auto view = scene->view<CameraComponent>();
         for (auto entity : view) {
             auto& camera_comp = view.get<CameraComponent>(entity);
             if (camera_comp.is_primary) {

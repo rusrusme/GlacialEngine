@@ -98,7 +98,11 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(cgltf)
 if (NOT TARGET cgltf)
-    add_library(cgltf INTERFACE)
+    add_library(cgltf INTERFACE
+                template/Game.cpp
+                template/Game.hpp
+                template/GameLayer.cpp
+                template/GameLayer.hpp)
     target_include_directories(cgltf INTERFACE ${cgltf_SOURCE_DIR})
 endif ()
 # ----------------------------------------------------------------------------

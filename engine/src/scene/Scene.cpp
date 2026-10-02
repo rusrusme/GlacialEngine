@@ -107,6 +107,18 @@ namespace engine {
         Renderer::set_blend(true);
 
         // ------------------
+        // Cameras
+        // ------------------
+        // auto camera_view = registry_.view<TransformComponent, CameraComponent>();
+        // for (auto entity : camera_view) {
+        //     auto [transform, camera_comp] = camera_view.get<TransformComponent, CameraComponent>(entity);
+        //     if (registry_.all_of<ActiveComponent>(entity) && !registry_.get<ActiveComponent>(entity).active) {
+        //         continue;
+        //     }
+        //     renderer.bind_camera(camera_comp.camera);
+        // }
+
+        // ------------------
         // Lights
         // ------------------
         auto dir_light_view = registry_.view<TransformComponent, DirectionalLightComponent>();
