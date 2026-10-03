@@ -12,6 +12,27 @@ target_compile_features(Engine INTERFACE cxx_std_20)
 # Include search path for engine headers
 target_include_directories(Engine INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/include")
 
+# Find system dependencies
+find_package(OpenGL REQUIRED)
+find_package(Vulkan REQUIRED)
+
+# Resolve Shaderc
+if(TARGET Vulkan::shaderc_combined)
+    add_library(Vulkan::Shaderc ALIAS Vulkan::shaderc_combined)
+elseif(TARGET Vulkan::shaderc_shared)
+    add_library(Vulkan::Shaderc ALIAS Vulkan::shaderc_shared)
+else()
+    find_library(SHADERC_LIB
+                 NAMES shaderc_shared shaderc_combined
+                 HINTS $ENV{VULKAN_SDK}/Lib
+    )
+    add_library(Vulkan::Shaderc UNKNOWN IMPORTED)
+    set_target_properties(Vulkan::Shaderc PROPERTIES
+                          IMPORTED_LOCATION "${SHADERC_LIB}"
+                          INTERFACE_INCLUDE_DIRECTORIES "${Vulkan_INCLUDE_DIRS}"
+    )
+endif()
+
 # Render API Selection
 set(RENDER_API "OPENGL" CACHE STRING "Selects the rendering backend")
 set_property(CACHE RENDER_API PROPERTY STRINGS "OPENGL" "VULKAN" "DX12")
@@ -31,9 +52,6 @@ target_compile_definitions(Engine INTERFACE
                            $<$<NOT:$<CONFIG:Debug>>:RELEASE_DIST>
 )
 
-# Find system OpenGL
-find_package(OpenGL REQUIRED)
-
 # Glob precompiled libraries for Windows (.lib) and Linux (.a)
 file(GLOB_RECURSE ENGINE_DEBUG_LIBS CONFIGURE_DEPENDS
      "${CMAKE_CURRENT_SOURCE_DIR}/lib/debug/*.lib"
@@ -48,6 +66,7 @@ target_link_libraries(Engine INTERFACE
                       $<$<CONFIG:Debug>:${ENGINE_DEBUG_LIBS}>
                       $<$<NOT:$<CONFIG:Debug>>:${ENGINE_RELEASE_LIBS}>
                       OpenGL::GL
+                      Vulkan::Shaderc
 )
 
 # Helper function to auto-copy engine and user assets to target binary directory

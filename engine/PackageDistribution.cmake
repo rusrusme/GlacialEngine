@@ -38,6 +38,7 @@ if (ENGINE_DEBUG_DIST OR ENGINE_RELEASE_DIST)
                        COMMAND ${CMAKE_COMMAND} -E copy_directory "${glfw_SOURCE_DIR}/include/GLFW" "${CMAKE_SOURCE_DIR}/engine-lib/include/GLFW"
                        COMMAND ${CMAKE_COMMAND} -E copy_directory "${rmlui_SOURCE_DIR}/Include/RmlUi" "${CMAKE_SOURCE_DIR}/engine-lib/include/RmlUi"
                        COMMAND ${CMAKE_COMMAND} -E copy_directory "${freetype_SOURCE_DIR}/include" "${CMAKE_SOURCE_DIR}/engine-lib/include"
+                       COMMAND ${CMAKE_COMMAND} -E copy_directory "${basisshadercompiler_SOURCE_DIR}/bshc/include" "${CMAKE_SOURCE_DIR}/engine-lib/include"
 
                        COMMENT "Packaging ${DIST_CONFIG_DIR} distribution into engine-lib/..."
     )
