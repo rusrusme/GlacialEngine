@@ -127,6 +127,7 @@ namespace editor {
         create_primitive_entity("Cube", "primitive://cube", EntityType::Mesh3D, context);
         create_primitive_entity("Sphere", "primitive://sphere", EntityType::Mesh3D, context);
         create_primitive_entity("Cylinder", "primitive://cylinder", EntityType::Mesh3D, context);
+        create_primitive_entity("Pyramid", "primitive://pyramid", EntityType::Mesh3D, context);
     }
 
     void Hierarchy::render_lighting_submenu(const std::shared_ptr<engine::Scene>& active_scene) {

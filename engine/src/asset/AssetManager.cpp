@@ -32,6 +32,7 @@ namespace engine {
         register_primitive("primitive://cube", 3);
         register_primitive("primitive://sphere", 4);
         register_primitive("primitive://cylinder", 5);
+        register_primitive("primitive://pyramid", 6);
 
         if (!std::filesystem::exists(asset_directory) || !std::filesystem::is_directory(asset_directory)) {
             CORE_WARN("Asset scan aborted: Directory '{0}' does not exist or is invalid", asset_directory.string());

@@ -204,6 +204,7 @@ namespace engine {
         if (path == "primitive://sphere") return PrimitiveMesh::create_uv_sphere();
         if (path == "primitive://circle") return PrimitiveMesh::create_circle();
         if (path == "primitive://cylinder") return PrimitiveMesh::create_cylinder();
+        if (path == "primitive://pyramid") return PrimitiveMesh::create_pyramid();
 
         if (path.ends_with(".glb") || path.ends_with(".gltf")) return load_gltf(path);
 

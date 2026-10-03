@@ -209,4 +209,53 @@ namespace engine {
         }
         return Renderer::upload_mesh(vertices, indices);
     }
+
+    Mesh PrimitiveMesh::create_pyramid(const float base_size, const float height) {
+        const float half_base = base_size * 0.5f;
+        const float half_height = height * 0.5f;
+
+        const glm::vec3 front_normal = glm::normalize(glm::vec3(0.0f, half_base, height));
+        const glm::vec3 right_normal = glm::normalize(glm::vec3(height, half_base, 0.0f));
+        const glm::vec3 back_normal = glm::normalize(glm::vec3(0.0f, half_base, -height));
+        const glm::vec3 left_normal = glm::normalize(glm::vec3(-height, half_base, 0.0f));
+        constexpr auto bottom_normal = glm::vec3(0.0f, -1.0f, 0.0f);
+
+        const std::vector<Vertex> vertices = {
+            // Front Face
+            {.position = {-half_base, -half_height, half_base}, .normal = front_normal, .uv = {0.0f, 0.0f}},
+            {.position = {half_base, -half_height, half_base}, .normal = front_normal, .uv = {1.0f, 0.0f}},
+            {.position = {0.0f, half_height, 0.0f}, .normal = front_normal, .uv = {0.5f, 1.0f}},
+
+            // Right Face
+            {.position = {half_base, -half_height, half_base}, .normal = right_normal, .uv = {0.0f, 0.0f}},
+            {.position = {half_base, -half_height, -half_base}, .normal = right_normal, .uv = {1.0f, 0.0f}},
+            {.position = {0.0f, half_height, 0.0f}, .normal = right_normal, .uv = {0.5f, 1.0f}},
+
+            // Back Face
+            {.position = {half_base, -half_height, -half_base}, .normal = back_normal, .uv = {0.0f, 0.0f}},
+            {.position = {-half_base, -half_height, -half_base}, .normal = back_normal, .uv = {1.0f, 0.0f}},
+            {.position = {0.0f, half_height, 0.0f}, .normal = back_normal, .uv = {0.5f, 1.0f}},
+
+            // Left Face
+            {.position = {-half_base, -half_height, -half_base}, .normal = left_normal, .uv = {0.0f, 0.0f}},
+            {.position = {-half_base, -half_height, half_base}, .normal = left_normal, .uv = {1.0f, 0.0f}},
+            {.position = {0.0f, half_height, 0.0f}, .normal = left_normal, .uv = {0.5f, 1.0f}},
+
+            // Bottom Face
+            {.position = {-half_base, -half_height, -half_base}, .normal = bottom_normal, .uv = {0.0f, 0.0f}},
+            {.position = {half_base, -half_height, -half_base}, .normal = bottom_normal, .uv = {1.0f, 0.0f}},
+            {.position = {half_base, -half_height, half_base}, .normal = bottom_normal, .uv = {1.0f, 1.0f}},
+            {.position = {-half_base, -half_height, half_base}, .normal = bottom_normal, .uv = {0.0f, 1.0f}}
+        };
+
+        const std::vector<uint32_t> indices = {
+            0, 1, 2,               // Front
+            3, 4, 5,               // Right
+            6, 7, 8,               // Back
+            9, 10, 11,             // Left
+            12, 13, 14, 14, 15, 12 // Bottom
+        };
+
+        return Renderer::upload_mesh(vertices, indices);
+    }
 }
