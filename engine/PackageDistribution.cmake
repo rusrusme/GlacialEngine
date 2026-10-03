@@ -16,8 +16,12 @@ if (ENGINE_DEBUG_DIST OR ENGINE_RELEASE_DIST)
                        "${CMAKE_SOURCE_DIR}/engine-lib/include"
 
                        COMMAND ${CMAKE_COMMAND} -E copy_directory
-                       "${CMAKE_SOURCE_DIR}/assets"
-                       "${CMAKE_SOURCE_DIR}/engine-lib/assets"
+                       "${CMAKE_SOURCE_DIR}/assets/fonts"
+                       "${CMAKE_SOURCE_DIR}/engine-lib/assets/fonts"
+
+                       COMMAND ${CMAKE_COMMAND} -E copy_directory
+                       "${CMAKE_SOURCE_DIR}/assets/shaders"
+                       "${CMAKE_SOURCE_DIR}/engine-lib/assets/shaders"
 
                        COMMAND ${CMAKE_COMMAND} -E copy_directory
                        "${CMAKE_SOURCE_DIR}/lib/glad/include"

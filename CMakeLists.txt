@@ -1,6 +1,6 @@
 # CMakeLists.txt
 # ----------------------------------------------------------------------------
-cmake_minimum_required(VERSION 4.3)
+cmake_minimum_required(VERSION 3.20)
 # ----------------------------------------------------------------------------
 project(BasisEngine CXX C)
 set(CMAKE_CXX_STANDARD 20)
@@ -35,10 +35,12 @@ add_library(stb_image INTERFACE)
 target_include_directories(stb_image INTERFACE lib/stb_image)
 # ----------------------------------------------------------------------------
 add_subdirectory(Engine)
-add_subdirectory(Editor)
-if(BUILD_SANDBOX)
+if (NOT ENGINE_DEBUG_DIST AND NOT ENGINE_RELEASE_DIST)
+    add_subdirectory(Editor)
+endif ()
+if (BUILD_SANDBOX)
     add_subdirectory(Sandbox)
-endif()
+endif ()
 # ----------------------------------------------------------------------------
 
 

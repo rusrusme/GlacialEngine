@@ -1,12 +1,15 @@
 # Dependencies.cmake
 # ----------------------------------------------------------------------------
 include(FetchContent)
+set(FETCHCONTENT_UPDATES_DISCONNECTED ON CACHE BOOL "" FORCE)
 # ----------------------------------------------------------------------------
 # Fetch GLFW
 FetchContent_Declare(
         glfw
         GIT_REPOSITORY https://github.com/glfw/glfw.git
         GIT_TAG 3.5.1
+        GIT_SHALLOW TRUE
+        GIT_SUBMODULES ""
 )
 FetchContent_MakeAvailable(glfw)
 # ----------------------------------------------------------------------------
@@ -15,6 +18,8 @@ FetchContent_Declare(
         glm
         GIT_REPOSITORY https://github.com/g-truc/glm.git
         GIT_TAG 1.0.3
+        GIT_SHALLOW TRUE
+        GIT_SUBMODULES ""
 )
 FetchContent_MakeAvailable(glm)
 # ----------------------------------------------------------------------------
@@ -23,6 +28,8 @@ FetchContent_Declare(
         entt
         GIT_REPOSITORY https://github.com/skypjack/entt.git
         GIT_TAG v4.0.0
+        GIT_SHALLOW TRUE
+        GIT_SUBMODULES ""
 )
 FetchContent_MakeAvailable(entt)
 # ----------------------------------------------------------------------------
@@ -36,6 +43,8 @@ FetchContent_Declare(
         freetype
         GIT_REPOSITORY https://github.com/freetype/freetype.git
         GIT_TAG VER-2-14-3
+        GIT_SHALLOW TRUE
+        GIT_SUBMODULES ""
 )
 FetchContent_MakeAvailable(freetype)
 if (TARGET freetype AND NOT TARGET Freetype::Freetype)
@@ -49,6 +58,8 @@ FetchContent_Declare(
         rmlui
         GIT_REPOSITORY https://github.com/mikke89/RmlUi.git
         GIT_TAG 6.2
+        GIT_SHALLOW TRUE
+        GIT_SUBMODULES ""
 )
 FetchContent_MakeAvailable(rmlui)
 # ----------------------------------------------------------------------------
@@ -58,6 +69,8 @@ if (ENABLE_IMGUI)
             imgui
             GIT_REPOSITORY https://github.com/ocornut/imgui.git
             GIT_TAG v1.92.9b-docking
+            GIT_SHALLOW TRUE
+            GIT_SUBMODULES ""
     )
     FetchContent_MakeAvailable(imgui)
     if (NOT TARGET imgui)
@@ -85,6 +98,8 @@ if (ENABLE_IMGUI)
             imguizmo
             GIT_REPOSITORY https://github.com/CedricGuillemet/ImGuizmo.git
             GIT_TAG 1.10
+            GIT_SHALLOW TRUE
+            GIT_SUBMODULES ""
     )
     FetchContent_MakeAvailable(imguizmo)
     target_link_libraries(imguizmo PUBLIC imgui)
@@ -95,6 +110,8 @@ FetchContent_Declare(
         cgltf
         GIT_REPOSITORY https://github.com/jkuhlmann/cgltf.git
         GIT_TAG v1.15
+        GIT_SHALLOW TRUE
+        GIT_SUBMODULES ""
 )
 FetchContent_MakeAvailable(cgltf)
 if (NOT TARGET cgltf)
@@ -105,7 +122,10 @@ endif ()
 # Fetch json
 FetchContent_Declare(
         json
-        URL https://github.com/nlohmann/json/releases/download/v3.11.3/json.tar.xz
+        GIT_REPOSITORY https://github.com/nlohmann/json.git
+        GIT_TAG v3.11.3
+        GIT_SHALLOW TRUE
+        GIT_SUBMODULES ""
 )
 FetchContent_MakeAvailable(json)
 # ----------------------------------------------------------------------------
@@ -114,6 +134,8 @@ FetchContent_Declare(
         miniaudio
         GIT_REPOSITORY https://github.com/mackron/miniaudio.git
         GIT_TAG 0.11.25
+        GIT_SHALLOW TRUE
+        GIT_SUBMODULES ""
 )
 FetchContent_MakeAvailable(miniaudio)
 # ----------------------------------------------------------------------------
@@ -122,6 +144,8 @@ FetchContent_Declare(
         BasisShaderCompiler
         GIT_REPOSITORY https://github.com/rusrusme/BasisShaderCompiler.git
         GIT_TAG v0.1.2
+        GIT_SHALLOW TRUE
+        GIT_SUBMODULES ""
 )
 FetchContent_MakeAvailable(BasisShaderCompiler)
 # ----------------------------------------------------------------------------

@@ -10,7 +10,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/bin")
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/bin")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/bin")
 
-find_package(BasisEngine REQUIRED)
+add_subdirectory(basis)
 
 file(GLOB_RECURSE GAME_SOURCES CONFIGURE_DEPENDS "src/*.cpp" "src/*.hpp" "src/*.h")
 
@@ -21,3 +21,6 @@ target_include_directories(${PROJECT_NAME} PRIVATE src)
 
 # Link against engine core
 target_link_libraries(${PROJECT_NAME} PRIVATE BasisEngine::Engine)
+
+# Copy game assets post-build
+link_assets(${PROJECT_NAME} "${CMAKE_CURRENT_SOURCE_DIR}/assets")

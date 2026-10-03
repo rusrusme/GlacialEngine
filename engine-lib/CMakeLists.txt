@@ -12,6 +12,18 @@ target_compile_features(Engine INTERFACE cxx_std_20)
 # Include search path for engine headers
 target_include_directories(Engine INTERFACE "${CMAKE_CURRENT_SOURCE_DIR}/include")
 
+# Render API Selection
+set(RENDER_API "OPENGL" CACHE STRING "Selects the rendering backend")
+set_property(CACHE RENDER_API PROPERTY STRINGS "OPENGL" "VULKAN" "DX12")
+
+if (RENDER_API STREQUAL "OPENGL")
+    target_compile_definitions(Engine INTERFACE RENDER_API_OPENGL)
+elseif (RENDER_API STREQUAL "VULKAN")
+    target_compile_definitions(Engine INTERFACE RENDER_API_VULKAN)
+elseif (RENDER_API STREQUAL "DX12")
+    target_compile_definitions(Engine INTERFACE RENDER_API_DX12)
+endif ()
+
 # Preprocessor definitions
 target_compile_definitions(Engine INTERFACE
                            GLFW_INCLUDE_NONE
@@ -43,12 +55,21 @@ function(link_assets TARGET_NAME)
     set(ENGINE_ASSETS_DIR "${CMAKE_CURRENT_FUNCTION_LIST_DIR}/assets")
     set(USER_ASSETS_DIR "${ARGN}")
 
-    if (EXISTS "${ENGINE_ASSETS_DIR}")
+    if (EXISTS "${ENGINE_ASSETS_DIR}/fonts")
         add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
                            COMMAND ${CMAKE_COMMAND} -E copy_directory
-                           "${ENGINE_ASSETS_DIR}"
-                           "$<TARGET_FILE_DIR:${TARGET_NAME}>/assets"
-                           COMMENT "Copying Engine core assets to output folder..."
+                           "${ENGINE_ASSETS_DIR}/fonts"
+                           "$<TARGET_FILE_DIR:${TARGET_NAME}>/assets/fonts"
+                           COMMENT "Copying Engine fonts to output folder..."
+        )
+    endif ()
+
+    if (EXISTS "${ENGINE_ASSETS_DIR}/shaders")
+        add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
+                           COMMAND ${CMAKE_COMMAND} -E copy_directory
+                           "${ENGINE_ASSETS_DIR}/shaders"
+                           "$<TARGET_FILE_DIR:${TARGET_NAME}>/assets/shaders"
+                           COMMENT "Copying Engine shaders to output folder..."
         )
     endif ()
 

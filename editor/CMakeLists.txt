@@ -42,3 +42,5 @@ if (ENABLE_IMGUI)
 endif ()
 # ----------------------------------------------------------------------------
 target_precompile_headers(Editor PRIVATE src/editor_pch.hpp)
+# ----------------------------------------------------------------------------
+target_compile_definitions(Editor PRIVATE ENGINE_DIR="${CMAKE_SOURCE_DIR}")
