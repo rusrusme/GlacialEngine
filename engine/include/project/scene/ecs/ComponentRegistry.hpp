@@ -62,9 +62,9 @@ namespace engine {
         get_epoch()++;
     }
 
-    template<typename T>
+    templates<typename T>
     static void register_type() {
-        // Local static tracks which epoch THIS template instantiation registered for
+        // Local static tracks which epoch THIS templates instantiation registered for
         static uint32_t registered_epoch = 0;
         const uint32_t current_epoch = get_epoch();
 
@@ -77,7 +77,7 @@ namespace engine {
                 auto view = src.view<T>();
                 for (auto src_entity : view) {
                     if (auto it = map.find(src_entity); it != map.end()) {
-                        dst.emplace_or_replace<T>(it->second, view.template get<T>(src_entity));
+                        dst.emplace_or_replace<T>(it->second, view.templates get<T>(src_entity));
                     }
                 }
             };

@@ -6,10 +6,10 @@
 #include "GameLayer.hpp"
 
 #include "core/SystemContext.hpp"
+#include "project/scene/SceneManager.hpp"
+#include "project/scene/ecs/Entity.hpp"
+#include "project/scene/system/CameraSystem.hpp"
 #include "render/RenderScope.hpp"
-#include "scene/SceneManager.hpp"
-#include "scene/ecs/Entity.hpp"
-#include "scene/system/CameraSystem.hpp"
 
 void GameLayer::on_attach(engine::SystemContext& context) {
     const auto scene = context.scenes.create("Main Scene");
@@ -34,7 +34,7 @@ void GameLayer::on_render(engine::SystemContext& context, float delta_time) {
 
     engine::RenderScope scope{context.renderer, delta_time};
     scope.begin();
-    // scene->on_render(context.renderer, context.assets, delta_time);
+    //
     scope.end();
 }
 

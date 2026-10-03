@@ -5,6 +5,7 @@
 
 #include "Menubar.hpp"
 
+#include "ProjectWizard.hpp"
 #include "gui/Settings.hpp"
 #include "misc/StressTests.hpp"
 #include "platform/FileDialogAPI.hpp"
@@ -34,10 +35,12 @@ namespace {
         const auto project = engine::Project::new_project(selected_file);
         if (!project) return;
 
+        editor::ProjectWizard::setup(project);
+
         context.current_project = project;
         context.assets.clear_cache();
         context.assets.scan_directory(project->resolve_virtual_path("assets://"));
-        context.scenes.create("Untitled Scene");
+        context.scenes.create(engine::SceneManager::DEFAULT_SCENE);
 
         update_window_title(project->get_config().name);
     }
@@ -70,7 +73,7 @@ namespace {
             }
         }
         if (!loaded_initial) {
-            context.scenes.create("Untitled Scene");
+            context.scenes.create(engine::SceneManager::DEFAULT_SCENE);
         }
 
         update_window_title(new_project->get_config().name);
@@ -112,7 +115,7 @@ namespace {
         context.current_project.reset();
         context.assets.clear_cache();
         context.assets.scan_directory("assets");
-        context.scenes.create("Untitled Scene");
+        context.scenes.create(engine::SceneManager::DEFAULT_SCENE);
 
         CLIENT_TRACE("Closed project {0}", name.c_str());
         engine::Application::get().window().set_title(engine::setting::ENGINE_TITLE_);
@@ -123,7 +126,7 @@ namespace {
     //
     void handle_new_scene(const std::shared_ptr<engine::Scene>& scene, const engine::SystemContext& context) {
         if (!scene) return;
-        context.scenes.create("Untitled Scene");
+        context.scenes.create(engine::SceneManager::DEFAULT_SCENE);
         engine::Application::get().window().set_title(engine::setting::ENGINE_TITLE_);
     }
 

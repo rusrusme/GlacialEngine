@@ -31,6 +31,7 @@ add_executable(Editor
                src/gui/Settings.hpp
                src/misc/StressTests.hpp
                src/ProjectWizard.hpp
+               src/ProjectWizard.cpp
 )
 # ----------------------------------------------------------------------------
 target_include_directories(Editor PRIVATE ${CMAKE_SOURCE_DIR}/editor/src)

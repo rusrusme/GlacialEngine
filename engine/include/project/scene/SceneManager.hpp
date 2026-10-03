@@ -12,11 +12,13 @@
 namespace engine {
     class SceneManager {
     public:
+        inline static const std::string DEFAULT_SCENE = "Untitled Scene";
+
         void on_attach(std::shared_ptr<Scene> scene);
         void on_detach();
 
         // --- Scene Management ---
-        std::shared_ptr<Scene> create(const std::string& name = "Untitled Scene");
+        std::shared_ptr<Scene> create(const std::string& name = DEFAULT_SCENE);
 
         void on_update(float delta_time);
 
