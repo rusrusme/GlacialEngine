@@ -18,6 +18,9 @@ namespace engine {
         void on_detach();
 
         // --- Scene Management ---
+        void save(const std::string& filepath, const SystemContext& context);
+        bool load(const std::string& filepath, const SystemContext& context);
+
         std::shared_ptr<Scene> create(const std::string& name = DEFAULT_SCENE);
 
         void on_update(float delta_time);

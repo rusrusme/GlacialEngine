@@ -28,8 +28,7 @@ namespace editor {
         const std::string& current_path = scene->get_path();
         if (!current_path.empty()) {
             CLIENT_INFO("Auto saving...");
-            engine::SceneSerializer serializer(scene);
-            serializer.serialize(current_path, context.assets);
+            context.scenes.save(current_path, context);
         }
     }
 

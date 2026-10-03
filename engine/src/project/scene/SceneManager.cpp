@@ -6,6 +6,8 @@
 #include "project/scene/SceneManager.hpp"
 
 #include "core/Log.hpp"
+#include "core/SystemContext.hpp"
+#include "project/scene/SceneSerializer.hpp"
 
 namespace engine {
     void SceneManager::on_attach(std::shared_ptr<Scene> scene) {
@@ -26,8 +28,25 @@ namespace engine {
         }
     }
 
+    void SceneManager::save(const std::string& filepath, const SystemContext& context) {
+        const auto scene = context.scenes.active_scene();
+        if (!scene) return;
+        SceneSerializer serializer{scene};
+        serializer.serialize(filepath, context.assets);
+    }
+
+    bool SceneManager::load(const std::string& filepath, const SystemContext& context) {
+        const auto scene = context.scenes.active_scene();
+        if (!scene) return false;
+        SceneSerializer serializer{scene};
+        if (!serializer.deserialize(filepath, context)) {
+            return false;
+        }
+        return true;
+    }
+
     std::shared_ptr<Scene> SceneManager::create(const std::string& name) {
-        auto scene = std::make_shared<Scene>(name);
+        const auto scene = std::make_shared<Scene>(name);
         on_attach(scene);
         return scene_;
     }
