@@ -8,6 +8,7 @@ set(CMAKE_CXX_STANDARD 20)
 option(ENGINE_DEBUG_DIST "Engine-only debug distribution build for developers" OFF)
 option(ENGINE_RELEASE_DIST "Engine-only release distribution build" OFF)
 option(ENABLE_IMGUI "Include ImGui Dependency" ON)
+option(BUILD_SANDBOX "Build Sandbox demo project" OFF)
 
 if (ENGINE_DEBUG_DIST)
     set(ENGINE_DEBUG_DIST ON CACHE BOOL "" FORCE)
@@ -35,7 +36,9 @@ target_include_directories(stb_image INTERFACE lib/stb_image)
 # ----------------------------------------------------------------------------
 add_subdirectory(Engine)
 add_subdirectory(Editor)
-add_subdirectory(Sandbox)
+if(BUILD_SANDBOX)
+    add_subdirectory(Sandbox)
+endif()
 # ----------------------------------------------------------------------------
 
 

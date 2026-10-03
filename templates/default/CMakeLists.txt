@@ -10,10 +10,8 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/bin")
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/bin")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/bin")
 
-# Embed Basis Engine target
-add_subdirectory(basis)
+find_package(BasisEngine REQUIRED)
 
-# Collect all user game source and header files from src/
 file(GLOB_RECURSE GAME_SOURCES CONFIGURE_DEPENDS "src/*.cpp" "src/*.hpp" "src/*.h")
 
 add_executable(${PROJECT_NAME} ${GAME_SOURCES})
@@ -22,4 +20,4 @@ add_executable(${PROJECT_NAME} ${GAME_SOURCES})
 target_include_directories(${PROJECT_NAME} PRIVATE src)
 
 # Link against engine core
-target_link_libraries(${PROJECT_NAME} PRIVATE basis::engine)
+target_link_libraries(${PROJECT_NAME} PRIVATE BasisEngine::Engine)

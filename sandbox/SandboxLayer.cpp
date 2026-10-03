@@ -12,9 +12,9 @@
 #include "event/MouseEvents.hpp"
 #include "input/Input.hpp"
 #include "input/KeyCodes.hpp"
+#include "project/scene/SceneManager.hpp"
+#include "project/scene/ecs/Entity.hpp"
 #include "render/RenderScope.hpp"
-#include "scene/SceneManager.hpp"
-#include "scene/ecs/Entity.hpp"
 
 static void generate_large_test_scene(const engine::SystemContext& context, const std::shared_ptr<engine::Scene>& scene, size_t count = 10000) {
     if (!scene) return;
