@@ -7,43 +7,26 @@
 
 namespace engine {
     struct ProjectConfig {
-        std::string name = "Untitled Project";
-        std::filesystem::path initial_scene = "assets/scenes/clean.scene";
+        std::string name{};
+        std::filesystem::path project_file_path{};
+        std::filesystem::path project_directory{};
+        std::filesystem::path initial_scene{};
         std::filesystem::path asset_directory = "assets";
-        std::filesystem::path script_module_path = "bin/GameScripts.dll";
-
-        // Resolved at runtime based on where the .basis file is saved/loaded
-        std::filesystem::path project_directory;
-        std::filesystem::path project_file_path;
+        std::filesystem::path scripts_directory = "scripts";
     };
 
     class Project {
     public:
-        static std::shared_ptr<Project> get_active() { return active_project_; }
+        static std::shared_ptr<Project> load_project(const std::filesystem::path& path);
+        static std::shared_ptr<Project> new_project(const std::filesystem::path& path);
+        void save_project() const;
+        [[nodiscard]] bool save_as_project(const std::filesystem::path& path) const;
 
-        static std::shared_ptr<Project> create_new(const std::filesystem::path& path);
-        static std::shared_ptr<Project> load(const std::filesystem::path& path);
-        static bool save_active();
-        static bool save_as(const std::filesystem::path& path);
+        [[nodiscard]] std::filesystem::path resolve_virtual_path(const std::filesystem::path& virtual_path) const;
 
         [[nodiscard]] const ProjectConfig& get_config() const { return config_; }
-        ProjectConfig& get_config() { return config_; }
-
-        // Helper path resolvers
-        static std::filesystem::path get_project_directory() {
-            return active_project_ ? active_project_->config_.project_directory : std::filesystem::current_path();
-        }
-
-        static std::filesystem::path get_asset_directory() {
-            return get_project_directory() / (active_project_ ? active_project_->config_.asset_directory : "assets");
-        }
-
-        static std::filesystem::path get_asset_file_path(const std::filesystem::path& relative_path) {
-            return get_asset_directory() / relative_path;
-        }
 
     private:
         ProjectConfig config_;
-        inline static std::shared_ptr<Project> active_project_ = nullptr;
     };
 }

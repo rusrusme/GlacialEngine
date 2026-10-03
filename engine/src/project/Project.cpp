@@ -5,7 +5,6 @@
 
 #include "project/Project.hpp"
 
-#include <fstream>
 #include <nlohmann/json.hpp>
 
 #include "core/Log.hpp"
@@ -13,29 +12,7 @@
 using json = nlohmann::json;
 
 namespace engine {
-    std::shared_ptr<Project> Project::create_new(const std::filesystem::path& path) {
-        const auto project = std::make_shared<Project>();
-
-        project->config_.project_file_path = path;
-        project->config_.project_directory = path.parent_path();
-        project->config_.name = path.stem().string();
-
-        // Set working directory to project folder
-        std::filesystem::current_path(project->config_.project_directory);
-
-        // Create standard directory layout
-        std::filesystem::create_directories(get_asset_directory() / "scenes");
-        std::filesystem::create_directories(get_asset_directory() / "textures");
-        std::filesystem::create_directories(get_asset_directory() / "meshes");
-
-        active_project_ = project;
-        save_active();
-
-        CORE_INFO("Created new project '{0}' at '{1}'", project->config_.name, path.string());
-        return active_project_;
-    }
-
-    std::shared_ptr<Project> Project::load(const std::filesystem::path& path) {
+    std::shared_ptr<Project> Project::load_project(const std::filesystem::path& path) {
         if (!std::filesystem::exists(path)) {
             CORE_ERROR("Failed to load project: File does not exist at '{0}'", path.string());
             return nullptr;
@@ -68,34 +45,49 @@ namespace engine {
         project->config_.project_directory = path.parent_path();
 
         project->config_.name = proj_json.value("name", path.stem().string());
-        project->config_.initial_scene = proj_json.value("initial_scene", "assets/scenes/clean.scene");
+        project->config_.initial_scene = proj_json.value("initial_scene", "");
         project->config_.asset_directory = proj_json.value("asset_directory", "assets");
-
-        active_project_ = project;
-
-        // Switch engine context to project directory
-        std::filesystem::current_path(project->config_.project_directory);
+        project->config_.scripts_directory = proj_json.value("scripts_directory", "scripts");
 
         CORE_INFO("Successfully loaded project '{0}' from '{1}'", project->config_.name, path.string());
-        return active_project_;
+        return project;
     }
 
-    bool Project::save_active() {
-        if (!active_project_) return false;
-        return save_as(active_project_->config_.project_file_path);
+    std::shared_ptr<Project> Project::new_project(const std::filesystem::path& path) {
+        auto project = std::make_shared<Project>();
+
+        project->config_.project_file_path = path;
+        project->config_.project_directory = path.parent_path();
+        project->config_.name = path.stem().string();
+        project->config_.initial_scene = "";
+
+        const auto& proj_dir = project->config_.project_directory;
+
+        std::filesystem::create_directories(proj_dir / project->config_.asset_directory / "scenes");
+        std::filesystem::create_directories(proj_dir / project->config_.asset_directory / "models");
+        std::filesystem::create_directories(proj_dir / project->config_.asset_directory / "fonts");
+        std::filesystem::create_directories(proj_dir / project->config_.asset_directory / "audio");
+        std::filesystem::create_directories(proj_dir / project->config_.scripts_directory);
+
+        project->save_project();
+
+        CORE_INFO("Created new project '{0}' at '{1}'", project->config_.name, path.string());
+        return project;
     }
 
-    bool Project::save_as(const std::filesystem::path& path) {
-        if (!active_project_) return false;
+    void Project::save_project() const {
+        if (!save_as_project(config_.project_file_path)) {
+            CORE_ERROR("Failed to save current project");
+        }
+    }
 
-        active_project_->config_.project_file_path = path;
-        active_project_->config_.project_directory = path.parent_path();
-
+    bool Project::save_as_project(const std::filesystem::path& path) const {
         json root;
         root["project"] = {
-            {"name", active_project_->config_.name},
-            {"initial_scene", active_project_->config_.initial_scene.generic_string()},
-            {"asset_directory", active_project_->config_.asset_directory.generic_string()}
+            {"name", config_.name},
+            {"initial_scene", config_.initial_scene.generic_string()},
+            {"asset_directory", config_.asset_directory.generic_string()},
+            {"scripts_directory", config_.scripts_directory.generic_string()}
         };
 
         std::ofstream out(path);
@@ -105,7 +97,15 @@ namespace engine {
         }
 
         out << root.dump(4);
-        CORE_INFO("Successfully saved project '{0}' to '{1}'", active_project_->config_.name, path.string());
+        CORE_INFO("Successfully saved project '{0}' to '{1}'", config_.name, path.string());
         return true;
+    }
+
+    std::filesystem::path Project::resolve_virtual_path(const std::filesystem::path& virtual_path) const {
+        const std::string path_str = virtual_path.generic_string();
+        if (path_str.rfind("assets://", 0) == 0) {
+            return config_.project_directory / config_.asset_directory / path_str.substr(9);
+        }
+        return config_.project_directory / virtual_path;
     }
 }

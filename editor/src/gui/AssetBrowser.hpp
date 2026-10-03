@@ -27,6 +27,9 @@ namespace editor {
         void render_list_view(const std::filesystem::directory_entry& entry, engine::SystemContext& context);
         #endif
 
+        std::shared_ptr<engine::Project> active_project_ = nullptr;
+        void update_project(const engine::SystemContext& context);
+
         std::filesystem::path root_directory_{"assets"};
         std::filesystem::path current_directory_{root_directory_};
         std::optional<std::filesystem::path> pending_directory_change_ = std::nullopt;

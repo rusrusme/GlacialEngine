@@ -19,14 +19,14 @@ namespace editor {
         ~Menubar();
 
         #ifdef ENABLE_IMGUI
-        void render_imgui(const engine::SystemContext& context, Settings& settings);
+        void render_imgui(engine::SystemContext& context, Settings& settings);
 
     private:
-        void file_menu(const engine::SystemContext& context, Settings& settings);
-        void edit_menu(const engine::SystemContext& context);
-        void window_menu(const engine::SystemContext& context);
-        void help_menu(const engine::SystemContext& context);
-        void debug_menu(const engine::SystemContext& context);
+        void file_menu(engine::SystemContext& context, Settings& settings);
+        void edit_menu(engine::SystemContext& context);
+        void window_menu(engine::SystemContext& context);
+        void help_menu(engine::SystemContext& context);
+        void debug_menu(engine::SystemContext& context);
         #endif
     };
 }

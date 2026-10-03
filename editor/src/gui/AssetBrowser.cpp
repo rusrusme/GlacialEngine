@@ -8,6 +8,8 @@
 #include <algorithm>
 #include <vector>
 
+#include "project/Project.hpp"
+
 #include "Config.hpp"
 #include "gui/Icons.hpp"
 
@@ -27,6 +29,8 @@ namespace editor {
 
     #ifdef ENABLE_IMGUI
     void AssetBrowser::render_imgui(engine::SystemContext& context) {
+        update_project(context);
+
         ImGui::Begin("Asset Browser");
         render_header();
 
@@ -74,41 +78,41 @@ namespace editor {
 
     void AssetBrowser::render_header() {
         // --- Row 1 --- Breadcrumbs Path ---
-        std::filesystem::path accumulated_path;
+        std::filesystem::path accumulated_path = root_directory_;
         std::optional<std::filesystem::path> new_directory = std::nullopt;
-        bool first = true;
+
+        // Get path relative to the asset root
+        std::filesystem::path relative_path = std::filesystem::relative(current_directory_, root_directory_);
 
         ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(4.0f, 2.0f));
         ImGui::PushStyleVar(ImGuiStyleVar_ItemSpacing, ImVec2(2.0f, 0.0f));
         ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
 
-        for (const auto& part : current_directory_) {
-            if (!first) {
+        // Root button ("assets")
+        if (ImGui::Button("assets")) {
+            new_directory = root_directory_;
+        }
+
+        // Render subfolders relative to root
+        if (relative_path != ".") {
+            for (const auto& part : relative_path) {
                 ImGui::SameLine();
                 ImGui::TextDisabled("/");
                 ImGui::SameLine();
+
+                accumulated_path /= part;
+                const bool is_current = (accumulated_path == current_directory_);
+
+                ImGui::PushID(accumulated_path.string().c_str());
+                ImGui::PushStyleColor(ImGuiCol_Text, is_current ? ImVec4(0.95f, 0.95f, 0.95f, 1.00f) : ImVec4(0.60f, 0.63f, 0.68f, 1.00f));
+
+                if (ImGui::Button(part.string().c_str())) {
+                    new_directory = accumulated_path;
+                }
+
+                ImGui::PopStyleColor();
+                ImGui::PopID();
             }
-
-            accumulated_path /= part;
-            const bool is_current = (accumulated_path == current_directory_);
-
-            ImGui::PushID(accumulated_path.string().c_str());
-
-            if (is_current) {
-                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.95f, 0.95f, 0.95f, 1.00f));
-            }
-            else {
-                ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.60f, 0.63f, 0.68f, 1.00f));
-            }
-
-            if (ImGui::Button(part.string().c_str())) {
-                new_directory = accumulated_path;
-            }
-
-            ImGui::PopStyleColor();
-            ImGui::PopID();
-
-            first = false;
         }
 
         ImGui::PopStyleColor();
@@ -459,6 +463,20 @@ namespace editor {
         }
 
         ImGui::PopID();
+    }
+
+    void AssetBrowser::update_project(const engine::SystemContext& context) {
+        if (context.current_project != active_project_) {
+            active_project_ = context.current_project;
+            if (active_project_) {
+                root_directory_ = active_project_->resolve_virtual_path("assets://");
+            }
+            else {
+                // Default fallback
+                root_directory_ = "assets";
+            }
+            current_directory_ = root_directory_;
+        }
     }
     #endif
 }

@@ -26,7 +26,7 @@ namespace editor {
         if (!scene) return;
 
         const std::string& current_path = scene->get_path();
-        if (!current_path.empty() && std::filesystem::path(current_path).filename() != "clean.scene") {
+        if (!current_path.empty()) {
             CLIENT_INFO("Auto saving...");
             engine::SceneSerializer serializer(scene);
             serializer.serialize(current_path, context.assets);

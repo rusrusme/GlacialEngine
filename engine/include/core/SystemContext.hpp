@@ -4,10 +4,12 @@
 //
 
 #pragma once
+#include <memory>
 
 namespace engine {
     class AudioSystem;
     class AssetManager;
+    class Project;
     class Renderer;
     class SceneManager;
 
@@ -16,5 +18,6 @@ namespace engine {
         AudioSystem& audio;
         AssetManager& assets;
         SceneManager& scenes;
+        std::shared_ptr<Project> current_project;
     };
 }
