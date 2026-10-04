@@ -5,9 +5,11 @@
 
 #pragma once
 
-namespace editor {
-    class Command;
+#include <memory>
 
+#include "command/Command.hpp"
+
+namespace editor {
     class CommandHistory {
     public:
         explicit CommandHistory(size_t max_capacity = 100)
