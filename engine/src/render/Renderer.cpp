@@ -233,7 +233,8 @@ namespace engine {
                 culled_instances.reserve(instance_list.size());
 
                 for (const auto& instance : instance_list) {
-                    if (mesh->local_bounds.intersects_sphere(light_pos, far_plane, instance.transform)) {
+                    const AABB world_aabb = mesh->local_bounds.get_transformed(instance.transform);
+                    if (world_aabb.intersects_sphere(light_pos, far_plane)) {
                         culled_instances.push_back(instance);
                     }
                 }
