@@ -7,7 +7,18 @@
 
 #include <cmath>
 
+#include "Config.hpp"
+
 namespace editor {
+    void Settings::init() {
+        ui_scale_ = config::get_value("ui_scale", ui_scale_);
+        apply_ui_scale();
+    }
+
+    void Settings::save_config() const {
+        config::set_value("ui_scale", ui_scale_);
+    }
+
     void Settings::on_update(const engine::SystemContext& context, float delta_time) {
         if (!auto_save_enabled_) {
             auto_save_timer_ = 0.0f;
@@ -33,6 +44,10 @@ namespace editor {
     }
 
     #ifdef ENABLE_IMGUI
+    void Settings::apply_ui_scale() const {
+        ImGui::GetIO().FontGlobalScale = ui_scale_;
+    }
+
     void Settings::ui_scale() {
         int current_percent = static_cast<int>(std::lround(ui_scale_ * 100.0f));
 
@@ -49,7 +64,7 @@ namespace editor {
         if (ImGui::InputScalar("##ui_scale_input", ImGuiDataType_S32, &current_percent, nullptr, nullptr, "%d%%")) {
             current_percent = std::clamp(current_percent, 25, 300);
             ui_scale_ = static_cast<float>(current_percent) / 100.0f;
-            ImGui::GetIO().FontGlobalScale = ui_scale_;
+            apply_ui_scale();
         }
 
         const ImVec2 arrow_min(pos.x + total_width - arrow_width, pos.y);
@@ -86,7 +101,7 @@ namespace editor {
 
                 if (ImGui::Selectable(label, is_selected)) {
                     ui_scale_ = static_cast<float>(preset) / 100.0f;
-                    ImGui::GetIO().FontGlobalScale = ui_scale_;
+                    apply_ui_scale();
                     ImGui::CloseCurrentPopup();
                 }
 

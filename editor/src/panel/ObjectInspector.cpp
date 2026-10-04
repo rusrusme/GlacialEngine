@@ -152,9 +152,6 @@ namespace editor {
         if (selected_entity_) {
             draw_component(selected_entity_, context);
         }
-        else {
-            ImGui::TextDisabled("No entity selected.");
-        }
         ImGui::End();
     }
 

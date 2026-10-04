@@ -24,7 +24,6 @@ namespace editor {
         auto scene = context.scenes.active_scene();
 
         if (!scene) return;
-        asset_browser_.init(context);
 
         #ifdef ENABLE_IMGUI
         ImGuiIO& io = ImGui::GetIO();
@@ -38,11 +37,15 @@ namespace editor {
         style.HatchedAxisLineThickness = 0.0f;
         #endif
 
+        asset_browser_.init(context);
+        settings_.init();
+
         toolbar_.register_default_items(context);
     }
 
     void UILayer::on_detach(engine::SystemContext& context) {
         asset_browser_.save_config();
+        settings_.save_config();
     }
 
     void UILayer::on_update(engine::SystemContext& context, float delta_time) {

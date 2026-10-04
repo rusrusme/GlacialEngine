@@ -9,7 +9,10 @@ namespace editor {
     class Settings {
     public:
         Settings() = default;
-        ~Settings() { close(); };
+        ~Settings() { close(); }
+
+        void init();
+        void save_config() const;
 
         void open() { is_open_ = true; }
         void close() { is_open_ = false; }
@@ -19,6 +22,7 @@ namespace editor {
         void on_update(const engine::SystemContext& context, float delta_time);
 
         #ifdef ENABLE_IMGUI
+        void apply_ui_scale() const;
         void ui_scale();
         void render_imgui(const engine::SystemContext& context);
         #endif
