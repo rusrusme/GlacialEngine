@@ -67,6 +67,7 @@ namespace engine {
         std::unique_ptr<CollisionSystem> collision_system_ = nullptr;
 
         // Todo: Combine into RenderCommand package
-        std::unordered_map<UUID, std::vector<InstanceData>> mesh_batches_;
+        std::unordered_map<UUID, std::vector<InstanceData>> mesh_batches_; // camera-visible batches
+        std::unordered_map<UUID, std::vector<InstanceData>> shadow_batches_;
     };
 }

@@ -18,7 +18,7 @@
 namespace engine {
     Scene::Scene() = default;
 
-    Scene::Scene(std::string  name) : name_(std::move(name)) {}
+    Scene::Scene(std::string name) : name_(std::move(name)) {}
 
     Scene::~Scene() = default;
 
@@ -152,9 +152,8 @@ namespace engine {
         // ------------------
         // Meshes
         // ------------------
-        for (auto& batch : mesh_batches_ | std::views::values) {
-            batch.clear();
-        }
+        mesh_batches_.clear();
+        shadow_batches_.clear();
 
         const Frustum frustum = camera.get_frustum();
         const glm::vec3 camera_pos = camera.get_position();
@@ -182,10 +181,17 @@ namespace engine {
                 }
             }
 
-            if (auto mesh = asset_manager.get_asset<Mesh>(target_mesh_handle)) {
+            if (const auto mesh = asset_manager.get_asset<Mesh>(target_mesh_handle)) {
                 const glm::mat4 model_matrix = transform.get_matrix();
-                if (!frustum.intersects(mesh->local_bounds, model_matrix)) continue;
 
+                // Shadow batches
+                shadow_batches_[target_mesh_handle].push_back(InstanceData{
+                    .transform = model_matrix,
+                    .color     = glm::vec4{1.0f}
+                });
+
+                // Camera batches (mesh batches)
+                if (!frustum.intersects(mesh->local_bounds, model_matrix)) continue;
                 glm::vec4 color{1.0f};
                 float roughness = 0.5f;
                 float metallic = 0.0f;
@@ -210,9 +216,8 @@ namespace engine {
         // ------------------
         // Render passes
         // ------------------
-        // Todo: Bug: Shadows of culled objects disappear
-        renderer.render_shadow_pass(camera, asset_manager, mesh_batches_);
-        renderer.render_point_shadow_pass(asset_manager, mesh_batches_);
+        renderer.render_shadow_pass(camera, asset_manager, shadow_batches_);
+        renderer.render_point_shadow_pass(asset_manager, shadow_batches_);
         renderer.render_mesh_batches(asset_manager, mesh_batches_);
     }
 
