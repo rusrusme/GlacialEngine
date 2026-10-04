@@ -113,7 +113,8 @@ namespace engine {
         const glm::vec3 shadow_center = camera.get_target();
 
         constexpr float shadow_map_size = 4096.0f;
-        const float ortho_size = std::clamp(camera.get_distance() * 0.5f, 15.0f, 60.0f);
+        // Todo: CSM (Cascaded shadow maps)
+        const float ortho_size = std::clamp(camera.get_distance() * 0.5f, 15.0f, /*max distance*/ 100.0f);
         const float light_distance = ortho_size * 2.0f;
 
         const glm::vec3 light_pos = shadow_center - main_light_dir * light_distance;
@@ -136,6 +137,8 @@ namespace engine {
         light_projection[3] += round_offset;
         light_space_matrix_ = light_projection * light_view;
 
+        const Frustum light_frustum = Frustum::from_view_projection(light_space_matrix_);
+
         shadow_framebuffer_->bind();
         RenderCommand::clear(false, true);
 
@@ -150,8 +153,21 @@ namespace engine {
             set_frustum_culling_enabled(false);
 
             for (const auto& [handle, instance_list] : batches) {
-                if (std::shared_ptr<Mesh> mesh = asset_manager.get_asset<Mesh>(handle)) {
-                    draw_mesh_instanced(*mesh, instance_list, shadow_shader);
+                std::shared_ptr<Mesh> mesh = asset_manager.get_asset<Mesh>(handle);
+                if (!mesh || instance_list.empty()) continue;
+
+                std::vector<InstanceData> culled_instances;
+                culled_instances.reserve(instance_list.size());
+
+                // Light-Space culling
+                for (const auto& instance : instance_list) {
+                    if (light_frustum.intersects(mesh->local_bounds, instance.transform)) {
+                        culled_instances.push_back(instance);
+                    }
+                }
+
+                if (!culled_instances.empty()) {
+                    draw_mesh_instanced(*mesh, culled_instances, shadow_shader);
                 }
             }
             set_frustum_culling_enabled(prev_culling);
@@ -208,8 +224,20 @@ namespace engine {
             RenderCommand::clear(false, true);
 
             for (const auto& [handle, instance_list] : batches) {
-                if (std::shared_ptr<Mesh> mesh = asset_manager.get_asset<Mesh>(handle)) {
-                    draw_mesh_instanced(*mesh, instance_list, point_shadow_shader);
+                std::shared_ptr<Mesh> mesh = asset_manager.get_asset<Mesh>(handle);
+                if (!mesh || instance_list.empty()) continue;
+
+                std::vector<InstanceData> culled_instances;
+                culled_instances.reserve(instance_list.size());
+
+                for (const auto& instance : instance_list) {
+                    if (mesh->local_bounds.intersects_sphere(light_pos, far_plane, instance.transform)) {
+                        culled_instances.push_back(instance);
+                    }
+                }
+
+                if (!culled_instances.empty()) {
+                    draw_mesh_instanced(*mesh, culled_instances, point_shadow_shader);
                 }
             }
             fbo->unbind();

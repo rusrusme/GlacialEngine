@@ -22,6 +22,7 @@ namespace editor {
         draw_transform_component(entity);
         draw_mesh_component(entity, context);
         draw_material_component(entity, context);
+        draw_lod_component(entity, context);
         draw_lighting_components(entity);
         draw_box_collider_component(entity, context);
         draw_audio_source_component(entity, context);
@@ -149,6 +150,82 @@ namespace editor {
 
             if (material.texture_handle != 0) {
                 ImGui::TextDisabled("Texture Handle: %llu", static_cast<uint64_t>(material.texture_handle));
+            }
+        }
+    }
+
+    void ObjectInspector::draw_lod_component(engine::Entity entity, const engine::SystemContext& context) const {
+        if (entity.has_component<engine::LODComponent>()) {
+            if (ImGui::CollapsingHeader("Level of Detail", ImGuiTreeNodeFlags_DefaultOpen)) {
+                auto& [levels, max_draw_distance] = entity.get_component<engine::LODComponent>();
+                ImGui::DragFloat("Max Distance", &max_draw_distance, 1.0f, 0.0f, 2000.0f);
+                ImGui::Separator();
+
+                ImGui::Text("LOD Levels (%d)", static_cast<int>(levels.size()));
+
+                int index_to_remove = -1;
+
+                for (size_t i = 0; i < levels.size(); ++i) {
+                    ImGui::PushID(static_cast<int>(i));
+
+                    // Align text vertically with the DragFloat input
+                    ImGui::AlignTextToFramePadding();
+                    ImGui::Text("LOD %d", static_cast<int>(i + 1));
+
+                    ImGui::SameLine();
+                    ImGui::DragFloat("Threshold", &levels[i].max_distance, 1.0f, 0.0f, max_draw_distance);
+
+                    // Sleek inline 'X' remove button
+                    ImGui::SameLine();
+                    ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));          // Transparent by default
+                    ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.8f, 0.15f, 0.15f, 0.5f)); // Red highlight on hover
+                    ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.9f, 0.1f, 0.1f, 0.9f));    // Strong red on press
+                    ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.6f, 0.6f, 0.6f, 1.0f));            // Soft gray text
+
+                    if (ImGui::Button("X", ImVec2(ImGui::GetFrameHeight(), ImGui::GetFrameHeight()))) {
+                        index_to_remove = static_cast<int>(i);
+                    }
+
+                    ImGui::PopStyleColor(4);
+
+                    // Mesh Asset Combo Box
+                    std::string current_asset_name = "Handle " + std::to_string(levels[i].mesh_handle);
+                    if (const auto meta = context.assets.get_metadata(levels[i].mesh_handle); meta.is_valid()) {
+                        current_asset_name = meta.filepath.stem().string();
+                    }
+
+                    if (ImGui::BeginCombo("Mesh Asset", current_asset_name.c_str())) {
+                        for (const auto& [handle, meta] : context.assets.get_registry()) {
+                            if (meta.type == engine::AssetType::MESH) {
+                                const bool is_selected = (levels[i].mesh_handle == handle);
+                                std::string name = meta.filepath.stem().string();
+
+                                if (ImGui::Selectable(name.c_str(), is_selected)) {
+                                    levels[i].mesh_handle = handle;
+                                }
+                                if (is_selected) {
+                                    ImGui::SetItemDefaultFocus();
+                                }
+                            }
+                        }
+                        ImGui::EndCombo();
+                    }
+
+                    ImGui::Spacing();
+                    ImGui::PopID();
+                }
+
+                if (index_to_remove >= 0) {
+                    levels.erase(levels.begin() + index_to_remove);
+                }
+
+                if (ImGui::Button("+ Add Level")) {
+                    const engine::AssetHandle default_handle = entity.has_component<engine::MeshComponent>()
+                                                                   ? entity.get_component<engine::MeshComponent>().handle
+                                                                   : engine::AssetHandle(3);
+
+                    levels.push_back({default_handle, 100.0f});
+                }
             }
         }
     }
@@ -309,6 +386,12 @@ namespace editor {
             if (!entity.has_component<engine::MaterialComponent>()) {
                 if (ImGui::MenuItem("Material")) {
                     entity.add_component<engine::MaterialComponent>(glm::vec4{1.0f, 1.0f, 1.0f, 1.0f});
+                    ImGui::CloseCurrentPopup();
+                }
+            }
+            if (!entity.has_component<engine::LODComponent>()) {
+                if (ImGui::MenuItem("Level of Detail")) {
+                    entity.add_component<engine::LODComponent>();
                     ImGui::CloseCurrentPopup();
                 }
             }

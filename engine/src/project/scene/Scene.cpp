@@ -165,7 +165,9 @@ namespace engine {
             if (!active.active) continue;
 
             UUID target_mesh_handle = mesh_comp.handle;
-            const float distance_to_camera = glm::distance(transform.position, camera_pos);
+
+            const float max_scale = std::max({transform.scale.x, transform.scale.y, transform.scale.z});
+            const float distance_to_camera = glm::distance(transform.position, camera_pos) / std::max(max_scale, 0.001f);
 
             if (registry_.all_of<LODComponent>(entity)) {
                 const auto& [levels, max_draw_distance] = registry_.get<LODComponent>(entity);

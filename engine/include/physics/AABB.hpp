@@ -22,5 +22,9 @@ namespace engine {
         [[nodiscard]] bool intersects_aabb(const AABB& other) const;
 
         [[nodiscard]] bool intersects_ray(const Ray& ray, float& out_t) const;
+
+        [[nodiscard]] bool intersects_sphere(const glm::vec3& center, float radius) const;
+
+        [[nodiscard]] bool intersects_sphere(const glm::vec3& center, float radius, const glm::mat4& transform) const;
     };
 }

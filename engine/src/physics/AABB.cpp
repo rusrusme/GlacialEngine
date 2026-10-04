@@ -41,4 +41,29 @@ namespace engine {
         out_t = t_min;
         return true;
     }
+
+    bool AABB::intersects_sphere(const glm::vec3& center, float radius) const {
+        const glm::vec3 closest = glm::clamp(center, min, max);
+        const glm::vec3 diff = center - closest;
+        return glm::dot(diff, diff) <= (radius * radius);
+    }
+
+    bool AABB::intersects_sphere(const glm::vec3& center, float radius, const glm::mat4& transform) const {
+        const glm::vec3 local_center = (min + max) * 0.5f;
+        const glm::vec3 extents = (max - min) * 0.5f;
+
+        const auto world_center = glm::vec3(transform * glm::vec4(local_center, 1.0f));
+
+        const auto abs_matrix = glm::mat3(
+            glm::abs(glm::vec3(transform[0])),
+            glm::abs(glm::vec3(transform[1])),
+            glm::abs(glm::vec3(transform[2]))
+        );
+        const glm::vec3 world_extents = abs_matrix * extents;
+
+        const glm::vec3 closest = glm::clamp(center, world_center - world_extents, world_center + world_extents);
+        const glm::vec3 diff = center - closest;
+
+        return glm::dot(diff, diff) <= (radius * radius);
+    }
 }

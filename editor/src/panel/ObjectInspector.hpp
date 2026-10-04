@@ -27,6 +27,7 @@ namespace editor {
         void draw_transform_component(engine::Entity entity) const;
         void draw_mesh_component(engine::Entity entity, engine::SystemContext& context) const;
         void draw_material_component(engine::Entity entity, engine::SystemContext& context) const;
+        void draw_lod_component(engine::Entity entity, const engine::SystemContext& context) const;
         void draw_lighting_components(engine::Entity entity) const;
         void draw_box_collider_component(engine::Entity entity, engine::SystemContext& context) const;
         void draw_audio_source_component(engine::Entity entity, engine::SystemContext& context) const;
