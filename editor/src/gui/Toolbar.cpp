@@ -10,7 +10,7 @@
 #endif
 
 #include "core/SystemContext.hpp"
-#include "gui/Icons.hpp"
+#include "misc/Icons.hpp"
 #include "project/scene/SceneManager.hpp"
 #include "project/scene/SceneState.hpp"
 

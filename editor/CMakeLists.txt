@@ -7,20 +7,20 @@ add_executable(Editor
                src/EditorLayer.hpp
                src/environment/Grid.cpp
                src/environment/Grid.hpp
-               src/gui/Hierarchy.cpp
-               src/gui/Hierarchy.hpp
-               src/gui/ObjectInspector.cpp
-               src/gui/ObjectInspector.hpp
-               src/gui/AssetBrowser.hpp
-               src/gui/AssetBrowser.cpp
+               src/panel/Hierarchy.cpp
+               src/panel/Hierarchy.hpp
+               src/panel/ObjectInspector.cpp
+               src/panel/ObjectInspector.hpp
+               src/panel/AssetBrowser.hpp
+               src/panel/AssetBrowser.cpp
                src/gui/UILayer.cpp
                src/gui/UILayer.hpp
                src/editor_pch.hpp
-               src/gui/DebugPanel.cpp
-               src/gui/DebugPanel.hpp
-               src/gui/Console.cpp
-               src/gui/Console.hpp
-               src/gui/Icons.hpp
+               src/panel/DebugPanel.cpp
+               src/panel/DebugPanel.hpp
+               src/panel/Console.cpp
+               src/panel/Console.hpp
+               src/misc/Icons.hpp
                src/Config.hpp
                src/EditorComponents.hpp
                src/gui/Toolbar.cpp
@@ -32,6 +32,13 @@ add_executable(Editor
                src/misc/StressTests.hpp
                src/ProjectWizard.hpp
                src/ProjectWizard.cpp
+               src/command/CommandHistory.cpp
+               src/command/CommandHistory.hpp
+               src/command/EditorCommands.hpp
+               src/command/Command.hpp
+               src/command/EditorCommands.cpp
+               src/command/EntityCommands.cpp
+               src/command/EntityCommands.hpp
 )
 # ----------------------------------------------------------------------------
 target_include_directories(Editor PRIVATE ${CMAKE_SOURCE_DIR}/editor/src)

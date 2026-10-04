@@ -3,7 +3,7 @@
 // All rights reserved.
 //
 
-#include "gui/DebugPanel.hpp"
+#include "DebugPanel.hpp"
 
 #include "Config.hpp"
 

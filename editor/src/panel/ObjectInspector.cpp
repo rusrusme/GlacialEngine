@@ -3,7 +3,7 @@
 // All rights reserved.
 //
 
-#include "gui/ObjectInspector.hpp"
+#include "ObjectInspector.hpp"
 
 #include "platform/FileDialogAPI.hpp"
 

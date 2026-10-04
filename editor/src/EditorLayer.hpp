@@ -7,10 +7,11 @@
 
 #include <memory>
 
+#include "command/CommandHistory.hpp"
 #include "core/Layer.hpp"
 #include "environment/Grid.hpp"
-#include "gui/DebugPanel.hpp"
 #include "input/CameraController.hpp"
+#include "panel/DebugPanel.hpp"
 #include "project/scene/Scene.hpp"
 
 namespace engine {
@@ -41,6 +42,9 @@ namespace editor {
         void set_viewport_hovered(const bool hovered) { is_viewport_hovered_ = hovered; }
         void set_viewport_focused(const bool focused) { is_viewport_focused_ = focused; }
 
+        [[nodiscard]] CommandHistory& get_command_history() { return command_history_; }
+        [[nodiscard]] const CommandHistory& get_command_history() const { return command_history_; }
+
     private:
         std::shared_ptr<engine::Scene> initial_scene_ = nullptr;
 
@@ -51,6 +55,7 @@ namespace editor {
 
         DebugPanel debug_panel_{};
         Grid editor_grid_{};
+        CommandHistory command_history_{100};
 
         bool is_viewport_hovered_ = false;
         bool is_viewport_focused_ = false;

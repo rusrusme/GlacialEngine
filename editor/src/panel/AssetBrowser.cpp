@@ -11,7 +11,7 @@
 #include "project/Project.hpp"
 
 #include "Config.hpp"
-#include "gui/Icons.hpp"
+#include "misc/Icons.hpp"
 
 namespace editor {
     void AssetBrowser::init(engine::SystemContext& context) {

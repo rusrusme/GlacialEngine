@@ -5,14 +5,14 @@
 
 #pragma once
 
-#include "Console.hpp"
 #include "Menubar.hpp"
 #include "core/Layer.hpp"
-#include "gui/AssetBrowser.hpp"
-#include "gui/Hierarchy.hpp"
-#include "gui/ObjectInspector.hpp"
 #include "gui/Settings.hpp"
 #include "gui/Toolbar.hpp"
+#include "panel/AssetBrowser.hpp"
+#include "panel/Console.hpp"
+#include "panel/Hierarchy.hpp"
+#include "panel/ObjectInspector.hpp"
 #include "render/Camera.hpp"
 
 #ifdef ENABLE_IMGUI

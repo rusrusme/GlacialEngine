@@ -7,6 +7,8 @@
 
 #include "EditorLayer.hpp"
 #include "Toolbar.hpp"
+#include "command/CommandHistory.hpp"
+#include "command/EditorCommands.hpp"
 
 namespace editor {
     #ifdef ENABLE_IMGUI
@@ -69,6 +71,22 @@ namespace editor {
         }
 
         const bool is_ctrl = engine::Input::is_key_pressed(engine::Key::LEFT_CONTROL) || engine::Input::is_key_pressed(engine::Key::RIGHT_CONTROL);
+        const bool is_shift = engine::Input::is_key_pressed(engine::Key::LEFT_SHIFT) || engine::Input::is_key_pressed(engine::Key::RIGHT_SHIFT);
+
+        if (is_ctrl && editor_layer_) {
+            if (engine::Input::is_key_pressed_once(engine::Key::Z)) {
+                if (is_shift) {
+                    editor_layer_->get_command_history().redo();
+                }
+                else {
+                    editor_layer_->get_command_history().undo();
+                }
+            }
+            else if (engine::Input::is_key_pressed_once(engine::Key::Y)) {
+                editor_layer_->get_command_history().redo();
+            }
+        }
+
         if (is_ctrl) {
             if (engine::Input::is_key_pressed_once(engine::Key::W)) current_gizmo_operation_ = ImGuizmo::TRANSLATE;
             if (engine::Input::is_key_pressed_once(engine::Key::E)) current_gizmo_operation_ = ImGuizmo::ROTATE;
@@ -289,6 +307,15 @@ namespace editor {
 
         if (!is_using && was_using_gizmo_) {
             was_using_gizmo_ = false;
+            if (!gizmo_canceled_ && editor_layer_ && selected_entity) {
+                if (initial_transform_.position != transform.position ||
+                    initial_transform_.rotation != transform.rotation ||
+                    initial_transform_.scale != transform.scale) {
+                    editor_layer_->get_command_history().execute_command<ChangeTransformCommand>(
+                        selected_entity, initial_transform_, transform
+                    );
+                }
+            }
         }
 
         if (is_using) {

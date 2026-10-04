@@ -3,9 +3,9 @@
 // All rights reserved.
 //
 
-#include "gui/Hierarchy.hpp"
+#include "Hierarchy.hpp"
 
-#include "Icons.hpp"
+#include "misc/Icons.hpp"
 
 namespace editor {
     #ifdef ENABLE_IMGUI
