@@ -8,13 +8,15 @@
 namespace editor {
     namespace {
         void begin_property_grid(const char* table_id = "PropertyGrid") {
+            ImGui::PushStyleVar(ImGuiStyleVar_CellPadding, ImVec2(4.0f, 3.0f));
             ImGui::BeginTable(table_id, 2, ImGuiTableFlags_SizingStretchSame | ImGuiTableFlags_PadOuterX);
-            ImGui::TableSetupColumn("Label", ImGuiTableColumnFlags_WidthFixed, 100.0f);
+            ImGui::TableSetupColumn("Label", ImGuiTableColumnFlags_WidthFixed, 90.0f);
             ImGui::TableSetupColumn("Widget", ImGuiTableColumnFlags_WidthStretch);
         }
 
         void end_property_grid() {
             ImGui::EndTable();
+            ImGui::PopStyleVar();
         }
 
         void draw_property_label(const char* label) {
@@ -105,21 +107,36 @@ namespace editor {
             ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(4.0f, 4.0f));
             ImGui::Spacing();
 
-            const bool open = ImGui::TreeNodeEx((void*)typeid(T).hash_code(), tree_flags, "%s", title.c_str());
+            std::string popup_id = title + "_HeaderContextMenu";
+            const bool open = ImGui::TreeNodeEx(reinterpret_cast<void*>(typeid(T).hash_code()), tree_flags, "%s", title.c_str());
             ImGui::PopStyleVar();
 
             bool remove_component = false;
-            if (allow_removal && ImGui::BeginPopupContextItem("ComponentSettings")) {
-                if (ImGui::MenuItem("Remove Component")) {
-                    remove_component = true;
+            if (ImGui::BeginPopupContextItem(popup_id.c_str())) {
+                if constexpr (std::is_same_v<T, engine::TransformComponent>) {
+                    if (ImGui::MenuItem("Reset Transform")) {
+                        auto& transform = entity.get_component<engine::TransformComponent>();
+                        transform.position = glm::vec3(0.0f);
+                        transform.rotation = glm::vec3(0.0f);
+                        transform.scale = glm::vec3(1.0f);
+                    }
+                }
+                else if (allow_removal) {
+                    if (ImGui::MenuItem("Remove Component")) {
+                        remove_component = true;
+                    }
                 }
                 ImGui::EndPopup();
             }
 
             if (open) {
+                ImGui::Unindent();
+
                 begin_property_grid((title + "_Grid").c_str());
                 ui_function(entity.get_component<T>());
                 end_property_grid();
+
+                ImGui::Indent();
                 ImGui::TreePop();
             }
 
