@@ -15,9 +15,38 @@ namespace engine {
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 
+    void GLFramebuffer::bind_color_texture(const uint32_t slot) const {
+        glActiveTexture(GL_TEXTURE0 + slot);
+        glBindTexture(GL_TEXTURE_2D, color_attachment_id_);
+    }
+
+    void GLFramebuffer::bind_color_image(const uint32_t unit, const uint32_t level, const bool is_write_only) const {
+        glBindImageTexture(
+            unit,
+            color_attachment_id_,
+            level,
+            GL_FALSE,
+            0,
+            is_write_only ? GL_WRITE_ONLY : GL_READ_ONLY,
+            GL_R32F
+        );
+    }
+
     void GLFramebuffer::bind_depth_texture(const uint32_t slot) const {
         glActiveTexture(GL_TEXTURE0 + slot);
         glBindTexture(type_ == GLFramebufferType::PointShadowMap ? GL_TEXTURE_CUBE_MAP : GL_TEXTURE_2D, depth_attachment_id_);
+    }
+
+    void GLFramebuffer::bind_depth_image(uint32_t unit, uint32_t level, bool is_write_only) const {
+        glBindImageTexture(
+            unit,
+            depth_attachment_id_,
+            level,
+            GL_FALSE,
+            0,
+            is_write_only ? GL_WRITE_ONLY : GL_READ_ONLY,
+            GL_R32F // Using 32-bit float layout for compute image access
+        );
     }
 
     void GLFramebuffer::resize(uint32_t width, uint32_t height) {
@@ -34,7 +63,7 @@ namespace engine {
         // layered cube map): attaching a 2D color texture alongside a layered
         // cube-map depth attachment makes the FBO GL_FRAMEBUFFER_INCOMPLETE_LAYER_TARGETS,
         // so nothing renders.
-        if (type_ != GLFramebufferType::PointShadowMap) {
+        if (type_ != GLFramebufferType::PointShadowMap && type_ != GLFramebufferType::DepthOnly) {
             glGenTextures(1, &color_attachment_id_);
             glBindTexture(GL_TEXTURE_2D, color_attachment_id_);
             glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width_, height_, 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
@@ -83,6 +112,38 @@ namespace engine {
                 glFramebufferTexture(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, depth_attachment_id_, 0);
                 glDrawBuffer(GL_NONE);
                 glReadBuffer(GL_NONE);
+                break;
+            }
+            case GLFramebufferType::DepthOnly : {
+                mip_levels_ = static_cast<uint32_t>(std::floor(std::log2(std::max(width, height)))) + 1;
+
+                // 1. HZB-Textur (GL_R32F Color Attachment)
+                glGenTextures(1, &color_attachment_id_);
+                glBindTexture(GL_TEXTURE_2D, color_attachment_id_);
+                glTexStorage2D(GL_TEXTURE_2D, mip_levels_, GL_R32F, width_, height_);
+
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+                glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, color_attachment_id_, 0);
+
+                // 2. Depth Attachment für Depth-Testing
+                glGenTextures(1, &depth_attachment_id_);
+                glBindTexture(GL_TEXTURE_2D, depth_attachment_id_);
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT24, width_, height_, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+                glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depth_attachment_id_, 0);
+
+                const GLenum draw_buffers[1] = {GL_COLOR_ATTACHMENT0};
+                glDrawBuffers(1, draw_buffers);
+                glReadBuffer(GL_COLOR_ATTACHMENT0);
                 break;
             }
             default : {

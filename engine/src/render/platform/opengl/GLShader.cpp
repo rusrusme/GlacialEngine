@@ -56,6 +56,32 @@ namespace engine {
         glDeleteShader(fs);
     }
 
+    GLShader::GLShader(const std::string& compute_src, bool is_compute) {
+        uint32_t compute_shader = compile_shader(GL_COMPUTE_SHADER, compute_src);
+
+        id_ = glCreateProgram();
+        glAttachShader(id_, compute_shader);
+        glLinkProgram(id_);
+
+        int is_linked = 0;
+        glGetProgramiv(id_, GL_LINK_STATUS, &is_linked);
+        if (is_linked == GL_FALSE) {
+            int max_length = 0;
+            glGetProgramiv(id_, GL_INFO_LOG_LENGTH, &max_length);
+            std::vector<char> info_log(max_length);
+            glGetProgramInfoLog(id_, max_length, &max_length, info_log.data());
+
+            glDeleteProgram(id_);
+            glDeleteShader(compute_shader);
+
+            CORE_ERROR("GLShader Compute Link Error: {0}", info_log.data());
+            return;
+        }
+
+        glDetachShader(id_, compute_shader);
+        glDeleteShader(compute_shader);
+    }
+
     GLShader::GLShader(const LoadedBSHData& bsh_data)
         : header_(bsh_data.header) {
         if (!bsh_data.valid) {
@@ -164,6 +190,16 @@ namespace engine {
         return std::make_unique<GLShader>(data);
     }
 
+    std::unique_ptr<GLShader> GLShader::from_compute_file(const std::string& compute_path) {
+        std::unordered_set<std::string> included_files;
+        std::string compute_src = preprocess_source(compute_path, included_files);
+        if (compute_src.empty()) {
+            CORE_ERROR("GLShader: Failed to read compute shader file '{0}'", compute_path);
+            return nullptr;
+        }
+        return std::make_unique<GLShader>(compute_src, true);
+    }
+
     void GLShader::bind() const {
         glUseProgram(id_);
     }
@@ -178,6 +214,18 @@ namespace engine {
 
     void GLShader::set_float(const std::string& name, const float value) const {
         glUniform1f(get_uniform_location(name), value);
+    }
+
+    void GLShader::set_ivec2(const std::string& name, const glm::ivec2& value) const {
+        glUniform2i(get_uniform_location(name), value.x, value.y);
+    }
+
+    void GLShader::set_ivec3(const std::string& name, const glm::ivec3& value) const {
+        glUniform3i(get_uniform_location(name), value.x, value.y, value.z);
+    }
+
+    void GLShader::set_ivec4(const std::string& name, const glm::ivec4& value) const {
+        glUniform4i(get_uniform_location(name), value.x, value.y, value.z, value.w);
     }
 
     void GLShader::set_vec2(const std::string& name, const glm::vec2& value) const {

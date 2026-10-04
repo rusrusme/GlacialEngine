@@ -12,7 +12,7 @@
 #include <unordered_set>
 #include <glm/glm.hpp>
 
-#include "../../BSHLoader.hpp"
+#include "render/BSHLoader.hpp"
 
 namespace bshc {
     struct BSHHeader;
@@ -22,6 +22,7 @@ namespace engine {
     class GLShader {
     public:
         GLShader(const std::string& vertex_src, const std::string& fragment_src, const std::string& geometry_src = "");
+        explicit GLShader(const std::string& compute_src, bool is_compute);
         explicit GLShader(const LoadedBSHData& bsh_data);
         ~GLShader();
 
@@ -34,6 +35,8 @@ namespace engine {
         static std::unique_ptr<GLShader> from_file(const std::string& vertex_path, const std::string& fragment_path, const std::string& geometry_path = "");
         static std::unique_ptr<GLShader> from_bsh(const std::string& bsh_path);
 
+        static std::unique_ptr<GLShader> from_compute_file(const std::string& compute_path);
+
         [[nodiscard]] uint32_t get_renderer_id() const { return id_; }
         [[nodiscard]] const bshc::BSHHeader& get_header() const { return header_; }
 
@@ -43,6 +46,9 @@ namespace engine {
         // Uniform Setters
         void set_int(const std::string& name, int value) const;
         void set_float(const std::string& name, float value) const;
+        void set_ivec2(const std::string& name, const glm::ivec2& value) const;
+        void set_ivec3(const std::string& name, const glm::ivec3& value) const;
+        void set_ivec4(const std::string& name, const glm::ivec4& value) const;
         void set_vec2(const std::string& name, const glm::vec2& value) const;
         void set_vec3(const std::string& name, const glm::vec3& value) const;
         void set_vec4(const std::string& name, const glm::vec4& value) const;

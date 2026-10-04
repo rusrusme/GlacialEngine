@@ -25,6 +25,8 @@ namespace engine {
         std::shared_ptr<Shader> load(const std::string& name, const std::string& vertex_path, const std::string& fragment_path, const std::string& geometry_path = "");
         std::shared_ptr<Shader> load(const std::string& name, const std::string& bsh_path);
 
+        std::shared_ptr<Shader> load_compute(const std::string& name, const std::string& compute_path);
+
         [[nodiscard]] std::shared_ptr<Shader> get(const std::string& name) const;
 
         [[nodiscard]] bool exists(const std::string& name) const;

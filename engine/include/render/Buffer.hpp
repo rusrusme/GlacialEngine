@@ -11,6 +11,7 @@
 namespace engine {
     using VertexBuffer = GLVertexBuffer;
     using IndexBuffer = GLIndexBuffer;
+    using StorageBuffer = GLStorageBuffer;
 }
 #elif defined(RENDER_API_VULKAN)
 #include "render/platform/vulkan/VulkanBuffer.hpp"
@@ -18,6 +19,7 @@ namespace engine {
 namespace engine {
     using VertexBuffer = VulkanVertexBuffer;
     using IndexBuffer = VulkanIndexBuffer;
+    using StorageBuffer = VulkanStorageBuffer;
 }
 #else
 #error "No Render API defined"

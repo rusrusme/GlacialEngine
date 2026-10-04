@@ -65,7 +65,7 @@ namespace engine {
         if (ext == ".glb" || ext == ".gltf" || ext == ".obj") {
             return AssetType::MESH;
         }
-        if (ext == ".vert" || ext == ".frag" || ext == ".geom" || ext == ".glsl") {
+        if (ext == ".vert" || ext == ".frag" || ext == ".geom" || ext == ".glsl" || ext == ".comp") {
             return AssetType::SHADER;
         }
         if (ext == ".bsh" || ext == ".bshb") {

@@ -37,6 +37,14 @@ namespace engine {
         glClear(mask);
     }
 
+    void GLRendererAPI::dispatch_compute(uint32_t num_groups_x, uint32_t num_groups_y, uint32_t num_groups_z) {
+        glDispatchCompute(num_groups_x, num_groups_y, num_groups_z);
+        glMemoryBarrier(GL_SHADER_IMAGE_ACCESS_BARRIER_BIT |
+            GL_TEXTURE_FETCH_BARRIER_BIT |
+            GL_SHADER_STORAGE_BARRIER_BIT |
+            GL_BUFFER_UPDATE_BARRIER_BIT);
+    }
+
     void GLRendererAPI::apply_shader_header(const bshc::BSHHeader& header) {
         // Depth Test
         set_depth_test(header.depth_test != 0);
@@ -189,5 +197,14 @@ namespace engine {
         vao.bind();
         glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(vertex_count));
         vao.unbind();
+    }
+
+    void GLRendererAPI::unbind_texture(uint32_t slot) {
+        glActiveTexture(GL_TEXTURE0 + slot);
+        glBindTexture(GL_TEXTURE_2D, 0);
+    }
+
+    void GLRendererAPI::unbind_image(uint32_t unit) {
+        glBindImageTexture(unit, 0, 0, GL_FALSE, 0, GL_READ_ONLY, GL_R32F);
     }
 }

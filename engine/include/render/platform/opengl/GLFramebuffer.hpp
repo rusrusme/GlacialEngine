@@ -11,7 +11,8 @@ namespace engine {
     enum class GLFramebufferType {
         Default = 0,
         ShadowMap,
-        PointShadowMap
+        PointShadowMap,
+        DepthOnly
     };
 
     class GLFramebuffer {
@@ -26,7 +27,12 @@ namespace engine {
         void bind() const;
         void unbind() const;
 
+        void bind_color_texture(uint32_t slot = 0) const;
+        void bind_color_image(uint32_t unit, uint32_t level, bool is_write_only = true) const;
+
         void bind_depth_texture(uint32_t slot = 0) const;
+        void bind_depth_image(uint32_t unit, uint32_t level, bool is_write_only = true) const;
+        [[nodiscard]] uint32_t get_mip_levels() const { return mip_levels_; }
 
         void resize(uint32_t width, uint32_t height);
 
@@ -45,5 +51,7 @@ namespace engine {
         uint32_t width_ = 1280, height_ = 720;
 
         GLFramebufferType type_ = GLFramebufferType::Default;
+
+        uint32_t mip_levels_;
     };
 }

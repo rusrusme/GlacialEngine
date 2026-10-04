@@ -1,0 +1,80 @@
+#version 450 core
+
+layout(local_size_x = 64, local_size_y = 1, local_size_z = 1) in;
+
+struct InstanceAABB {
+    vec4 min_pos;
+    vec4 max_pos;
+};
+
+layout(std430, binding = 0) readonly buffer InstanceAABBBuffer {
+    InstanceAABB u_aabbs[];
+};
+
+layout(std430, binding = 1) writeonly buffer VisibilityBuffer {
+    uint u_visibility[];
+};
+
+uniform sampler2D u_hzb_texture;
+uniform mat4 u_view_projection;
+uniform vec2 u_screen_size;
+uniform uint u_num_instances;
+
+void main() {
+    uint idx = gl_GlobalInvocationID.x;
+    if (idx >= u_num_instances) return;
+
+    vec3 box_min = u_aabbs[idx].min_pos.xyz;
+    vec3 box_max = u_aabbs[idx].max_pos.xyz;
+
+    vec3 corners[8] = vec3[8](
+            vec3(box_min.x, box_min.y, box_min.z),
+            vec3(box_max.x, box_min.y, box_min.z),
+            vec3(box_min.x, box_max.y, box_min.z),
+            vec3(box_max.x, box_max.y, box_min.z),
+            vec3(box_min.x, box_min.y, box_max.z),
+            vec3(box_max.x, box_min.y, box_max.z),
+            vec3(box_min.x, box_max.y, box_max.z),
+            vec3(box_max.x, box_max.y, box_max.z)
+    );
+
+    vec2 min_uv = vec2(1.0);
+    vec2 max_uv = vec2(0.0);
+    float min_z = 1.0;
+
+    for (int i = 0; i < 8; ++i) {
+        vec4 clip_space = u_view_projection * vec4(corners[i], 1.0);
+
+        // Near plane clipping check: if any corner is behind/on near plane, keep object visible
+        if (clip_space.w <= 0.001) {
+            u_visibility[idx] = 1u;
+            return;
+        }
+
+        vec3 ndc = clip_space.xyz / clip_space.w;
+
+        vec2 uv = ndc.xy * 0.5 + 0.5;
+        min_uv = min(min_uv, uv);
+        max_uv = max(max_uv, uv);
+
+        float depth = ndc.z * 0.5 + 0.5;
+        min_z = min(min_z, depth);
+    }
+
+    min_uv = clamp(min_uv, 0.0, 1.0);
+    max_uv = clamp(max_uv, 0.0, 1.0);
+
+    vec2 size_pixels = (max_uv - min_uv) * u_screen_size;
+    float max_dim = max(size_pixels.x, size_pixels.y);
+
+    float mip_level = ceil(log2(max(max_dim, 1.0)));
+
+    float hzb_d0 = textureLod(u_hzb_texture, vec2(min_uv.x, min_uv.y), mip_level).r;
+    float hzb_d1 = textureLod(u_hzb_texture, vec2(max_uv.x, min_uv.y), mip_level).r;
+    float hzb_d2 = textureLod(u_hzb_texture, vec2(min_uv.x, max_uv.y), mip_level).r;
+    float hzb_d3 = textureLod(u_hzb_texture, vec2(max_uv.x, max_uv.y), mip_level).r;
+
+    float max_hzb_depth = max(max(hzb_d0, hzb_d1), max(hzb_d2, hzb_d3));
+
+    u_visibility[idx] = (min_z <= max_hzb_depth + 0.0001) ? 1u : 0u;
+}

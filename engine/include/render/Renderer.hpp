@@ -31,6 +31,11 @@ namespace engine {
         uint32_t instance_count = 0;
     };
 
+    struct InstanceAABB {
+        glm::vec4 min_pos{0.0f}; // xyz = min bounds
+        glm::vec4 max_pos{0.0f}; // xyz = max bounds
+    };
+
     class Renderer {
     public:
         struct DirectionalLightData;
@@ -50,6 +55,7 @@ namespace engine {
         void begin_scene();
         void end_scene();
 
+        void render_occlusion_pass(Camera& camera, AssetManager& asset_manager, std::unordered_map<UUID, std::vector<InstanceData>>& batches);
         void render_shadow_pass(Camera& camera, AssetManager& asset_manager, const std::unordered_map<UUID, std::vector<InstanceData>>& batches);
         void render_point_shadow_pass(AssetManager& asset_manager, const std::unordered_map<UUID, std::vector<InstanceData>>& batches);
 
@@ -159,6 +165,9 @@ namespace engine {
         // Frustum culling
         Frustum current_frustum_;
         bool frustum_culling_enabled_{true};
+
+        // Occlusion resources
+        std::unique_ptr<Framebuffer> depth_prepass_fbo_;
 
         // Shadow resources
         std::unique_ptr<Framebuffer> shadow_framebuffer_;

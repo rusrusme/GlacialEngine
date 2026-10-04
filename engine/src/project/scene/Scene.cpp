@@ -216,6 +216,8 @@ namespace engine {
         // ------------------
         // Render passes
         // ------------------
+        // Todo: bugged...
+        // renderer.render_occlusion_pass(camera, asset_manager, mesh_batches_);
         renderer.render_shadow_pass(camera, asset_manager, shadow_batches_);
         renderer.render_point_shadow_pass(asset_manager, shadow_batches_);
         renderer.render_mesh_batches(asset_manager, mesh_batches_);

@@ -78,4 +78,69 @@ namespace engine {
     void GLIndexBuffer::unbind() const {
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
     }
+
+    GLStorageBuffer::GLStorageBuffer(size_t size, uint32_t binding, bool dynamic)
+        : binding_(binding), size_(size) {
+        glGenBuffers(1, &id_);
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, id_);
+        glBufferData(GL_SHADER_STORAGE_BUFFER, static_cast<GLsizeiptr>(size), nullptr, dynamic ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, binding_, id_);
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+    }
+
+    GLStorageBuffer::GLStorageBuffer(const void* data, size_t size, uint32_t binding, bool dynamic)
+        : binding_(binding), size_(size) {
+        glGenBuffers(1, &id_);
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, id_);
+        glBufferData(GL_SHADER_STORAGE_BUFFER, static_cast<GLsizeiptr>(size), data, dynamic ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, binding_, id_);
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+    }
+
+    GLStorageBuffer::~GLStorageBuffer() {
+        if (id_) {
+            glDeleteBuffers(1, &id_);
+        }
+    }
+
+    GLStorageBuffer::GLStorageBuffer(GLStorageBuffer&& other) noexcept
+        : id_(other.id_), binding_(other.binding_), size_(other.size_) {
+        other.id_ = 0;
+        other.size_ = 0;
+    }
+
+    GLStorageBuffer& GLStorageBuffer::operator=(GLStorageBuffer&& other) noexcept {
+        if (this != &other) {
+            if (id_)
+                glDeleteBuffers(1, &id_);
+            id_ = other.id_;
+            binding_ = other.binding_;
+            size_ = other.size_;
+            other.id_ = 0;
+            other.size_ = 0;
+        }
+        return *this;
+    }
+
+    void GLStorageBuffer::bind(uint32_t binding) const {
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, binding, id_);
+    }
+
+    void GLStorageBuffer::unbind() const {
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+    }
+
+    void GLStorageBuffer::set_data(const void* data, size_t size, size_t offset) {
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, id_);
+        if (offset + size > size_) {
+            size_ = (offset + size) * 2;
+            glBufferData(GL_SHADER_STORAGE_BUFFER, static_cast<GLsizeiptr>(size_), nullptr, GL_DYNAMIC_DRAW);
+        }
+        glBufferSubData(GL_SHADER_STORAGE_BUFFER, static_cast<GLintptr>(offset), static_cast<GLsizeiptr>(size), data);
+    }
+
+    void GLStorageBuffer::get_data(void* out_data, size_t size, size_t offset) const {
+        glBindBuffer(GL_SHADER_STORAGE_BUFFER, id_);
+        glGetBufferSubData(GL_SHADER_STORAGE_BUFFER, static_cast<GLintptr>(offset), static_cast<GLsizeiptr>(size), out_data);
+    }
 }

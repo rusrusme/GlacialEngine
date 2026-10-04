@@ -19,6 +19,8 @@ namespace engine {
         static void set_clear_color(const glm::vec4& color);
         static void clear(bool clear_color = true, bool clear_depth = true);
 
+        static void dispatch_compute(uint32_t num_groups_x, uint32_t num_groups_y, uint32_t num_groups_z);
+
         // Render States
         static void apply_shader_header(const bshc::BSHHeader& header);
 
@@ -35,5 +37,8 @@ namespace engine {
         static void draw_indexed_instanced(const GLVertexArray& vao, const GLVertexBuffer& instance_vbo, uint32_t index_count, uint32_t instance_count);
         static void draw_lines(const GLVertexArray& vao, uint32_t vertex_count);
         static void draw_arrays(const GLVertexArray& vao, uint32_t vertex_count);
+
+        static void unbind_texture(uint32_t slot);
+        static void unbind_image(uint32_t unit);
     };
 }

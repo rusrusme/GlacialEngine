@@ -49,6 +49,18 @@ namespace engine {
         return shared_shader;
     }
 
+    std::shared_ptr<Shader> ShaderLibrary::load_compute(const std::string& name, const std::string& compute_path) {
+        auto shader = GLShader::from_compute_file(compute_path);
+        if (!shader) {
+            CORE_ERROR("ShaderLibrary: Failed to load compute shader '{0}' from '{1}'", name, compute_path);
+            return nullptr;
+        }
+
+        std::shared_ptr<Shader> shared_shader = std::move(shader);
+        add(name, shared_shader);
+        return shared_shader;
+    }
+
     std::shared_ptr<Shader> ShaderLibrary::get(const std::string& name) const {
         auto it = shaders_.find(name);
         if (it == shaders_.end()) {

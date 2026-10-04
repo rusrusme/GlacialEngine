@@ -51,6 +51,10 @@ namespace engine {
             RendererAPI::clear(clear_color, clear_depth);
         }
 
+        static void dispatch_compute(uint32_t num_groups_x, uint32_t num_groups_y, uint32_t num_groups_z) {
+            RendererAPI::dispatch_compute(num_groups_x, num_groups_y, num_groups_z);
+        }
+
         // Render States
         static void apply_shader_header(const bshc::BSHHeader& header) {
             RendererAPI::apply_shader_header(header);
@@ -95,6 +99,13 @@ namespace engine {
 
         static void draw_arrays(const VertexArray& vao, const uint32_t vertex_count) {
             RendererAPI::draw_arrays(vao, vertex_count);
+        }
+
+        static void unbind_texture(const uint32_t slot) {
+            RendererAPI::unbind_texture(slot);
+        }
+        static void unbind_image(const uint32_t unit) {
+            RendererAPI::unbind_image(unit);
         }
     };
 }
