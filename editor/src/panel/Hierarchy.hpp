@@ -28,7 +28,9 @@ namespace editor {
         engine::Entity selected_entity_{};
         engine::UUID selected_uuid_{0};
 
-        char name_buffer_[128] = "";
+        engine::Entity renaming_entity_{};
+        char rename_buffer_[128] = "";
+        bool start_renaming_ = false;
 
         #ifdef ENABLE_IMGUI
         void render_header_bar();
@@ -41,7 +43,6 @@ namespace editor {
 
         bool menu_item_with_icon(const char* label, EntityType type);
         void create_primitive_entity(const char* label, const char* path, EntityType type, const engine::SystemContext& context);
-        std::string resolve_entity_name(const char* default_name) const;
 
         void render_entity_node(engine::Entity entity, engine::Entity& out_destroy, engine::Entity& out_duplicate);
         bool render_eye_toggle_button(bool is_active);
@@ -50,6 +51,7 @@ namespace editor {
         void process_shortcuts(engine::Entity& out_destroy, engine::Entity& out_duplicate);
         void process_deferred_actions(engine::Entity entity_to_destroy, engine::Entity entity_to_duplicate, const std::shared_ptr<engine::Scene>& active_scene);
         void process_deselection_inputs();
+        void rename_entity(engine::Entity entity);
         #endif
     };
 }

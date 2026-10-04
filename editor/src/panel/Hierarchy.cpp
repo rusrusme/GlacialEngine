@@ -68,23 +68,20 @@ namespace editor {
         if (ImGui::Button("+")) {
             ImGui::OpenPopup("AddEntityMenu");
         }
-        ImGui::SameLine();
-        ImGui::SetNextItemWidth(-1.0f);
-        ImGui::InputText("##NameInput", name_buffer_, sizeof(name_buffer_));
     }
 
     void Hierarchy::render_add_entity_popup(const engine::SystemContext& context) {
         const auto scene = context.scenes.active_scene();
         if (!scene) return;
         if (menu_item_with_icon("Entity", EntityType::Transform)) {
-            scene->create_entity(resolve_entity_name("Entity"));
+            scene->create_entity("Entity");
         }
         ImGui::Separator();
         render_primitives_submenus(context);
 
         ImGui::Separator();
         if (menu_item_with_icon("Camera", EntityType::Camera)) {
-            auto entity = scene->create_entity(resolve_entity_name("Camera"));
+            auto entity = scene->create_entity("Camera");
             entity.add_component<engine::CameraComponent>();
         }
         ImGui::Separator();
@@ -133,7 +130,7 @@ namespace editor {
     void Hierarchy::render_lighting_submenu(const std::shared_ptr<engine::Scene>& active_scene) {
         if (!active_scene) return;
         if (menu_item_with_icon("Directional Light", EntityType::Light)) {
-            auto entity = active_scene->create_entity(resolve_entity_name("Sun"));
+            auto entity = active_scene->create_entity("Sun");
             auto& transform = entity.get_component<engine::TransformComponent>();
             transform.rotation = glm::vec3(-90.0f, 135.0f, -45.0f);
             transform.position = glm::vec3(10.0f, 10.0f, 0.0f);
@@ -141,7 +138,7 @@ namespace editor {
         }
 
         if (menu_item_with_icon("Point Light", EntityType::Light)) {
-            auto entity = active_scene->create_entity(resolve_entity_name("Light"));
+            auto entity = active_scene->create_entity("Light");
             auto& transform = entity.get_component<engine::TransformComponent>();
             transform.rotation = glm::vec3(0.0f);
             transform.position = glm::vec3(0.0f);
@@ -164,7 +161,7 @@ namespace editor {
                 std::string filename = meta.filepath.filename().string();
 
                 if (menu_item_with_icon(filename.c_str(), EntityType::Mesh3D)) {
-                    auto entity = scene->create_entity(resolve_entity_name(meta.filepath.stem().string().c_str()));
+                    auto entity = scene->create_entity(meta.filepath.stem().string().c_str());
                     entity.add_component<engine::MeshComponent>(handle);
                     entity.add_component<engine::MaterialComponent>(glm::vec4{1.0f, 1.0f, 1.0f, 1.0f});
                 }
@@ -193,7 +190,7 @@ namespace editor {
         const auto scene = context.scenes.active_scene();
         if (!scene) return;
         if (menu_item_with_icon(label, type)) {
-            auto entity = scene->create_entity(resolve_entity_name(label));
+            auto entity = scene->create_entity(label);
             auto handle = context.assets.get_handle_from_path(path);
 
             entity.add_component<engine::MeshComponent>(handle);
@@ -202,12 +199,8 @@ namespace editor {
         }
     }
 
-    std::string Hierarchy::resolve_entity_name(const char* default_name) const {
-        return name_buffer_[0] != '\0' ? name_buffer_ : default_name;
-    }
-
     void Hierarchy::render_entity_node(engine::Entity entity, engine::Entity& out_destroy, engine::Entity& out_duplicate) {
-        const auto& label = entity.get_component<engine::LabelComponent>();
+        auto& label = entity.get_component<engine::LabelComponent>();
         ImGui::PushID(entity.uuid());
 
         bool is_active = entity.has_component<engine::ActiveComponent>()
@@ -229,26 +222,54 @@ namespace editor {
             ImGui::PushStyleColor(ImGuiCol_Text, ImGui::GetStyleColorVec4(ImGuiCol_TextDisabled));
         }
 
-        const bool is_selected = (selected_entity_ == entity);
-        const ImGuiTreeNodeFlags flags = (is_selected ? ImGuiTreeNodeFlags_Selected : 0)
-            | ImGuiTreeNodeFlags_OpenOnArrow
-            | ImGuiTreeNodeFlags_SpanAvailWidth;
+        if (renaming_entity_ == entity) {
+            if (start_renaming_) {
+                ImGui::SetKeyboardFocusHere();
+                start_renaming_ = false;
+            }
 
-        const bool opened = ImGui::TreeNodeEx(label.tag.c_str(), flags);
+            ImGui::SetNextItemWidth(-1.0f);
+            if (ImGui::InputText("##RenameInput", rename_buffer_, sizeof(rename_buffer_),
+                                 ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll)) {
+                if (rename_buffer_[0] != '\0') {
+                    label.tag = rename_buffer_;
+                }
+                renaming_entity_ = {};
+            }
+
+            if (ImGui::IsItemDeactivated() && !ImGui::IsKeyPressed(ImGuiKey_Escape)) {
+                if (rename_buffer_[0] != '\0') {
+                    label.tag = rename_buffer_;
+                }
+                renaming_entity_ = {};
+            }
+            else if (ImGui::IsKeyPressed(ImGuiKey_Escape)) {
+                renaming_entity_ = {};
+            }
+        }
+        else {
+            const bool is_selected = (selected_entity_ == entity);
+            const ImGuiTreeNodeFlags flags = (is_selected ? ImGuiTreeNodeFlags_Selected : 0)
+                | ImGuiTreeNodeFlags_OpenOnArrow
+                | ImGuiTreeNodeFlags_SpanAvailWidth;
+
+            const bool opened = ImGui::TreeNodeEx(label.tag.c_str(), flags);
+
+            if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen()) {
+                set_selected_entity(entity);
+            }
+
+            render_entity_context_menu(entity, out_destroy, out_duplicate);
+
+            if (opened) {
+                ImGui::TreePop();
+            }
+        }
 
         if (!is_active) {
             ImGui::PopStyleColor();
         }
 
-        if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen()) {
-            set_selected_entity(entity);
-        }
-
-        render_entity_context_menu(entity, out_destroy, out_duplicate);
-
-        if (opened) {
-            ImGui::TreePop();
-        }
         ImGui::PopID();
     }
 
@@ -272,10 +293,13 @@ namespace editor {
         return toggled;
     }
 
-    void Hierarchy::render_entity_context_menu(const engine::Entity entity, engine::Entity& out_destroy, engine::Entity& out_duplicate) {
+    void Hierarchy::render_entity_context_menu(engine::Entity entity, engine::Entity& out_destroy, engine::Entity& out_duplicate) {
         if (ImGui::BeginPopupContextItem()) {
-            if (ImGui::MenuItem("Delete")) out_destroy = entity;
-            if (ImGui::MenuItem("Duplicate")) out_duplicate = entity;
+            if (ImGui::MenuItem("Rename", "F2")) {
+                rename_entity(entity);
+            }
+            if (ImGui::MenuItem("Duplicate", "Ctrl+D")) out_duplicate = entity;
+            if (ImGui::MenuItem("Delete", "Del")) out_destroy = entity;
             ImGui::EndPopup();
         }
     }
@@ -283,6 +307,9 @@ namespace editor {
     void Hierarchy::process_shortcuts(engine::Entity& out_destroy, engine::Entity& out_duplicate) {
         if (!selected_entity_ || ImGui::IsAnyItemActive()) return;
 
+        if (engine::Input::is_key_pressed_once(engine::Key::F2)) {
+            rename_entity(selected_entity_);
+        }
         if (engine::Input::is_key_pressed_once(engine::Key::DELETE)) {
             out_destroy = selected_entity_;
         }
@@ -300,6 +327,9 @@ namespace editor {
             if (selected_entity_ == entity_to_destroy) {
                 set_selected_entity({});
             }
+            if (renaming_entity_ == entity_to_destroy) {
+                renaming_entity_ = {};
+            }
             active_scene->destroy_entity(entity_to_destroy);
         }
     }
@@ -311,6 +341,16 @@ namespace editor {
         if (clicked_empty_space || pressed_escape) {
             set_selected_entity({});
         }
+    }
+
+    void Hierarchy::rename_entity(engine::Entity entity) {
+        if (!entity || !entity.has_component<engine::LabelComponent>()) return;
+
+        renaming_entity_ = entity;
+        const auto& label = entity.get_component<engine::LabelComponent>();
+        std::strncpy(rename_buffer_, label.tag.c_str(), sizeof(rename_buffer_) - 1);
+        rename_buffer_[sizeof(rename_buffer_) - 1] = '\0';
+        start_renaming_ = true;
     }
     #endif
 }
