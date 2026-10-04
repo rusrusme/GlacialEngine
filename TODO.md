@@ -4,6 +4,7 @@ Future features:
     - Object
     - Camera **DONE**
     - Light-space
+- LODs
 - Shadow mapping **DONE**
 - Post-processing pipeline **PENDING**
 - Asset manager **PENDING**

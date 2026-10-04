@@ -210,6 +210,7 @@ namespace engine {
         // ------------------
         // Render passes
         // ------------------
+        // Todo: Bug: Shadows of culled objects disappear
         renderer.render_shadow_pass(camera, asset_manager, mesh_batches_);
         renderer.render_point_shadow_pass(asset_manager, mesh_batches_);
         renderer.render_mesh_batches(asset_manager, mesh_batches_);
