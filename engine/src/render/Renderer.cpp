@@ -165,25 +165,6 @@ namespace engine {
     void Renderer::render_point_shadow_pass(AssetManager& asset_manager, const std::unordered_map<UUID, std::vector<InstanceData>>& batches) {
         if (point_lights_.empty() || point_shadow_framebuffers_.empty()) return;
 
-        // const auto& light = point_lights_[0];
-        // const glm::vec3 light_pos = light.position;
-        // const float far_plane = light.radius;
-        //
-        // const glm::mat4 shadow_proj = glm::perspective(glm::radians(90.0f), 1.0f, 0.1f, far_plane);
-        //
-        // // Standard OpenGL Cube map Cardinal Orientations
-        // const glm::mat4 shadow_matrices[6] = {
-        //     shadow_proj * glm::lookAt(light_pos, light_pos + glm::vec3(1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f)),  // +X
-        //     shadow_proj * glm::lookAt(light_pos, light_pos + glm::vec3(-1.0f, 0.0f, 0.0f), glm::vec3(0.0f, -1.0f, 0.0f)), // -X
-        //     shadow_proj * glm::lookAt(light_pos, light_pos + glm::vec3(0.0f, 1.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f)),   // +Y
-        //     shadow_proj * glm::lookAt(light_pos, light_pos + glm::vec3(0.0f, -1.0f, 0.0f), glm::vec3(0.0f, 0.0f, -1.0f)), // -Y
-        //     shadow_proj * glm::lookAt(light_pos, light_pos + glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, -1.0f, 0.0f)),  // +Z
-        //     shadow_proj * glm::lookAt(light_pos, light_pos + glm::vec3(0.0f, 0.0f, -1.0f), glm::vec3(0.0f, -1.0f, 0.0f))  // -Z
-        // };
-
-        // point_shadow_framebuffer_->bind();
-        // RenderCommand::set_viewport(0, 0, point_shadow_framebuffer_->get_width(), point_shadow_framebuffer_->get_height());
-
         auto point_shadow_shader = shader_library_.get("point_shadow_depth");
         if (!point_shadow_shader) return;
 
@@ -234,28 +215,10 @@ namespace engine {
             fbo->unbind();
         }
 
-        // if (point_shadow_shader) {
-        //     point_shadow_shader->bind();
-        //     point_shadow_shader->set_vec3("u_light_position", light_pos);
-        //     point_shadow_shader->set_float("u_far_plane", far_plane);
-        //
-        //     for (uint32_t face = 0; face < 6; ++face) {
-        //         point_shadow_shader->set_mat4("u_shadow_matrices[" + std::to_string(face) + "]", shadow_matrices[face]);
-        //     }
-        //
-        //     RenderCommand::clear(false, true);
-        //     for (const auto& [handle, instance_list] : batches) {
-        //         if (std::shared_ptr<Mesh> mesh = asset_manager.get_asset<Mesh>(handle)) {
-        //             draw_mesh_instanced(*mesh, instance_list, point_shadow_shader);
-        //         }
-        //     }
-        // }
-
         set_frustum_culling_enabled(prev_culling);
         RenderCommand::set_cull_face(false);
         RenderCommand::set_polygon_offset(false);
 
-        // point_shadow_framebuffer_->unbind();
         RenderCommand::set_viewport(0, 0, static_cast<uint32_t>(framebuffer_width_), static_cast<uint32_t>(framebuffer_height_));
     }
 
