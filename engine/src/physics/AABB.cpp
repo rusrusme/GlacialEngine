@@ -9,6 +9,25 @@
 #include "render/Frustum.hpp"
 
 namespace engine {
+    AABB AABB::get_transformed(const glm::mat4& transform) const {
+        const glm::vec3 center = get_center();
+        const glm::vec3 extents = get_extents();
+
+        const auto world_center = glm::vec3(transform * glm::vec4(center, 1.0f));
+
+        const auto abs_matrix = glm::mat3(
+            glm::abs(glm::vec3(transform[0])),
+            glm::abs(glm::vec3(transform[1])),
+            glm::abs(glm::vec3(transform[2]))
+        );
+        const glm::vec3 world_extents = abs_matrix * extents;
+
+        return AABB{
+            world_center - world_extents,
+            world_center + world_extents
+        };
+    }
+
     bool AABB::intersects_aabb(const AABB& other) const {
         return (min.x <= other.max.x && max.x >= other.min.x) &&
             (min.y <= other.max.y && max.y >= other.min.y) &&
@@ -65,5 +84,9 @@ namespace engine {
         const glm::vec3 diff = center - closest;
 
         return glm::dot(diff, diff) <= (radius * radius);
+    }
+
+    bool AABB::intersects_frustum(const Frustum& frustum) const {
+        return frustum.intersects(*this);
     }
 }

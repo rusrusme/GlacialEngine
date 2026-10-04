@@ -10,6 +10,7 @@
 #include "core/WindowAPI.hpp"
 #include "render/Buffer.hpp"
 #include "render/Camera.hpp"
+#include "render/Frustum.hpp"
 #include "render/RenderCommand.hpp"
 #include "render/Texture2D.hpp"
 #include "render/VertexArray.hpp"
@@ -161,7 +162,8 @@ namespace engine {
 
                 // Light-Space culling
                 for (const auto& instance : instance_list) {
-                    if (light_frustum.intersects(mesh->local_bounds, instance.transform)) {
+                    const AABB world_aabb = mesh->local_bounds.get_transformed(instance.transform);
+                    if (light_frustum.intersects(world_aabb)) {
                         culled_instances.push_back(instance);
                     }
                 }
@@ -375,7 +377,8 @@ namespace engine {
         if (frustum_culling_enabled_) {
             visible_instances.reserve(instances.size());
             for (const auto& instance : instances) {
-                if (current_frustum_.intersects(mesh.local_bounds, instance.transform)) {
+                const AABB world_aabb = mesh.local_bounds.get_transformed(instance.transform);
+                if (current_frustum_.intersects(world_aabb)) {
                     visible_instances.push_back(instance);
                 }
             }
@@ -478,5 +481,13 @@ namespace engine {
         );
 
         shader->unbind();
+    }
+
+    void Renderer::set_frustum_culling_enabled(bool enabled) {
+        frustum_culling_enabled_ = enabled;
+    }
+
+    bool Renderer::is_frustum_culling_enabled() const {
+        return frustum_culling_enabled_;
     }
 }

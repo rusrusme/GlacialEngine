@@ -13,6 +13,7 @@
 #include "core/UUID.hpp"
 #include "render/Buffer.hpp"
 #include "render/Framebuffer.hpp"
+#include "render/Frustum.hpp"
 #include "render/PostProcessor.hpp"
 #include "render/Shader.hpp"
 #include "render/ShaderLibrary.hpp"
@@ -72,8 +73,8 @@ namespace engine {
         void draw_mesh_instanced(const Mesh& mesh, const std::vector<InstanceData>& instances, const std::shared_ptr<Shader>& override_shader = nullptr);
 
         // Frustum culling
-        void set_frustum_culling_enabled(bool enabled) { frustum_culling_enabled_ = enabled; }
-        [[nodiscard]] bool is_frustum_culling_enabled() const { return frustum_culling_enabled_; }
+        void set_frustum_culling_enabled(bool enabled);
+        [[nodiscard]] bool is_frustum_culling_enabled() const;
 
         // Asset access
         [[nodiscard]] ShaderLibrary& get_shader_library() { return shader_library_; }

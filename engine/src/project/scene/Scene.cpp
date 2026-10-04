@@ -155,7 +155,6 @@ namespace engine {
         mesh_batches_.clear();
         shadow_batches_.clear();
 
-        const Frustum frustum = camera.get_frustum();
         const glm::vec3 camera_pos = camera.get_position();
 
         auto mesh_view = registry_.view<TransformComponent, MeshComponent, ActiveComponent>();
@@ -193,7 +192,6 @@ namespace engine {
                 });
 
                 // Camera batches (mesh batches)
-                if (!frustum.intersects(mesh->local_bounds, model_matrix)) continue;
                 glm::vec4 color{1.0f};
                 float roughness = 0.5f;
                 float metallic = 0.0f;

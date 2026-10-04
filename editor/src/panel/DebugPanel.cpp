@@ -49,6 +49,11 @@ namespace editor {
         ImGui::Text("Draw Calls: %u", draw_calls);
         ImGui::Text("Instances Rendered: %u", instance_count);
 
+        bool toggle_frustum = renderer.is_frustum_culling_enabled();
+        if (ImGui::Checkbox("Frustum Culling", &toggle_frustum)) {
+            renderer.set_frustum_culling_enabled(toggle_frustum);
+        }
+
         ImGui::Separator();
         ImGui::Text("Video");
         bool vsync_enabled = engine::Application::get().window().is_vsync();

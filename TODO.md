@@ -1,10 +1,10 @@
 Future features:
 
-- Frustum culling
+- Frustum culling **PENDING**
     - Object
     - Camera **DONE**
-    - Light-space
-- LODs
+    - Light-space **DONE**
+- LODs **DONE**
 - Shadow mapping **DONE**
 - Post-processing pipeline **PENDING**
 - Asset manager **PENDING**
