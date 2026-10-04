@@ -192,11 +192,12 @@ target_precompile_headers(Engine PRIVATE src/core/core_pch.hpp)
 # ----------------------------------------------------------------------------
 include(PackageDistribution.cmake)
 # ----------------------------------------------------------------------------
-add_custom_command(
-        TARGET Engine POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_directory
-        "${CMAKE_SOURCE_DIR}/assets"
-        "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/assets"
-        COMMENT "Copying assets to runtime output directory"
+set(RUNTIME_ASSETS "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/assets")
+set(SOURCE_ASSETS "${CMAKE_SOURCE_DIR}/assets")
+add_custom_target(SyncAssets ALL
+                  COMMAND ${CMAKE_COMMAND} -E remove_directory "${RUNTIME_ASSETS}"
+                  COMMAND ${CMAKE_COMMAND} -E copy_directory "${SOURCE_ASSETS}" "${RUNTIME_ASSETS}"
+                  COMMENT "Syncing assets to runtime output directory"
 )
+add_dependencies(Engine SyncAssets)
 # ----------------------------------------------------------------------------
