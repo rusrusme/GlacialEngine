@@ -18,7 +18,7 @@ namespace engine {
         T& add_component(Args&&... args);
 
         template<typename T>
-        void remove_component();
+        void remove_component() const;
 
         template<typename T>
         [[nodiscard]] T& get_component();
@@ -26,22 +26,20 @@ namespace engine {
         template<typename T>
         [[nodiscard]] bool has_component() const;
 
-        UUID uuid() { return get_component<IDComponent>().id; }
+        [[nodiscard]] bool is_active() const;
+        void set_active(bool active) const;
 
-        const std::string& name() { return get_component<LabelComponent>().tag; }
+        UUID uuid();
+        const std::string& name();
 
         explicit operator bool() const { return entity_handle_ != entt::null && scene_ != nullptr; }
-
         bool operator==(const Entity& other) const { return entity_handle_ == other.entity_handle_ && scene_ == other.scene_; }
-
         bool operator!=(const Entity& other) const { return !(*this == other); }
-
         operator entt::entity() const { return entity_handle_; }
         operator uint32_t() const { return static_cast<uint32_t>(entity_handle_); }
 
     private:
         entt::entity entity_handle_ = entt::null;
-
         Scene* scene_ = nullptr;
     };
 
@@ -56,7 +54,7 @@ namespace engine {
     }
 
     template<typename T>
-    void Entity::remove_component() {
+    void Entity::remove_component() const {
         if (!has_component<T>()) {
             throw std::runtime_error("Engine error: scenes: entity does not have component of this type");
         }

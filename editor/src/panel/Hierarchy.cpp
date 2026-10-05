@@ -203,18 +203,11 @@ namespace editor {
         auto& label = entity.get_component<engine::LabelComponent>();
         ImGui::PushID(entity.uuid());
 
-        bool is_active = entity.has_component<engine::ActiveComponent>()
-                             ? entity.get_component<engine::ActiveComponent>().active
-                             : true;
 
         // Visibility Button
+        const bool is_active = entity.is_active();
         if (render_eye_toggle_button(is_active)) {
-            if (!entity.has_component<engine::ActiveComponent>()) {
-                entity.add_component<engine::ActiveComponent>(!is_active);
-            }
-            else {
-                entity.get_component<engine::ActiveComponent>().active = !is_active;
-            }
+            entity.set_active(!is_active);
         }
 
         ImGui::SameLine(0.0f, 4.0f);
