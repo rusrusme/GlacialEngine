@@ -12,6 +12,10 @@
 #include <thread>
 #include <mutex>
 #include <vector>
+#include <filesystem>
+#include <iomanip>
+#include <sstream>
+#include <ctime>
 
 namespace engine {
     struct ProfileResult {
@@ -38,11 +42,32 @@ namespace engine {
             return instance;
         }
 
-        void begin_session(const std::string& name, const std::string& filepath = "profiler.json") {
-            std::lock_guard<std::mutex> lock(mutex_);
+        void begin_session(const std::string& name, std::string filepath = "") {
+            std::lock_guard lock(mutex_);
             if (active_session_) {
                 internal_end_session();
             }
+
+            if (filepath.empty() || filepath == "profiler.json") {
+                const auto now = std::chrono::system_clock::now();
+                auto time_t_now = std::chrono::system_clock::to_time_t(now);
+
+                std::tm local_tm{};
+                #if defined(_MSC_VER) || defined(_WIN32)
+                localtime_s(&local_tm, &time_t_now);
+                #else
+                localtime_r(&time_t_now, &local_tm);
+                #endif
+                std::stringstream ss;
+                ss << "logs/profiler_" << std::put_time(&local_tm, "%Y-%m-%d_%H-%M-%S") << ".json";
+                filepath = ss.str();
+            }
+
+            const std::filesystem::path path(filepath);
+            if (path.has_parent_path()) {
+                std::filesystem::create_directories(path.parent_path());
+            }
+
             out_stream_.open(filepath);
             if (out_stream_.is_open()) {
                 active_session_ = true;
@@ -51,19 +76,19 @@ namespace engine {
         }
 
         void end_session() {
-            std::lock_guard<std::mutex> lock(mutex_);
+            std::lock_guard lock(mutex_);
             internal_end_session();
         }
 
         void write_profile(const ProfileResult& result) {
-            std::lock_guard<std::mutex> lock(mutex_);
+            std::lock_guard lock(mutex_);
             if (!active_session_ || !out_stream_.is_open()) return;
 
             if (profile_count_++ > 0) out_stream_ << ",\n";
 
             std::string name;
             name.reserve(result.name.size() * 2);
-            for (char c : result.name) {
+            for (const char c : result.name) {
                 if (c == '"') name += "\\\"";
                 else if (c == '\\') name += "\\\\";
                 else if (c == '\n') name += "\\n";
@@ -124,12 +149,12 @@ namespace engine {
         void stop() {
             if (stopped_) return;
 
-            auto end_timepoint = std::chrono::high_resolution_clock::now();
+            const auto end_timepoint = std::chrono::high_resolution_clock::now();
 
-            long long start = std::chrono::time_point_cast<std::chrono::microseconds>(start_timepoint_).time_since_epoch().count();
-            long long end = std::chrono::time_point_cast<std::chrono::microseconds>(end_timepoint).time_since_epoch().count();
+            const long long start = std::chrono::time_point_cast<std::chrono::microseconds>(start_timepoint_).time_since_epoch().count();
+            const long long end = std::chrono::time_point_cast<std::chrono::microseconds>(end_timepoint).time_since_epoch().count();
 
-            uint32_t thread_id = static_cast<uint32_t>(std::hash<std::thread::id>{}(std::this_thread::get_id()));
+            const uint32_t thread_id = static_cast<uint32_t>(std::hash<std::thread::id>{}(std::this_thread::get_id()));
             Instrumentor::get().write_profile({name_, start, end, thread_id});
 
             stopped_ = true;
@@ -143,35 +168,35 @@ namespace engine {
 
     inline void begin_manual_section(const char* name) {
         thread_local std::vector<ProfileStartInfo> stack;
-        stack.push_back({name, std::chrono::high_resolution_clock::now()});
+        stack.push_back({.name = name, .start_time = std::chrono::high_resolution_clock::now()});
     }
 
     inline void end_manual_section() {
         thread_local std::vector<ProfileStartInfo> stack;
         if (stack.empty()) return;
 
-        ProfileStartInfo info = stack.back();
+        auto [name, start_time] = stack.back();
         stack.pop_back();
 
-        auto end_time = std::chrono::high_resolution_clock::now();
-        long long start = std::chrono::time_point_cast<std::chrono::microseconds>(info.start_time).time_since_epoch().count();
-        long long end = std::chrono::time_point_cast<std::chrono::microseconds>(end_time).time_since_epoch().count();
-        uint32_t thread_id = static_cast<uint32_t>(std::hash<std::thread::id>{}(std::this_thread::get_id()));
+        const auto end_time = std::chrono::high_resolution_clock::now();
+        const long long start = std::chrono::time_point_cast<std::chrono::microseconds>(start_time).time_since_epoch().count();
+        const long long end = std::chrono::time_point_cast<std::chrono::microseconds>(end_time).time_since_epoch().count();
+        const uint32_t thread_id = static_cast<uint32_t>(std::hash<std::thread::id>{}(std::this_thread::get_id()));
 
-        Instrumentor::get().write_profile({info.name, start, end, thread_id});
+        Instrumentor::get().write_profile({name, start, end, thread_id});
     }
 }
 
 #ifdef ENABLE_PROFILER
-#define PROFILE_BEGIN_SESSION(name, filepath) ::engine::Instrumentor::get().begin_session(name, filepath)
-#define PROFILE_END_SESSION()                 ::engine::Instrumentor::get().end_session()
-#define PROFILE_SCOPE(name)                   ::engine::InstrumentationTimer timer##__LINE__(name)
-#define PROFILE_FUNCTION()                    PROFILE_SCOPE(__FUNCTION__)
+#define PROFILE_BEGIN_SESSION(name, ...) ::engine::Instrumentor::get().begin_session(name, ##__VA_ARGS__)
+#define PROFILE_END_SESSION()            ::engine::Instrumentor::get().end_session()
+#define PROFILE_SCOPE(name)              ::engine::InstrumentationTimer timer##__LINE__(name)
+#define PROFILE_FUNCTION()               PROFILE_SCOPE(__FUNCTION__)
 
 #define PROFILE_START(name) ::engine::begin_manual_section(name)
 #define PROFILE_END()       ::engine::end_manual_section()
 #else
-#define PROFILE_BEGIN_SESSION(name, filepath)
+#define PROFILE_BEGIN_SESSION(name, ...)
 #define PROFILE_END_SESSION()
 #define PROFILE_SCOPE(name)
 #define PROFILE_FUNCTION()

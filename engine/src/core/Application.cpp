@@ -20,7 +20,7 @@ namespace engine {
     Application::Application() : Application(setting::ENGINE_TITLE_) {}
 
     Application::Application(std::string title) : title_(std::move(title)) {
-        PROFILE_BEGIN_SESSION("Engine_Profile", "profile_results.json");
+        PROFILE_BEGIN_SESSION("Engine_Profile");
         instance_ = this;
     }
 
