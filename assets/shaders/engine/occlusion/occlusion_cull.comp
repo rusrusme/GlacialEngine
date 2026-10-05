@@ -19,6 +19,26 @@ uniform sampler2D u_hzb_texture;
 uniform mat4 u_view_projection;
 uniform vec2 u_screen_size;
 uniform uint u_num_instances;
+uniform uint u_max_mip_level;
+uniform vec4 u_frustum_planes[6];
+
+bool intersects_frustum(vec3 min_pos, vec3 max_pos) {
+    vec3 center = (min_pos + max_pos) * 0.5;
+    vec3 extents = (max_pos - min_pos) * 0.5;
+
+    for (int i = 0; i < 6; ++i) {
+        vec3 plane_normal = u_frustum_planes[i].xyz;
+        float plane_dist = u_frustum_planes[i].w;
+
+        float radius = dot(extents, abs(plane_normal));
+        float dist = dot(plane_normal, center) + plane_dist;
+
+        if (dist < -radius) {
+            return false;
+        }
+    }
+    return true;
+}
 
 void main() {
     uint idx = gl_GlobalInvocationID.x;
@@ -27,6 +47,13 @@ void main() {
     vec3 box_min = u_aabbs[idx].min_pos.xyz;
     vec3 box_max = u_aabbs[idx].max_pos.xyz;
 
+    // 1. Frustum Check First
+    if (!intersects_frustum(box_min, box_max)) {
+        u_visibility[idx] = 0u;
+        return;
+    }
+
+    // 2. HZB Occlusion Test
     vec3 corners[8] = vec3[8](
             vec3(box_min.x, box_min.y, box_min.z),
             vec3(box_max.x, box_min.y, box_min.z),
@@ -45,7 +72,6 @@ void main() {
     for (int i = 0; i < 8; ++i) {
         vec4 clip_space = u_view_projection * vec4(corners[i], 1.0);
 
-        // Near plane clipping check: if any corner is behind/on near plane, keep object visible
         if (clip_space.w <= 0.001) {
             u_visibility[idx] = 1u;
             return;
@@ -67,7 +93,8 @@ void main() {
     vec2 size_pixels = (max_uv - min_uv) * u_screen_size;
     float max_dim = max(size_pixels.x, size_pixels.y);
 
-    float mip_level = ceil(log2(max(max_dim, 1.0)));
+    float calc_mip = ceil(log2(max(max_dim, 1.0)));
+    float mip_level = clamp(calc_mip, 0.0, float(u_max_mip_level - 1u));
 
     float hzb_d0 = textureLod(u_hzb_texture, vec2(min_uv.x, min_uv.y), mip_level).r;
     float hzb_d1 = textureLod(u_hzb_texture, vec2(max_uv.x, min_uv.y), mip_level).r;
@@ -75,6 +102,12 @@ void main() {
     float hzb_d3 = textureLod(u_hzb_texture, vec2(max_uv.x, max_uv.y), mip_level).r;
 
     float max_hzb_depth = max(max(hzb_d0, hzb_d1), max(hzb_d2, hzb_d3));
+
+    // Fallback: Falls der HZB-Wert 1.0 ist (Far Plane / Ungefüllt), Objekt rendern
+    if (max_hzb_depth >= 0.9999) {
+        u_visibility[idx] = 1u;
+        return;
+    }
 
     u_visibility[idx] = (min_z <= max_hzb_depth + 0.0001) ? 1u : 0u;
 }

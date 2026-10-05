@@ -46,6 +46,7 @@ namespace engine {
 
         shader_library_.load_compute("occlusion_cull", "assets/shaders/engine/occlusion/occlusion_cull.comp");
         shader_library_.load_compute("hzb_generate", "assets/shaders/engine/occlusion/hzb_generate.comp");
+        shader_library_.load_compute("gpu_cull", "assets/shaders/engine/occlusion/gpu_cull.comp");
 
         depth_prepass_fbo_ = std::make_unique<Framebuffer>(framebuffer_width_, framebuffer_height_, FramebufferType::DepthOnly);
 
@@ -118,66 +119,8 @@ namespace engine {
     }
 
     void Renderer::render_occlusion_pass(Camera& camera, AssetManager& asset_manager, std::unordered_map<UUID, std::vector<InstanceData>>& batches) {
-        if (!depth_prepass_fbo_) return;
-
-        auto depth_shader = shader_library_.get("depth_prepass");
-        if (!depth_shader) return;
-
-        // 1. Depth Pre-Pass
-        depth_prepass_fbo_->bind();
-        RenderCommand::set_viewport(0, 0, static_cast<uint32_t>(framebuffer_width_), static_cast<uint32_t>(framebuffer_height_));
-        RenderCommand::set_depth_test(true);
-        RenderCommand::set_depth_mask(true);
-
-        // Color Clear-Value auf 1.0 (Fernste Tiefe)
-        RenderCommand::set_clear_color(glm::vec4(1.0f));
-        RenderCommand::clear(true, true);
-
-        const bool prev_culling = is_frustum_culling_enabled();
-        set_frustum_culling_enabled(false);
-
-        for (const auto& [handle, instance_list] : batches) {
-            if (instance_list.empty()) continue;
-            if (std::shared_ptr<Mesh> mesh = asset_manager.get_asset<Mesh>(handle)) {
-                draw_mesh_instanced(*mesh, instance_list, depth_shader);
-            }
-        }
-
-        set_frustum_culling_enabled(prev_culling);
-        depth_prepass_fbo_->unbind();
-
-        // 2. Build HZB Depth Pyramid Mipmaps
-        auto hzb_shader = shader_library_.get("hzb_generate");
-        if (!hzb_shader) return;
-
-        hzb_shader->bind();
-        depth_prepass_fbo_->bind_color_texture(0);
-
-        uint32_t current_width = framebuffer_width_;
-        uint32_t current_height = framebuffer_height_;
-        const uint32_t total_mips = depth_prepass_fbo_->get_mip_levels();
-
-        for (uint32_t mip = 1; mip < total_mips; ++mip) {
-            uint32_t next_width = std::max(1u, current_width / 2);
-            uint32_t next_height = std::max(1u, current_height / 2);
-
-            depth_prepass_fbo_->bind_color_image(1, mip, true);
-
-            hzb_shader->set_int("u_src_mip_level", static_cast<int>(mip - 1));
-            hzb_shader->set_ivec2("u_out_resolution", glm::ivec2(next_width, next_height));
-
-            const uint32_t groups_x = (next_width + 15) / 16;
-            const uint32_t groups_y = (next_height + 15) / 16;
-
-            RenderCommand::dispatch_compute(groups_x, groups_y, 1);
-
-            current_width = next_width;
-            current_height = next_height;
-        }
-
-        // 3. Occlusion Compute Pass
-        auto occlusion_shader = shader_library_.get("occlusion_cull");
-        if (!occlusion_shader) return;
+        auto cull_shader = shader_library_.get("gpu_cull");
+        if (!cull_shader) return;
 
         struct InstanceRef {
             UUID handle;
@@ -187,19 +130,19 @@ namespace engine {
         std::vector<InstanceAABB> instance_aabbs;
         std::vector<InstanceRef> instance_refs;
 
-        for (const auto& [handle, instance_list] : batches) {
-            std::shared_ptr<Mesh> mesh = asset_manager.get_asset<Mesh>(handle);
-            if (!mesh) continue;
-
-            for (size_t i = 0; i < instance_list.size(); ++i) {
-                const AABB world_aabb = mesh->local_bounds.get_transformed(instance_list[i].transform);
-                instance_aabbs.push_back(InstanceAABB{
-                    .min_pos = glm::vec4(world_aabb.min, 1.0f),
-                    .max_pos = glm::vec4(world_aabb.max, 1.0f)
-                });
-                instance_refs.push_back({handle, i});
-            }
-        }
+        // for (const auto& [handle, instance_list] : batches) {
+        //     std::shared_ptr<Mesh> mesh = asset_manager.get_asset<Mesh>(handle);
+        //     if (!mesh) continue;
+        //
+        //     for (size_t i = 0; i < instance_list.size(); ++i) {
+        //         const AABB world_aabb = mesh->local_bounds.get_transformed(instance_list[i].transform);
+        //         instance_aabbs.push_back(InstanceAABB{
+        //             .min_pos = glm::vec4(world_aabb.min, 1.0f),
+        //             .max_pos = glm::vec4(world_aabb.max, 1.0f)
+        //         });
+        //         instance_refs.push_back({handle, i});
+        //     }
+        // }
 
         if (instance_aabbs.empty()) return;
 
@@ -211,14 +154,14 @@ namespace engine {
         aabb_ssbo.bind(0);
         visibility_ssbo.bind(1);
 
-        occlusion_shader->bind();
-        depth_prepass_fbo_->bind_color_texture(0);
+        cull_shader->bind();
+        cull_shader->set_int("u_num_instances", num_instances);
 
-        const glm::mat4 vp = camera.get_projection_matrix() * camera.get_view_matrix();
-        occlusion_shader->set_mat4("u_view_projection", vp);
-        occlusion_shader->set_vec2("u_screen_size", glm::vec2(framebuffer_width_, framebuffer_height_));
-        occlusion_shader->set_int("u_num_instances", num_instances);
-        occlusion_shader->set_int("u_hzb_texture", 0);
+        const Frustum frustum = camera.get_frustum();
+        for (int i = 0; i < 6; ++i) {
+            cull_shader->set_vec4("u_frustum_planes[" + std::to_string(i) + "]",
+                                  glm::vec4(frustum.planes[i].normal, frustum.planes[i].distance));
+        }
 
         RenderCommand::dispatch_compute((num_instances + 63) / 64, 1, 1);
 
@@ -227,22 +170,16 @@ namespace engine {
 
         aabb_ssbo.unbind();
         visibility_ssbo.unbind();
-        RenderCommand::unbind_texture(0);
-        RenderCommand::unbind_image(1);
+        cull_shader->unbind();
 
         std::unordered_map<UUID, std::vector<InstanceData>> filtered_batches;
 
-        uint32_t visible_count = 0;
         for (size_t i = 0; i < num_instances; ++i) {
             if (visibility_results[i] == 1) {
                 const auto& [handle, index] = instance_refs[i];
                 filtered_batches[handle].push_back(batches[handle][index]);
-                visible_count++;
             }
         }
-
-        CORE_INFO("Occlusion Culling: Input={0}, Output={1}", num_instances, visible_count);
-
         batches = std::move(filtered_batches);
     }
 

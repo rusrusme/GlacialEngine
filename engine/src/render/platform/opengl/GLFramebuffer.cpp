@@ -117,12 +117,14 @@ namespace engine {
             case GLFramebufferType::DepthOnly : {
                 mip_levels_ = static_cast<uint32_t>(std::floor(std::log2(std::max(width, height)))) + 1;
 
-                // 1. HZB-Textur (GL_R32F Color Attachment)
                 glGenTextures(1, &color_attachment_id_);
                 glBindTexture(GL_TEXTURE_2D, color_attachment_id_);
                 glTexStorage2D(GL_TEXTURE_2D, mip_levels_, GL_R32F, width_, height_);
 
-                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+                // WICHTIG: Explicit Base/Max Level & NEAREST setzen, damit OpenGL die Textur sofort als "complete" akzeptiert!
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_BASE_LEVEL, 0);
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL, static_cast<GLint>(mip_levels_ - 1));
+                glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
