@@ -138,6 +138,7 @@ add_library(Engine STATIC
             include/render/BSHLoader.hpp
             src/project/Project.cpp
             include/project/Project.hpp
+            include/util/Instrumentor.hpp
 )
 # ----------------------------------------------------------------------------
 target_include_directories(Engine
@@ -200,4 +201,9 @@ add_custom_target(SyncAssets ALL
                   COMMENT "Syncing assets to runtime output directory"
 )
 add_dependencies(Engine SyncAssets)
+# ----------------------------------------------------------------------------
+option(ENABLE_PROFILER "Enable Instrumentation Profiler" ON)
+if(ENABLE_PROFILER)
+    add_compile_definitions(ENABLE_PROFILER)
+endif()
 # ----------------------------------------------------------------------------

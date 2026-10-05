@@ -14,6 +14,7 @@
 #include "physics/CollisionSystem.hpp"
 #include "project/scene/ecs/Entity.hpp"
 #include "render/mesh/InstanceData.hpp"
+#include "util/Instrumentor.hpp"
 
 namespace engine {
     Scene::Scene() = default;
@@ -100,10 +101,12 @@ namespace engine {
     }
 
     void Scene::on_update(float delta_time) {
+        PROFILE_FUNCTION();
         collision_system_->update_broadphase(*this);
     }
 
     void Scene::on_render(Renderer& renderer, Camera& camera, AssetManager& asset_manager, const float delta_time) {
+        PROFILE_FUNCTION();
         Renderer::set_blend(true);
 
         // ------------------
@@ -121,6 +124,7 @@ namespace engine {
         // ------------------
         // Lights
         // ------------------
+        PROFILE_START(scene_render, "Render - Lights Processing");
         auto dir_light_view = registry_.view<TransformComponent, DirectionalLightComponent>();
         for (auto entity : dir_light_view) {
             auto [transform, light] = dir_light_view.get<TransformComponent, DirectionalLightComponent>(entity);
@@ -149,9 +153,11 @@ namespace engine {
                 .radius    = light.radius
             });
         }
+        PROFILE_END(scene_render);
         // ------------------
         // Meshes
         // ------------------
+        PROFILE_START(scene_batch, "Render - Batching & LOD Loop");
         mesh_batches_.clear();
         shadow_batches_.clear();
 
@@ -213,14 +219,17 @@ namespace engine {
                           registry_.all_of<LabelComponent>(entity) ? registry_.get<LabelComponent>(entity).tag : "Entity");
             }
         }
+        PROFILE_END(scene_batch);
         // ------------------
         // Render passes
         // ------------------
         // Todo: bugged...
         // renderer.render_occlusion_pass(camera, asset_manager, mesh_batches_);
+        PROFILE_START(scene_render_pass, "Render - Pass Submissions");
         renderer.render_shadow_pass(camera, asset_manager, shadow_batches_);
         renderer.render_point_shadow_pass(asset_manager, shadow_batches_);
         renderer.render_mesh_batches(asset_manager, mesh_batches_);
+        PROFILE_END(scene_render_pass);
     }
 
     void Scene::clear(const SystemContext& context) {

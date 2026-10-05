@@ -41,7 +41,7 @@ namespace engine {
     // ----------------------------
     struct TransformComponent {
         glm::vec3 position{0.0f, 0.0f, 0.0f};
-        glm::vec3 rotation{0.0f, 0.0f, 0.0f}; // Euler-Winkel in Grad (für Inspector/UI)
+        glm::vec3 rotation{0.0f, 0.0f, 0.0f}; // Euler-Winkel in Grad
         glm::vec3 scale{1.0f, 1.0f, 1.0f};
 
         TransformComponent() = default;
@@ -54,9 +54,18 @@ namespace engine {
         }
 
         [[nodiscard]] glm::mat4 get_matrix() const {
-            glm::mat4 mat = glm::translate(glm::mat4(1.0f), position);
-            mat *= glm::toMat4(get_orientation());
-            return glm::scale(mat, scale);
+            if (is_dirty_ || position != last_position_ || rotation != last_rotation_ || scale != last_scale_) {
+                glm::mat4 mat = glm::translate(glm::mat4(1.0f), position);
+                mat *= glm::toMat4(get_orientation());
+                cached_matrix_ = glm::scale(mat, scale);
+
+                last_position_ = position;
+                last_rotation_ = rotation;
+                last_scale_ = scale;
+                is_dirty_ = false;
+            }
+
+            return cached_matrix_;
         }
 
         [[nodiscard]] glm::vec3 get_forward() const {
@@ -70,6 +79,15 @@ namespace engine {
         [[nodiscard]] glm::vec3 get_right() const {
             return glm::rotate(get_orientation(), glm::vec3(1.0f, 0.0f, 0.0f));
         }
+
+        void set_dirty() { is_dirty_ = true; }
+
+    private:
+        mutable glm::mat4 cached_matrix_{1.0f};
+        mutable glm::vec3 last_position_{0.0f, 0.0f, 0.0f};
+        mutable glm::vec3 last_rotation_{0.0f, 0.0f, 0.0f};
+        mutable glm::vec3 last_scale_{1.0f, 1.0f, 1.0f};
+        mutable bool is_dirty_{true};
     };
 
     struct ActiveComponent {

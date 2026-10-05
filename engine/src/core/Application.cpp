@@ -14,15 +14,19 @@
 #include "event/WindowEvents.hpp"
 #include "render/Frame.hpp"
 #include "render/debug/DebugRenderer.hpp"
+#include "util/Instrumentor.hpp"
 
 namespace engine {
     Application::Application() : Application(setting::ENGINE_TITLE_) {}
 
     Application::Application(std::string title) : title_(std::move(title)) {
+        PROFILE_BEGIN_SESSION("Engine_Profile", "profile_results.json");
         instance_ = this;
     }
 
     int Application::run() {
+        PROFILE_FUNCTION();
+
         Log::init();
         CORE_INFO("Starting application");
         setting::configuration::load();
@@ -53,7 +57,10 @@ namespace engine {
         DebugRenderer::on_attach();
 
         audio_system_.on_attach();
+
+        PROFILE_START(asset_timer, "Scanning initial asset directory");
         asset_manager_.scan_directory("assets");
+        PROFILE_END(asset_timer);
 
         CORE_INFO("Attaching application layers");
         for (const auto& layer : layers_) {
@@ -72,20 +79,27 @@ namespace engine {
             // ----------------------------------
             audio_system_.on_update(context_, delta_time);
 
+            PROFILE_START(update_timer, "Layers - On Update");
             for (const auto& layer : layers_) {
                 layer->on_update(context_, delta_time);
             }
+            PROFILE_END(update_timer);
 
             // ----------------------------------
             // Render pass
             // ----------------------------------
+            PROFILE_START(render_timer, "Layers - On Render");
             for (const auto& layer : layers_) {
                 layer->on_render(context_, delta_time);
             }
+            PROFILE_END(render_timer);
+
             #ifdef ENABLE_IMGUI
+            PROFILE_START(imgui_timer, "Layers - On Imgui Render");
             for (const auto& layer : layers_) {
                 layer->on_imgui_render(context_, delta_time);
             }
+            PROFILE_END(imgui_timer);
             #endif
             // ----------------------------------
 
