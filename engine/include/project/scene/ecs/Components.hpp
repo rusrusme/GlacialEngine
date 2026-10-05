@@ -80,7 +80,7 @@ namespace engine {
             return glm::rotate(get_orientation(), glm::vec3(1.0f, 0.0f, 0.0f));
         }
 
-        void set_dirty() { is_dirty_ = true; }
+        void set_dirty() const { is_dirty_ = true; }
 
     private:
         mutable glm::mat4 cached_matrix_{1.0f};
