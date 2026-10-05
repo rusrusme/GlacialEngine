@@ -511,35 +511,38 @@ namespace engine {
     void Renderer::draw_mesh_instanced(const Mesh& mesh, const std::vector<InstanceData>& instances, const std::shared_ptr<Shader>& override_shader) {
         if (instances.empty() || !mesh.is_valid()) return;
 
-        const std::vector<InstanceData>* instances_to_draw = &instances;
-        std::vector<InstanceData> visible_instances;
+        // const std::vector<InstanceData>* instances_to_draw = &instances;
+        // std::vector<InstanceData> visible_instances;
 
-        if (frustum_culling_enabled_) {
-            visible_instances.reserve(instances.size());
-            for (const auto& instance : instances) {
-                const AABB world_aabb = mesh.local_bounds.get_transformed(instance.transform);
-                if (current_frustum_.intersects(world_aabb)) {
-                    visible_instances.push_back(instance);
-                }
-            }
-
-            if (visible_instances.empty()) return;
-            instances_to_draw = &visible_instances;
-        }
+        // if (frustum_culling_enabled_) {
+        //     visible_instances.reserve(instances.size());
+        //     for (const auto& instance : instances) {
+        //         const AABB world_aabb = mesh.local_bounds.get_transformed(instance.transform);
+        //         if (current_frustum_.intersects(world_aabb)) {
+        //             visible_instances.push_back(instance);
+        //         }
+        //     }
+        //
+        //     if (visible_instances.empty()) return;
+        //     instances_to_draw = &visible_instances;
+        // }
 
         stats_.draw_calls++;
-        stats_.instance_count += static_cast<uint32_t>(instances_to_draw->size());
+        stats_.instance_count += static_cast<uint32_t>(instances.size());
 
         const auto shader = override_shader ? override_shader : shader_library_.get("mesh");
         if (!shader) return;
 
-        const size_t bytes_needed = instances_to_draw->size() * sizeof(InstanceData);
+        const size_t bytes_needed = instances.size() * sizeof(InstanceData);
 
+        // Dynamic VBO resizing
         if (bytes_needed > instance_vbo_capacity_bytes_) {
             instance_vbo_capacity_bytes_ = bytes_needed * 2;
             instance_vbo_ = std::make_shared<VertexBuffer>(nullptr, instance_vbo_capacity_bytes_, true);
         }
-        instance_vbo_->set_data(instances_to_draw->data(), bytes_needed);
+
+        // Upload raw batch directly to GPU
+        instance_vbo_->set_data(instances.data(), bytes_needed);
 
         shader->bind();
 
@@ -582,10 +585,6 @@ namespace engine {
             }
 
             // Point Shadow Maps (Slots 4 - 7)
-            // if (point_shadow_framebuffer_) {
-            //     point_shadow_framebuffer_->bind_depth_texture(4);
-            //     shader->set_int("u_point_shadow_map", 4);
-            // }
             for (size_t i = 0; i < MAX_POINT_LIGHT_SHADOWS; ++i) {
                 const uint32_t slot = 4 + static_cast<uint32_t>(i);
                 if (i < point_shadow_framebuffers_.size()) {
@@ -594,7 +593,7 @@ namespace engine {
                 }
             }
 
-            // Directional & Point Lights
+            // Lights
             shader->set_int("u_num_dir_lights", static_cast<int>(directional_lights_.size()));
             for (size_t i = 0; i < directional_lights_.size(); ++i) {
                 std::string base = "u_dir_lights[" + std::to_string(i) + "].";
@@ -617,7 +616,7 @@ namespace engine {
             *mesh.vertex_array,
             *instance_vbo_,
             mesh.vertex_array->get_index_buffer()->get_count(),
-            static_cast<uint32_t>(instances_to_draw->size())
+            static_cast<uint32_t>(instances.size())
         );
 
         shader->unbind();
