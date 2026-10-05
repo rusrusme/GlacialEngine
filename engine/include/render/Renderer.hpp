@@ -171,7 +171,6 @@ namespace engine {
 
         // Shadow resources
         std::unique_ptr<Framebuffer> shadow_framebuffer_;
-        [[deprecated]] std::unique_ptr<Framebuffer> point_shadow_framebuffer_;
         std::vector<std::unique_ptr<Framebuffer>> point_shadow_framebuffers_;
         glm::mat4 light_space_matrix_{1.0f};
 
@@ -179,7 +178,14 @@ namespace engine {
         std::shared_ptr<VertexBuffer> instance_vbo_;
         size_t instance_vbo_capacity_bytes_ = 0;
 
-        // Post processing
+        std::unique_ptr<StorageBuffer> cull_instance_ssbo_;
+        std::unique_ptr<StorageBuffer> cull_visibility_ssbo_;
+        size_t cull_ssbo_capacity_instances_ = 0;
+
+        std::vector<uint32_t> cull_visibility_results_;
+        std::vector<InstanceData> culled_instances_scratch_;
+
+        PostProcessor* post_processor_raw_ = nullptr; // Handled by unique_ptr below
         std::unique_ptr<PostProcessor> post_processor_;
         bool should_render_ = true;
     };

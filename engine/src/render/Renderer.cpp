@@ -59,6 +59,10 @@ namespace engine {
         instance_vbo_capacity_bytes_ = 1000 * sizeof(InstanceData);
         instance_vbo_ = std::make_shared<VertexBuffer>(nullptr, instance_vbo_capacity_bytes_, true);
 
+        cull_ssbo_capacity_instances_ = 1000;
+        cull_instance_ssbo_ = std::make_unique<StorageBuffer>(cull_ssbo_capacity_instances_ * sizeof(InstanceData), 0, true);
+        cull_visibility_ssbo_ = std::make_unique<StorageBuffer>(cull_ssbo_capacity_instances_ * sizeof(uint32_t), 1, true);
+
         CORE_INFO("Renderer successfully initialized");
         return true;
     }
@@ -72,6 +76,8 @@ namespace engine {
         shadow_framebuffer_.reset();
         point_shadow_framebuffers_.clear();
         camera_ubo_.reset();
+        cull_instance_ssbo_.reset();
+        cull_visibility_ssbo_.reset();
     }
 
     void Renderer::on_resize(const int width, const int height) {
@@ -122,40 +128,7 @@ namespace engine {
         auto cull_shader = shader_library_.get("gpu_cull");
         if (!cull_shader) return;
 
-        struct InstanceRef {
-            UUID handle;
-            size_t index;
-        };
-
-        std::vector<InstanceAABB> instance_aabbs;
-        std::vector<InstanceRef> instance_refs;
-
-        // for (const auto& [handle, instance_list] : batches) {
-        //     std::shared_ptr<Mesh> mesh = asset_manager.get_asset<Mesh>(handle);
-        //     if (!mesh) continue;
-        //
-        //     for (size_t i = 0; i < instance_list.size(); ++i) {
-        //         const AABB world_aabb = mesh->local_bounds.get_transformed(instance_list[i].transform);
-        //         instance_aabbs.push_back(InstanceAABB{
-        //             .min_pos = glm::vec4(world_aabb.min, 1.0f),
-        //             .max_pos = glm::vec4(world_aabb.max, 1.0f)
-        //         });
-        //         instance_refs.push_back({handle, i});
-        //     }
-        // }
-
-        if (instance_aabbs.empty()) return;
-
-        const auto num_instances = static_cast<uint32_t>(instance_aabbs.size());
-
-        StorageBuffer aabb_ssbo(instance_aabbs.data(), instance_aabbs.size() * sizeof(InstanceAABB), 0);
-        StorageBuffer visibility_ssbo(num_instances * sizeof(uint32_t), 1);
-
-        aabb_ssbo.bind(0);
-        visibility_ssbo.bind(1);
-
         cull_shader->bind();
-        cull_shader->set_int("u_num_instances", num_instances);
 
         const Frustum frustum = camera.get_frustum();
         for (int i = 0; i < 6; ++i) {
@@ -163,24 +136,48 @@ namespace engine {
                                   glm::vec4(frustum.planes[i].normal, frustum.planes[i].distance));
         }
 
-        RenderCommand::dispatch_compute((num_instances + 63) / 64, 1, 1);
+        for (auto& [handle, instance_list] : batches) {
+            if (instance_list.empty()) continue;
 
-        std::vector<uint32_t> visibility_results(num_instances);
-        visibility_ssbo.get_data(visibility_results.data(), visibility_results.size() * sizeof(uint32_t));
+            std::shared_ptr<Mesh> mesh = asset_manager.get_asset<Mesh>(handle);
+            if (!mesh) continue;
 
-        aabb_ssbo.unbind();
-        visibility_ssbo.unbind();
-        cull_shader->unbind();
+            const auto num_instances = static_cast<uint32_t>(instance_list.size());
 
-        std::unordered_map<UUID, std::vector<InstanceData>> filtered_batches;
-
-        for (size_t i = 0; i < num_instances; ++i) {
-            if (visibility_results[i] == 1) {
-                const auto& [handle, index] = instance_refs[i];
-                filtered_batches[handle].push_back(batches[handle][index]);
+            // 1. Kapazität prüfen & SSBOs nur bei Bedarf neu allokieren (keine Per-Frame glGenBuffers)
+            if (num_instances > cull_ssbo_capacity_instances_) {
+                cull_ssbo_capacity_instances_ = num_instances * 2;
+                cull_instance_ssbo_ = std::make_unique<StorageBuffer>(cull_ssbo_capacity_instances_ * sizeof(InstanceData), 0, true);
+                cull_visibility_ssbo_ = std::make_unique<StorageBuffer>(cull_ssbo_capacity_instances_ * sizeof(uint32_t), 1, true);
             }
+
+            // 2. Bestehende GPU-Buffer mit glBufferSubData befüllen
+            cull_instance_ssbo_->set_data(instance_list.data(), num_instances * sizeof(InstanceData));
+            cull_instance_ssbo_->bind(0);
+            cull_visibility_ssbo_->bind(1);
+
+            cull_shader->set_int("u_num_instances", static_cast<int>(num_instances));
+            cull_shader->set_vec3("u_mesh_aabb_min", mesh->local_bounds.min);
+            cull_shader->set_vec3("u_mesh_aabb_max", mesh->local_bounds.max);
+
+            RenderCommand::dispatch_compute((num_instances + 63) / 64, 1, 1);
+
+            // 3. Sichtbarkeits-Ergebnisse in wiederverwendbaren Vektor einlesen
+            cull_visibility_results_.resize(num_instances);
+            cull_visibility_ssbo_->get_data(cull_visibility_results_.data(), num_instances * sizeof(uint32_t));
+
+            // 4. In-Place Filtering mit reserviertem Scratch-Vektor
+            culled_instances_scratch_.clear();
+            culled_instances_scratch_.reserve(num_instances);
+
+            for (size_t i = 0; i < num_instances; ++i) {
+                if (cull_visibility_results_[i] == 1) {
+                    culled_instances_scratch_.push_back(instance_list[i]);
+                }
+            }
+            instance_list = culled_instances_scratch_;
         }
-        batches = std::move(filtered_batches);
+        cull_shader->unbind();
     }
 
     void Renderer::render_shadow_pass(Camera& camera, AssetManager& asset_manager, const std::unordered_map<UUID, std::vector<InstanceData>>& batches) {

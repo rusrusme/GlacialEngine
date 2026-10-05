@@ -198,7 +198,6 @@ namespace engine {
         // Render passes
         // ------------------
         PROFILE_START("Scene::on_render - Pass Submissions");
-        // Todo: bugged... occlusion pass
         renderer.render_occlusion_pass(camera, asset_manager, mesh_batches_);
         renderer.render_shadow_pass(camera, asset_manager, shadow_batches_);
         renderer.render_point_shadow_pass(asset_manager, shadow_batches_);
