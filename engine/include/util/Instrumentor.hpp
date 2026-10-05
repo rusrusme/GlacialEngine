@@ -166,17 +166,21 @@ namespace engine {
         bool stopped_;
     };
 
+    // Shared thread-local stack
+    inline thread_local std::vector<ProfileStartInfo> g_manual_profile_stack;
+
     inline void begin_manual_section(const char* name) {
-        thread_local std::vector<ProfileStartInfo> stack;
-        stack.push_back({.name = name, .start_time = std::chrono::high_resolution_clock::now()});
+        g_manual_profile_stack.push_back({
+            .name       = name,
+            .start_time = std::chrono::high_resolution_clock::now()
+        });
     }
 
     inline void end_manual_section() {
-        thread_local std::vector<ProfileStartInfo> stack;
-        if (stack.empty()) return;
+        if (g_manual_profile_stack.empty()) return;
 
-        auto [name, start_time] = stack.back();
-        stack.pop_back();
+        auto [name, start_time] = g_manual_profile_stack.back();
+        g_manual_profile_stack.pop_back();
 
         const auto end_time = std::chrono::high_resolution_clock::now();
         const long long start = std::chrono::time_point_cast<std::chrono::microseconds>(start_time).time_since_epoch().count();
