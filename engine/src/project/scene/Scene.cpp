@@ -124,7 +124,7 @@ namespace engine {
         // ------------------
         // Lights
         // ------------------
-        PROFILE_START(scene_render, "Render - Lights Processing");
+        PROFILE_START("Render - Lights Processing");
         auto dir_light_view = registry_.view<TransformComponent, DirectionalLightComponent>();
         for (auto entity : dir_light_view) {
             auto [transform, light] = dir_light_view.get<TransformComponent, DirectionalLightComponent>(entity);
@@ -153,11 +153,11 @@ namespace engine {
                 .radius    = light.radius
             });
         }
-        PROFILE_END(scene_render);
+        PROFILE_END();
         // ------------------
         // Meshes
         // ------------------
-        PROFILE_START(scene_batch, "Render - Batching & LOD Loop");
+        PROFILE_START("Render - Batching & LOD Loop");
         mesh_batches_.clear();
         shadow_batches_.clear();
 
@@ -219,17 +219,17 @@ namespace engine {
                           registry_.all_of<LabelComponent>(entity) ? registry_.get<LabelComponent>(entity).tag : "Entity");
             }
         }
-        PROFILE_END(scene_batch);
+        PROFILE_END();
         // ------------------
         // Render passes
         // ------------------
         // Todo: bugged...
         // renderer.render_occlusion_pass(camera, asset_manager, mesh_batches_);
-        PROFILE_START(scene_render_pass, "Render - Pass Submissions");
+        PROFILE_START("Render - Pass Submissions");
         renderer.render_shadow_pass(camera, asset_manager, shadow_batches_);
         renderer.render_point_shadow_pass(asset_manager, shadow_batches_);
         renderer.render_mesh_batches(asset_manager, mesh_batches_);
-        PROFILE_END(scene_render_pass);
+        PROFILE_END();
     }
 
     void Scene::clear(const SystemContext& context) {

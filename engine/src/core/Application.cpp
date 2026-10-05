@@ -58,9 +58,9 @@ namespace engine {
 
         audio_system_.on_attach();
 
-        PROFILE_START(asset_timer, "Scanning initial asset directory");
+        PROFILE_START("Scanning initial asset directory");
         asset_manager_.scan_directory("assets");
-        PROFILE_END(asset_timer);
+        PROFILE_END();
 
         CORE_INFO("Attaching application layers");
         for (const auto& layer : layers_) {
@@ -79,27 +79,27 @@ namespace engine {
             // ----------------------------------
             audio_system_.on_update(context_, delta_time);
 
-            PROFILE_START(update_timer, "Layers - On Update");
+            PROFILE_START("Layers - On Update");
             for (const auto& layer : layers_) {
                 layer->on_update(context_, delta_time);
             }
-            PROFILE_END(update_timer);
+            PROFILE_END();
 
             // ----------------------------------
             // Render pass
             // ----------------------------------
-            PROFILE_START(render_timer, "Layers - On Render");
+            PROFILE_START("Layers - On Render");
             for (const auto& layer : layers_) {
                 layer->on_render(context_, delta_time);
             }
-            PROFILE_END(render_timer);
+            PROFILE_END();
 
             #ifdef ENABLE_IMGUI
-            PROFILE_START(imgui_timer, "Layers - On Imgui Render");
+            PROFILE_START("Layers - On Imgui Render");
             for (const auto& layer : layers_) {
                 layer->on_imgui_render(context_, delta_time);
             }
-            PROFILE_END(imgui_timer);
+            PROFILE_END();
             #endif
             // ----------------------------------
 

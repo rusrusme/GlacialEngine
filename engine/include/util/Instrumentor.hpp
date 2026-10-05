@@ -11,12 +11,18 @@
 #include <fstream>
 #include <thread>
 #include <mutex>
+#include <vector>
 
 namespace engine {
     struct ProfileResult {
         std::string name;
         long long start, end;
         uint32_t thread_id;
+    };
+
+    struct ProfileStartInfo {
+        const char* name;
+        std::chrono::high_resolution_clock::time_point start_time;
     };
 
     class Instrumentor {
@@ -134,6 +140,26 @@ namespace engine {
         std::chrono::time_point<std::chrono::high_resolution_clock> start_timepoint_;
         bool stopped_;
     };
+
+    inline void begin_manual_section(const char* name) {
+        thread_local std::vector<ProfileStartInfo> stack;
+        stack.push_back({name, std::chrono::high_resolution_clock::now()});
+    }
+
+    inline void end_manual_section() {
+        thread_local std::vector<ProfileStartInfo> stack;
+        if (stack.empty()) return;
+
+        ProfileStartInfo info = stack.back();
+        stack.pop_back();
+
+        auto end_time = std::chrono::high_resolution_clock::now();
+        long long start = std::chrono::time_point_cast<std::chrono::microseconds>(info.start_time).time_since_epoch().count();
+        long long end = std::chrono::time_point_cast<std::chrono::microseconds>(end_time).time_since_epoch().count();
+        uint32_t thread_id = static_cast<uint32_t>(std::hash<std::thread::id>{}(std::this_thread::get_id()));
+
+        Instrumentor::get().write_profile({info.name, start, end, thread_id});
+    }
 }
 
 #ifdef ENABLE_PROFILER
@@ -142,13 +168,13 @@ namespace engine {
 #define PROFILE_SCOPE(name)                   ::engine::InstrumentationTimer timer##__LINE__(name)
 #define PROFILE_FUNCTION()                    PROFILE_SCOPE(__FUNCTION__)
 
-#define PROFILE_START(var_name, name) ::engine::InstrumentationTimer var_name(name)
-#define PROFILE_END(var_name)          var_name.stop()
+#define PROFILE_START(name) ::engine::begin_manual_section(name)
+#define PROFILE_END()       ::engine::end_manual_section()
 #else
 #define PROFILE_BEGIN_SESSION(name, filepath)
 #define PROFILE_END_SESSION()
 #define PROFILE_SCOPE(name)
 #define PROFILE_FUNCTION()
-#define PROFILE_START(var_name, name)
-#define PROFILE_END(var_name)
+#define PROFILE_START(name)
+#define PROFILE_END()
 #endif
