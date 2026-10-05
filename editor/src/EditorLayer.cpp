@@ -11,6 +11,7 @@
 
 #include "Config.hpp"
 #include "core/Engine.hpp"
+#include "util/Instrumentor.hpp"
 
 namespace editor {
     EditorLayer::EditorLayer(std::shared_ptr<engine::Scene> scene) : initial_scene_(std::move(scene)) {}
@@ -63,11 +64,11 @@ namespace editor {
             // -----------------------------------------------------------------
             // SIMULATION TEST: Rotate all scene entities in Play mode
             // -----------------------------------------------------------------
-            auto view = scene->view<engine::TransformComponent>();
-            for (auto entity_handle : view) {
-                auto& transform = view.get<engine::TransformComponent>(entity_handle);
-                transform.rotation.y += 45.0f * delta_time; // Rotate 45 deg/sec
-            }
+            // auto view = scene->view<engine::TransformComponent>();
+            // for (auto entity_handle : view) {
+            //     auto& transform = view.get<engine::TransformComponent>(entity_handle);
+            //     transform.rotation.y += 45.0f * delta_time; // Rotate 45 deg/sec
+            // }
         }
 
         const bool can_control_camera = is_viewport_hovered_ || is_viewport_focused_ ||
@@ -82,6 +83,7 @@ namespace editor {
     }
 
     void EditorLayer::on_render(engine::SystemContext& context, const float delta_time) {
+        PROFILE_FUNCTION();
         engine::Renderer::clear({0.12f, 0.12f, 0.12f, 1.0f});
 
         engine::RenderScope scope{context.renderer, delta_time};
@@ -92,6 +94,7 @@ namespace editor {
 
             auto view = scene->view<engine::TransformComponent, engine::BoxColliderComponent>();
 
+            PROFILE_START("EditorLayer::on_render - AABB Collision");
             for (auto entity_handle : view) {
                 auto [transform, collider] = view.get<engine::TransformComponent, engine::BoxColliderComponent>(entity_handle);
                 if (!collider.show_hitbox) continue;
@@ -104,7 +107,9 @@ namespace editor {
                 glm::vec3 box_color = (overlaps.size() > 1) ? glm::vec3(1.0f, 0.0f, 0.0f) : glm::vec3(0.0f, 1.0f, 0.0f);
                 engine::DebugRenderer::draw_box(world_aabb.min, world_aabb.max, box_color);
             }
+            PROFILE_END();
 
+            PROFILE_START("EditorLayer::on_render - Light Mesh Render");
             auto dir_light = scene->view<engine::TransformComponent, engine::DirectionalLightComponent, engine::ActiveComponent>();
             for (auto entity : dir_light) {
                 auto [transform, light, active] = dir_light.get<engine::TransformComponent, engine::DirectionalLightComponent, engine::ActiveComponent>(entity);
@@ -119,6 +124,7 @@ namespace editor {
                     engine::DebugRenderer::draw_sphere(transform.position, 0.05f, light.color, 16);
                 }
             }
+            PROFILE_END();
         }
 
         if (debug_panel_.is_grid_enabled()) {

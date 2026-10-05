@@ -43,10 +43,10 @@ namespace editor {
         }
 
         // Add a few point lights across the scene to test lighting performance
-        for (int i = 0; i < 20; ++i) {
-            glm::vec3 light_pos(pos_dist(rng), 10.0f, pos_dist(rng));
-            glm::vec3 light_color(color_dist(rng), color_dist(rng), color_dist(rng));
-            scene->create_point_light("Light_" + std::to_string(i), light_pos, light_color, 2.0f, 30.0f);
-        }
+        // for (int i = 0; i < 20; ++i) {
+            // glm::vec3 light_pos(pos_dist(rng), 10.0f, pos_dist(rng));
+            // glm::vec3 light_color(color_dist(rng), color_dist(rng), color_dist(rng));
+            // scene->create_point_light("Light_" + std::to_string(i), light_pos, light_color, 2.0f, 30.0f);
+        // }
     }
 }

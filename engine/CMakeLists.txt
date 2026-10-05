@@ -202,8 +202,3 @@ add_custom_target(SyncAssets ALL
 )
 add_dependencies(Engine SyncAssets)
 # ----------------------------------------------------------------------------
-option(ENABLE_PROFILER "Enable Instrumentation Profiler" ON)
-if(ENABLE_PROFILER)
-    add_compile_definitions(ENABLE_PROFILER)
-endif()
-# ----------------------------------------------------------------------------

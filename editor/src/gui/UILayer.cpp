@@ -9,6 +9,7 @@
 #include "Toolbar.hpp"
 #include "command/CommandHistory.hpp"
 #include "command/EditorCommands.hpp"
+#include "util/Instrumentor.hpp"
 
 namespace editor {
     #ifdef ENABLE_IMGUI
@@ -49,6 +50,7 @@ namespace editor {
     }
 
     void UILayer::on_update(engine::SystemContext& context, float delta_time) {
+        PROFILE_FUNCTION();
         #ifdef ENABLE_IMGUI
         settings_.on_update(context, delta_time);
 
@@ -100,6 +102,7 @@ namespace editor {
 
     #ifdef ENABLE_IMGUI
     void UILayer::on_imgui_render(engine::SystemContext& context, float delta_time) {
+        PROFILE_FUNCTION();
         auto scene = context.scenes.active_scene();
         auto& assets = context.assets;
         if (!scene) return;
@@ -258,6 +261,7 @@ namespace editor {
 
     #ifdef ENABLE_IMGUI
     void UILayer::draw_imguizmo(engine::Entity selected_entity, const engine::Camera& camera, const ImVec2& viewport_pos, const ImVec2& viewport_size) {
+        PROFILE_FUNCTION();
         if (!selected_entity || !selected_entity.has_component<engine::TransformComponent>()) {
             return;
         }

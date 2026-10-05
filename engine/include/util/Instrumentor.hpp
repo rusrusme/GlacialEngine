@@ -106,8 +106,6 @@ namespace engine {
                 << "\"tid\":" << result.thread_id << ","
                 << "\"ts\":" << result.start
                 << "}";
-
-            out_stream_.flush();
         }
 
     private:
@@ -124,6 +122,7 @@ namespace engine {
         void internal_end_session() {
             if (active_session_) {
                 write_footer();
+                out_stream_.flush();
                 out_stream_.close();
                 active_session_ = false;
                 profile_count_ = 0;

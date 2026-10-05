@@ -9,6 +9,7 @@ option(ENGINE_DEBUG_DIST "Engine-only debug distribution build for developers" O
 option(ENGINE_RELEASE_DIST "Engine-only release distribution build" OFF)
 option(ENABLE_IMGUI "Include ImGui Dependency" ON)
 option(BUILD_SANDBOX "Build Sandbox demo project" OFF)
+option(ENABLE_PROFILER "Enable Instrumentation Profiler" ON)
 
 if (ENGINE_DEBUG_DIST)
     set(ENGINE_DEBUG_DIST ON CACHE BOOL "" FORCE)
@@ -21,6 +22,10 @@ endif ()
 if (ENABLE_IMGUI)
     add_compile_definitions(ENABLE_IMGUI)
 endif ()
+
+if(ENABLE_PROFILER)
+    add_compile_definitions(ENABLE_PROFILER)
+endif()
 # ----------------------------------------------------------------------------
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
