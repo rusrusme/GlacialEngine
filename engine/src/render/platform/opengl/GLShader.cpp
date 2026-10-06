@@ -5,14 +5,12 @@
 
 #include "render/platform/opengl/GLShader.hpp"
 
+#include "core/Log.hpp"
+
 #include <filesystem>
 #include <fstream>
-#include <iostream>
-#include <unordered_set>
-#include <vector>
+#include <sstream>
 #include <glad/glad.h>
-
-#include "core/Log.hpp"
 
 namespace engine {
     static GLenum shader_type_from_string(const std::string& type) {
@@ -21,7 +19,7 @@ namespace engine {
         if (type == "geometry") return GL_GEOMETRY_SHADER;
         if (type == "compute") return GL_COMPUTE_SHADER;
 
-        CORE_ERROR("[GLShader] Unknown shader stage type: {0}", type);
+        CORE_ERROR("[GLShader] Unknown shader stage type: '{0}'", type);
         return 0;
     }
 
@@ -51,6 +49,11 @@ namespace engine {
         sources[GL_COMPUTE_SHADER] = compute_src;
 
         compile_and_link(sources);
+    }
+
+    GLShader::GLShader(std::string name, const std::unordered_map<uint32_t, std::vector<uint8_t>>& spirv_sources)
+        : name_(std::move(name)) {
+        compile_and_link_spirv(spirv_sources);
     }
 
     GLShader::~GLShader() {
@@ -87,7 +90,7 @@ namespace engine {
     std::string GLShader::read_file(const std::string& filepath) {
         std::ifstream in(filepath, std::ios::in | std::ios::binary);
         if (!in) {
-            std::cerr << "[GLShader] Could not open file: " << filepath << "\n";
+            CORE_ERROR("[GLShader] Could not open file: '{0}'", filepath);
             return "";
         }
 
@@ -100,7 +103,7 @@ namespace engine {
             in.read(&result[0], size);
         }
         else {
-            std::cerr << "[GLShader] Could not read file: " << filepath << "\n";
+            CORE_ERROR("[GLShader] Could not read file content: '{0}'", filepath);
         }
         return result;
     }
@@ -120,9 +123,12 @@ namespace engine {
             const size_t next_line_pos = source.find_first_not_of("\r\n", eol);
             pos = source.find(type_token, next_line_pos);
 
-            shader_sources[shader_type_from_string(type)] = pos == std::string::npos
-                                                                ? source.substr(next_line_pos)
-                                                                : source.substr(next_line_pos, pos - next_line_pos);
+            const uint32_t stage = shader_type_from_string(type);
+            if (stage != 0) {
+                shader_sources[stage] = pos == std::string::npos
+                                            ? source.substr(next_line_pos)
+                                            : source.substr(next_line_pos, pos - next_line_pos);
+            }
         }
 
         return shader_sources;
@@ -132,11 +138,11 @@ namespace engine {
         std::string canonical_path = std::filesystem::weakly_canonical(filepath).string();
 
         if (included_files.contains(canonical_path)) {
-            return "";
+            return ""; // Avoid duplicate inclusion
         }
 
         if (!std::filesystem::exists(filepath)) {
-            std::cerr << "[GLShader] Include File does not exist: " << filepath << "\n";
+            CORE_ERROR("[GLShader] Include file does not exist: '{0}'", filepath);
             return "";
         }
 
@@ -144,7 +150,7 @@ namespace engine {
 
         std::ifstream file(filepath);
         if (!file.is_open()) {
-            std::cerr << "[GLShader] Could not open include file: " << filepath << "\n";
+            CORE_ERROR("[GLShader] Could not open include file: '{0}'", filepath);
             return "";
         }
 
@@ -183,18 +189,22 @@ namespace engine {
         return ss.str();
     }
 
-    uint32_t GLShader::compile_spirv_shader(unsigned int type, const std::vector<uint8_t>& spirv_data) {
+    uint32_t GLShader::compile_spirv_shader(uint32_t type, const std::vector<uint8_t>& spirv_data) {
         const uint32_t shader = glCreateShader(type);
 
         glShaderBinary(1, &shader, GL_SHADER_BINARY_FORMAT_SPIR_V, spirv_data.data(), static_cast<GLsizei>(spirv_data.size()));
         glSpecializeShader(shader, "main", 0, nullptr, nullptr);
 
-        int success = 0;
+        GLint success = 0;
         glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
-        if (!success) {
-            char info_log[512];
-            glGetShaderInfoLog(shader, 512, nullptr, info_log);
-            CORE_ERROR("SPIR-V Shader specialization failed:\n{0}", info_log);
+        if (success == GL_FALSE) {
+            GLint max_length = 0;
+            glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &max_length);
+
+            std::vector<GLchar> info_log(max_length);
+            glGetShaderInfoLog(shader, max_length, &max_length, info_log.data());
+
+            CORE_ERROR("[GLShader] SPIR-V specialization failed for '{0}':\n{1}", name_, info_log.data());
             glDeleteShader(shader);
             return 0;
         }
@@ -223,7 +233,7 @@ namespace engine {
                 glGetShaderInfoLog(shader, max_length, &max_length, info_log.data());
 
                 glDeleteShader(shader);
-                std::cerr << "[GLShader] Compilation error in " << name_ << ":\n" << info_log.data() << "\n";
+                CORE_ERROR("[GLShader] Compilation error in '{0}':\n{1}", name_, info_log.data());
                 break;
             }
 
@@ -247,7 +257,7 @@ namespace engine {
                 glDeleteShader(id);
             }
 
-            std::cerr << "[GLShader] Linking error in " << name_ << ":\n" << info_log.data() << "\n";
+            CORE_ERROR("[GLShader] Linking error in '{0}':\n{1}", name_, info_log.data());
             return;
         }
 
@@ -258,4 +268,45 @@ namespace engine {
 
         renderer_id_ = program;
     }
-} // engine
+
+    void GLShader::compile_and_link_spirv(const std::unordered_map<uint32_t, std::vector<uint8_t>>& spirv_sources) {
+        const GLuint program = glCreateProgram();
+        std::vector<GLuint> gl_shader_ids;
+        gl_shader_ids.reserve(spirv_sources.size());
+
+        for (auto&& [stage_type, spirv_data] : spirv_sources) {
+            const uint32_t shader = compile_spirv_shader(stage_type, spirv_data);
+            if (shader != 0) {
+                glAttachShader(program, shader);
+                gl_shader_ids.push_back(shader);
+            }
+        }
+
+        glLinkProgram(program);
+
+        GLint is_linked = 0;
+        glGetProgramiv(program, GL_LINK_STATUS, &is_linked);
+        if (is_linked == GL_FALSE) {
+            GLint max_length = 0;
+            glGetProgramiv(program, GL_INFO_LOG_LENGTH, &max_length);
+
+            std::vector<GLchar> info_log(max_length);
+            glGetProgramInfoLog(program, max_length, &max_length, info_log.data());
+
+            glDeleteProgram(program);
+            for (const auto id : gl_shader_ids) {
+                glDeleteShader(id);
+            }
+
+            CORE_ERROR("[GLShader] SPIR-V Linking error in '{0}':\n{1}", name_, info_log.data());
+            return;
+        }
+
+        for (const auto id : gl_shader_ids) {
+            glDetachShader(program, id);
+            glDeleteShader(id);
+        }
+
+        renderer_id_ = program;
+    }
+} // namespace engine
