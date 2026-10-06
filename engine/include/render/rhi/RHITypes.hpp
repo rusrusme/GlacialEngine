@@ -79,6 +79,7 @@ namespace engine {
     };
 
     enum class IndexType {
+        UInt8,
         UInt16,
         UInt32
     };
@@ -87,5 +88,20 @@ namespace engine {
         Frame    = 0, // Set 0: Per-Frame Uniforms (FrameData UBO, Time, View/Proj)
         Pass     = 1, // Set 1: Per-Pass Resources (Shadow Maps, G-Buffers, Light Lists)
         Material = 2  // Set 2: Per-Material Data (Albedo, Normal, Roughness)
+    };
+
+    struct DrawArraysIndirectCommand {
+        uint32_t count{0};
+        uint32_t instance_count{0};
+        uint32_t first{0};
+        uint32_t base_instance{0};
+    };
+
+    struct DrawIndexedIndirectCommand {
+        uint32_t index_count{0};
+        uint32_t instance_count{0};
+        uint32_t first_index{0};
+        int32_t vertex_offset{0};
+        uint32_t first_instance{0};
     };
 }

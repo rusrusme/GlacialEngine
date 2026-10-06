@@ -31,6 +31,7 @@ namespace engine {
 
         [[nodiscard]] uint32_t renderer_id() const { return renderer_id_; }
         [[nodiscard]] uint32_t color_attachment_renderer_id(uint32_t index = 0) const;
+        [[nodiscard]] uint32_t color_attachment_count() const { return static_cast<uint32_t>(color_attachments_.size()); }
         [[nodiscard]] uint32_t depth_attachment_renderer_id() const { return depth_attachment_; }
         [[nodiscard]] const FramebufferSpecification& specification() const { return specification_; }
 
