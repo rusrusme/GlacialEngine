@@ -6,7 +6,7 @@
 #pragma once
 
 #include "render/rhi/RHITypes.hpp"
-#include "render/rhi/Texture.hpp"
+#include "render/rhi/TextureSpecs.hpp"
 
 #include <cstdint>
 #include <string>

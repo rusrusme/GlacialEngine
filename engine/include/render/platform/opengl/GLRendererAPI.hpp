@@ -7,6 +7,8 @@
 
 #include "render/rhi/RHITypes.hpp"
 
+#include <glm/vec4.hpp>
+
 namespace engine {
     class GLRendererAPI {
     public:
