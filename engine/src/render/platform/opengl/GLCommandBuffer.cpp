@@ -67,9 +67,7 @@ namespace engine {
         const auto& spec = begin_info.framebuffer->specification();
         glViewport(0, 0, static_cast<GLsizei>(spec.width), static_cast<GLsizei>(spec.height));
 
-        // OpenGL DSA Clear Handling
         if (fbo_id == 0) {
-            // FBO 0 ist die Standard-Swapchain -> klassischer Bind-Clear Fallback
             if (begin_info.clear_color_target) {
                 glClearColor(begin_info.clear_color.r, begin_info.clear_color.g, begin_info.clear_color.b, begin_info.clear_color.a);
             }
@@ -88,7 +86,6 @@ namespace engine {
             }
         }
         else {
-            // DSA Clears für benutzerdefinierte Framebuffer (MRT / Shadow Maps / G-Buffer)
             if (begin_info.clear_color_target) {
                 const float color[4] = {
                     begin_info.clear_color.r,
@@ -157,7 +154,7 @@ namespace engine {
     }
 
     void GLCommandBuffer::draw_indexed(uint32_t index_count, uint32_t instance_count, uint32_t first_index, int32_t vertex_offset, uint32_t first_instance) {
-        const void* index_ptr = reinterpret_cast<const void*>(static_cast<uintptr_t>(first_index * index_element_size_));
+        const void* index_ptr = reinterpret_cast<const void*>(first_index * index_element_size_);
         glDrawElementsInstancedBaseVertexBaseInstance(
             GL_TRIANGLES,
             static_cast<GLsizei>(index_count),
