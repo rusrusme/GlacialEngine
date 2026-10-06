@@ -14,6 +14,7 @@
 #include "physics/CollisionSystem.hpp"
 #include "project/scene/ecs/Entity.hpp"
 #include "render/legacy/mesh/InstanceData.hpp"
+#include "util/Instrumentor.hpp"
 
 namespace engine {
     Scene::Scene() = default;
@@ -100,27 +101,17 @@ namespace engine {
     }
 
     void Scene::on_update(float delta_time) {
+        PROFILE_FUNCTION();
         collision_system_->update_broadphase(*this);
     }
 
     void Scene::on_render(Renderer& renderer, Camera& camera, AssetManager& asset_manager, const float delta_time) {
+        PROFILE_FUNCTION();
+
         Renderer::set_blend(true);
 
-        // ------------------
-        // Cameras
-        // ------------------
-        // auto camera_view = registry_.view<TransformComponent, CameraComponent>();
-        // for (auto entity : camera_view) {
-        //     auto [transform, camera_comp] = camera_view.get<TransformComponent, CameraComponent>(entity);
-        //     if (registry_.all_of<ActiveComponent>(entity) && !registry_.get<ActiveComponent>(entity).active) {
-        //         continue;
-        //     }
-        //     renderer.bind_camera(camera_comp.camera);
-        // }
-
-        // ------------------
         // Lights
-        // ------------------
+        PROFILE_START("Render - Lights Processing");
         auto dir_light_view = registry_.view<TransformComponent, DirectionalLightComponent>();
         for (auto entity : dir_light_view) {
             auto [transform, light] = dir_light_view.get<TransformComponent, DirectionalLightComponent>(entity);
@@ -149,15 +140,17 @@ namespace engine {
                 .radius    = light.radius
             });
         }
-        // ------------------
+        PROFILE_END();
+
         // Meshes
-        // ------------------
+        PROFILE_START("Scene::on_render - Batch Clearing");
         mesh_batches_.clear();
         shadow_batches_.clear();
+        PROFILE_END();
 
-        const Frustum frustum = camera.get_frustum();
         const glm::vec3 camera_pos = camera.get_position();
 
+        PROFILE_START("Scene::on_render - Batch Loop");
         auto mesh_view = registry_.view<TransformComponent, MeshComponent, ActiveComponent>();
         for (auto entity : mesh_view) {
             auto [transform, mesh_comp, active] = mesh_view.get<TransformComponent, MeshComponent, ActiveComponent>(entity);
@@ -193,7 +186,6 @@ namespace engine {
                 });
 
                 // Camera batches (mesh batches)
-                if (!frustum.intersects(mesh->local_bounds, model_matrix)) continue;
                 glm::vec4 color{1.0f};
                 float roughness = 0.5f;
                 float metallic = 0.0f;
@@ -215,12 +207,16 @@ namespace engine {
                           registry_.all_of<LabelComponent>(entity) ? registry_.get<LabelComponent>(entity).tag : "Entity");
             }
         }
+        PROFILE_END();
         // ------------------
         // Render passes
         // ------------------
+        PROFILE_START("Render - Pass Submissions");
+        // renderer.render_occlusion_pass(camera, asset_manager, mesh_batches_);
         renderer.render_shadow_pass(camera, asset_manager, shadow_batches_);
         renderer.render_point_shadow_pass(asset_manager, shadow_batches_);
         renderer.render_mesh_batches(asset_manager, mesh_batches_);
+        PROFILE_END();
     }
 
     void Scene::clear(const SystemContext& context) {
