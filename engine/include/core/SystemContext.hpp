@@ -4,17 +4,19 @@
 //
 
 #pragma once
+
 #include <memory>
 
 namespace engine {
     class AudioSystem;
     class AssetManager;
     class Project;
-    class Renderer;
+    // class Renderer;
     class SceneManager;
 
     struct SystemContext {
-        Renderer& renderer;
+        // Renderer& renderer;
+        // Todo render: renderer missing -> replace with new architecture
         AudioSystem& audio;
         AssetManager& assets;
         SceneManager& scenes;

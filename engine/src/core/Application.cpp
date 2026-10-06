@@ -12,8 +12,8 @@
 #include "core/WindowAPI.hpp"
 #include "event/MouseEvents.hpp"
 #include "event/WindowEvents.hpp"
-#include "render/legacy/Frame.hpp"
-#include "render/legacy/debug/DebugRenderer.hpp"
+#include "core/Timestep.hpp"
+#include "render/rhi/RenderCommand.hpp"
 #include "util/Instrumentor.hpp"
 
 namespace engine {
@@ -47,14 +47,16 @@ namespace engine {
         // ----------------------------------
         // Initialize core systems
         // ----------------------------------
-        Frame::init(window_->native());
-        if (!renderer_.on_attach(window_->native())) {
-            CORE_CRITICAL("Application initialization failed: Could not initialize renderer");
-            window_.reset();
-            window::shutdown();
-            return 1;
-        }
-        DebugRenderer::on_attach();
+        // Todo render: renderer missing -> replace with new architecture
+        // if (!renderer_.on_attach(window_->native())) {
+        //     CORE_CRITICAL("Application initialization failed: Could not initialize renderer");
+        //     window_.reset();
+        //     window::shutdown();
+        //     return 1;
+        // }
+        // DebugRenderer::on_attach();
+
+        RenderCommand::init();
 
         audio_system_.on_attach();
 
@@ -68,11 +70,14 @@ namespace engine {
         }
         CORE_INFO("Application startup complete");
 
+        Clock clock;
+        clock.reset();
+
         // ----------------------------------
         // Run core loop
         // ----------------------------------
         while (running_) {
-            const float delta_time = Frame::begin_frame();
+            const float delta_time = clock.update();
 
             // ----------------------------------
             // Update pass
@@ -103,7 +108,8 @@ namespace engine {
             #endif
             // ----------------------------------
 
-            Frame::end_frame();
+            window::swap_buffers(window_->native());
+            window::poll_events();
         }
         // In reverse
         CORE_INFO("Detaching application layers");
@@ -125,7 +131,7 @@ namespace engine {
 
         dispatcher.dispatch<WindowResizedEvent>([this](const WindowResizedEvent& e) {
             CORE_TRACE("Window resized to {0}x{1}", e.width(), e.height());
-            renderer_.on_resize(e.width(), e.height());
+            // renderer_.on_resize(e.width(), e.height());
             return false; // Forward to layer
         });
 
@@ -149,9 +155,9 @@ namespace engine {
     void Application::shutdown() {
         CORE_INFO("Shutting down engine application");
 
-        Frame::shutdown();
-        DebugRenderer::on_detach();
-        renderer_.on_detach();
+        // Frame::shutdown();
+        // DebugRenderer::on_detach();
+        // renderer_.on_detach();
         scene_manager_.on_detach();
         audio_system_.on_detach(context_);
 

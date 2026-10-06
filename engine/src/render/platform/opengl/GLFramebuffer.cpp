@@ -34,16 +34,8 @@ namespace engine {
         }
     }
 
-    GLFramebuffer::GLFramebuffer(const FramebufferSpecification& spec)
-        : specification_(spec) {
-        for (const auto& attachment_spec : specification_.attachments) {
-            if (is_depth_format(attachment_spec.format)) {
-                depth_attachment_spec_ = attachment_spec;
-            }
-            else {
-                color_attachment_specs_.push_back(attachment_spec);
-            }
-        }
+    GLFramebuffer::GLFramebuffer(FramebufferSpecification spec)
+        : specification_(std::move(spec)) {
         invalidate();
     }
 
@@ -53,7 +45,7 @@ namespace engine {
 
     GLFramebuffer::GLFramebuffer(GLFramebuffer&& other) noexcept
         : renderer_id_(std::exchange(other.renderer_id_, 0)),
-          specification_(other.specification_),
+          specification_(std::move(other.specification_)),
           color_attachment_specs_(std::move(other.color_attachment_specs_)),
           depth_attachment_spec_(other.depth_attachment_spec_),
           color_attachments_(std::move(other.color_attachments_)),
@@ -64,7 +56,7 @@ namespace engine {
             release();
 
             renderer_id_ = std::exchange(other.renderer_id_, 0);
-            specification_ = other.specification_;
+            specification_ = std::move(other.specification_);
             color_attachment_specs_ = std::move(other.color_attachment_specs_);
             depth_attachment_spec_ = other.depth_attachment_spec_;
             color_attachments_ = std::move(other.color_attachments_);
@@ -100,7 +92,24 @@ namespace engine {
     }
 
     void GLFramebuffer::invalidate() {
+        if (specification_.width == 0 || specification_.height == 0) {
+            CORE_WARN("[GLFramebuffer] Attempted to invalidate framebuffer with width or height 0!");
+            return;
+        }
+
         release();
+
+        color_attachment_specs_.clear();
+        depth_attachment_spec_ = TextureFormat::None;
+
+        for (const auto& attachment_spec : specification_.attachments) {
+            if (is_depth_format(attachment_spec.format)) {
+                depth_attachment_spec_ = attachment_spec;
+            }
+            else {
+                color_attachment_specs_.push_back(attachment_spec);
+            }
+        }
 
         glCreateFramebuffers(1, &renderer_id_);
 
@@ -122,8 +131,11 @@ namespace engine {
                     glTextureStorage2D(color_attachments_[i], 1, internal_format,
                                        static_cast<GLsizei>(specification_.width), static_cast<GLsizei>(specification_.height));
 
-                    glTextureParameteri(color_attachments_[i], GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-                    glTextureParameteri(color_attachments_[i], GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+                    const bool is_integer = (color_attachment_specs_[i].format == TextureFormat::R32_UINT);
+                    const GLint filter = is_integer ? GL_NEAREST : GL_LINEAR;
+
+                    glTextureParameteri(color_attachments_[i], GL_TEXTURE_MIN_FILTER, filter);
+                    glTextureParameteri(color_attachments_[i], GL_TEXTURE_MAG_FILTER, filter);
                     glTextureParameteri(color_attachments_[i], GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
                     glTextureParameteri(color_attachments_[i], GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
                 }
@@ -193,4 +205,4 @@ namespace engine {
             depth_attachment_ = 0;
         }
     }
-} // engine
+} // namespace engine

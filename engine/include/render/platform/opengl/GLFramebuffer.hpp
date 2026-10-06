@@ -15,7 +15,7 @@ namespace engine {
     class GLFramebuffer {
     public:
         GLFramebuffer() = default;
-        explicit GLFramebuffer(const FramebufferSpecification& spec);
+        explicit GLFramebuffer(FramebufferSpecification  spec);
         ~GLFramebuffer();
 
         GLFramebuffer(const GLFramebuffer&) = delete;

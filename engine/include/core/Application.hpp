@@ -11,7 +11,6 @@
 #include "core/SystemContext.hpp"
 #include "core/Window.hpp"
 #include "project/scene/SceneManager.hpp"
-#include "render/legacy/Renderer.hpp"
 
 namespace engine {
     class Application {
@@ -45,8 +44,9 @@ namespace engine {
         AudioSystem audio_system_;
         AssetManager asset_manager_;
         SceneManager scene_manager_;
-        Renderer renderer_;
-        SystemContext context_{.renderer = renderer_, .audio = audio_system_, .assets = asset_manager_, .scenes = scene_manager_};
+        // Renderer renderer_;
+        // Todo render: renderer missing -> replace with new architecture
+        SystemContext context_{/*.renderer = renderer_,*/ .audio = audio_system_, .assets = asset_manager_, .scenes = scene_manager_};
 
         LayerStack layers_;
 
