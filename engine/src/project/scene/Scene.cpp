@@ -110,7 +110,7 @@ namespace engine {
         Renderer::set_blend(true);
 
         // Lights
-        PROFILE_START("Render - Lights Processing");
+        PROFILE_START("Scene::on_render - Lights Processing");
         const auto dir_light_view = registry_.view<TransformComponent, DirectionalLightComponent>(entt::exclude<DisabledComponent>);
         for (const auto& [entity, transform, light] : dir_light_view.each()) {
             renderer.add_directional_light({

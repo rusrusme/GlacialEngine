@@ -20,7 +20,7 @@ namespace engine {
     Application::Application() : Application(setting::ENGINE_TITLE_) {}
 
     Application::Application(std::string title) : title_(std::move(title)) {
-        PROFILE_BEGIN_SESSION("Engine_Profile");
+        PROFILE_BEGIN_SESSION("Engine Profile");
         instance_ = this;
     }
 
@@ -58,7 +58,7 @@ namespace engine {
 
         audio_system_.on_attach();
 
-        PROFILE_START("Scanning initial asset directory");
+        PROFILE_START("Application::run - Scan Assets");
         asset_manager_.scan_directory("assets");
         PROFILE_END();
 
@@ -79,7 +79,7 @@ namespace engine {
             // ----------------------------------
             audio_system_.on_update(context_, delta_time);
 
-            PROFILE_START("Layers - On Update");
+            PROFILE_START("Application::run - Update");
             for (const auto& layer : layers_) {
                 layer->on_update(context_, delta_time);
             }
@@ -88,14 +88,14 @@ namespace engine {
             // ----------------------------------
             // Render pass
             // ----------------------------------
-            PROFILE_START("Layers - On Render");
+            PROFILE_START("Application::run - Render");
             for (const auto& layer : layers_) {
                 layer->on_render(context_, delta_time);
             }
             PROFILE_END();
 
             #ifdef ENABLE_IMGUI
-            PROFILE_START("Layers - On Imgui Render");
+            PROFILE_START("Application::run - Imgui Render");
             for (const auto& layer : layers_) {
                 layer->on_imgui_render(context_, delta_time);
             }
