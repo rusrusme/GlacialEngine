@@ -37,15 +37,15 @@ namespace engine {
             }
             else if (asset_manager && entity.has_component<MeshComponent>()) {
                 const auto& mesh_comp = entity.get_component<MeshComponent>();
-                if (auto mesh = asset_manager->get_asset<Mesh>(mesh_comp.handle)) {
-                    glm::vec3 min_pt = transform.position + mesh->local_bounds.min * transform.scale;
-                    glm::vec3 max_pt = transform.position + mesh->local_bounds.max * transform.scale;
-                    world_aabb = AABB(glm::min(min_pt, max_pt), glm::max(min_pt, max_pt));
-                }
-                else {
-                    constexpr float half_size = 0.5f;
-                    world_aabb = AABB(transform.position - glm::vec3(half_size), transform.position + glm::vec3(half_size));
-                }
+                // if (auto mesh = asset_manager->get_asset<Mesh>(mesh_comp.handle)) {
+                    // glm::vec3 min_pt = transform.position + mesh->local_bounds.min * transform.scale;
+                    // glm::vec3 max_pt = transform.position + mesh->local_bounds.max * transform.scale;
+                    // world_aabb = AABB(glm::min(min_pt, max_pt), glm::max(min_pt, max_pt));
+                // }
+                // else {
+                    // constexpr float half_size = 0.5f;
+                    // world_aabb = AABB(transform.position - glm::vec3(half_size), transform.position + glm::vec3(half_size));
+                // }
             }
             else {
                 constexpr float half_size = 0.5f;
@@ -56,11 +56,11 @@ namespace engine {
             if (world_aabb.intersects_ray(ray, t_hit)) {
                 if (t_hit >= 0.0f && t_hit < min_dist) {
                     min_dist = t_hit;
-                    closest_hit = RaycastHit{
-                        .entity   = entity,
-                        .point    = ray.at(t_hit),
-                        .distance = t_hit
-                    };
+                    // closest_hit = RaycastHit{
+                        // .entity   = entity,
+                        // .point    = ray.at(t_hit),
+                        // .distance = t_hit
+                    // };
                 }
             }
         }

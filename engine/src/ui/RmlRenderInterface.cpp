@@ -5,7 +5,7 @@
 
 #include "RmlRenderInterface.hpp"
 
-#include "render/legacy/Renderer.hpp"
+// #include "render/legacy/Renderer.hpp"
 
 #include "stb_image.h"
 
@@ -49,27 +49,27 @@ namespace engine {
         auto* geom = reinterpret_cast<RmlGeometry*>(geometry);
         if (!geom || geom->num_indices == 0) return;
 
-        const auto ui_shader = renderer_.get_shader("ui");
-        if (!ui_shader) return;
-
-        ui_shader->bind();
-        ui_shader->set_mat4("u_projection", projection_);
-        ui_shader->set_vec2("u_translation", {translation.x, translation.y});
-
-        if (texture != 0) {
-            ui_shader->set_int("u_use_texture", 1);
-            glActiveTexture(GL_TEXTURE0);
-            glBindTexture(GL_TEXTURE_2D, static_cast<GLuint>(texture));
-            ui_shader->set_int("u_texture", 0);
-        }
-        else {
-            ui_shader->set_int("u_use_texture", 0);
-        }
-
-        glBindVertexArray(geom->vao);
-        glDrawElements(GL_TRIANGLES, geom->num_indices, GL_UNSIGNED_INT, nullptr);
-        glBindVertexArray(0);
-        ui_shader->unbind();
+        // const auto ui_shader = renderer_.get_shader("ui");
+        // if (!ui_shader) return;
+        //
+        // ui_shader->bind();
+        // ui_shader->set_mat4("u_projection", projection_);
+        // ui_shader->set_vec2("u_translation", {translation.x, translation.y});
+        //
+        // if (texture != 0) {
+        //     ui_shader->set_int("u_use_texture", 1);
+        //     glActiveTexture(GL_TEXTURE0);
+        //     glBindTexture(GL_TEXTURE_2D, static_cast<GLuint>(texture));
+        //     ui_shader->set_int("u_texture", 0);
+        // }
+        // else {
+        //     ui_shader->set_int("u_use_texture", 0);
+        // }
+        //
+        // glBindVertexArray(geom->vao);
+        // glDrawElements(GL_TRIANGLES, geom->num_indices, GL_UNSIGNED_INT, nullptr);
+        // glBindVertexArray(0);
+        // ui_shader->unbind();
     }
 
     void RmlRenderInterface::ReleaseGeometry(Rml::CompiledGeometryHandle geometry) {

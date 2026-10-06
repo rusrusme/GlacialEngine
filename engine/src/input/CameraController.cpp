@@ -9,7 +9,7 @@
 #include "input/Input.hpp"
 #include "input/KeyCodes.hpp"
 #include "input/MouseCodes.hpp"
-#include "render/legacy/Camera.hpp"
+// #include "render/legacy/Camera.hpp"
 
 namespace engine {
     void CameraController::reset_mouse_state() {
@@ -48,12 +48,12 @@ namespace engine {
                 input_z *= 0.70710678f;
             }
 
-            const float effective_distance = std::max(camera.get_distance(), setting::camera_controller::MIN_PAN_DISTANCE);
-            const float dynamic_pan_speed = effective_distance * setting::camera_controller::PAN_SENSITIVITY;
-
-            const float delta_right = input_x * dynamic_pan_speed * delta_time;
-            const float delta_forward = input_z * dynamic_pan_speed * delta_time;
-            camera.pan(delta_right, delta_forward);
+            // const float effective_distance = std::max(camera.get_distance(), setting::camera_controller::MIN_PAN_DISTANCE);
+            // const float dynamic_pan_speed = effective_distance * setting::camera_controller::PAN_SENSITIVITY;
+            //
+            // const float delta_right = input_x * dynamic_pan_speed * delta_time;
+            // const float delta_forward = input_z * dynamic_pan_speed * delta_time;
+            // camera.pan(delta_right, delta_forward);
         }
     }
 
@@ -78,15 +78,15 @@ namespace engine {
         last_y_ = mouse_pos.y;
 
         if (Input::is_mouse_button_pressed(Mouse::MOUSE_BUTTON_MIDDLE)) {
-            camera.orbit(
-                delta_x * setting::camera_controller::ORBIT_SENSITIVITY,
-                delta_y * setting::camera_controller::ORBIT_SENSITIVITY
-            );
+            // camera.orbit(
+                // delta_x * setting::camera_controller::ORBIT_SENSITIVITY,
+                // delta_y * setting::camera_controller::ORBIT_SENSITIVITY
+            // );
         }
     }
 
     void CameraController::on_scroll(Camera& camera, const double y_offset) {
-        const float dynamic_speed = camera.get_distance() * setting::camera_controller::ZOOM_PERCENTAGE;
-        camera.zoom(static_cast<float>(-y_offset) * dynamic_speed * setting::camera_controller::SCROLL_SPEED);
+        // const float dynamic_speed = camera.get_distance() * setting::camera_controller::ZOOM_PERCENTAGE;
+        // camera.zoom(static_cast<float>(-y_offset) * dynamic_speed * setting::camera_controller::SCROLL_SPEED);
     }
 }

@@ -9,7 +9,7 @@
 
 #include "project/scene/Scene.hpp"
 #include "project/scene/ecs/Components.hpp"
-#include "render/legacy/Camera.hpp"
+// #include "render/legacy/Camera.hpp"
 
 namespace engine {
     void CameraSystem::reset_mouse_state() {
@@ -24,9 +24,9 @@ namespace engine {
             const auto& [transform, camera_comp] = view.get<TransformComponent, CameraComponent>(entity);
             if (!camera_comp.is_primary) continue;
 
-            controller_.update(camera_comp.camera, delta_time);
+            // controller_.update(camera_comp.camera, delta_time);
 
-            transform.position = camera_comp.camera.get_position();
+            // transform.position = camera_comp.camera.get_position();
         }
     }
 
@@ -35,7 +35,7 @@ namespace engine {
         for (auto entity : view) {
             auto& camera_comp = view.get<CameraComponent>(entity);
             if (camera_comp.is_primary) {
-                CameraController::on_scroll(camera_comp.camera, y_offset);
+                // CameraController::on_scroll(camera_comp.camera, y_offset);
             }
         }
     }

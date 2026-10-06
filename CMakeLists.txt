@@ -36,11 +36,11 @@ target_include_directories(stb_image INTERFACE lib/stb_image)
 # ----------------------------------------------------------------------------
 add_subdirectory(Engine)
 if (NOT ENGINE_DEBUG_DIST AND NOT ENGINE_RELEASE_DIST)
-    add_subdirectory(Editor)
+    # TEMPORARY add_subdirectory(Editor)
     add_subdirectory(test)
 endif ()
 if (BUILD_SANDBOX)
-    add_subdirectory(Sandbox)
+    # TEMPORARY add_subdirectory(Sandbox)
 endif ()
 # ----------------------------------------------------------------------------
 

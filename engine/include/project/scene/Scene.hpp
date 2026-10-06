@@ -8,7 +8,7 @@
 #include <entt/entt.hpp>
 
 #include "project/scene/ecs/Components.hpp"
-#include "render/legacy/Renderer.hpp"
+// #include "render/legacy/Renderer.hpp"
 
 namespace engine {
     class AssetManager;
@@ -34,7 +34,7 @@ namespace engine {
         void on_init();
         void on_shutdown();
         void on_update(float delta_time);
-        void on_render(Renderer& renderer, Camera& camera, AssetManager& asset_manager, float delta_time);
+        void on_render(/*Renderer& renderer,*/ Camera& camera, AssetManager& asset_manager, float delta_time);
 
         void clear(const SystemContext& context);
 
@@ -67,7 +67,7 @@ namespace engine {
         std::unique_ptr<CollisionSystem> collision_system_ = nullptr;
 
         // Todo: Combine into RenderCommand package
-        std::unordered_map<UUID, std::vector<InstanceData>> mesh_batches_; // camera-visible batches
-        std::unordered_map<UUID, std::vector<InstanceData>> shadow_batches_;
+        // std::unordered_map<UUID, std::vector<InstanceData>> mesh_batches_; // camera-visible batches
+        // std::unordered_map<UUID, std::vector<InstanceData>> shadow_batches_;
     };
 }

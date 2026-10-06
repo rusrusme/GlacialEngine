@@ -3,6 +3,8 @@
 /.vscode/
 /cmake-build-*/
 
+/.temp/
+
 # Distribution
 /engine-lib/*/
 

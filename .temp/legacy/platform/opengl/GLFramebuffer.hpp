@@ -1,0 +1,50 @@
+//
+// Copyright (c) 2026 rusrusme 
+// All rights reserved.
+//
+
+#pragma once
+
+#include <cstdint>
+
+namespace engine::legacy {
+    using namespace engine;
+    enum class GLFramebufferType {
+        Default = 0,
+        ShadowMap,
+        PointShadowMap
+    };
+
+    class GLFramebuffer {
+    public:
+        GLFramebuffer(const uint32_t width, const uint32_t height, const GLFramebufferType type = GLFramebufferType::Default)
+            : type_(type) {
+            resize(width, height);
+        }
+
+        ~GLFramebuffer() { invalidate(); }
+
+        void bind() const;
+        void unbind() const;
+
+        void bind_depth_texture(uint32_t slot = 0) const;
+
+        void resize(uint32_t width, uint32_t height);
+
+        [[nodiscard]] uint32_t get_color_attachment_id() const { return color_attachment_id_; }
+        [[nodiscard]] uint32_t get_width() const { return width_; }
+        [[nodiscard]] uint32_t get_height() const { return height_; }
+        [[nodiscard]] uint32_t get_depth_attachment_id() const;
+        [[nodiscard]] GLFramebufferType get_type() const { return type_; }
+
+    private:
+        void invalidate() const;
+
+        uint32_t fbo_id_ = 0;
+        uint32_t color_attachment_id_ = 0;
+        uint32_t depth_attachment_id_ = 0;
+        uint32_t width_ = 1280, height_ = 720;
+
+        GLFramebufferType type_ = GLFramebufferType::Default;
+    };
+}

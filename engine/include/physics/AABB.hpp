@@ -7,7 +7,7 @@
 
 #include <glm/vec3.hpp>
 
-#include "render/legacy/Frustum.hpp"
+// #include "render/legacy/Frustum.hpp"
 
 namespace engine {
     struct Ray;

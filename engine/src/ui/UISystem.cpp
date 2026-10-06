@@ -8,7 +8,7 @@
 #include <RmlUi/Debugger/Debugger.h>
 
 #include "event/MouseEvents.hpp"
-#include "render/legacy/Renderer.hpp"
+// #include "render/legacy/Renderer.hpp"
 
 namespace engine {
     UISystem::UISystem() = default;
@@ -19,7 +19,7 @@ namespace engine {
         render_interface_ = std::make_unique<RmlRenderInterface>(renderer);
         render_interface_->set_viewport(width, height);
 
-        renderer.load_shader("ui", "assets/shaders/engine/ui.vert", "assets/shaders/engine/ui.frag");
+        // renderer.load_shader("ui", "assets/shaders/engine/ui.vert", "assets/shaders/engine/ui.frag");
 
         Rml::SetSystemInterface(&system_interface_);
         Rml::SetRenderInterface(render_interface_.get());
@@ -59,7 +59,7 @@ namespace engine {
 
     void UISystem::on_render() {
         if (context_) {
-            Renderer::set_blend(true); // Ensure alpha blending is enabled
+            // Renderer::set_blend(true); // Ensure alpha blending is enabled
             glDisable(GL_DEPTH_TEST);
             context_->Render();
             glEnable(GL_DEPTH_TEST);

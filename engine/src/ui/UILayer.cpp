@@ -17,7 +17,7 @@ namespace engine {
         auto width = Application::get().window().get_width();
         auto height = Application::get().window().get_height();
 
-        ui_system_->init(context.renderer, width, height);
+        // ui_system_->init(context.renderer, width, height);
     }
 
     void UILayer::on_detach(SystemContext& context) {

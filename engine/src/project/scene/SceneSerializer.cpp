@@ -72,10 +72,10 @@ namespace engine {
             if (entity.has_component<CameraComponent>()) {
                 auto& cc = entity.get_component<CameraComponent>();
                 entity_json["camera"] = {
-                    {"fov", cc.camera.get_fov()},
-                    {"near_plane", cc.camera.get_near_clip()},
-                    {"far_plane", cc.camera.get_far_clip()},
-                    {"is_primary", cc.is_primary}
+                    // {"fov", cc.camera.get_fov()},
+                    // {"near_plane", cc.camera.get_near_clip()},
+                    // {"far_plane", cc.camera.get_far_clip()},
+                    // {"is_primary", cc.is_primary}
                 };
             }
             // MaterialComponent
@@ -198,10 +198,10 @@ namespace engine {
             if (entity_json.contains("camera")) {
                 auto& cc = entity.add_component<CameraComponent>();
                 auto& c_json = entity_json["camera"];
-                cc.camera.set_fov(c_json["fov"]);
-                cc.camera.set_near_clip(c_json["near_plane"]);
-                cc.camera.set_far_clip(c_json["far_plane"]);
-                cc.is_primary = c_json["is_primary"];
+                // cc.camera.set_fov(c_json["fov"]);
+                // cc.camera.set_near_clip(c_json["near_plane"]);
+                // cc.camera.set_far_clip(c_json["far_plane"]);
+                // cc.is_primary = c_json["is_primary"];
             }
             // 6. MaterialComponent
             if (entity_json.contains("material")) {
