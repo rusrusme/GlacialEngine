@@ -157,7 +157,7 @@ namespace engine {
 
         // Frustum culling
         Frustum current_frustum_;
-        bool frustum_culling_enabled_{true};
+        bool frustum_culling_enabled_{false};
 
         // Shadow resources
         std::unique_ptr<Framebuffer> shadow_framebuffer_;
