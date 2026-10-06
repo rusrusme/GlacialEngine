@@ -1,0 +1,91 @@
+//
+// Copyright (c) 2026 rusrusme 
+// All rights reserved.
+//
+
+#pragma once
+
+#include <cstdint>
+#include <memory>
+
+namespace engine {
+    template<typename T>
+    using Shared = std::shared_ptr<T>;
+
+    template<typename T>
+    using Unique = std::unique_ptr<T>;
+
+    enum class RendererBackend {
+        None = 0,
+        OpenGL,
+        Vulkan,
+        DX12
+    };
+
+    enum class ShaderDataType {
+        None = 0,
+        Float, Float2, Float3, Float4,
+        Mat3, Mat4,
+        Int, Int2, Int3, Int4,
+        Bool
+    };
+
+    enum class TextureFormat {
+        None = 0,
+        RGBA8,
+        RGB8,
+        RGBA16F,
+        RGBA32F,
+        R32_UINT,
+        Depth24Stencil8,
+        Depth32F
+    };
+
+    enum class TextureFilter {
+        Linear,
+        Nearest,
+        Anisotropic
+    };
+
+    enum class TextureWrap {
+        Repeat,
+        ClampToEdge,
+        MirroredRepeat,
+        Border
+    };
+
+    enum class CullMode {
+        None = 0,
+        Front,
+        Back,
+        FrontAndBack
+    };
+
+    enum class PolygonMode {
+        Fill,
+        Wireframe,
+        Point
+    };
+
+    enum class CompareOp {
+        Never = 0,
+        Less,
+        Equal,
+        LessOrEqual,
+        Greater,
+        NotEqual,
+        GreaterOrEqual,
+        Always
+    };
+
+    enum class IndexType {
+        UInt16,
+        UInt32
+    };
+
+    enum class DescriptorSetIndex : uint32_t {
+        Frame    = 0, // Set 0: Per-Frame Uniforms (FrameData UBO, Time, View/Proj)
+        Pass     = 1, // Set 1: Per-Pass Resources (Shadow Maps, G-Buffers, Light Lists)
+        Material = 2  // Set 2: Per-Material Data (Albedo, Normal, Roughness)
+    };
+}
