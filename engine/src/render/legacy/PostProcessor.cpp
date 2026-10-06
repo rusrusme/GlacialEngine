@@ -17,8 +17,8 @@ namespace engine {
         glCreateVertexArrays(1, &screen_vao_);
 
         composite_shader_ = Shader::from_file(
-            "assets/shaders/engine/postprocess/fullscreen.vert",
-            "assets/shaders/engine/postprocess/composite.frag"
+            "assets/shaders/legacy/engine/postprocess/fullscreen.vert",
+            "assets/shaders/legacy/engine/postprocess/composite.frag"
         );
 
         create_buffers(width_, height_);

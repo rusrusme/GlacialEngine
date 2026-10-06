@@ -9,7 +9,7 @@ layout (location = 4) in mat4 attribute_instance_model_matrix;
 layout (location = 8) in vec4 attribute_instance_color;
 layout (location = 9) in vec2 attribute_instance_pbr_properties;
 
-#include "common/camera.glsl"
+#include "legacy/common/camera.glsl"
 
 uniform mat4 u_light_space_matrix;
 

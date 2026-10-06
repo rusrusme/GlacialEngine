@@ -24,8 +24,8 @@ namespace engine {
         data_.line_vao->add_vertex_buffer(data_.line_vbo, line_layout);
 
         data_.line_shader = GLShader::from_file(
-            "assets/shaders/engine/debug/line.vert",
-            "assets/shaders/engine/debug/line.frag"
+            "assets/shaders/legacy/engine/debug/line.vert",
+            "assets/shaders/legacy/engine/debug/line.frag"
         );
         data_.line_batch_buffer.reserve(2000);
     }

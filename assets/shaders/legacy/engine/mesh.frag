@@ -10,12 +10,12 @@ in vec4 varying_color;
 in vec2 varying_pbr_properties;
 in vec4 varying_light_space_position;
 
-#include "common/camera.glsl"
-#include "common/math.glsl"
-#include "lighting/lights.glsl"
-#include "lighting/pbr.glsl"
-#include "lighting/shadow_2d.glsl"   // Slot 3
-#include "lighting/shadow_cube.glsl" // Slot 4
+#include "legacy/common/camera.glsl"
+#include "legacy/common/math.glsl"
+#include "legacy/lighting/lights.glsl"
+#include "legacy/lighting/pbr.glsl"
+#include "legacy/lighting/shadow_2d.glsl"   // Slot 3
+#include "legacy/lighting/shadow_cube.glsl" // Slot 4
 
 uniform sampler2D u_albedo_texture;
 uniform int u_use_albedo_texture;
