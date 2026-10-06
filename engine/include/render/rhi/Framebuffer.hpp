@@ -14,7 +14,7 @@ namespace engine {
         TextureFormat format = TextureFormat::None;
 
         FramebufferAttachmentSpec() = default;
-        explicit FramebufferAttachmentSpec(TextureFormat format) : format(format) {}
+        FramebufferAttachmentSpec(TextureFormat format) : format(format) {}
     };
 
     struct FramebufferSpecification {
