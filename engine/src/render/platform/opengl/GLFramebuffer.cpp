@@ -150,6 +150,9 @@ namespace engine {
                 glTextureParameteri(depth_attachment_, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
                 glTextureParameteri(depth_attachment_, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
                 glTextureParameteri(depth_attachment_, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+
+                constexpr float border_color[] = {1.0f, 1.0f, 1.0f, 1.0f};
+                glTextureParameterfv(depth_attachment_, GL_TEXTURE_BORDER_COLOR, border_color);
             }
 
             const GLenum attachment_type = (depth_attachment_spec_.format == TextureFormat::Depth24Stencil8)
@@ -159,16 +162,17 @@ namespace engine {
             glNamedFramebufferTexture(renderer_id_, attachment_type, depth_attachment_, 0);
         }
 
-        if (color_attachments_.size() > 1) {
+        if (!color_attachments_.empty()) {
             std::vector<GLenum> draw_buffers(color_attachments_.size());
             for (size_t i = 0; i < draw_buffers.size(); ++i) {
                 draw_buffers[i] = static_cast<GLenum>(GL_COLOR_ATTACHMENT0 + i);
             }
             glNamedFramebufferDrawBuffers(renderer_id_, static_cast<GLsizei>(draw_buffers.size()), draw_buffers.data());
         }
-        else if (color_attachments_.empty()) {
+        else {
             // Depth-Only Pass (e.g. Cascaded Shadow Maps / Depth Prepass)
             glNamedFramebufferDrawBuffers(renderer_id_, 0, nullptr);
+            glNamedFramebufferReadBuffer(renderer_id_, GL_NONE);
         }
 
         if (glCheckNamedFramebufferStatus(renderer_id_, GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE) {

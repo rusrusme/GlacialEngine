@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "render/rhi/Framebuffer.hpp"
+#include "render/rhi/FramebufferSpecs.hpp"
 #include "render/rhi/RHITypes.hpp"
 
 #include <cstdint>
