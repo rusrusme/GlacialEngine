@@ -7,8 +7,8 @@
 
 #include <filesystem>
 #include <unordered_map>
-#include <render/mesh/Mesh.hpp>
-#include <render/mesh/MeshLoader.hpp>
+#include <render/legacy/mesh/Mesh.hpp>
+#include <render/legacy/mesh/MeshLoader.hpp>
 
 #include "AssetType.hpp"
 

@@ -5,8 +5,8 @@
 
 #pragma once
 
-#include "render/Shader.hpp"
-#include "render/VertexArray.hpp"
+#include "render/legacy/Shader.hpp"
+#include "render/legacy/VertexArray.hpp"
 
 namespace editor {
     class Grid {

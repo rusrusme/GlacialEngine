@@ -5,7 +5,7 @@
 
 #include "RmlRenderInterface.hpp"
 
-#include "render/Renderer.hpp"
+#include "render/legacy/Renderer.hpp"
 
 #include "stb_image.h"
 

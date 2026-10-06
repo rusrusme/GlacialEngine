@@ -13,7 +13,7 @@
 #include "panel/Console.hpp"
 #include "panel/Hierarchy.hpp"
 #include "panel/ObjectInspector.hpp"
-#include "render/Camera.hpp"
+#include "render/legacy/Camera.hpp"
 
 #ifdef ENABLE_IMGUI
 namespace engine {

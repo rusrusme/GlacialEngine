@@ -13,7 +13,7 @@
 #include "core/UUID.hpp"
 #include "physics/CollisionSystem.hpp"
 #include "project/scene/ecs/Entity.hpp"
-#include "render/mesh/InstanceData.hpp"
+#include "render/legacy/mesh/InstanceData.hpp"
 
 namespace engine {
     Scene::Scene() = default;

@@ -9,7 +9,7 @@
 
 #include "project/scene/Scene.hpp"
 #include "project/scene/ecs/Components.hpp"
-#include "render/Camera.hpp"
+#include "render/legacy/Camera.hpp"
 
 namespace engine {
     void CameraSystem::reset_mouse_state() {

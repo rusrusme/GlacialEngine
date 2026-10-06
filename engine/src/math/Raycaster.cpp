@@ -6,7 +6,7 @@
 #include "math/Raycaster.hpp"
 
 #include "math/Ray.hpp"
-#include "render/Camera.hpp"
+#include "render/legacy/Camera.hpp"
 
 namespace engine {
     Ray Raycaster::cast_ray(const glm::vec2 mouse_pos, const int viewport_width, const int viewport_height, const Camera& camera) {

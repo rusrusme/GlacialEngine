@@ -10,8 +10,8 @@
 #include "core/LayerStack.hpp"
 #include "core/SystemContext.hpp"
 #include "core/Window.hpp"
-#include "render/Renderer.hpp"
 #include "project/scene/SceneManager.hpp"
+#include "render/legacy/Renderer.hpp"
 
 namespace engine {
     class Application {

@@ -12,8 +12,8 @@
 #include "core/WindowAPI.hpp"
 #include "event/MouseEvents.hpp"
 #include "event/WindowEvents.hpp"
-#include "render/Frame.hpp"
-#include "render/debug/DebugRenderer.hpp"
+#include "render/legacy/Frame.hpp"
+#include "render/legacy/debug/DebugRenderer.hpp"
 
 namespace engine {
     Application::Application() : Application(setting::ENGINE_TITLE_) {}

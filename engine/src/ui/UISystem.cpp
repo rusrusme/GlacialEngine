@@ -8,7 +8,7 @@
 #include <RmlUi/Debugger/Debugger.h>
 
 #include "event/MouseEvents.hpp"
-#include "render/Renderer.hpp"
+#include "render/legacy/Renderer.hpp"
 
 namespace engine {
     UISystem::UISystem() = default;
