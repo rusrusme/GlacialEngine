@@ -85,7 +85,7 @@ namespace engine {
                     glVertexArrayAttribIFormat(
                         renderer_id_,
                         attribute_index_,
-                        static_cast<GLint>(element.get_component_count()),
+                        static_cast<GLint>(element.component_count()),
                         base_type,
                         static_cast<GLuint>(element.offset)
                     );
@@ -94,7 +94,7 @@ namespace engine {
                     glVertexArrayAttribFormat(
                         renderer_id_,
                         attribute_index_,
-                        static_cast<GLint>(element.get_component_count()),
+                        static_cast<GLint>(element.component_count()),
                         base_type,
                         element.normalized ? GL_TRUE : GL_FALSE,
                         static_cast<GLuint>(element.offset)

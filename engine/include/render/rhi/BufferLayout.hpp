@@ -43,7 +43,7 @@ namespace engine {
         BufferElement(ShaderDataType type, std::string name, bool normalized = false, bool per_instance = false)
             : name(std::move(name)), type(type), size(shader_data_type_size(type)), normalized(normalized), per_instance(per_instance) {}
 
-        [[nodiscard]] uint32_t get_component_count() const {
+        [[nodiscard]] uint32_t component_count() const {
             switch (type) {
                 case ShaderDataType::Float : return 1;
                 case ShaderDataType::Float2 : return 2;

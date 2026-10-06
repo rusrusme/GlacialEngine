@@ -5,26 +5,6 @@
 
 #pragma once
 
-#include "render/rhi/BufferLayout.hpp"
-#include "render/rhi/RHITypes.hpp"
-#include "render/rhi/Shader.hpp"
-
-namespace engine {
-    struct PipelineStateDesc {
-        Shader shader;
-        BufferLayout vertex_layout;
-
-        CullMode cull_mode = CullMode::Back;
-        PolygonMode polygon_mode = PolygonMode::Fill;
-
-        bool depth_test = true;
-        bool depth_write = true;
-        CompareOp depth_compare = CompareOp::Less;
-
-        bool blend_enable = false;
-    };
-}
-
 #if defined(RENDER_API_OPENGL)
 
 #include "render/platform/opengl/GLPipelineState.hpp"
