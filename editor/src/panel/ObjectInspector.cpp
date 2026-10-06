@@ -175,11 +175,11 @@ namespace editor {
     void ObjectInspector::draw_header_section(engine::Entity entity) const {
         ImGui::PushStyleVar(ImGuiStyleVar_FramePadding, ImVec2(4, 6));
 
-        if (entity.has_component<engine::ActiveComponent>()) {
-            auto& active_comp = entity.get_component<engine::ActiveComponent>();
-            ImGui::Checkbox("##Active", &active_comp.active);
-            ImGui::SameLine();
+        bool is_active = entity.is_active();
+        if (ImGui::Checkbox("##Active", &is_active)) {
+            entity.set_active(is_active);
         }
+        ImGui::SameLine();
 
         if (entity.has_component<engine::LabelComponent>()) {
             auto& label = entity.get_component<engine::LabelComponent>();

@@ -124,14 +124,12 @@ namespace engine {
     }
 
     void AudioSystem::update_listener(SystemContext& context) {
-        auto scene = context.scenes.active_scene();
+        const auto scene = context.scenes.active_scene();
         if (!scene) return;
 
-        auto view = scene->view<TransformComponent, AudioListenerComponent, ActiveComponent>();
-
-        for (auto entity : view) {
-            auto [transform, listener, active] = view.get<TransformComponent, AudioListenerComponent, ActiveComponent>(entity);
-            if (!active.active || !listener.is_primary) continue;
+        const auto view = scene->view<TransformComponent, AudioListenerComponent>(entt::exclude<DisabledComponent>);
+        for (const auto& [entity, transform, listener] : view.each()) {
+            if (!listener.is_primary) continue;
 
             const glm::vec3 pos = transform.position;
             const glm::vec3 forward = transform.get_forward();
@@ -146,15 +144,11 @@ namespace engine {
     }
 
     void AudioSystem::update_sources(SystemContext& context) {
-        auto scene = context.scenes.active_scene();
+        const auto scene = context.scenes.active_scene();
         if (!scene) return;
 
-        auto view = scene->view<TransformComponent, AudioSourceComponent, ActiveComponent>();
-
-        for (auto entity : view) {
-            auto [transform, source, active] = view.get<TransformComponent, AudioSourceComponent, ActiveComponent>(entity);
-            if (!active.active) continue;
-
+        const auto view = scene->view<TransformComponent, AudioSourceComponent>(entt::exclude<DisabledComponent>);
+        for (const auto& [entity, transform, source] : view.each()) {
             if (source.runtime_sound_ptr) {
                 auto* sound = static_cast<ma_sound*>(source.runtime_sound_ptr);
 

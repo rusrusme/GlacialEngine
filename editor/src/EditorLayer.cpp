@@ -110,19 +110,14 @@ namespace editor {
             PROFILE_END();
 
             PROFILE_START("EditorLayer::on_render - Light Mesh Render");
-            auto dir_light = scene->view<engine::TransformComponent, engine::DirectionalLightComponent, engine::ActiveComponent>();
-            for (auto entity : dir_light) {
-                auto [transform, light, active] = dir_light.get<engine::TransformComponent, engine::DirectionalLightComponent, engine::ActiveComponent>(entity);
-                if (active.active) {
-                    draw_directional_light(transform.position, transform.get_forward(), light.color);
-                }
+            const auto dir_light_view = scene->view<engine::TransformComponent, engine::DirectionalLightComponent>(entt::exclude<engine::DisabledComponent>);
+            for (const auto& [entity, transform, light] : dir_light_view.each()) {
+                draw_directional_light(transform.position, transform.get_forward(), light.color);
             }
-            auto point_light = scene->view<engine::TransformComponent, engine::PointLightComponent, engine::ActiveComponent>();
-            for (auto entity : point_light) {
-                auto [transform, light, active] = point_light.get<engine::TransformComponent, engine::PointLightComponent, engine::ActiveComponent>(entity);
-                if (active.active) {
-                    engine::DebugRenderer::draw_sphere(transform.position, 0.05f, light.color, 16);
-                }
+
+            const auto point_light_view = scene->view<engine::TransformComponent, engine::PointLightComponent>(entt::exclude<engine::DisabledComponent>);
+            for (const auto& [entity, transform, light] : point_light_view.each()) {
+                engine::DebugRenderer::draw_sphere(transform.position, 0.05f, light.color, 16);
             }
             PROFILE_END();
         }

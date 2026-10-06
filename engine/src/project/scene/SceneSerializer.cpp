@@ -49,9 +49,7 @@ namespace engine {
             if (entity.has_component<LabelComponent>()) {
                 entity_json["label"] = entity.get_component<LabelComponent>().tag;
             }
-            if (entity.has_component<ActiveComponent>()) {
-                entity_json["active"] = entity.get_component<ActiveComponent>().active;
-            }
+            entity_json["active"] = entity.is_active();
             // TransformComponent
             if (entity.has_component<TransformComponent>()) {
                 auto& transform = entity.get_component<TransformComponent>();
@@ -162,8 +160,7 @@ namespace engine {
             Entity entity = scene_->create_entity_with_uuid(uuid, name);
 
             if (entity_json.contains("active")) {
-                auto& ac = entity.get_component<ActiveComponent>();
-                ac.active = entity_json["active"].get<bool>();
+                entity.set_active(entity_json["active"].get<bool>());
             }
             // Transform
             if (entity_json.contains("transform")) {

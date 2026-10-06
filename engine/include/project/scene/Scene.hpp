@@ -38,8 +38,8 @@ namespace engine {
 
         void clear(const SystemContext& context);
 
-        template<typename... Components>
-        auto view() { return registry_.view<Components...>(); }
+        template<typename... Components, typename... Args>
+        auto view(Args&&... args) { return registry_.view<Components...>(std::forward<Args>(args)...); }
 
         template<typename... Components>
         auto clear_component() { return registry_.clear<Components...>(); }

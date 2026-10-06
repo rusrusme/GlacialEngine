@@ -51,7 +51,6 @@ namespace engine {
         auto& tag = entity.add_component<LabelComponent>();
         tag.tag = name.empty() ? "Entity" : name;
 
-        entity.add_component<ActiveComponent>(true);
         entity.add_component<TransformComponent>();
         CORE_TRACE("Created entity - {0} [{1}]", tag.tag, static_cast<uint64_t>(uuid));
         return entity;
@@ -112,13 +111,8 @@ namespace engine {
 
         // Lights
         PROFILE_START("Render - Lights Processing");
-        auto dir_light_view = registry_.view<TransformComponent, DirectionalLightComponent>();
-        for (auto entity : dir_light_view) {
-            auto [transform, light] = dir_light_view.get<TransformComponent, DirectionalLightComponent>(entity);
-            if (registry_.all_of<ActiveComponent>(entity) && !registry_.get<ActiveComponent>(entity).active) {
-                continue;
-            }
-
+        const auto dir_light_view = registry_.view<TransformComponent, DirectionalLightComponent>(entt::exclude<DisabledComponent>);
+        for (const auto& [entity, transform, light] : dir_light_view.each()) {
             renderer.add_directional_light({
                 .direction = transform.get_forward(),
                 .color     = light.color,
@@ -126,13 +120,8 @@ namespace engine {
             });
         }
 
-        auto point_light_view = registry_.view<TransformComponent, PointLightComponent>();
-        for (auto entity : point_light_view) {
-            auto [transform, light] = point_light_view.get<TransformComponent, PointLightComponent>(entity);
-            if (registry_.all_of<ActiveComponent>(entity) && !registry_.get<ActiveComponent>(entity).active) {
-                continue;
-            }
-
+        const auto point_light_view = registry_.view<TransformComponent, PointLightComponent>(entt::exclude<DisabledComponent>);
+        for (const auto& [entity, transform, light] : point_light_view.each()) {
             renderer.add_point_light({
                 .position  = transform.position,
                 .color     = light.color,
@@ -151,12 +140,8 @@ namespace engine {
         const glm::vec3 camera_pos = camera.get_position();
 
         PROFILE_START("Scene::on_render - Batch Loop");
-        auto mesh_view = registry_.view<TransformComponent, MeshComponent, ActiveComponent>();
-        for (auto entity : mesh_view) {
-            auto [transform, mesh_comp, active] = mesh_view.get<TransformComponent, MeshComponent, ActiveComponent>(entity);
-
-            if (!active.active) continue;
-
+        const auto mesh_group = registry_.group<TransformComponent, MeshComponent>(entt::get<>, entt::exclude<DisabledComponent>);
+        for (const auto& [entity, transform, mesh_comp] : mesh_group.each()) {
             UUID target_mesh_handle = mesh_comp.handle;
 
             const float max_scale = std::max({transform.scale.x, transform.scale.y, transform.scale.z});
@@ -212,6 +197,7 @@ namespace engine {
         // Render passes
         // ------------------
         PROFILE_START("Render - Pass Submissions");
+        // Todo: bugged... occlusion pass
         // renderer.render_occlusion_pass(camera, asset_manager, mesh_batches_);
         renderer.render_shadow_pass(camera, asset_manager, shadow_batches_);
         renderer.render_point_shadow_pass(asset_manager, shadow_batches_);

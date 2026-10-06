@@ -90,9 +90,7 @@ namespace engine {
         mutable bool is_dirty_{true};
     };
 
-    struct ActiveComponent {
-        bool active = true;
-    };
+    struct DisabledComponent { /* Empty */ };
 
     struct MeshComponent {
         AssetHandle handle{0};
