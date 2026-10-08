@@ -31,7 +31,12 @@ namespace engine {
         name_ = path.stem().string();
 
         const auto shader_sources = parse_shader_stages(source);
-        compile_and_link(shader_sources);
+        compile(shader_sources);
+    }
+
+    GLShader::GLShader(std::string name, const LoadedBSHData& bsh_data)
+        : name_(std::move(name)) {
+        compile_bsh(bsh_data);
     }
 
     GLShader::GLShader(std::string name, const std::string& vertex_src, const std::string& fragment_src)
@@ -40,7 +45,7 @@ namespace engine {
         sources[GL_VERTEX_SHADER] = vertex_src;
         sources[GL_FRAGMENT_SHADER] = fragment_src;
 
-        compile_and_link(sources);
+        compile(sources);
     }
 
     GLShader::GLShader(std::string name, const std::string& compute_src)
@@ -48,12 +53,12 @@ namespace engine {
         std::unordered_map<uint32_t, std::string> sources;
         sources[GL_COMPUTE_SHADER] = compute_src;
 
-        compile_and_link(sources);
+        compile(sources);
     }
 
     GLShader::GLShader(std::string name, const std::unordered_map<uint32_t, std::vector<uint8_t>>& spirv_sources)
         : name_(std::move(name)) {
-        compile_and_link_spirv(spirv_sources);
+        compile_spirv(spirv_sources);
     }
 
     GLShader::~GLShader() {
@@ -212,7 +217,42 @@ namespace engine {
         return shader;
     }
 
-    void GLShader::compile_and_link(const std::unordered_map<uint32_t, std::string>& sources) {
+    void GLShader::compile_bsh(const LoadedBSHData& bsh_data) {
+        if (!bsh_data.valid) {
+            return;
+        }
+
+        auto to_gl_stage = [](bshc::ShaderStage stage) -> uint32_t {
+            switch (stage) {
+                case bshc::ShaderStage::Vertex : return GL_VERTEX_SHADER;
+                case bshc::ShaderStage::Fragment : return GL_FRAGMENT_SHADER;
+                case bshc::ShaderStage::Geometry : return GL_GEOMETRY_SHADER;
+                case bshc::ShaderStage::Compute : return GL_COMPUTE_SHADER;
+            }
+            return 0;
+        };
+
+        if (bsh_data.backend == bshc::RenderBackend::OpenGL) {
+            std::unordered_map<uint32_t, std::string> sources;
+            for (const auto& stage : bsh_data.stages) {
+                if (uint32_t gl_stage = to_gl_stage(stage.stage)) {
+                    sources[gl_stage] = std::string(stage.as_string_view());
+                }
+            }
+            compile(sources);
+        }
+        else if (bsh_data.backend == bshc::RenderBackend::Vulkan) {
+            std::unordered_map<uint32_t, std::vector<uint8_t>> spirv_sources;
+            for (const auto& stage : bsh_data.stages) {
+                if (uint32_t gl_stage = to_gl_stage(stage.stage)) {
+                    spirv_sources[gl_stage] = stage.code;
+                }
+            }
+            compile_spirv(spirv_sources);
+        }
+    }
+
+    void GLShader::compile(const std::unordered_map<uint32_t, std::string>& sources) {
         const GLuint program = glCreateProgram();
         std::vector<GLuint> gl_shader_ids;
         gl_shader_ids.reserve(sources.size());
@@ -269,7 +309,7 @@ namespace engine {
         renderer_id_ = program;
     }
 
-    void GLShader::compile_and_link_spirv(const std::unordered_map<uint32_t, std::vector<uint8_t>>& spirv_sources) {
+    void GLShader::compile_spirv(const std::unordered_map<uint32_t, std::vector<uint8_t>>& spirv_sources) {
         const GLuint program = glCreateProgram();
         std::vector<GLuint> gl_shader_ids;
         gl_shader_ids.reserve(spirv_sources.size());

@@ -8,7 +8,9 @@ file(GLOB_RECURSE ENGINE_SOURCES CONFIGURE_DEPENDS
      "include/*.hpp"
      "include/*.h"
 )
-add_library(Engine STATIC ${ENGINE_SOURCES})
+add_library(Engine STATIC ${ENGINE_SOURCES}
+            include/render/shader/BSHLoader.hpp
+            src/render/shader/BSHLoader.cpp)
 # ----------------------------------------------------------------------------
 target_include_directories(Engine
                            PUBLIC ${CMAKE_SOURCE_DIR}/engine/include
@@ -18,21 +20,24 @@ target_include_directories(Engine
 if (WIN32)
     target_compile_definitions(Engine PUBLIC NOMINMAX WIN32_LEAN_AND_MEAN)
     target_link_libraries(Engine PUBLIC comdlg32.lib)
-endif()
+endif ()
 # ----------------------------------------------------------------------------
 set(RENDER_API "OPENGL" CACHE STRING "Selects the rendering backend")
 # ----------------------------------------------------------------------------
 set_property(CACHE RENDER_API PROPERTY STRINGS "OPENGL" "VULKAN" "DX12")
 if (RENDER_API STREQUAL "OPENGL")
     target_compile_definitions(Engine PUBLIC RENDER_API_OPENGL)
+    set(BSHC_BACKEND "opengl")
 elseif (RENDER_API STREQUAL "VULKAN")
     target_compile_definitions(Engine PUBLIC RENDER_API_VULKAN)
+    set(BSHC_BACKEND "vulkan")
 elseif (RENDER_API STREQUAL "DX12")
     if (NOT WIN32)
         message(FATAL_ERROR "DirectX 12 is only supported on Windows platforms")
     endif ()
     target_compile_definitions(Engine PUBLIC RENDER_API_DX12)
     target_link_libraries(Engine PUBLIC d3d12.lib dxgi.lib dxguid.lib)
+    set(BSHC_BACKEND "dx12")
 else ()
     message(FATAL_ERROR "Unsupported Render API: ${RENDER_API}")
 endif ()
@@ -49,7 +54,7 @@ target_link_libraries(Engine PUBLIC
                       OpenGL::GL
                       miniaudio
                       nlohmann_json::nlohmann_json
-                      bshc_core
+                      bshc::bshc_core
 )
 # ----------------------------------------------------------------------------
 if (ENABLE_IMGUI)
@@ -64,10 +69,29 @@ include(PackageDistribution.cmake)
 # ----------------------------------------------------------------------------
 set(RUNTIME_ASSETS "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/assets")
 set(SOURCE_ASSETS "${CMAKE_SOURCE_DIR}/assets")
+
 add_custom_target(SyncAssets ALL
                   COMMAND ${CMAKE_COMMAND} -E remove_directory "${RUNTIME_ASSETS}"
                   COMMAND ${CMAKE_COMMAND} -E copy_directory "${SOURCE_ASSETS}" "${RUNTIME_ASSETS}"
                   COMMENT "Syncing assets to runtime output directory"
+                  VERBATIM
 )
+# ----------------------------------------------------------------------------
+file(GLOB_RECURSE BSH_SOURCES "${SOURCE_ASSETS}/*.bsh")
+set(BSHC_COMMANDS)
+foreach (BSH_FILE ${BSH_SOURCES})
+    string(REPLACE "${SOURCE_ASSETS}" "${RUNTIME_ASSETS}" RUNTIME_BSH "${BSH_FILE}")
+    list(APPEND BSHC_COMMANDS
+         COMMAND $<TARGET_FILE:BSHC> "${RUNTIME_BSH}" -b ${BSHC_BACKEND}
+    )
+endforeach ()
+
+add_custom_target(CompileBSH ALL
+                  ${BSHC_COMMANDS}
+                  COMMENT "Compiling shaders via BSHC (${BSHC_BACKEND}) into runtime directory"
+                  VERBATIM
+)
+# ----------------------------------------------------------------------------
 add_dependencies(Engine SyncAssets)
+add_dependencies(Engine CompileBSH)
 # ----------------------------------------------------------------------------

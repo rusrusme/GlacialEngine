@@ -11,11 +11,14 @@
 #include <unordered_set>
 #include <vector>
 
+#include "render/shader/BSHLoader.hpp"
+
 namespace engine {
     class GLShader {
     public:
         GLShader() = default;
         explicit GLShader(const std::string& filepath);
+        GLShader(std::string name, const LoadedBSHData& bsh_data);
         GLShader(std::string name, const std::string& vertex_src, const std::string& fragment_src);
         GLShader(std::string name, const std::string& compute_src);
         GLShader(std::string name, const std::unordered_map<uint32_t, std::vector<uint8_t>>& spirv_sources);
@@ -41,8 +44,9 @@ namespace engine {
         std::string preprocess_source(const std::string& filepath, std::unordered_set<std::string>& included_files);
 
         uint32_t compile_spirv_shader(uint32_t type, const std::vector<uint8_t>& spirv_data);
-        void compile_and_link(const std::unordered_map<uint32_t, std::string>& sources);
-        void compile_and_link_spirv(const std::unordered_map<uint32_t, std::vector<uint8_t>>& spirv_sources);
+        void compile_bsh(const LoadedBSHData& bsh_data);
+        void compile(const std::unordered_map<uint32_t, std::string>& sources);
+        void compile_spirv(const std::unordered_map<uint32_t, std::vector<uint8_t>>& spirv_sources);
 
         uint32_t renderer_id_ = 0;
         std::string name_;
