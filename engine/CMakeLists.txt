@@ -77,7 +77,7 @@ add_custom_target(SyncAssets ALL
                   VERBATIM
 )
 # ----------------------------------------------------------------------------
-file(GLOB_RECURSE BSH_SOURCES "${SOURCE_ASSETS}/*.bsh")
+file(GLOB_RECURSE BSH_SOURCES CONFIGURE_DEPENDS "${SOURCE_ASSETS}/*.bsh")
 
 if (BSH_SOURCES)
     add_custom_target(CompileBSH ALL
