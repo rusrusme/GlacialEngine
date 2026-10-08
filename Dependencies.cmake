@@ -143,7 +143,7 @@ FetchContent_MakeAvailable(miniaudio)
 FetchContent_Declare(
         BasisShaderCompiler
         GIT_REPOSITORY https://github.com/rusrusme/BasisShaderCompiler.git
-        GIT_TAG v1.0.2
+        GIT_TAG v1.1.0
         GIT_SHALLOW TRUE
         GIT_SUBMODULES ""
 )

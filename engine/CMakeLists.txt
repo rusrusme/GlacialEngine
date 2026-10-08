@@ -78,19 +78,18 @@ add_custom_target(SyncAssets ALL
 )
 # ----------------------------------------------------------------------------
 file(GLOB_RECURSE BSH_SOURCES "${SOURCE_ASSETS}/*.bsh")
-set(BSHC_COMMANDS)
-foreach (BSH_FILE ${BSH_SOURCES})
-    string(REPLACE "${SOURCE_ASSETS}" "${RUNTIME_ASSETS}" RUNTIME_BSH "${BSH_FILE}")
-    list(APPEND BSHC_COMMANDS
-         COMMAND $<TARGET_FILE:BSHC> "${RUNTIME_BSH}" -b ${BSHC_BACKEND}
-    )
-endforeach ()
 
-add_custom_target(CompileBSH ALL
-                  ${BSHC_COMMANDS}
-                  COMMENT "Compiling shaders via BSHC (${BSHC_BACKEND}) into runtime directory"
-                  VERBATIM
-)
+if (BSH_SOURCES)
+    add_custom_target(CompileBSH ALL
+                      COMMAND $<TARGET_FILE:bshc::bshc> ${BSH_SOURCES} -o "${RUNTIME_ASSETS}/shaders/compiled" -b ${BSHC_BACKEND}
+                      COMMENT "Compiling shaders via BSHC (${BSHC_BACKEND}) into runtime directory"
+                      VERBATIM
+    )
+else ()
+    add_custom_target(CompileBSH ALL
+                      COMMENT "No BSH shader sources found"
+    )
+endif ()
 # ----------------------------------------------------------------------------
 add_dependencies(Engine SyncAssets)
 add_dependencies(Engine CompileBSH)
