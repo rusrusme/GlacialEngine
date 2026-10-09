@@ -75,11 +75,12 @@ add_custom_target(SyncAssets ALL
                   VERBATIM
 )
 # ----------------------------------------------------------------------------
-file(GLOB_RECURSE BSH_SOURCES CONFIGURE_DEPENDS "${SOURCE_ASSETS}/*.bsh")
+file(GLOB_RECURSE BSH_SOURCES RELATIVE "${SOURCE_ASSETS}/shaders" CONFIGURE_DEPENDS "${SOURCE_ASSETS}/shaders/*.bsh")
 
 if (BSH_SOURCES)
     add_custom_target(CompileBSH ALL
                       COMMAND $<TARGET_FILE:bshc::bshc> ${BSH_SOURCES} -o "${RUNTIME_ASSETS}/shaders/compiled" -b ${BSHC_BACKEND}
+                      WORKING_DIRECTORY "${SOURCE_ASSETS}/shaders"
                       COMMENT "Compiling shaders via BSHC (${BSHC_BACKEND}) into runtime directory"
                       VERBATIM
     )
