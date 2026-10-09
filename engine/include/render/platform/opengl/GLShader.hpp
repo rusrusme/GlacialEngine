@@ -8,8 +8,6 @@
 #include <cstdint>
 #include <string>
 #include <unordered_map>
-#include <unordered_set>
-#include <vector>
 
 #include "render/shader/BSHLoader.hpp"
 
@@ -42,13 +40,8 @@ namespace engine {
         void load(const LoadedBSHData& bsh_data);
         void create_program(const std::unordered_map<uint32_t, std::string>& sources);
 
-        std::string read_file(const std::string& filepath);
-        std::unordered_map<uint32_t, std::string> parse_shader_stages(const std::string& source);
-        std::string preprocess_source(const std::string& filepath, std::unordered_set<std::string>& included_files);
-
         uint32_t renderer_id_ = 0;
         std::string name_;
-
         std::string filepath_;
     };
 } // engine

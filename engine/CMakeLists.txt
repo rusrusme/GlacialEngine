@@ -8,9 +8,7 @@ file(GLOB_RECURSE ENGINE_SOURCES CONFIGURE_DEPENDS
      "include/*.hpp"
      "include/*.h"
 )
-add_library(Engine STATIC ${ENGINE_SOURCES}
-            include/render/shader/BSHLoader.hpp
-            src/render/shader/BSHLoader.cpp)
+add_library(Engine STATIC ${ENGINE_SOURCES})
 # ----------------------------------------------------------------------------
 target_include_directories(Engine
                            PUBLIC ${CMAKE_SOURCE_DIR}/engine/include
