@@ -5,14 +5,6 @@
 
 #pragma once
 
-#include "render/rhi/Shader.hpp"
-
-namespace engine {
-    struct ComputePipelineDesc {
-        Shader shader;
-    };
-}
-
 #if defined(RENDER_API_OPENGL)
 
 #include "render/platform/opengl/GLComputePipeline.hpp"

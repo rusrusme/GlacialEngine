@@ -104,4 +104,14 @@ namespace engine {
         int32_t vertex_offset{0};
         uint32_t first_instance{0};
     };
+
+    enum class MemoryBarrierFlags : uint32_t {
+        None                  = 0,
+        ShaderStorage         = 1 << 0, // SSBO writes
+        UniformBuffer         = 1 << 1, // UBO updates
+        TextureFetch          = 1 << 2, // Storage Image / Texture writes
+        CommandData           = 1 << 3, // Indirect Draw / Dispatch buffers
+        FramebufferAttachment = 1 << 4, // Render Target barriers
+        All                   = 0xFFFFFFFF
+    };
 }

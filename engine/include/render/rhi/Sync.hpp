@@ -5,18 +5,6 @@
 
 #pragma once
 
-#include <cstdint>
-
-namespace engine {
-    enum class BarrierFlags : uint32_t {
-        None               = 0,
-        IndirectCommandBit = 1 << 0, // Wait for compute to write ICB
-        ShaderStorageBit   = 1 << 1, // Wait for SSBO writes (Light List)
-        TextureFetchBit    = 1 << 2, // Wait for depth map / HZB writes
-        All                = 0xFFFFFFFF
-    };
-}
-
 #if defined(RENDER_API_OPENGL)
 
 #include "render/platform/opengl/GLSync.hpp"
