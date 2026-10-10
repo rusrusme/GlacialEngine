@@ -39,6 +39,7 @@ namespace engine {
         ~GLUniformBuffer();
 
         void set_data(const void* data, size_t size, size_t offset = 0);
+        [[nodiscard]] uint32_t renderer_id() const { return renderer_id_; }
 
     private:
         uint32_t renderer_id_ = 0;
@@ -50,6 +51,7 @@ namespace engine {
         ~GLShaderStorageBuffer();
 
         void set_data(const void* data, size_t size, size_t offset = 0);
+        [[nodiscard]] uint32_t renderer_id() const { return renderer_id_; }
 
     private:
         uint32_t renderer_id_ = 0;

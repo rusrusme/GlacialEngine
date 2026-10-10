@@ -29,12 +29,12 @@ namespace engine {
     }
 
     void GLCommandBuffer::begin() noexcept {
-        assert(!is_recording_ && "CommandBuffer wird bereits aufgezeichnet!");
+        assert(!is_recording_ && "CommandBuffer is already recording");
         is_recording_ = true;
     }
 
     void GLCommandBuffer::end() noexcept {
-        assert(is_recording_ && "CommandBuffer war nicht im Recording-Zustand!");
+        assert(is_recording_ && "CommandBuffer was not in recording state");
         is_recording_ = false;
     }
 
@@ -59,7 +59,7 @@ namespace engine {
     }
 
     void GLCommandBuffer::begin_render_pass(const RenderPassBeginInfo& begin_info) {
-        assert(begin_info.framebuffer && "Framebuffer darf im RenderPass nicht null sein!");
+        assert(begin_info.framebuffer && "Framebuffer cannot be nullptr in render pass");
 
         const uint32_t fbo_id = begin_info.framebuffer->renderer_id();
         glBindFramebuffer(GL_FRAMEBUFFER, fbo_id);
@@ -78,7 +78,7 @@ namespace engine {
                 clear_mask |= GL_DEPTH_BUFFER_BIT;
             }
             if (begin_info.clear_stencil_target) {
-                glClearStencil(begin_info.clear_stencil);
+                glClearStencil(static_cast<GLint>(begin_info.clear_stencil));
                 clear_mask |= GL_STENCIL_BUFFER_BIT;
             }
             if (clear_mask != 0) {
@@ -94,7 +94,7 @@ namespace engine {
                     begin_info.clear_color.a
                 };
                 for (uint32_t i = 0; i < begin_info.framebuffer->color_attachment_count(); ++i) {
-                    glClearNamedFramebufferfv(fbo_id, GL_COLOR, i, color);
+                    glClearNamedFramebufferfv(fbo_id, GL_COLOR, static_cast<GLint>(i), color);
                 }
             }
 
@@ -131,7 +131,7 @@ namespace engine {
     }
 
     void GLCommandBuffer::bind_descriptor_set(DescriptorSetIndex set_index, const GLDescriptorSet& descriptor_set) {
-        // descriptor_set.bind(set_index);
+        descriptor_set.bind(set_index);
     }
 
     void GLCommandBuffer::set_viewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height) {
@@ -154,7 +154,7 @@ namespace engine {
     }
 
     void GLCommandBuffer::draw_indexed(uint32_t index_count, uint32_t instance_count, uint32_t first_index, int32_t vertex_offset, uint32_t first_instance) {
-        const void* index_ptr = reinterpret_cast<const void*>(first_index * index_element_size_);
+        auto index_ptr = reinterpret_cast<const void*>(first_index * index_element_size_);
         glDrawElementsInstancedBaseVertexBaseInstance(
             GL_TRIANGLES,
             static_cast<GLsizei>(index_count),
