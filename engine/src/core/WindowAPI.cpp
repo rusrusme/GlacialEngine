@@ -104,6 +104,10 @@ namespace engine::window {
 
     void* create_window(int width, int height, const char* title, WindowNativeData* window_data) {
         if (active_framework == GraphicsFramework::GLFW) {
+            #if defined(DEBUG) || defined(_DEBUG)
+            glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
+            #endif
+
             GLFWwindow* window = glfwCreateWindow(width, height, title, nullptr, nullptr);
             if (window && window_data) {
                 setup_callbacks(window, window_data);

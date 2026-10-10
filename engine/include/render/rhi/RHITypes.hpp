@@ -114,4 +114,35 @@ namespace engine {
         FramebufferAttachment = 1 << 4, // Render Target barriers
         All                   = 0xFFFFFFFF
     };
+
+    constexpr MemoryBarrierFlags operator|(MemoryBarrierFlags a, MemoryBarrierFlags b) {
+        return static_cast<MemoryBarrierFlags>(static_cast<uint32_t>(a) | static_cast<uint32_t>(b));
+    }
+
+    constexpr MemoryBarrierFlags operator&(MemoryBarrierFlags a, MemoryBarrierFlags b) {
+        return static_cast<MemoryBarrierFlags>(static_cast<uint32_t>(a) & static_cast<uint32_t>(b));
+    }
+
+    constexpr MemoryBarrierFlags operator^(MemoryBarrierFlags a, MemoryBarrierFlags b) {
+        return static_cast<MemoryBarrierFlags>(static_cast<uint32_t>(a) ^ static_cast<uint32_t>(b));
+    }
+
+    constexpr MemoryBarrierFlags operator~(MemoryBarrierFlags a) {
+        return static_cast<MemoryBarrierFlags>(~static_cast<uint32_t>(a));
+    }
+
+    constexpr MemoryBarrierFlags& operator|=(MemoryBarrierFlags& a, MemoryBarrierFlags b) {
+        a = a | b;
+        return a;
+    }
+
+    constexpr MemoryBarrierFlags& operator&=(MemoryBarrierFlags& a, MemoryBarrierFlags b) {
+        a = a & b;
+        return a;
+    }
+
+    constexpr MemoryBarrierFlags& operator^=(MemoryBarrierFlags& a, MemoryBarrierFlags b) {
+        a = a ^ b;
+        return a;
+    }
 }
