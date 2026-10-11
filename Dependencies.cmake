@@ -1,7 +1,7 @@
 # Dependencies.cmake
 # ----------------------------------------------------------------------------
 include(FetchContent)
-set(FETCHCONTENT_UPDATES_DISCONNECTED ON CACHE BOOL "" FORCE)
+set(FETCHCONTENT_UPDATES_DISCONNECTED OFF CACHE BOOL "" FORCE)
 # ----------------------------------------------------------------------------
 # Fetch GLFW
 FetchContent_Declare(
@@ -143,7 +143,7 @@ FetchContent_MakeAvailable(miniaudio)
 FetchContent_Declare(
         BasisShaderCompiler
         GIT_REPOSITORY https://github.com/rusrusme/BasisShaderCompiler.git
-        GIT_TAG v1.1.1
+        GIT_TAG v1.2.0
         GIT_SHALLOW TRUE
         GIT_SUBMODULES ""
 )

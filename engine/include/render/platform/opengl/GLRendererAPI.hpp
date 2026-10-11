@@ -31,6 +31,7 @@ namespace engine {
         void set_wireframe(bool enable);
         void set_seamless_cubemap(bool enable);
 
+        [[nodiscard]] static constexpr RendererBackend backend() noexcept { return RendererBackend::OpenGL; }
     private:
         float clear_color_[4] = {0.1f, 0.1f, 0.1f, 1.0f};
     };

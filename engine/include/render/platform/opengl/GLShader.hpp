@@ -15,8 +15,9 @@ namespace engine {
     class GLShader {
     public:
         GLShader() = default;
-        /** @brief Uses .bshb */
+        /** @brief Uses .bshb or .bsh (Hot-reload) */
         explicit GLShader(std::string filepath);
+        GLShader(std::string name, const std::string& shader_code);
 
         ~GLShader();
 

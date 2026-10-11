@@ -12,7 +12,7 @@
 #include <string_view>
 #include <vector>
 
-#include <BSH.hpp>
+#include <bshc/BSH.hpp>
 
 namespace engine {
     struct LoadedBSHStage {

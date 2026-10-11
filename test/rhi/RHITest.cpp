@@ -25,6 +25,16 @@
 
 using namespace engine;
 
+static std::string debug_shader = R"(
+    #vert
+    layout(location = 0) in vec3 a_Pos;
+    void main() { gl_Position = vec4(a_Pos, 1.0); }
+
+    #frag
+    layout(location = 0) out vec4 FragColor;
+    void main() { FragColor = vec4(1.0, 0.0, 1.0, 1.0); }
+)";
+
 void RHIBufferTestLayer::on_attach(engine::SystemContext& context) {
     CORE_INFO("=================================================");
     CORE_INFO(" RUNNING RHI BUFFER & LAYOUT VALIDATION TESTS ");
@@ -129,7 +139,7 @@ void RHIPipelineAndDescriptorTestLayer::on_attach(engine::SystemContext& context
         CORE_INFO("[Test 3.1] Testing PipelineState VAO Creation...");
 
         PipelineStateDesc desc;
-        desc.shader = std::make_shared<Shader>("assets/shaders/compiled/test/basic.bshb");
+        desc.shader = std::make_shared<Shader>("shader", debug_shader);
         desc.vertex_layout = {
             {ShaderDataType::Float3, "a_Position"},
             {ShaderDataType::Float2, "a_TexCoord"}
@@ -204,13 +214,13 @@ void RHICommandExecutionTestLayer::on_attach(engine::SystemContext& context) {
     RenderCommand::init();
     CORE_INFO("-> RendererAPI Initialized via RenderCommand");
 
-    auto shader = std::make_shared<Shader>("assets/shaders/compiled/test/basic.bshb");
+    auto shader = std::make_shared<Shader>("shader", debug_shader);
 
     PipelineStateDesc desc;
     desc.shader = shader;
     desc.vertex_layout = {
-            { ShaderDataType::Float3, "a_Position" },
-            { ShaderDataType::Float2, "a_TexCoord" }
+        {ShaderDataType::Float3, "a_Position"},
+        {ShaderDataType::Float2, "a_TexCoord"}
     };
     desc.cull_mode = CullMode::Back;
     desc.polygon_mode = PolygonMode::Fill;
@@ -230,14 +240,14 @@ void RHICommandExecutionTestLayer::on_render(engine::SystemContext& context, flo
 
     // Framebuffer & Pass
     FramebufferSpecification fbo_spec{
-        .width = 1920,
-        .height = 1080,
-        .samples = 1,
-        .attachments = { TextureFormat::RGBA8, TextureFormat::Depth24Stencil8 }
+        .width       = 1920,
+        .height      = 1080,
+        .samples     = 1,
+        .attachments = {TextureFormat::RGBA8, TextureFormat::Depth24Stencil8}
     };
     Framebuffer fbo(fbo_spec);
 
-    const float clear_color[4] = { 0.1f, 0.1f, 0.12f, 1.0f };
+    const float clear_color[4] = {0.1f, 0.1f, 0.12f, 1.0f};
     RenderCommand::begin_render_pass(cmd_buffer, fbo, clear_color);
 
     // 1. Pipeline (und damit VAO + Shader) vor dem Draw Call binden!

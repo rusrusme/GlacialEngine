@@ -11,6 +11,7 @@
 #include <glad/glad.h>
 
 #include "core/Log.hpp"
+#include "render/shader/ShaderCompiler.hpp"
 
 namespace engine {
     GLShader::GLShader(std::string filepath)
@@ -18,9 +19,26 @@ namespace engine {
         const std::filesystem::path path(filepath_);
         name_ = path.stem().string();
 
-        const LoadedBSHData bsh_data = BSHLoader::load_from_binary(filepath_);
+        LoadedBSHData bsh_data;
+        if (path.extension() == ".bsh") {
+            bsh_data = ShaderCompiler::compile_file(filepath_);
+        }
+        else { // .bshb
+            bsh_data = BSHLoader::load_from_binary(filepath_);
+        }
+
         if (!bsh_data.valid) {
             CORE_ERROR("[GLShader] Failed to load BSHB file '{0}': {1}", filepath_, bsh_data.error_message);
+            return;
+        }
+        load(bsh_data);
+    }
+
+    GLShader::GLShader(std::string name, const std::string& shader_code)
+        : name_(std::move(name)) {
+        const LoadedBSHData bsh_data = ShaderCompiler::compile_source(shader_code, name_);
+        if (!bsh_data.valid) {
+            CORE_ERROR("[GLShader] Failed to compile in-memory shader '{0}': {1}", name_, bsh_data.error_message);
             return;
         }
         load(bsh_data);
@@ -58,7 +76,17 @@ namespace engine {
             return false;
         }
 
-        const LoadedBSHData bsh_data = BSHLoader::load_from_binary(filepath_);
+        const std::filesystem::path path(filepath_);
+        LoadedBSHData bsh_data;
+        if (path.extension() == ".bsh") {
+            // Hot-reload .bsh source file
+            bsh_data = ShaderCompiler::compile_file(filepath_);
+        }
+        else {
+            // Load compiled .bshb binary
+            bsh_data = BSHLoader::load_from_binary(filepath_);
+        }
+
         if (!bsh_data.valid) {
             CORE_ERROR("[GLShader] Reload failed for '{0}': {1}", name_, bsh_data.error_message);
             return false;
