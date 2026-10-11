@@ -14,7 +14,7 @@
 namespace engine {
     GPUCuller::GPUCuller() {
         ComputePipelineDesc desc;
-        desc.shader = std::make_shared<Shader>("assets/shaders/gpu/compute/frustum_cull.bshb");
+        desc.shader = std::make_shared<Shader>("assets/shaders/compiled/gpu/frustum_cull.bshb");
 
         if (!desc.shader || desc.shader->renderer_id() == 0) {
             CORE_ERROR("[GPUCuller] Failed to initialize frustum culling compute pipeline shader");

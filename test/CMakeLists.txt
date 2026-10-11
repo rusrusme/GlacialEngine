@@ -8,3 +8,6 @@ target_link_libraries(ShaderSystemTest PRIVATE Engine glfw glad)
 
 add_executable(RHITest rhi/RHITest.cpp rhi/RHITest.hpp)
 target_link_libraries(RHITest PRIVATE Engine glfw glad)
+
+add_executable(GPUTest gpu/GPUTest.cpp gpu/GPUTest.hpp)
+target_link_libraries(GPUTest PRIVATE Engine glfw glad)

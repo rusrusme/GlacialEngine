@@ -169,12 +169,13 @@ namespace engine {
     void GLTexture2D::create_gpu_resources() {
         glCreateTextures(GL_TEXTURE_2D, 1, &renderer_id_);
 
-        uint32_t mip_levels = 1;
+        mip_levels_ = 1;
         if (specification_.generate_mipmaps) {
-            mip_levels = static_cast<uint32_t>(std::floor(std::log2(std::max(specification_.width, specification_.height)))) + 1;
+            mip_levels_ = static_cast<uint32_t>(std::floor(std::log2(std::max(specification_.width, specification_.height)))) + 1;
         }
 
-        glTextureStorage2D(renderer_id_, static_cast<GLsizei>(mip_levels), internal_format_, static_cast<GLsizei>(specification_.width), static_cast<GLsizei>(specification_.height));
+        glTextureStorage2D(renderer_id_, static_cast<GLsizei>(mip_levels_), internal_format_,
+                           static_cast<GLsizei>(specification_.width), static_cast<GLsizei>(specification_.height));
 
         GLenum min_filter = GL_LINEAR;
         if (specification_.min_filter == TextureFilter::Nearest) {

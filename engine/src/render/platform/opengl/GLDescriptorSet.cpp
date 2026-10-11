@@ -67,6 +67,20 @@ namespace engine {
         }
     }
 
+    void GLDescriptorSet::write_storage_image(uint32_t binding_slot, const GLTexture2D& texture, uint32_t mip_level, ImageAccess access) {
+        auto it = std::ranges::find_if(image_bindings_,
+                                       [binding_slot](const ImageBinding& binding) { return binding.binding_slot == binding_slot; });
+
+        if (it != image_bindings_.end()) {
+            it->texture = &texture;
+            it->mip_level = mip_level;
+            it->access = access;
+        }
+        else {
+            image_bindings_.push_back({binding_slot, &texture, mip_level, access});
+        }
+    }
+
     void GLDescriptorSet::bind([[maybe_unused]] DescriptorSetIndex set_index) const {
         // Hinweis: `set_index` kann für Vulkan/DX12-Offsetting genutzt werden.
         // In OpenGL mappen wir direkt auf die jeweiligen Binding Slots:
@@ -98,6 +112,24 @@ namespace engine {
         for (const auto& [binding_slot, texture] : texture_bindings_) {
             if (!texture) continue;
             glBindTextureUnit(binding_slot, texture->renderer_id());
+        }
+
+        for (const auto& [binding_slot, texture, mip_level, access] : image_bindings_) {
+            if (!texture) continue;
+
+            GLenum gl_access = GL_WRITE_ONLY;
+            if (access == ImageAccess::ReadOnly) gl_access = GL_READ_ONLY;
+            else if (access == ImageAccess::ReadWrite) gl_access = GL_READ_WRITE;
+
+            glBindImageTexture(
+                binding_slot,
+                texture->renderer_id(),
+                static_cast<GLint>(mip_level),
+                GL_FALSE,
+                0,
+                gl_access,
+                texture->internal_format()
+            );
         }
     }
 } // engine

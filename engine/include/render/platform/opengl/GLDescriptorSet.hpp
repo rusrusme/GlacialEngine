@@ -35,6 +35,15 @@ namespace engine {
         const GLTexture2D* texture{nullptr};
     };
 
+    enum class ImageAccess { ReadOnly, WriteOnly, ReadWrite };
+
+    struct ImageBinding {
+        uint32_t binding_slot{0};
+        const GLTexture2D* texture{nullptr};
+        uint32_t mip_level{0};
+        ImageAccess access{ImageAccess::WriteOnly};
+    };
+
     class GLDescriptorSet {
     public:
         GLDescriptorSet() = default;
@@ -49,6 +58,7 @@ namespace engine {
         void write_storage_buffer(uint32_t binding_slot, const GLShaderStorageBuffer& buffer, size_t offset = 0, size_t range = 0);
         void write_storage_buffer(uint32_t binding_slot, const GLIndirectBuffer& buffer, size_t offset = 0, size_t range = 0);
         void write_texture(uint32_t binding_slot, const GLTexture2D& texture);
+        void write_storage_image(uint32_t binding_slot, const GLTexture2D& texture, uint32_t mip_level = 0, ImageAccess access = ImageAccess::WriteOnly);
 
         void bind(DescriptorSetIndex set_index) const;
 
@@ -56,6 +66,7 @@ namespace engine {
         std::vector<UniformBufferBinding> ubo_bindings_;
         std::vector<StorageBufferBinding> ssbo_bindings_;
         std::vector<TextureBinding> texture_bindings_;
+        std::vector<ImageBinding> image_bindings_;
     };
 
 } // namespace engine

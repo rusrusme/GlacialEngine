@@ -36,6 +36,9 @@ namespace engine {
         [[nodiscard]] uint32_t renderer_id() const { return renderer_id_; }
         [[nodiscard]] const TextureSpecification& specification() const { return specification_; }
 
+        [[nodiscard]] uint32_t mip_levels() const { return mip_levels_; }
+        [[nodiscard]] GLenum internal_format() const { return internal_format_; }
+
     private:
         void create_gpu_resources();
 
@@ -44,5 +47,7 @@ namespace engine {
         GLenum internal_format_ = 0;
         GLenum data_format_ = 0;
         GLenum data_type_ = 0;
+
+        uint32_t mip_levels_ = 1;
     };
 } // namespace engine
