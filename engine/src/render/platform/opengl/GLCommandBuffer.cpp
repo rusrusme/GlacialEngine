@@ -42,6 +42,14 @@ namespace engine {
         is_recording_ = false;
     }
 
+    void GLCommandBuffer::dispatch(uint32_t group_x, uint32_t group_y, uint32_t group_z) {
+        glDispatchCompute(
+            static_cast<GLuint>(group_x),
+            static_cast<GLuint>(group_y),
+            static_cast<GLuint>(group_z)
+        );
+    }
+
     void GLCommandBuffer::begin_render_pass(const GLFramebuffer& framebuffer, const float clear_color[4]) {
         RenderPassBeginInfo begin_info{};
         begin_info.framebuffer = &framebuffer;

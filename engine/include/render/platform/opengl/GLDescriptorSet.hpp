@@ -11,7 +11,7 @@
 #include "render/rhi/RHITypes.hpp"
 
 namespace engine {
-
+    class GLIndirectBuffer;
     class GLUniformBuffer;
     class GLShaderStorageBuffer;
     class GLTexture2D;
@@ -25,7 +25,7 @@ namespace engine {
 
     struct StorageBufferBinding {
         uint32_t binding_slot{0};
-        const GLShaderStorageBuffer* buffer{nullptr};
+        uint32_t buffer_id{0};
         size_t offset{0};
         size_t range{0};
     };
@@ -47,6 +47,7 @@ namespace engine {
 
         void write_uniform_buffer(uint32_t binding_slot, const GLUniformBuffer& buffer, size_t offset = 0, size_t range = 0);
         void write_storage_buffer(uint32_t binding_slot, const GLShaderStorageBuffer& buffer, size_t offset = 0, size_t range = 0);
+        void write_storage_buffer(uint32_t binding_slot, const GLIndirectBuffer& buffer, size_t offset = 0, size_t range = 0);
         void write_texture(uint32_t binding_slot, const GLTexture2D& texture);
 
         void bind(DescriptorSetIndex set_index) const;

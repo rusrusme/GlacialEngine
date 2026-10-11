@@ -32,12 +32,26 @@ namespace engine {
                                        [binding_slot](const StorageBufferBinding& binding) { return binding.binding_slot == binding_slot; });
 
         if (it != ssbo_bindings_.end()) {
-            it->buffer = &buffer;
+            it->buffer_id = buffer.renderer_id();
             it->offset = offset;
             it->range = range;
         }
         else {
-            ssbo_bindings_.push_back({binding_slot, &buffer, offset, range});
+            ssbo_bindings_.push_back({binding_slot, buffer.renderer_id(), offset, range});
+        }
+    }
+
+    void GLDescriptorSet::write_storage_buffer(uint32_t binding_slot, const GLIndirectBuffer& buffer, size_t offset, size_t range) {
+        auto it = std::ranges::find_if(ssbo_bindings_,
+                                       [binding_slot](const StorageBufferBinding& binding) { return binding.binding_slot == binding_slot; });
+
+        if (it != ssbo_bindings_.end()) {
+            it->buffer_id = buffer.renderer_id();
+            it->offset = offset;
+            it->range = range;
+        }
+        else {
+            ssbo_bindings_.push_back({binding_slot, buffer.renderer_id(), offset, range});
         }
     }
 
@@ -69,14 +83,14 @@ namespace engine {
             }
         }
 
-        for (const auto& [binding_slot, buffer, offset, range] : ssbo_bindings_) {
-            if (!buffer) continue;
+        for (const auto& [binding_slot, buffer_id, offset, range] : ssbo_bindings_) {
+            if (!buffer_id) continue;
 
             if (range == 0) {
-                glBindBufferBase(GL_SHADER_STORAGE_BUFFER, binding_slot, buffer->renderer_id());
+                glBindBufferBase(GL_SHADER_STORAGE_BUFFER, binding_slot, buffer_id);
             }
             else {
-                glBindBufferRange(GL_SHADER_STORAGE_BUFFER, binding_slot, buffer->renderer_id(),
+                glBindBufferRange(GL_SHADER_STORAGE_BUFFER, binding_slot, buffer_id,
                                   static_cast<GLintptr>(offset), static_cast<GLsizeiptr>(range));
             }
         }

@@ -46,6 +46,8 @@ namespace engine {
         void end() noexcept;
         void reset() noexcept;
 
+        void dispatch(uint32_t group_x, uint32_t group_y = 1, uint32_t group_z = 1);
+
         // RenderPass Management
         void begin_render_pass(const GLFramebuffer& framebuffer, const float clear_color[4] = nullptr);
         void begin_render_pass(GLFramebuffer& framebuffer, const float clear_color[4] = nullptr);
