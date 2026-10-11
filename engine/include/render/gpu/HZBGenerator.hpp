@@ -27,7 +27,8 @@ namespace engine {
         void generate(CommandBuffer& cmd, const Texture2D& depth_texture, const Texture2D& hzb_texture);
 
     private:
-        Shared<ComputePipeline> hzb_pipeline_;
+        Shared<ComputePipeline> initial_pipeline_;
+        Shared<ComputePipeline> reduce_pipeline_;
         DescriptorSet descriptor_set_;
     };
 }

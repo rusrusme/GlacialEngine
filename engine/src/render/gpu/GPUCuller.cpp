@@ -13,14 +13,31 @@
 
 namespace engine {
     GPUCuller::GPUCuller() {
-        ComputePipelineDesc desc;
-        desc.shader = std::make_shared<Shader>("assets/shaders/compiled/gpu/frustum_cull.bshb");
+        // Frustum Culling Pipeline
+        {
+            ComputePipelineDesc desc;
+            desc.shader = std::make_shared<Shader>("assets/shaders/compiled/gpu/frustum_cull.bshb");
 
-        if (!desc.shader || desc.shader->renderer_id() == 0) {
-            CORE_ERROR("[GPUCuller] Failed to initialize frustum culling compute pipeline shader");
-            return;
+            if (desc.shader && desc.shader->renderer_id() != 0) {
+                frustum_cull_pipeline_ = std::make_shared<ComputePipeline>(desc);
+            }
+            else {
+                CORE_ERROR("[GPUCuller] Failed to initialize frustum culling compute pipeline shader");
+            }
         }
-        frustum_cull_pipeline_ = std::make_shared<ComputePipeline>(desc);
+
+        // HZB Occlusion Culling Pipeline
+        {
+            ComputePipelineDesc desc;
+            desc.shader = std::make_shared<Shader>("assets/shaders/compiled/gpu/occlusion_cull.bshb");
+
+            if (desc.shader && desc.shader->renderer_id() != 0) {
+                hzb_cull_pipeline_ = std::make_shared<ComputePipeline>(desc);
+            }
+            else {
+                CORE_WARN("[GPUCuller] Occlusion culling shader not found or failed to compile. Fallback to Frustum Culling only.");
+            }
+        }
         CORE_INFO("[GPUCuller] Initialized GPU Culling Pipeline successfully");
     }
 
@@ -34,6 +51,7 @@ namespace engine {
             return;
         }
 
+        // Select pipeline (HZB Occlusion if texture provided, else Frustum only)
         Shared<ComputePipeline> active_pipeline = frustum_cull_pipeline_;
         if (hzb_texture && hzb_cull_pipeline_) {
             active_pipeline = hzb_cull_pipeline_;
@@ -43,11 +61,12 @@ namespace engine {
             return;
         }
 
+        // Bind UBO and SSBO resources
         descriptor_set_.write_uniform_buffer(0, camera_buffer);
         descriptor_set_.write_storage_buffer(0, instance_buffer);
         descriptor_set_.write_storage_buffer(1, indirect_draw_buffer);
 
-        if (hzb_texture) {
+        if (hzb_texture && hzb_cull_pipeline_) {
             descriptor_set_.write_texture(0, *hzb_texture);
         }
 
