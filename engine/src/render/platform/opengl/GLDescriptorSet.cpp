@@ -121,6 +121,13 @@ namespace engine {
             if (access == ImageAccess::ReadOnly) gl_access = GL_READ_ONLY;
             else if (access == ImageAccess::ReadWrite) gl_access = GL_READ_WRITE;
 
+            GLenum format = texture->internal_format();
+            if (format == GL_DEPTH_COMPONENT32F) {
+                format = GL_R32F;
+            } else if (format == GL_DEPTH24_STENCIL8) {
+                format = GL_R32UI;
+            }
+
             glBindImageTexture(
                 binding_slot,
                 texture->renderer_id(),
@@ -128,7 +135,7 @@ namespace engine {
                 GL_FALSE,
                 0,
                 gl_access,
-                texture->internal_format()
+                format
             );
         }
     }
