@@ -13,15 +13,21 @@
 namespace engine {
     /**
      * @brief Native indirect draw command structure for GPU-driven rendering.
-     * @note Matches exact memory layout required by glMultiDrawElementsIndirect and vkCmdDrawIndexedIndirect.
+     * @note Matches the exact 20-byte memory layout required by glMultiDrawElementsIndirect and vkCmdDrawIndexedIndirect.
+     * @warning Must NOT be padded: the compute shaders declare the matching std430 struct, whose array stride is
+     *          exactly 20 bytes. Any padding here (e.g. alignas(16)) desynchronizes the GPU-side write offsets
+     *          from the CPU-side reads, so culling results land in the wrong command slots.
      */
-    struct alignas(16) GPUDrawCommand {
+    struct GPUDrawCommand {
         uint32_t count{0};          ///< Number of indices to draw
         uint32_t instance_count{0}; ///< Dynamically toggled by Compute Culling (0 = culled, 1 = visible)
         uint32_t first_index{0};    ///< Byte offset in the Index Buffer / sizeof(IndexType)
         int32_t base_vertex{0};     ///< Offset added to vertex indices
         uint32_t base_instance{0};  ///< Instance ID offset (used for gl_BaseInstance / gl_DrawID lookup)
     };
+
+    static_assert(sizeof(GPUDrawCommand) == 20,
+                  "GPUDrawCommand must stay tightly packed (5 x 4 bytes) to match the std430 layout declared in the cull shaders.");
 
     /**
      * @brief Per-instance data stored in SSBO (std430 layout).

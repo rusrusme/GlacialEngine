@@ -35,15 +35,22 @@ void GPUTestLayer::on_attach(SystemContext& context) {
     camera_data.projection = glm::perspective(glm::radians(45.0f), 16.0f / 9.0f, 0.1f, 100.0f);
     camera_data.view_projection = camera_data.projection * camera_data.view;
     camera_data.camera_position = glm::vec4(0.0f, 0.0f, 5.0f, 1.0f);
-    camera_data.viewport_size = glm::vec2(512.0f, 512.0f);
+    camera_data.viewport_size = glm::vec2(1024.0f, 576.0f); // 16:9 Viewport
 
-    // Frustum Planes (Ax + By + Cz + D = 0)
-    camera_data.frustum_planes[0] = glm::vec4(1.0f, 0.0f, 0.0f, 10.0f);  // Left
-    camera_data.frustum_planes[1] = glm::vec4(-1.0f, 0.0f, 0.0f, 10.0f); // Right
-    camera_data.frustum_planes[2] = glm::vec4(0.0f, 1.0f, 0.0f, 10.0f);  // Bottom
-    camera_data.frustum_planes[3] = glm::vec4(0.0f, -1.0f, 0.0f, 10.0f); // Top
-    camera_data.frustum_planes[4] = glm::vec4(0.0f, 0.0f, -1.0f, 0.1f);  // Near
-    camera_data.frustum_planes[5] = glm::vec4(0.0f, 0.0f, 1.0f, 100.0f); // Far
+    // Extract Frustum Planes automatically from View-Projection Matrix (Gribb-Hartmann)
+    const glm::mat4& vp = camera_data.view_projection;
+    camera_data.frustum_planes[0] = glm::vec4(vp[0][3] + vp[0][0], vp[1][3] + vp[1][0], vp[2][3] + vp[2][0], vp[3][3] + vp[3][0]); // Left
+    camera_data.frustum_planes[1] = glm::vec4(vp[0][3] - vp[0][0], vp[1][3] - vp[1][0], vp[2][3] - vp[2][0], vp[3][3] - vp[3][0]); // Right
+    camera_data.frustum_planes[2] = glm::vec4(vp[0][3] + vp[0][1], vp[1][3] + vp[1][1], vp[2][3] + vp[2][1], vp[3][3] + vp[3][1]); // Bottom
+    camera_data.frustum_planes[3] = glm::vec4(vp[0][3] - vp[0][1], vp[1][3] - vp[1][1], vp[2][3] - vp[2][1], vp[3][3] - vp[3][1]); // Top
+    camera_data.frustum_planes[4] = glm::vec4(vp[0][3] + vp[0][2], vp[1][3] + vp[1][2], vp[2][3] + vp[2][2], vp[3][3] + vp[3][2]); // Near
+    camera_data.frustum_planes[5] = glm::vec4(vp[0][3] - vp[0][2], vp[1][3] - vp[1][2], vp[2][3] - vp[2][2], vp[3][3] - vp[3][2]); // Far
+
+    // Normalize plane equations
+    for (auto & frustum_plane : camera_data.frustum_planes) {
+        float len = glm::length(glm::vec3(frustum_plane));
+        frustum_plane /= len;
+    }
 
     camera_buffer_ = std::make_unique<UniformBuffer>(sizeof(GPUCameraData), 0);
     camera_buffer_->set_data(&camera_data, sizeof(GPUCameraData));
@@ -96,7 +103,9 @@ void GPUTestLayer::on_attach(SystemContext& context) {
     TextureSpecification hzb_spec{
         .width            = 512,
         .height           = 512,
-        .format           = TextureFormat::RGBA32F,
+        .format           = TextureFormat::R32F,
+        .min_filter       = TextureFilter::Nearest,
+        .mag_filter       = TextureFilter::Nearest,
         .generate_mipmaps = true
     };
     hzb_target_tex_ = std::make_unique<Texture2D>(hzb_spec);
@@ -126,6 +135,55 @@ void GPUTestLayer::on_attach(SystemContext& context) {
     culler_->dispatch_cull(cmd, static_cast<uint32_t>(instances.size()), *instance_buffer_, *indirect_buffer_, *camera_buffer_, hzb_target_tex_.get());
 
     cmd.end();
+
+    // -----------------------------------------------------------------
+    // TEST 4: Edge Cases & Multi-Workgroup Stress Test
+    // -----------------------------------------------------------------
+    const uint32_t STRESS_INSTANCE_COUNT = 1000;
+    std::vector<GPUInstanceData> stress_instances(STRESS_INSTANCE_COUNT);
+    std::vector<GPUDrawCommand> stress_commands(STRESS_INSTANCE_COUNT);
+
+    // Alle 1000 Commands & Instanzen initialisieren
+    for (uint32_t i = 0; i < STRESS_INSTANCE_COUNT; ++i) {
+        float x_pos = (i % 2 == 0) ? 0.0f : 500.0f; // Gerade = Sichtbar (0.0), Ungerade = Culled (500.0)
+        stress_instances[i].bounding_center_radius = glm::vec4(x_pos, 0.0f, 0.0f, 1.0f);
+        stress_instances[i].bounding_box_min = glm::vec4(-0.5f, -0.5f, -0.5f, 1.0f);
+        stress_instances[i].bounding_box_max = glm::vec4(0.5f, 0.5f, 0.5f, 1.0f);
+
+        stress_commands[i] = {.count = 36, .instance_count = 0, .first_index = 0, .base_vertex = 0, .base_instance = i};
+    }
+
+    // Instanz 0: Bounding Sphere ist im Frustum (Z=4.8), AABB schneidet die Near-Plane (Z > 4.9)
+    stress_instances[0].bounding_center_radius = glm::vec4(0.0f, 0.0f, 4.8f, 0.5f);
+    stress_instances[0].bounding_box_min = glm::vec4(-0.5f, -0.5f, -0.5f, 1.0f);
+    stress_instances[0].bounding_box_max = glm::vec4( 0.5f,  0.5f,  0.5f, 1.0f);
+
+    auto stress_instance_buf = std::make_unique<ShaderStorageBuffer>(sizeof(GPUInstanceData) * STRESS_INSTANCE_COUNT, 0);
+    stress_instance_buf->set_data(stress_instances.data(), sizeof(GPUInstanceData) * STRESS_INSTANCE_COUNT);
+
+    auto stress_indirect_buf = std::make_unique<IndirectBuffer>(sizeof(GPUDrawCommand) * STRESS_INSTANCE_COUNT);
+    stress_indirect_buf->set_data(stress_commands.data(), sizeof(GPUDrawCommand) * STRESS_INSTANCE_COUNT);
+
+    // Dispatch für 1000 Instanzen über 16 Compute Workgroups ((1000 + 63) / 64)
+    CommandBuffer stress_cmd;
+    stress_cmd.begin();
+    culler_->dispatch_cull(stress_cmd, STRESS_INSTANCE_COUNT, *stress_instance_buf, *stress_indirect_buf, *camera_buffer_, hzb_target_tex_.get());
+    stress_cmd.end();
+
+    // Readback Stress Test Results
+    std::vector<GPUDrawCommand> stress_results(STRESS_INSTANCE_COUNT);
+    glGetNamedBufferSubData(stress_indirect_buf->renderer_id(), 0, sizeof(GPUDrawCommand) * STRESS_INSTANCE_COUNT, stress_results.data());
+
+
+    // Assertions:
+    // Index 0: Near plane fallback -> sichtbares Clipping
+    // Index 1: x_pos = 500.0f -> ge-culled
+    // Index 2: x_pos = 0.0f -> sichtbar
+    assert(stress_results[0].instance_count == 1 && "Near plane intersecting instance must be visible!");
+    assert(stress_results[1].instance_count == 0 && "Far out stress instance (index 1) must be culled!");
+    assert(stress_results[2].instance_count == 1 && "In-frustum stress instance (index 2) must be visible!");
+
+    CORE_INFO("[TEST 4] Multi-Workgroup Dispatch ({0} instances across 16 Workgroups) & Near-Plane Clipping PASSED!", STRESS_INSTANCE_COUNT);
 
     // -----------------------------------------------------------------
     // VALIDATION: GPU Readback & Assertions

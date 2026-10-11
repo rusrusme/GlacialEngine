@@ -38,7 +38,8 @@ namespace engine {
         RGBA32F,
         R32_UINT,
         Depth24Stencil8,
-        Depth32F
+        Depth32F,
+        R32F
     };
 
     enum class TextureFilter {

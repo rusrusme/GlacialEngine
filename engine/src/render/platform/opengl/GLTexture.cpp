@@ -50,6 +50,11 @@ namespace engine {
                 data_format = GL_DEPTH_COMPONENT;
                 data_type = GL_FLOAT;
                 break;
+            case TextureFormat::R32F :
+                internal_format = GL_R32F;
+                data_format = GL_RED;
+                data_type = GL_FLOAT;
+                break;
             case TextureFormat::None :
             default :
                 CORE_ERROR("[GLTexture] Unsupported TextureFormat!");
