@@ -1,15 +1,18 @@
-# AGENTS.md — BasisEngine
+# AGENTS.md
 
-## Agent skills
+--- 
 
-### Issue tracker
+### Documentation
 
-This repo tracks work as local markdown files under `.scratch/<feature>/`. See `docs/agents/issue-tracker.md`.
+- Documentations are inside `/documentation/`
+- The documentation should be updated regularly with:
+    - Current features
+    - Completed features (Tick box)
+- Current content:
+    - `Basis Shader Language.md`
+    - `Rendering Architecture.md`
+    - `Roadmap - Bindless Materials.md`
+  
 
-### Triage labels
-
-Issues use the five default triage roles. See `docs/agents/triage-labels.md`.
-
-### Domain docs
-
-Single-context: one `CONTEXT.md` + `docs/adr/` at the repo root. See `docs/agents/domain.md`.
+### Tracking Skills
+- Skills which are useful for future use should be saved
