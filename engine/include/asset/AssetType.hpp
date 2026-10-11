@@ -8,7 +8,7 @@
 #include <filesystem>
 #include <string>
 #include <string_view>
-#include "core/UUID.hpp"
+#include "UUID.hpp"
 
 namespace engine {
     using AssetHandle = UUID;

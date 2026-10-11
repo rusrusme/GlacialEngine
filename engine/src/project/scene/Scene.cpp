@@ -10,7 +10,7 @@
 #include "asset/AssetManager.hpp"
 #include "core/Log.hpp"
 #include "core/SystemContext.hpp"
-#include "core/UUID.hpp"
+#include "asset/UUID.hpp"
 #include "physics/CollisionSystem.hpp"
 #include "project/scene/ecs/Entity.hpp"
 // #include "render/legacy/mesh/InstanceData.hpp"

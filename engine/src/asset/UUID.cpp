@@ -3,7 +3,7 @@
 // All rights reserved.
 //
 
-#include "core/UUID.hpp"
+#include "asset/UUID.hpp"
 
 namespace engine {
     static std::random_device random_device;

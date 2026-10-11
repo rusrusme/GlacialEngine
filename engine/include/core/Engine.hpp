@@ -17,7 +17,7 @@
 #include "core/Layer.hpp"
 #include "core/LayerStack.hpp"
 #include "core/Log.hpp"
-#include "core/UUID.hpp"
+#include "asset/UUID.hpp"
 #include "core/Window.hpp"
 #include "core/WindowAPI.hpp"
 // Event

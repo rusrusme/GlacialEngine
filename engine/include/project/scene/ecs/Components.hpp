@@ -14,7 +14,7 @@
 #include <utility>
 
 #include "asset/AssetType.hpp"
-#include "core/UUID.hpp"
+#include "asset/UUID.hpp"
 #include "physics/AABB.hpp"
 // #include "render/legacy/Camera.hpp"
 
