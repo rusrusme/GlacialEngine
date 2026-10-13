@@ -20,9 +20,6 @@ namespace engine {
         glm::vec4 tangent{0.0f};
     };
 
-    /**
-     * @brief Offset references to submesh geometry inside global mega-buffers.
-     */
     struct Submesh {
         uint32_t mesh_id{0};             ///< Index in GPUSubmeshData SSBO
         uint32_t first_index{0};         ///< Offset in global Index Buffer
@@ -33,9 +30,6 @@ namespace engine {
         AABB local_bounds;
     };
 
-    /**
-     * @brief CPU Mesh asset containing geometry metadata and submesh handles.
-     */
     class Mesh {
     public:
         Mesh() = default;

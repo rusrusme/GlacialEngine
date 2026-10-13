@@ -16,10 +16,6 @@ namespace engine {
 
     class MeshLoader {
     public:
-        /**
-         * @brief Loads a 3D mesh model (e.g., glTF/OBJ), uploads geometry into global mega-buffers,
-         *        and registers material properties into the global Material SSBO.
-         */
         static Mesh load(const std::string& filepath,
                          GPUMeshManager& mesh_manager,
                          MaterialSystem& material_system,
