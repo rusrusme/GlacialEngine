@@ -9,13 +9,10 @@
 #include <vector>
 
 #include "GPUData.hpp"
+#include "render/rhi/Buffer.hpp"
 #include "render/rhi/RHITypes.hpp"
 
 namespace engine {
-    class VertexBuffer;
-    class IndexBuffer;
-    class ShaderStorageBuffer;
-
     /**
      * @brief Allocation metadata returned when registering a mesh/submesh into global geometry mega-buffers.
      */

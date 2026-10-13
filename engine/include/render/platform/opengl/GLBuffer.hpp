@@ -10,51 +10,62 @@
 namespace engine {
     class GLVertexBuffer { // VBO
     public:
-        GLVertexBuffer(const void* data, size_t size);
+        explicit GLVertexBuffer(size_t size, const void* data = nullptr);
         ~GLVertexBuffer();
 
         void set_data(const void* data, size_t size, size_t offset = 0);
+
         [[nodiscard]] uint32_t renderer_id() const { return renderer_id_; }
+        [[nodiscard]] size_t size() const { return size_; }
 
     private:
         uint32_t renderer_id_ = 0;
+        size_t size_ = 0;
     };
 
     class GLIndexBuffer { // IBO
     public:
-        GLIndexBuffer(const uint32_t* indices, uint32_t count);
+        explicit GLIndexBuffer(size_t size, const uint32_t* indices = nullptr);
         ~GLIndexBuffer();
 
-        [[nodiscard]] uint32_t count() const { return count_; }
+        void set_data(const void* data, size_t size, size_t offset = 0);
+
         [[nodiscard]] uint32_t renderer_id() const { return renderer_id_; }
+        [[nodiscard]] size_t size() const { return size_; }
 
     private:
         uint32_t renderer_id_ = 0;
-        uint32_t count_ = 0;
+        size_t size_ = 0;
     };
 
     class GLUniformBuffer { // UBO
     public:
-        GLUniformBuffer(size_t size, uint32_t binding);
+        explicit GLUniformBuffer(size_t size, uint32_t binding = 0);
         ~GLUniformBuffer();
 
         void set_data(const void* data, size_t size, size_t offset = 0);
+
         [[nodiscard]] uint32_t renderer_id() const { return renderer_id_; }
+        [[nodiscard]] size_t size() const { return size_; }
 
     private:
         uint32_t renderer_id_ = 0;
+        size_t size_ = 0;
     };
 
     class GLShaderStorageBuffer { // SSBO
     public:
-        GLShaderStorageBuffer(size_t size, uint32_t binding);
+        explicit GLShaderStorageBuffer(size_t size, uint32_t binding = 0);
         ~GLShaderStorageBuffer();
 
         void set_data(const void* data, size_t size, size_t offset = 0);
+
         [[nodiscard]] uint32_t renderer_id() const { return renderer_id_; }
+        [[nodiscard]] size_t size() const { return size_; }
 
     private:
         uint32_t renderer_id_ = 0;
+        size_t size_ = 0;
     };
 
     class GLIndirectBuffer { // ICB
@@ -63,9 +74,12 @@ namespace engine {
         ~GLIndirectBuffer();
 
         void set_data(const void* data, size_t size, size_t offset = 0);
+
         [[nodiscard]] uint32_t renderer_id() const { return renderer_id_; }
+        [[nodiscard]] size_t size() const { return size_; }
 
     private:
         uint32_t renderer_id_ = 0;
+        size_t size_ = 0;
     };
 }
