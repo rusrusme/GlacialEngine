@@ -8,6 +8,7 @@
 #include <memory>
 #include <utility>
 
+#include "asset/AssetManager.hpp"
 #include "project/scene/Scene.hpp"
 
 namespace engine {

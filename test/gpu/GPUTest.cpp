@@ -34,7 +34,7 @@ void GPUTestLayer::on_attach(SystemContext& context) {
     camera_data.view = glm::lookAt(glm::vec3(0.0f, 0.0f, 5.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 1.0f, 0.0f));
     camera_data.projection = glm::perspective(glm::radians(45.0f), 16.0f / 9.0f, 0.1f, 100.0f);
     camera_data.view_projection = camera_data.projection * camera_data.view;
-    camera_data.camera_position = glm::vec4(0.0f, 0.0f, 5.0f, 1.0f);
+    camera_data.position = glm::vec4(0.0f, 0.0f, 5.0f, 1.0f);
     camera_data.viewport_size = glm::vec2(1024.0f, 576.0f); // 16:9 Viewport
 
     // Extract Frustum Planes automatically from View-Projection Matrix (Gribb-Hartmann)

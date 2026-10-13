@@ -7,7 +7,7 @@
 
 #include "core/Layer.hpp"
 #include "input/CameraController.hpp"
-#include "render/legacy/Camera.hpp"
+#include "render/Camera.hpp"
 
 class SandboxLayer : public engine::Layer {
 public:

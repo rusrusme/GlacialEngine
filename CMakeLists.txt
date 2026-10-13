@@ -8,7 +8,7 @@ set(CMAKE_CXX_STANDARD 20)
 option(ENGINE_DEBUG_DIST "Engine-only debug distribution build for developers" OFF)
 option(ENGINE_RELEASE_DIST "Engine-only release distribution build" OFF)
 option(ENABLE_IMGUI "Include ImGui Dependency" ON)
-option(BUILD_SANDBOX "Build Sandbox demo project" OFF)
+option(BUILD_SANDBOX "Build Sandbox demo project" ON)
 
 if (ENGINE_DEBUG_DIST)
     set(ENGINE_DEBUG_DIST ON CACHE BOOL "" FORCE)
@@ -38,9 +38,10 @@ add_subdirectory(Engine)
 if (NOT ENGINE_DEBUG_DIST AND NOT ENGINE_RELEASE_DIST)
     # TEMPORARY add_subdirectory(Editor)
     add_subdirectory(test)
+    add_subdirectory(Sandbox)
+
 endif ()
 if (BUILD_SANDBOX)
-    # TEMPORARY add_subdirectory(Sandbox)
 endif ()
 # ----------------------------------------------------------------------------
 

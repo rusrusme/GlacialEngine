@@ -5,13 +5,13 @@
 
 #pragma once
 
+#include <memory>
+#include <string>
 #include <entt/entt.hpp>
 
 #include "project/scene/ecs/Components.hpp"
-// #include "render/legacy/Renderer.hpp"
 
 namespace engine {
-    class AssetManager;
     class Camera;
     class CollisionSystem;
     class Entity;
@@ -21,7 +21,6 @@ namespace engine {
     public:
         Scene();
         explicit Scene(std::string name);
-
         ~Scene();
 
         static std::shared_ptr<Scene> copy(const std::shared_ptr<Scene>& source);
@@ -34,9 +33,9 @@ namespace engine {
         void on_init();
         void on_shutdown();
         void on_update(float delta_time);
-        void on_render(/*Renderer& renderer,*/ Camera& camera, AssetManager& asset_manager, float delta_time);
+        void on_render(const SystemContext& context, float delta_time, const Camera* override_camera = nullptr);
 
-        void clear(const SystemContext& context);
+        void clear();
 
         template<typename... Components, typename... Args>
         auto view(Args&&... args) { return registry_.view<Components...>(std::forward<Args>(args)...); }
@@ -56,18 +55,14 @@ namespace engine {
         void set_path(const std::string& path) { path_ = path; }
 
     private:
-        std::string name_{"Untitled"};
-        std::string path_;
-
         friend class Entity;
 
         [[nodiscard]] entt::registry& get_registry() { return registry_; }
 
+        std::string name_{"Untitled"};
+        std::string path_;
+
         entt::registry registry_;
         std::unique_ptr<CollisionSystem> collision_system_ = nullptr;
-
-        // Todo: Combine into RenderCommand package
-        // std::unordered_map<UUID, std::vector<InstanceData>> mesh_batches_; // camera-visible batches
-        // std::unordered_map<UUID, std::vector<InstanceData>> shadow_batches_;
     };
 }

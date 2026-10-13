@@ -8,8 +8,23 @@
 #include <asset/MetafileHandler.hpp>
 
 #include "core/Log.hpp"
+#include "render/gpu/TextureSystem.hpp"
 
 namespace engine {
+    AssetManager::AssetManager(GPUMeshManager& mesh_manager,
+                               MaterialSystem& material_system,
+                               TextureSystem& texture_system) {
+        initialize_gpu_systems(mesh_manager, material_system, texture_system);
+    }
+
+    void AssetManager::initialize_gpu_systems(GPUMeshManager& mesh_manager,
+                                              MaterialSystem& material_system,
+                                              TextureSystem& texture_system) {
+        mesh_manager_ = &mesh_manager;
+        material_system_ = &material_system;
+        texture_system_ = &texture_system;
+    }
+
     void AssetManager::scan_directory(const std::filesystem::path& asset_directory) {
         CORE_INFO("Scanning asset directory: '{0}'", asset_directory.string());
 
@@ -93,5 +108,25 @@ namespace engine {
     std::filesystem::path AssetManager::get_path_from_handle(AssetHandle handle) const {
         const auto& meta = get_metadata(handle);
         return meta.is_valid() ? meta.filepath : std::filesystem::path{};
+    }
+
+    uint32_t AssetManager::get_texture_index(const AssetHandle handle) {
+        const auto it = texture_index_cache_.find(handle);
+        if (it != texture_index_cache_.end()) {
+            return it->second;
+        }
+
+        const auto& metadata = get_metadata(handle);
+        if (!metadata.is_valid() || metadata.type != AssetType::TEXTURE_2D) {
+            return 0;
+        }
+
+        if (!texture_system_) {
+            return 0;
+        }
+
+        const uint32_t index = texture_system_->register_texture(metadata.filepath.string());
+        texture_index_cache_[handle] = index;
+        return index;
     }
 }

@@ -142,7 +142,7 @@ namespace engine {
             return false;
         }
 
-        scene_->clear(context);
+        scene_->clear();
 
         scene_->set_path(filepath);
         std::string scene_name = root.value("scene", std::filesystem::path(filepath).stem().string());

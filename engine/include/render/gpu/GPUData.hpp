@@ -56,7 +56,7 @@ namespace engine {
         glm::mat4 projection{1.0f};
         glm::mat4 view_projection{1.0f};
 
-        glm::vec4 camera_position{0.0f}; ///< xyz: Camera position, w: Unused
+        glm::vec4 position{0.0f}; ///< xyz: Camera position, w: Unused
         glm::vec4 frustum_planes[6]{};   ///< 6 Frustum clipping planes (Ax + By + Cz + D = 0)
 
         glm::vec2 viewport_size{0.0f}; ///< Screen resolution in pixels

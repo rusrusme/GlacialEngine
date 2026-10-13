@@ -8,12 +8,14 @@
 #include <utility>
 
 #include "asset/AssetManager.hpp"
+#include "asset/UUID.hpp"
 #include "core/Log.hpp"
 #include "core/SystemContext.hpp"
-#include "asset/UUID.hpp"
 #include "physics/CollisionSystem.hpp"
 #include "project/scene/ecs/Entity.hpp"
-// #include "render/legacy/mesh/InstanceData.hpp"
+#include "render/Camera.hpp"
+#include "render/SceneRenderer.hpp"
+#include "render/mesh/Mesh.hpp"
 #include "util/Instrumentor.hpp"
 
 namespace engine {
@@ -104,122 +106,102 @@ namespace engine {
         collision_system_->update_broadphase(*this);
     }
 
-    void Scene::on_render(/*Renderer& renderer,*/ Camera& camera, AssetManager& asset_manager, const float delta_time) {
-    //     PROFILE_FUNCTION();
-    //
-    //     Renderer::set_blend(true);
-    //
-    //     // Lights
-    //     PROFILE_START("Scene::on_render - Lights Processing");
-    //     const auto dir_light_view = registry_.view<TransformComponent, DirectionalLightComponent>(entt::exclude<DisabledComponent>);
-    //     for (const auto& [entity, transform, light] : dir_light_view.each()) {
-    //         renderer.add_directional_light({
-    //             .direction = transform.get_forward(),
-    //             .color     = light.color,
-    //             .intensity = light.intensity
-    //         });
-    //     }
-    //
-    //     const auto point_light_view = registry_.view<TransformComponent, PointLightComponent>(entt::exclude<DisabledComponent>);
-    //     for (const auto& [entity, transform, light] : point_light_view.each()) {
-    //         renderer.add_point_light({
-    //             .position  = transform.position,
-    //             .color     = light.color,
-    //             .intensity = light.intensity,
-    //             .radius    = light.radius
-    //         });
-    //     }
-    //     PROFILE_END();
-    //
-    //     // Meshes
-    //     PROFILE_START("Scene::on_render - Batch Clearing");
-    //     mesh_batches_.clear();
-    //     shadow_batches_.clear();
-    //     PROFILE_END();
-    //
-    //     const glm::vec3 camera_pos = camera.get_position();
-    //
-    //     PROFILE_START("Scene::on_render - Batch Loop");
-    //     const auto mesh_group = registry_.group<TransformComponent, MeshComponent>(entt::get<>, entt::exclude<DisabledComponent>);
-    //     for (const auto& [entity, transform, mesh_comp] : mesh_group.each()) {
-    //         UUID target_mesh_handle = mesh_comp.handle;
-    //
-    //         const float max_scale = std::max({transform.scale.x, transform.scale.y, transform.scale.z});
-    //         const float distance_to_camera = glm::distance(transform.position, camera_pos) / std::max(max_scale, 0.001f);
-    //
-    //         if (registry_.all_of<LODComponent>(entity)) {
-    //             const auto& [levels, max_draw_distance] = registry_.get<LODComponent>(entity);
-    //             if (distance_to_camera > max_draw_distance) continue;
-    //
-    //             for (const auto& [mesh_handle, max_distance] : levels) {
-    //                 if (distance_to_camera > max_distance) {
-    //                     target_mesh_handle = mesh_handle;
-    //                 }
-    //                 else {
-    //                     break;
-    //                 }
-    //             }
-    //         }
-    //
-    //         if (const auto mesh = asset_manager.get_asset<Mesh>(target_mesh_handle)) {
-    //             const glm::mat4 model_matrix = transform.get_matrix();
-    //
-    //             // Shadow batches
-    //             shadow_batches_[target_mesh_handle].push_back(InstanceData{
-    //                 .transform = model_matrix,
-    //                 .color     = glm::vec4{1.0f}
-    //             });
-    //
-    //             // Camera batches (mesh batches)
-    //             glm::vec4 color{1.0f};
-    //             float roughness = 0.5f;
-    //             float metallic = 0.0f;
-    //             if (registry_.all_of<MaterialComponent>(entity)) {
-    //                 const auto& mat = registry_.get<MaterialComponent>(entity);
-    //                 color = mat.color;
-    //                 roughness = mat.roughness;
-    //                 metallic = mat.metallic;
-    //             }
-    //             mesh_batches_[target_mesh_handle].push_back(InstanceData{
-    //                 .transform = model_matrix,
-    //                 .color     = color,
-    //                 .pbr       = glm::vec2(roughness, metallic)
-    //             });
-    //         }
-    //         else {
-    //             CORE_WARN("Failed to retrieve mesh asset handle {0} for entity '{1}'",
-    //                       static_cast<uint64_t>(target_mesh_handle),
-    //                       registry_.all_of<LabelComponent>(entity) ? registry_.get<LabelComponent>(entity).tag : "Entity");
-    //         }
-    //     }
-    //     PROFILE_END();
-    //     // ------------------
-    //     // Render passes
-    //     // ------------------
-    //     PROFILE_START("Scene::on_render - Pass Submissions");
-    //     // renderer.render_occlusion_pass(camera, asset_manager, mesh_batches_);
-    //     renderer.render_shadow_pass(camera, asset_manager, shadow_batches_);
-    //     renderer.render_point_shadow_pass(asset_manager, shadow_batches_);
-    //     renderer.render_mesh_batches(asset_manager, mesh_batches_);
-    //     PROFILE_END();
+    void Scene::on_render(const SystemContext& context, float delta_time, const Camera* override_camera) {
+        PROFILE_FUNCTION();
+
+        const Camera* active_camera = override_camera;
+        Camera scene_camera;
+
+        if (!active_camera) {
+            const auto camera_view = registry_.view<TransformComponent, CameraComponent>(entt::exclude<DisabledComponent>);
+            for (const auto& [entity, transform, camera_comp] : camera_view.each()) {
+                if (!camera_comp.is_primary) continue;
+
+                scene_camera = camera_comp.camera;
+                scene_camera.set_position(transform.position);
+                scene_camera.set_target(transform.position + transform.get_forward());
+                active_camera = &scene_camera;
+                break;
+            }
+        }
+
+        if (!active_camera) return;
+
+        context.renderer.begin_scene(active_camera->get_gpu_data());
+
+        const glm::vec3 camera_pos = active_camera->get_position();
+
+        const auto mesh_view = registry_.view<TransformComponent, MeshComponent>(entt::exclude<DisabledComponent>);
+        for (const auto& [entity, transform, mesh_comp] : mesh_view.each()) {
+            AssetHandle target_mesh_handle = mesh_comp.handle;
+
+            const float max_scale = std::max({transform.scale.x, transform.scale.y, transform.scale.z});
+            const float distance_to_camera = glm::distance(transform.position, camera_pos) / std::max(max_scale, 0.001f);
+
+            if (registry_.all_of<LODComponent>(entity)) {
+                const auto& [levels, max_draw_distance] = registry_.get<LODComponent>(entity);
+                if (distance_to_camera > max_draw_distance) {
+                    continue;
+                }
+
+                for (const auto& level : levels) {
+                    if (distance_to_camera > level.max_distance) {
+                        target_mesh_handle = level.mesh_handle;
+                    }
+                    else {
+                        break;
+                    }
+                }
+            }
+
+            Mesh* mesh_asset = context.assets.get_asset<Mesh>(target_mesh_handle).get();
+            if (!mesh_asset) {
+                CORE_WARN("Failed to retrieve mesh asset handle {0} for entity '{1}'",
+                          static_cast<uint64_t>(target_mesh_handle),
+                          registry_.all_of<LabelComponent>(entity) ? registry_.get<LabelComponent>(entity).tag : "Entity");
+                continue;
+            }
+
+            const glm::mat4 model_matrix = transform.get_matrix();
+
+            // Bounding Sphere in World-Space für GPU Compute Culling berechnen
+            const AABB& local_bounds = mesh_asset->bounds();
+            const glm::vec3 bounds_center_local = (local_bounds.min + local_bounds.max) * 0.5f;
+            const glm::vec3 bounds_extent_local = (local_bounds.max - local_bounds.min) * 0.5f;
+
+            const auto world_center = glm::vec3(model_matrix * glm::vec4(bounds_center_local, 1.0f));
+            const float world_radius = glm::length(bounds_extent_local * transform.scale);
+
+            GPUInstanceData instance_data{};
+            instance_data.model_matrix = model_matrix;
+            instance_data.bounding_center_radius = glm::vec4(world_center, world_radius);
+            instance_data.bounding_box_min = glm::vec4(local_bounds.min, 1.0f);
+            instance_data.bounding_box_max = glm::vec4(local_bounds.max, 1.0f);
+
+            // Submeshes an den SceneRenderer übergeben
+            for (const Submesh& submesh : mesh_asset->submeshes()) {
+                instance_data.mesh_id = submesh.mesh_id;
+                instance_data.material_id = submesh.default_material_id;
+
+                context.renderer.submit_instance(instance_data, submesh.mesh_id);
+            }
+        }
+        context.renderer.end_scene();
     }
-    //
-    void Scene::clear(const SystemContext& context) {
-    //     size_t entity_count = registry_.storage<entt::entity>().size();
-    //
-    //     registry_.clear();
-    //     registry_.compact();
-    //     mesh_batches_.clear();
-    //
-    //     context.renderer.reset_buffers();
-    //
-    //     CORE_TRACE("Scene cleared ({0} entities removed)", entity_count);
+
+    void Scene::clear() {
+        size_t entity_count = registry_.storage<entt::entity>().size();
+
+        registry_.clear();
+        registry_.compact();
+
+        CORE_TRACE("Scene cleared ({} entities removed)", entity_count);
     }
 
     Entity Scene::create_cube(const std::string& name, const glm::vec4& color) {
         Entity entity = create_entity(name);
 
-        entity.add_component<MeshComponent>(AssetHandle(3));
+        entity.add_component<MeshComponent>(AssetHandle(3)); // Todo: Broken Asset handle
         entity.add_component<MaterialComponent>(color);
         return entity;
     }

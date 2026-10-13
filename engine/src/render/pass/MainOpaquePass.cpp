@@ -33,7 +33,7 @@ namespace engine {
         //////////////////////////////////////////////////////////
         const Shared<Shader> mesh_shader = shader_library.exists("mesh")
                                                ? shader_library.get("mesh")
-                                               : shader_library.load("mesh", "shaders/compiled/mesh.bshb");
+                                               : shader_library.load("mesh", "assets/shaders/compiled/mesh.bshb");
 
         PipelineStateDesc pipeline_desc{};
         pipeline_desc.shader = mesh_shader;
@@ -45,9 +45,9 @@ namespace engine {
             {ShaderDataType::Float4, "a_tangent"}
         };
 
-        pipeline_desc.cull_mode = CullMode::Back;
+        pipeline_desc.cull_mode = CullMode::None;
         pipeline_desc.polygon_mode = PolygonMode::Fill;
-        pipeline_desc.depth_test = true;
+        pipeline_desc.depth_test = false;
         pipeline_desc.depth_write = true;
         pipeline_desc.depth_compare = CompareOp::Less;
         pipeline_desc.blend_enable = false;

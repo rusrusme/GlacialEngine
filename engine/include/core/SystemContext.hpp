@@ -11,15 +11,25 @@ namespace engine {
     class AudioSystem;
     class AssetManager;
     class Project;
-    // class Renderer;
     class SceneManager;
+    class SceneRenderer;
+    class ShaderLibrary;
+    class GPUMeshManager;
+    class MaterialSystem;
+    class TextureSystem;
 
     struct SystemContext {
-        // Renderer& renderer;
-        // Todo render: renderer missing -> replace with new architecture
         AudioSystem& audio;
         AssetManager& assets;
         SceneManager& scenes;
+
+        // GPU pipeline & subsystems
+        SceneRenderer& renderer;
+        ShaderLibrary& shaders;
+        GPUMeshManager& mesh_manager;
+        MaterialSystem& materials;
+        TextureSystem& textures;
+
         std::shared_ptr<Project> current_project;
     };
 }
