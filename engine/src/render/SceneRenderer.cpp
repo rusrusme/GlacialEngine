@@ -48,7 +48,6 @@ namespace engine {
         frame_instances_.push_back(instance);
 
         const GPUSubmeshData& submesh_data = mesh_manager_.submesh(submesh_index);
-        // CORE_TRACE("Submesh {0}: count={1}, first_index={2}", submesh_index, submesh_data.index_count, submesh_data.first_index);
 
         GPUDrawCommand command{};
         command.count = submesh_data.index_count;
@@ -85,13 +84,13 @@ namespace engine {
 
         const auto total_instances = static_cast<uint32_t>(frame_instances_.size());
 
-        // if (main_depth_target_ && hzb_texture_) {
-        //     hzb_generator_->generate(cmd, *main_depth_target_, *hzb_texture_);
-        //     gpu_culler_->dispatch_occlusion_cull(cmd, total_instances, *instance_buffer_, *indirect_draw_buffer_, *camera_buffer_, *hzb_texture_);
-        // }
-        // else {
-        //     gpu_culler_->dispatch_frustum_cull(cmd, total_instances, *instance_buffer_, *indirect_draw_buffer_, *camera_buffer_);
-        // }
+        if (main_depth_target_ && hzb_texture_) {
+            hzb_generator_->generate(cmd, *main_depth_target_, *hzb_texture_);
+            gpu_culler_->dispatch_occlusion_cull(cmd, total_instances, *instance_buffer_, *indirect_draw_buffer_, *camera_buffer_, *hzb_texture_);
+        }
+        else {
+            gpu_culler_->dispatch_frustum_cull(cmd, total_instances, *instance_buffer_, *indirect_draw_buffer_, *camera_buffer_);
+        }
 
         cmd.memory_barrier(MemoryBarrierFlags::CommandData | MemoryBarrierFlags::ShaderStorage);
 

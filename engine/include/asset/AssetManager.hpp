@@ -9,7 +9,6 @@
 #include <unordered_map>
 
 #include "AssetType.hpp"
-#include "MetafileHandler.hpp"
 #include "render/gpu/GPUData.hpp"
 #include "render/mesh/Mesh.hpp"
 #include "render/mesh/MeshLoader.hpp"
@@ -22,15 +21,8 @@ namespace engine {
     class AssetManager {
     public:
         AssetManager() = default;
-        AssetManager(GPUMeshManager& mesh_manager, MaterialSystem& material_system, TextureSystem& texture_system);
         ~AssetManager() = default;
 
-        /** @brief Binds the GPU subsystem dependencies required to upload assets during loading. */
-        void initialize_gpu_systems(GPUMeshManager& mesh_manager,
-                                    MaterialSystem& material_system,
-                                    TextureSystem& texture_system);
-
-        /** @brief Scans a directory recursively, creating .meta files and registering asset handles. */
         void scan_directory(const std::filesystem::path& asset_directory);
 
         [[nodiscard]] const AssetMetadata& get_metadata(AssetHandle handle) const;
@@ -48,11 +40,6 @@ namespace engine {
          */
         template<typename T>
         std::shared_ptr<T> get_asset(AssetHandle handle);
-
-        /**
-         * @brief Specialized texture helper returning the global TextureArray slice index for GPUMaterialData.
-         */
-        uint32_t get_texture_index(AssetHandle handle);
 
         void clear_cache() {
             mesh_cache_.clear();

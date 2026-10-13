@@ -53,8 +53,6 @@ namespace engine {
         material_system_ = std::make_unique<MaterialSystem>(256);
         texture_system_ = std::make_unique<TextureSystem>(2048, 2048, 256);
 
-        asset_manager_.initialize_gpu_systems(*gpu_mesh_manager_, *material_system_, *texture_system_);
-
         scene_renderer_ = std::make_unique<SceneRenderer>(
             *shader_library_,
             *gpu_mesh_manager_,
@@ -110,13 +108,13 @@ namespace engine {
             // Render pass
             PROFILE_START("Application::run - Render");
 
-            RenderCommand::begin_frame();
+            // RenderCommand::begin_frame();
 
             for (const auto& layer : layers_) {
                 layer->on_render(*context_, delta_time);
             }
 
-            RenderCommand::end_frame();
+            // RenderCommand::end_frame();
 
             PROFILE_END();
 
