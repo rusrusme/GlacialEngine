@@ -93,6 +93,7 @@ namespace engine {
         // Run core loop
         while (running_) {
             const float delta_time = clock.update();
+            // Todo: Frame::begin missing -> Replace with new architecture
 
             ///////////////////////////////////////////////////////
             // Update pass
@@ -108,13 +109,9 @@ namespace engine {
             // Render pass
             PROFILE_START("Application::run - Render");
 
-            // RenderCommand::begin_frame();
-
             for (const auto& layer : layers_) {
                 layer->on_render(*context_, delta_time);
             }
-
-            // RenderCommand::end_frame();
 
             PROFILE_END();
 
@@ -127,6 +124,7 @@ namespace engine {
             #endif
             ///////////////////////////////////////////////////////
 
+            // Todo: Frame::end missing -> Replace with new architecture
             window::swap_buffers(window_->native());
             window::poll_events();
         }
