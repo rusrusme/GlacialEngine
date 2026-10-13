@@ -6,15 +6,13 @@
 #pragma once
 
 #include <cstdint>
-#include <memory>
 #include <string>
 
+#include "render/rhi/DescriptorSet.hpp"
 #include "render/rhi/RHITypes.hpp"
+#include "render/rhi/Texture.hpp"
 
 namespace engine {
-    class Texture2D;
-    class DescriptorSet;
-
     /**
      * @brief Manages global texture array slices and bindless texture handle allocations.
      */
