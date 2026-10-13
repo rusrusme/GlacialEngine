@@ -5,11 +5,9 @@
 
 #include "render/graph/RenderGraph.hpp"
 
-#include <concepts>
 #include <memory>
 #include <memory_resource>
 #include <string>
-#include <unordered_map>
 #include <vector>
 
 namespace engine {
@@ -87,9 +85,11 @@ namespace engine {
     }
 
     void RenderGraphBuilder::read_texture(const std::string& name) {
+        pass_.read_textures_.push_back(name);
     }
 
     void RenderGraphBuilder::write_texture(const std::string& name) {
+        pass_.write_textures_.push_back(name);
     }
 
     void RenderGraphBuilder::create_transient_texture(const std::string& name, uint32_t width, uint32_t height, TextureFormat format) {

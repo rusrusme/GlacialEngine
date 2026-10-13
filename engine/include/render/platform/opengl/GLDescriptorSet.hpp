@@ -60,6 +60,9 @@ namespace engine {
         void write_texture(uint32_t binding_slot, const GLTexture2D& texture);
         void write_storage_image(uint32_t binding_slot, const GLTexture2D& texture, uint32_t mip_level = 0, ImageAccess access = ImageAccess::WriteOnly);
 
+        /// No-Op in OpenGL (For Vulkan/DX12)
+        void update() noexcept {}
+
         void bind(DescriptorSetIndex set_index) const;
 
     private:

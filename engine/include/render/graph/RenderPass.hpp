@@ -13,9 +13,6 @@ namespace engine {
     class RenderGraphBuilder;
     class RenderGraphRegistry;
 
-    /**
-     * @brief Context passed to render passes during frame execution.
-     */
     struct RenderContext {
         CommandBuffer& command_buffer;
         uint32_t current_frame_index{0};
@@ -29,22 +26,23 @@ namespace engine {
         explicit RenderPass(std::string pass_name) : name_(std::move(pass_name)) {}
         virtual ~RenderPass() = default;
 
-        /**
-         * @brief Declares resource reads, writes, and transient attachment creation.
-         */
         virtual void setup(RenderGraphBuilder& builder) = 0;
-
-        /**
-         * @brief Records backend command execution into the provided CommandBuffer.
-         */
         virtual void execute(const RenderContext& context, const RenderGraphRegistry& registry) = 0;
+
+        [[nodiscard]] const Vector<std::string>& read_textures() const { return read_textures_; }
+        [[nodiscard]] const Vector<std::string>& write_textures() const { return write_textures_; }
 
         [[nodiscard]] const std::string& name() const { return name_; }
         [[nodiscard]] bool is_enabled() const { return enabled_; }
         void set_enabled(bool enabled) { enabled_ = enabled; }
 
     private:
+        friend class RenderGraphBuilder;
+
         std::string name_;
         bool enabled_{true};
+
+        Vector<std::string> read_textures_;
+        Vector<std::string> write_textures_;
     };
 }

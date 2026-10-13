@@ -10,6 +10,7 @@
 #include <memory_resource>
 #include <span>
 #include <string>
+#include <unordered_map>
 #include <vector>
 
 #include "RenderPass.hpp"

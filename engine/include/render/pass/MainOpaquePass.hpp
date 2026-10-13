@@ -7,19 +7,20 @@
 
 #include "render/graph/RenderPass.hpp"
 #include "render/rhi/Buffer.hpp"
+#include "render/rhi/DescriptorSet.hpp"
+#include "render/rhi/PipelineState.hpp"
 #include "render/rhi/RHITypes.hpp"
 
 namespace engine {
-    class Buffer;
+    class ShaderLibrary;
     class GPUMeshManager;
     class MaterialSystem;
     class TextureSystem;
-    class PipelineState;
-    class DescriptorSet;
 
     class MainOpaquePass : public RenderPass {
     public:
-        MainOpaquePass(GPUMeshManager& mesh_manager,
+        MainOpaquePass(ShaderLibrary& shader_library,
+                       GPUMeshManager& mesh_manager,
                        MaterialSystem& material_system,
                        TextureSystem& texture_system,
                        UniformBuffer& camera_buffer,
