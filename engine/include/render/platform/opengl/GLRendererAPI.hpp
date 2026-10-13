@@ -20,7 +20,6 @@ namespace engine {
 
         void set_viewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height);
         void set_clear_color(const glm::vec4& color);
-        void set_clear_color(const float color[4]);
         void clear(bool color = true, bool depth = true, bool stencil = false);
 
         void set_depth_test(bool enable);

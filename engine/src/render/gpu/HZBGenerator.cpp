@@ -8,7 +8,6 @@
 #include <algorithm>
 
 #include "core/Log.hpp"
-#include "render/rhi/ComputePipelineDesc.hpp"
 #include "render/rhi/Shader.hpp"
 
 namespace engine {

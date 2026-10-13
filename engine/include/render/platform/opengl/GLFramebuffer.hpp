@@ -5,7 +5,6 @@
 
 #pragma once
 
-#include "render/rhi/FramebufferSpecs.hpp"
 #include "render/rhi/RHITypes.hpp"
 
 #include <cstdint>
@@ -42,10 +41,10 @@ namespace engine {
         uint32_t renderer_id_ = 0;
         FramebufferSpecification specification_{};
 
-        std::vector<FramebufferAttachmentSpec> color_attachment_specs_;
+        Vector<FramebufferAttachmentSpec> color_attachment_specs_;
         FramebufferAttachmentSpec depth_attachment_spec_ = TextureFormat::None;
 
-        std::vector<uint32_t> color_attachments_;
+        Vector<uint32_t> color_attachments_;
         uint32_t depth_attachment_ = 0;
     };
 } // engine

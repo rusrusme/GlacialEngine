@@ -31,13 +31,14 @@
 1. [x] FrameData UBO (CPU)
 2. [x] RenderCommand & Command Buffers (CPU/GPU)
 3. [x] Command Pool (CPU)
-4. [x] RendererAPI Backends (DX12, Vulkan, OpenGL 4.6)
-5. [x] Framebuffer / Swapchain (CPU/GPU)
-6. [x] Descriptors & Resource Binding Sets (Set 0, Set 1, Set 2)
-7. [x] BufferLayout & VAO (OpenGL) / Pipeline Layout (Vulkan/DX12)
-8. [x] Shader & ShaderLibrary (CPU)
-9. [x] Sampler & TextureView (CPU/GPU)
-10. [x] MemoryBarrier & CPU-GPU Fence (CPU/GPU)
+4. [x] RenderCommandQueue (CPU Thread-Submission)
+5. [x] RendererAPI Backends (DX12, Vulkan, OpenGL 4.6)
+6. [x] Framebuffer / Swapchain (CPU/GPU)
+7. [x] Descriptors & Resource Binding Sets (Set 0, Set 1, Set 2)
+8. [x] BufferLayout & VAO (OpenGL) / Pipeline Layout (Vulkan/DX12)
+9. [x] Shader & ShaderLibrary (CPU)
+10. [x] Sampler & TextureView (CPU/GPU)
+11. [x] MemoryBarrier & CPU-GPU Fence (CPU/GPU)
 
 ### Assets
 

@@ -45,6 +45,9 @@ namespace engine {
         uint32_t padding{0};     ///< Explicit padding to reach 128-byte alignment
     };
 
+    static_assert(sizeof(GPUInstanceData) == 128,
+              "GPUInstanceData must be exactly 128 bytes to match std430 SSBO layout.");
+
     /**
      * @brief Global camera parameters stored in UBO (std140 layout).
      */
@@ -68,4 +71,42 @@ namespace engine {
         glm::vec4 min{-0.5f, -0.5f, -0.5f, 1.0f};
         glm::vec4 max{0.5f, 0.5f, 0.5f, 1.0f};
     };
+
+    /**
+     * @brief Submesh descriptor for GPU-side compute culling and draw command generation (std430 layout).
+     * @note Size: 64 bytes aligned to 16 bytes.
+     */
+    struct alignas(16) GPUSubmeshData {
+        glm::vec4 bounding_box_min{-0.5f, -0.5f, -0.5f, 1.0f};
+        glm::vec4 bounding_box_max{0.5f, 0.5f, 0.5f, 1.0f};
+        glm::vec4 bounding_center_radius{0.0f, 0.0f, 0.0f, 0.5f};
+
+        uint32_t first_index{0}; ///< First index offset in global Index Buffer
+        int32_t base_vertex{0};  ///< Base vertex offset in global Vertex Buffer
+        uint32_t index_count{0}; ///< Total index count for this submesh
+        uint32_t flags{0};       ///< Submesh property flags
+    };
+
+    static_assert(sizeof(GPUSubmeshData) == 64,
+                  "GPUSubmeshData must be exactly 64 bytes to match std430 SSBO layout.");
+
+    struct alignas(16) GPUMaterialData {
+        glm::vec4 albedo_factor{1.0f, 1.0f, 1.0f, 1.0f}; ///< Offset 0 (16 bytes)
+
+        float metallic_factor{1.0f};  ///< Offset 16 (4 bytes)
+        float roughness_factor{1.0f}; ///< Offset 20 (4 bytes)
+        float normal_scale{1.0f};     ///< Offset 24 (4 bytes)
+        float ao_strength{1.0f};      ///< Offset 28 (4 bytes)
+
+        uint32_t albedo_texture_index{0};     ///< Offset 32 (4 bytes)
+        uint32_t normal_texture_index{0};     ///< Offset 36 (4 bytes)
+        uint32_t metallic_roughness_index{0}; ///< Offset 40 (4 bytes)
+        uint32_t ao_texture_index{0};         ///< Offset 44 (4 bytes)
+
+        uint32_t flags{0};            ///< Offset 48 (4 bytes)
+        uint32_t padding[3]{0, 0, 0}; ///< Offset 52 (12 bytes)
+    };
+
+    static_assert(sizeof(GPUMaterialData) == 64,
+                  "GPUMaterialData must be exactly 64 bytes to match std430 SSBO layout.");
 } // namespace engine

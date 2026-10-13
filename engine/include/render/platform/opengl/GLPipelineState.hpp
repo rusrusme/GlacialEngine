@@ -5,9 +5,9 @@
 
 #pragma once
 
-#include "render/rhi/PipelineStateSpec.hpp"
-
 #include <cstdint>
+
+#include "render/rhi/PipelineSpecs.hpp"
 
 namespace engine {
     class GLPipelineState {

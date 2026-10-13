@@ -63,10 +63,10 @@ namespace engine {
         void bind(DescriptorSetIndex set_index) const;
 
     private:
-        std::vector<UniformBufferBinding> ubo_bindings_;
-        std::vector<StorageBufferBinding> ssbo_bindings_;
-        std::vector<TextureBinding> texture_bindings_;
-        std::vector<ImageBinding> image_bindings_;
+        Vector<UniformBufferBinding> ubo_bindings_;
+        Vector<StorageBufferBinding> ssbo_bindings_;
+        Vector<TextureBinding> texture_bindings_;
+        Vector<ImageBinding> image_bindings_;
     };
 
 } // namespace engine

@@ -10,6 +10,10 @@
 #include "render/rhi/Shader.hpp"
 
 namespace engine {
+    struct ComputePipelineDesc {
+        Shared<Shader> shader{nullptr};
+    };
+
     struct PipelineStateDesc {
         Shared<Shader> shader{nullptr};
         BufferLayout vertex_layout;

@@ -47,10 +47,6 @@ namespace engine {
         glClearColor(color.r, color.g, color.b, color.a);
     }
 
-    void GLRendererAPI::set_clear_color(const float color[4]) {
-        glClearColor(color[0], color[1], color[2], color[3]);
-    }
-
     void GLRendererAPI::clear(bool color, bool depth, bool stencil) {
         GLbitfield flags = 0;
         if (color) flags |= GL_COLOR_BUFFER_BIT;

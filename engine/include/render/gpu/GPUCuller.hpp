@@ -20,13 +20,18 @@ namespace engine {
         GPUCuller();
         ~GPUCuller() = default;
 
-        // Executes frustum & occlusion culling on the GPU via Compute Shader
-        void dispatch_cull(CommandBuffer& cmd,
-                           uint32_t total_instances,
-                           const ShaderStorageBuffer& instance_buffer,
-                           const IndirectBuffer& indirect_draw_buffer,
-                           const UniformBuffer& camera_buffer,
-                           const Texture2D* hzb_texture = nullptr);
+        void dispatch_frustum_cull(CommandBuffer& cmd,
+                                   uint32_t total_instances,
+                                   const ShaderStorageBuffer& instance_buffer,
+                                   const IndirectBuffer& indirect_draw_buffer,
+                                   const UniformBuffer& camera_buffer);
+
+        void dispatch_occlusion_cull(CommandBuffer& cmd,
+                                     uint32_t total_instances,
+                                     const ShaderStorageBuffer& instance_buffer,
+                                     const IndirectBuffer& indirect_draw_buffer,
+                                     const UniformBuffer& camera_buffer,
+                                     const Texture2D& hzb_texture);
 
     private:
         Shared<ComputePipeline> frustum_cull_pipeline_;

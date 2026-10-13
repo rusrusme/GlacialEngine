@@ -6,7 +6,6 @@
 #pragma once
 
 #include "render/rhi/RHITypes.hpp"
-#include "render/rhi/TextureSpecs.hpp"
 
 #include <cstdint>
 #include <string>
@@ -32,9 +31,11 @@ namespace engine {
 
         [[nodiscard]] uint32_t width() const { return specification_.width; }
         [[nodiscard]] uint32_t height() const { return specification_.height; }
-        [[nodiscard]] TextureFormat format() const { return specification_.format; }
-        [[nodiscard]] uint32_t renderer_id() const { return renderer_id_; }
+
         [[nodiscard]] const TextureSpecification& specification() const { return specification_; }
+        [[nodiscard]] TextureFormat format() const { return specification_.format; }
+
+        [[nodiscard]] uint32_t renderer_id() const { return renderer_id_; }
 
         [[nodiscard]] uint32_t mip_levels() const { return mip_levels_; }
         [[nodiscard]] GLenum internal_format() const { return internal_format_; }

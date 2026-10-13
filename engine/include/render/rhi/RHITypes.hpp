@@ -15,6 +15,9 @@ namespace engine {
     template<typename T>
     using Unique = std::unique_ptr<T>;
 
+    template<typename T>
+    using Vector = std::vector<T>;
+
     enum class RendererBackend {
         None = 0,
         OpenGL,
@@ -146,4 +149,38 @@ namespace engine {
         a = a ^ b;
         return a;
     }
+
+    struct SwapchainSpec {
+        uint32_t width{1920};
+        uint32_t height{1080};
+        bool vsync{true};
+        uint32_t max_frames_in_flight{2};
+        void* window_handle{nullptr};
+    };
+
+    struct TextureSpecification {
+        uint32_t width = 1;
+        uint32_t height = 1;
+        TextureFormat format = TextureFormat::RGBA8;
+        TextureFilter min_filter = TextureFilter::Linear;
+        TextureFilter mag_filter = TextureFilter::Linear;
+        TextureWrap wrap_s = TextureWrap::Repeat;
+        TextureWrap wrap_t = TextureWrap::Repeat;
+        bool generate_mipmaps = true;
+    };
+
+    struct FramebufferAttachmentSpec {
+        TextureFormat format = TextureFormat::None;
+
+        FramebufferAttachmentSpec() = default;
+        FramebufferAttachmentSpec(TextureFormat format) : format(format) {}
+    };
+
+    struct FramebufferSpecification {
+        uint32_t width = 0;
+        uint32_t height = 0;
+        uint32_t samples = 1;
+        Vector<FramebufferAttachmentSpec> attachments;
+        bool swapchain_target = false;
+    };
 }

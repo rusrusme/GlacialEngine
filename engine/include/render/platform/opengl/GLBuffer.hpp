@@ -25,7 +25,7 @@ namespace engine {
         GLIndexBuffer(const uint32_t* indices, uint32_t count);
         ~GLIndexBuffer();
 
-        [[nodiscard]] uint32_t get_count() const { return count_; }
+        [[nodiscard]] uint32_t count() const { return count_; }
         [[nodiscard]] uint32_t renderer_id() const { return renderer_id_; }
 
     private:

@@ -62,8 +62,8 @@ void RHIBufferTestLayer::on_attach(engine::SystemContext& context) {
         uint32_t indices[] = {0, 1, 2};
         IndexBuffer ibo(indices, 3);
         assert(ibo.renderer_id() != 0);
-        assert(ibo.get_count() == 3);
-        CORE_INFO("-> TEST 1.2 PASSED (IBO ID: {0}, Count: {1})", ibo.renderer_id(), ibo.get_count());
+        assert(ibo.count() == 3);
+        CORE_INFO("-> TEST 1.2 PASSED (IBO ID: {0}, Count: {1})", ibo.renderer_id(), ibo.count());
     }
 
     // TEST 1.3: UniformBuffer (UBO) & ShaderStorageBuffer (SSBO)

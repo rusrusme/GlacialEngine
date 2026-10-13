@@ -70,15 +70,15 @@ namespace engine {
         [[nodiscard]] uint32_t stride() const { return stride_; }
         [[nodiscard]] const std::vector<BufferElement>& elements() const { return elements_; }
 
-        [[nodiscard]] std::vector<BufferElement>::iterator begin() { return elements_.begin(); }
-        [[nodiscard]] std::vector<BufferElement>::iterator end() { return elements_.end(); }
-        [[nodiscard]] std::vector<BufferElement>::const_iterator begin() const { return elements_.begin(); }
-        [[nodiscard]] std::vector<BufferElement>::const_iterator end() const { return elements_.end(); }
+        [[nodiscard]] Vector<BufferElement>::iterator begin() { return elements_.begin(); }
+        [[nodiscard]] Vector<BufferElement>::iterator end() { return elements_.end(); }
+        [[nodiscard]] Vector<BufferElement>::const_iterator begin() const { return elements_.begin(); }
+        [[nodiscard]] Vector<BufferElement>::const_iterator end() const { return elements_.end(); }
 
     private:
         void calculate_offsets_and_stride();
 
-        std::vector<BufferElement> elements_;
+        Vector<BufferElement> elements_;
         uint32_t stride_ = 0;
     };
 }

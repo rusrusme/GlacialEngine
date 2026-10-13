@@ -4,17 +4,12 @@
 //
 
 #pragma once
-#include "GLFW/glfw3.h"
+
+#include <GLFW/glfw3.h>
+
+#include "render/rhi/RHITypes.hpp"
 
 namespace engine {
-    struct SwapchainSpec {
-        uint32_t width{1920};
-        uint32_t height{1080};
-        bool vsync{true};
-        uint32_t max_frames_in_flight{2};
-        void* window_handle{nullptr};
-    };
-
     class GLSwapchain {
     public:
         GLSwapchain() = default;
@@ -32,8 +27,10 @@ namespace engine {
         void set_vsync(bool enabled);
 
         [[nodiscard]] bool is_vsync() const noexcept { return spec_.vsync; }
+
         [[nodiscard]] uint32_t width() const noexcept { return spec_.width; }
         [[nodiscard]] uint32_t height() const noexcept { return spec_.height; }
+
         [[nodiscard]] uint32_t current_frame_index() const noexcept { return current_frame_index_; }
         [[nodiscard]] uint32_t max_frames_in_flight() const noexcept { return spec_.max_frames_in_flight; }
         [[nodiscard]] const SwapchainSpec& specification() const noexcept { return spec_; }
