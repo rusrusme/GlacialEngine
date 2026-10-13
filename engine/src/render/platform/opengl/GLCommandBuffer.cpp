@@ -151,6 +151,30 @@ namespace engine {
         glScissor(static_cast<GLint>(x), static_cast<GLint>(y), static_cast<GLsizei>(width), static_cast<GLsizei>(height));
     }
 
+    void GLCommandBuffer::memory_barrier(MemoryBarrierFlags flags) {
+        GLbitfield barriers = 0;
+
+        if ((flags & MemoryBarrierFlags::ShaderStorage) != MemoryBarrierFlags::None) {
+            barriers |= GL_SHADER_STORAGE_BARRIER_BIT;
+        }
+        if ((flags & MemoryBarrierFlags::UniformBuffer) != MemoryBarrierFlags::None) {
+            barriers |= GL_UNIFORM_BARRIER_BIT;
+        }
+        if ((flags & MemoryBarrierFlags::TextureFetch) != MemoryBarrierFlags::None) {
+            barriers |= GL_SHADER_IMAGE_ACCESS_BARRIER_BIT | GL_TEXTURE_FETCH_BARRIER_BIT;
+        }
+        if ((flags & MemoryBarrierFlags::CommandData) != MemoryBarrierFlags::None) {
+            barriers |= GL_COMMAND_BARRIER_BIT;
+        }
+        if ((flags & MemoryBarrierFlags::FramebufferAttachment) != MemoryBarrierFlags::None) {
+            barriers |= GL_FRAMEBUFFER_BARRIER_BIT;
+        }
+
+        if (barriers != 0) {
+            glMemoryBarrier(barriers);
+        }
+    }
+
     void GLCommandBuffer::draw(uint32_t vertex_count, uint32_t instance_count, uint32_t first_vertex, uint32_t first_instance) {
         glDrawArraysInstancedBaseInstance(
             GL_TRIANGLES,

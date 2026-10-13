@@ -64,6 +64,8 @@ namespace engine {
         void set_viewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height);
         void set_scissor(int32_t x, int32_t y, uint32_t width, uint32_t height);
 
+        void memory_barrier(MemoryBarrierFlags flags);
+
         // Draw Calls
         void draw(uint32_t vertex_count, uint32_t instance_count = 1, uint32_t first_vertex = 0, uint32_t first_instance = 0);
         void draw_indexed(uint32_t index_count, uint32_t instance_count = 1, uint32_t first_index = 0, int32_t vertex_offset = 0, uint32_t first_instance = 0);

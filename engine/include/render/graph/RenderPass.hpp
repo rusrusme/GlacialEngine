@@ -7,8 +7,9 @@
 
 #include <string>
 
+#include "render/rhi/CommandBuffer.hpp"
+
 namespace engine {
-    class CommandBuffer;
     class RenderGraphBuilder;
     class RenderGraphRegistry;
 

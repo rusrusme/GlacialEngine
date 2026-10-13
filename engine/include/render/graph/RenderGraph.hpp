@@ -13,30 +13,24 @@
 #include <vector>
 
 #include "RenderPass.hpp"
+#include "render/rhi/CommandBuffer.hpp"
 #include "render/rhi/RHITypes.hpp"
+#include "render/rhi/Texture.hpp"
 
 namespace engine {
-    class CommandBuffer;
-    class Texture2D;
-
-    class RenderGraphBuilder {
-    public:
-        void read_texture(const std::string& name);
-        void write_texture(const std::string& name);
-        void create_transient_texture(const std::string& name, uint32_t width, uint32_t height);
-    };
-
     class RenderGraphRegistry {
     public:
         [[nodiscard]] Texture2D* texture(const std::string& name) const;
+        void register_texture(const std::string& name, Texture2D* texture_ptr);
+        void clear();
+
+    private:
+        std::unordered_map<std::string, Texture2D*> textures_;
     };
 
     class RenderGraph {
     public:
-        explicit RenderGraph(size_t initial_arena_bytes = 1024 * 1024)
-            : arena_resource_(initial_arena_bytes),
-              passes_(&arena_resource_) {}
-
+        explicit RenderGraph(size_t initial_arena_bytes = 1024 * 1024);
         ~RenderGraph() { reset(); }
 
         RenderGraph(const RenderGraph&) = delete;
@@ -52,31 +46,51 @@ namespace engine {
             requires std::derived_from<T, RenderPass> && std::constructible_from<T, Args...>
         T* add_pass(Args&&... args) {
             void* memory = arena_resource_.allocate(sizeof(T), alignof(T));
-
             T* pass = std::construct_at(static_cast<T*>(memory), std::forward<Args>(args)...);
 
             passes_.push_back(pass);
             return pass;
         }
 
+        void import_texture(const std::string& name, Texture2D* texture_ptr);
+
         void compile();
-        void execute(CommandBuffer& cmd, uint32_t frame_index);
+        void execute(CommandBuffer& command, uint32_t frame_index);
 
-        void reset() {
-            for (RenderPass* pass : passes_) {
-                std::destroy_at(pass);
-            }
-            passes_.clear();
-            arena_resource_.release(); // O(1) wipe of arena allocations
-        }
+        void reset();
 
-        [[nodiscard]] std::span<RenderPass* const> passes() const noexcept {
-            return passes_;
-        }
+        [[nodiscard]] std::span<RenderPass* const> passes() const noexcept { return passes_; }
+
+        [[nodiscard]] RenderGraphRegistry& registry() noexcept { return registry_; }
 
     private:
+        friend class RenderGraphBuilder;
+
+        struct TransientTextureDesc {
+            uint32_t width{0};
+            uint32_t height{0};
+            TextureFormat format{TextureFormat::RGBA8};
+        };
+
         std::pmr::monotonic_buffer_resource arena_resource_;
         std::pmr::vector<RenderPass*> passes_;
         RenderGraphRegistry registry_;
+
+        std::unordered_map<std::string, Unique<Texture2D>> transient_textures_;
+        std::unordered_map<std::string, TransientTextureDesc> transient_specs_;
+    };
+
+    class RenderGraphBuilder {
+    public:
+        explicit RenderGraphBuilder(RenderGraph& graph, RenderPass& pass)
+            : graph_(graph), pass_(pass) {}
+
+        void read_texture(const std::string& name);
+        void write_texture(const std::string& name);
+        void create_transient_texture(const std::string& name, uint32_t width, uint32_t height, TextureFormat format = TextureFormat::RGBA8);
+
+    private:
+        RenderGraph& graph_;
+        RenderPass& pass_;
     };
 }
