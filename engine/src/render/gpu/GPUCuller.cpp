@@ -15,7 +15,7 @@ namespace engine {
         // Frustum Culling Pipeline
         {
             ComputePipelineDesc desc;
-            desc.shader = std::make_shared<Shader>("assets/shaders/compiled/gpu/frustum_cull.bshb");
+            desc.shader = std::make_shared<Shader>("assets/shaders/compiled/culling/FrustumCull.bshb");
 
             if (desc.shader && desc.shader->renderer_id() != 0) {
                 frustum_cull_pipeline_ = std::make_shared<ComputePipeline>(desc);
@@ -28,7 +28,7 @@ namespace engine {
         // HZB Occlusion Culling Pipeline
         {
             ComputePipelineDesc desc;
-            desc.shader = std::make_shared<Shader>("assets/shaders/compiled/gpu/occlusion_cull.bshb");
+            desc.shader = std::make_shared<Shader>("assets/shaders/compiled/culling/OcclusionCull.bshb");
 
             if (desc.shader && desc.shader->renderer_id() != 0) {
                 hzb_cull_pipeline_ = std::make_shared<ComputePipeline>(desc);

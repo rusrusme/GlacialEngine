@@ -14,7 +14,7 @@ namespace engine {
     HZBGenerator::HZBGenerator() {
         {
             ComputePipelineDesc desc;
-            desc.shader = std::make_shared<Shader>("assets/shaders/compiled/gpu/hzb_initial.bshb");
+            desc.shader = std::make_shared<Shader>("assets/shaders/compiled/culling/HzbInitial.bshb");
             if (desc.shader && desc.shader->renderer_id() != 0) {
                 initial_pipeline_ = std::make_shared<ComputePipeline>(desc);
             }
@@ -25,7 +25,7 @@ namespace engine {
 
         {
             ComputePipelineDesc desc;
-            desc.shader = std::make_shared<Shader>("assets/shaders/compiled/gpu/hzb_reduce.bshb");
+            desc.shader = std::make_shared<Shader>("assets/shaders/compiled/culling/HzbReduce.bshb");
             if (desc.shader && desc.shader->renderer_id() != 0) {
                 reduce_pipeline_ = std::make_shared<ComputePipeline>(desc);
             }
