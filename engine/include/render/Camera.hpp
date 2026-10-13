@@ -18,11 +18,11 @@ namespace engine {
         void set_position(const glm::vec3& position);
         void set_target(const glm::vec3& target);
 
-        [[nodiscard]] glm::mat4 get_view_matrix() const;
-        [[nodiscard]] glm::mat4 get_projection_matrix() const;
-        [[nodiscard]] glm::vec<3, float> get_position() const;
+        [[nodiscard]] glm::mat4 view_matrix() const;
+        [[nodiscard]] glm::mat4 projection_matrix() const;
+        [[nodiscard]] glm::vec3 position() const;
 
-        [[nodiscard]] GPUCameraData get_gpu_data() const;
+        [[nodiscard]] GPUCameraData gpu_data() const;
 
     private:
         static void calculate_frustum_planes(const glm::mat4& vp, glm::vec4 planes[6]);

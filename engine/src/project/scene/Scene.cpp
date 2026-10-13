@@ -127,9 +127,9 @@ namespace engine {
 
         if (!active_camera) return;
 
-        context.renderer.begin_scene(active_camera->get_gpu_data());
+        context.renderer.begin_scene(active_camera->gpu_data());
 
-        const glm::vec3 camera_pos = active_camera->get_position();
+        const glm::vec3 camera_pos = active_camera->position();
 
         const auto mesh_view = registry_.view<TransformComponent, MeshComponent>(entt::exclude<DisabledComponent>);
         for (const auto& [entity, transform, mesh_comp] : mesh_view.each()) {

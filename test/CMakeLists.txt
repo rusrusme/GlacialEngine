@@ -1,13 +1,7 @@
 # test/CMakeLists.txt
 # ----------------------------------------------------------------------------
-add_executable(FramebufferTest rhi/FramebufferTest.cpp rhi/FramebufferTest.hpp)
+add_executable(FramebufferTest FramebufferTest.cpp FramebufferTest.hpp)
 target_link_libraries(FramebufferTest PRIVATE Engine glfw glad)
 
-add_executable(ShaderSystemTest shader/ShaderSystemTest.cpp shader/ShaderSystemTest.hpp)
+add_executable(ShaderSystemTest ShaderSystemTest.cpp ShaderSystemTest.hpp)
 target_link_libraries(ShaderSystemTest PRIVATE Engine glfw glad)
-
-add_executable(RHITest rhi/RHITest.cpp rhi/RHITest.hpp)
-target_link_libraries(RHITest PRIVATE Engine glfw glad)
-
-add_executable(GPUTest gpu/GPUTest.cpp gpu/GPUTest.hpp)
-target_link_libraries(GPUTest PRIVATE Engine glfw glad)

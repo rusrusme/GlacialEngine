@@ -25,22 +25,22 @@ namespace engine {
         target_ = target;
     }
 
-    glm::mat4 Camera::get_view_matrix() const {
+    glm::mat4 Camera::view_matrix() const {
         return glm::lookAt(position_, target_, glm::vec3(0.0f, 1.0f, 0.0f));
     }
 
-    glm::mat4 Camera::get_projection_matrix() const {
+    glm::mat4 Camera::projection_matrix() const {
         return glm::perspective(glm::radians(fov_), aspect_ratio_, near_clip_, far_clip_);
     }
 
-    glm::vec<3, float> Camera::get_position() const {
+    glm::vec3 Camera::position() const {
         return position_;
     }
 
-    GPUCameraData Camera::get_gpu_data() const {
+    GPUCameraData Camera::gpu_data() const {
         GPUCameraData data{};
-        data.view = get_view_matrix();
-        data.projection = get_projection_matrix();
+        data.view = view_matrix();
+        data.projection = projection_matrix();
         data.view_projection = data.projection * data.view;
         data.position = glm::vec4(position_, 1.0f);
 
