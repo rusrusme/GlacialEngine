@@ -12,7 +12,6 @@ Workflow and project guidelines for BasisEngine, including build commands, execu
 * Existing documentation files:
   * `Basis Shader Language.md`
   * `Rendering Architecture.md`
-  * `Roadmap - Bindless Materials.md`
 
 ---
 
