@@ -9,12 +9,11 @@
 #include <vector>
 
 #include "GPUData.hpp"
+#include "render/rhi/Buffer.hpp"
+#include "render/rhi/DescriptorSet.hpp"
 #include "render/rhi/RHITypes.hpp"
 
 namespace engine {
-    class ShaderStorageBuffer;
-    class DescriptorSet;
-
     /**
      * @brief Host and GPU material management system for GPU-driven bindless material passes.
      */
