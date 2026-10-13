@@ -12,6 +12,9 @@
 #include <vector>
 
 namespace engine {
+    // Sentinel meaning "let the backend assign the next free attribute location".
+    constexpr uint32_t kInvalidAttributeLocation = 0xFFFFFFFFu;
+
     constexpr uint32_t shader_data_type_size(const ShaderDataType type) {
         switch (type) {
             case ShaderDataType::Float : return 4;
@@ -38,10 +41,22 @@ namespace engine {
         bool normalized = false;
         bool per_instance = false;
 
+        // Shader attribute location this element maps to. When left at
+        // kInvalidAttributeLocation the backend assigns locations in declaration
+        // order (the previous behaviour). Vulkan/DX12 need the explicit value to
+        // match the shader interface.
+        uint32_t location = kInvalidAttributeLocation;
+
+        // Which vertex buffer binding slot this element reads from. Element order
+        // within a layout no longer implies the buffer it belongs to.
+        uint32_t binding_index = 0;
+
         BufferElement() = default;
 
-        BufferElement(ShaderDataType type, std::string name, bool normalized = false, bool per_instance = false)
-            : name(std::move(name)), type(type), size(shader_data_type_size(type)), normalized(normalized), per_instance(per_instance) {}
+        BufferElement(ShaderDataType type, std::string name, bool normalized = false, bool per_instance = false,
+                      uint32_t location = kInvalidAttributeLocation, uint32_t binding_index = 0)
+            : name(std::move(name)), type(type), size(shader_data_type_size(type)), normalized(normalized),
+              per_instance(per_instance), location(location), binding_index(binding_index) {}
 
         [[nodiscard]] uint32_t component_count() const {
             switch (type) {
@@ -59,6 +74,36 @@ namespace engine {
                 case ShaderDataType::None : break;
             }
             return 0;
+        }
+
+        // Number of consecutive attribute locations the element occupies: a Mat4
+        // consumes four (one per column), everything else one.
+        [[nodiscard]] uint32_t location_count() const {
+            switch (type) {
+                case ShaderDataType::Mat3 : return 3;
+                case ShaderDataType::Mat4 : return 4;
+                case ShaderDataType::None : return 0;
+                default : return 1;
+            }
+        }
+
+        // Vertex attribute divisor for the binding: 1 advances the attribute once
+        // per instance, 0 once per vertex.
+        [[nodiscard]] uint32_t divisor() const { return per_instance ? 1u : 0u; }
+
+        [[nodiscard]] bool is_matrix() const {
+            return type == ShaderDataType::Mat3 || type == ShaderDataType::Mat4;
+        }
+
+        [[nodiscard]] bool is_integer() const {
+            switch (type) {
+                case ShaderDataType::Int :
+                case ShaderDataType::Int2 :
+                case ShaderDataType::Int3 :
+                case ShaderDataType::Int4 :
+                case ShaderDataType::Bool : return true;
+                default : return false;
+            }
         }
     };
 

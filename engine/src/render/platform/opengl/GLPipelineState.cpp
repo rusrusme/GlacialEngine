@@ -5,6 +5,8 @@
 
 #include "render/platform/opengl/GLPipelineState.hpp"
 
+#include <algorithm>
+#include <cstdint>
 #include <utility>
 #include <glad/glad.h>
 
@@ -129,64 +131,55 @@ namespace engine {
         glCreateVertexArrays(1, &vao_id_);
 
         const auto& layout = desc_.vertex_layout;
-        uint32_t attrib_index = 0;
+        uint32_t next_location = 0;
 
         for (const auto& element : layout) {
-            switch (element.type) {
-                case ShaderDataType::Float :
-                case ShaderDataType::Float2 :
-                case ShaderDataType::Float3 :
-                case ShaderDataType::Float4 : {
-                    glEnableVertexArrayAttrib(vao_id_, attrib_index);
-                    glVertexArrayAttribFormat(
-                        vao_id_,
-                        attrib_index,
-                        static_cast<GLint>(element.component_count()),
-                        convert_shader_data_type(element.type),
-                        element.normalized ? GL_TRUE : GL_FALSE,
-                        static_cast<GLuint>(element.offset)
-                    );
-                    glVertexArrayAttribBinding(vao_id_, attrib_index, 0);
-                    attrib_index++;
-                    break;
-                }
-                case ShaderDataType::Int :
-                case ShaderDataType::Int2 :
-                case ShaderDataType::Int3 :
-                case ShaderDataType::Int4 :
-                case ShaderDataType::Bool : {
-                    glEnableVertexArrayAttrib(vao_id_, attrib_index);
+            // Explicit locations are honoured as declared; otherwise locations are
+            // handed out in declaration order, starting past whatever the previous
+            // elements consumed.
+            const uint32_t location = (element.location == kInvalidAttributeLocation) ? next_location : element.location;
+            const uint32_t binding = element.binding_index;
+
+            // A matrix element occupies one attribute location per column; every
+            // other element occupies exactly one.
+            const uint32_t column_count = element.location_count();
+
+            for (uint32_t column = 0; column < column_count; ++column) {
+                const uint32_t attribute_location = location + column;
+                const uint32_t components = element.is_matrix() ? column_count : element.component_count();
+                const size_t byte_offset = element.offset +
+                                           (element.is_matrix() ? sizeof(float) * column_count * column : 0);
+
+                glEnableVertexArrayAttrib(vao_id_, attribute_location);
+
+                if (element.is_integer()) {
                     glVertexArrayAttribIFormat(
                         vao_id_,
-                        attrib_index,
-                        static_cast<GLint>(element.component_count()),
+                        attribute_location,
+                        static_cast<GLint>(components),
                         convert_shader_data_type(element.type),
-                        static_cast<GLuint>(element.offset)
+                        static_cast<GLuint>(byte_offset)
                     );
-                    glVertexArrayAttribBinding(vao_id_, attrib_index, 0);
-                    attrib_index++;
-                    break;
                 }
-                case ShaderDataType::Mat3 :
-                case ShaderDataType::Mat4 : {
-                    const uint8_t count = element.component_count();
-                    for (uint8_t i = 0; i < count; ++i) {
-                        glEnableVertexArrayAttrib(vao_id_, attrib_index);
-                        glVertexArrayAttribFormat(
-                            vao_id_,
-                            attrib_index,
-                            static_cast<GLint>(count),
-                            convert_shader_data_type(element.type),
-                            element.normalized ? GL_TRUE : GL_FALSE,
-                            static_cast<GLuint>(element.offset + sizeof(float) * count * i)
-                        );
-                        glVertexArrayAttribBinding(vao_id_, attrib_index, 0);
-                        attrib_index++;
-                    }
-                    break;
+                else {
+                    glVertexArrayAttribFormat(
+                        vao_id_,
+                        attribute_location,
+                        static_cast<GLint>(components),
+                        convert_shader_data_type(element.type),
+                        element.normalized ? GL_TRUE : GL_FALSE,
+                        static_cast<GLuint>(byte_offset)
+                    );
                 }
-                default : break;
+
+                glVertexArrayAttribBinding(vao_id_, attribute_location, binding);
             }
+
+            next_location = std::max(next_location, location + column_count);
+
+            // The divisor applies to the whole binding point, so elements sharing a
+            // binding_index must agree on per_instance.
+            glVertexArrayBindingDivisor(vao_id_, binding, element.divisor());
         }
     }
 
