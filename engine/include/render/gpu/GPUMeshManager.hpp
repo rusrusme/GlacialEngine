@@ -48,6 +48,8 @@ namespace engine {
         [[nodiscard]] IndexBuffer* index_buffer() const { return global_ibo_.get(); }
         [[nodiscard]] ShaderStorageBuffer* submesh_ssbo() const { return submesh_ssbo_.get(); }
 
+        [[nodiscard]] const GPUSubmeshData& submesh(uint32_t index) const { return submeshes_[index]; }
+
     private:
         Unique<VertexBuffer> global_vbo_{nullptr};
         Unique<IndexBuffer> global_ibo_{nullptr};
