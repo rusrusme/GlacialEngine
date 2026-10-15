@@ -36,7 +36,7 @@ namespace engine {
 
     void RenderGraph::compile() {
         for (RenderPass* pass : passes_) {
-            if (!pass || !pass->is_enabled()) {
+            if (!pass || !pass->enabled()) {
                 continue;
             }
 
@@ -63,7 +63,7 @@ namespace engine {
         const RenderContext context{.command_buffer = command, .current_frame_index = frame_index};
 
         for (RenderPass* pass : passes_) {
-            if (!pass || !pass->is_enabled()) {
+            if (!pass || !pass->enabled()) {
                 continue;
             }
 

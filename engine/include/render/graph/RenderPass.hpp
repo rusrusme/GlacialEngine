@@ -33,7 +33,7 @@ namespace engine {
         [[nodiscard]] const Vector<std::string>& write_textures() const { return write_textures_; }
 
         [[nodiscard]] const std::string& name() const { return name_; }
-        [[nodiscard]] bool is_enabled() const { return enabled_; }
+        [[nodiscard]] bool enabled() const { return enabled_; }
         void set_enabled(bool enabled) { enabled_ = enabled; }
 
     private:

@@ -24,9 +24,9 @@ namespace engine {
 
         void present();
         void resize(uint32_t width, uint32_t height);
-        void set_vsync(bool enabled);
 
-        [[nodiscard]] bool is_vsync() const noexcept { return spec_.vsync; }
+        void set_vsync(bool enabled);
+        [[nodiscard]] bool vsync() const noexcept { return spec_.vsync; }
 
         [[nodiscard]] uint32_t width() const noexcept { return spec_.width; }
         [[nodiscard]] uint32_t height() const noexcept { return spec_.height; }

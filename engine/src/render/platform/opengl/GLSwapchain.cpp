@@ -10,7 +10,6 @@
 namespace engine {
     GLSwapchain::GLSwapchain(const SwapchainSpec& spec)
         : spec_(spec), window_(static_cast<GLFWwindow*>(spec.window_handle)) {
-
         if (!window_) {
             CORE_ERROR("[GLSwapchain] Window handle provided is null");
         }
