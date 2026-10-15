@@ -22,7 +22,6 @@ namespace engine {
         bool is_first_frame_ = true;
 
         void update_keyboard(Camera& camera, float delta_time);
-
         void update_mouse(Camera& camera);
     };
 }

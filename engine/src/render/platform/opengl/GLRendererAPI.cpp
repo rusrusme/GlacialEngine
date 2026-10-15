@@ -8,7 +8,7 @@
 #include <glad/glad.h>
 
 #include "core/Log.hpp"
-#include "core/WindowAPI.hpp"
+#include "core/WindowSystem.hpp"
 
 namespace engine {
     static void GLAPIENTRY gl_debug_output(GLenum source, GLenum type, GLuint id, GLenum severity,
@@ -19,7 +19,7 @@ namespace engine {
     }
 
     void GLRendererAPI::init() {
-        if (!gladLoadGLLoader(window::get_proc_address)) {
+        if (!gladLoadGLLoader(window::proc_address)) {
             CORE_CRITICAL("[GLRendererAPI] Failed to initialize GLAD");
             return;
         }

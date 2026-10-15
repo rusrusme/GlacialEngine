@@ -18,16 +18,13 @@ namespace engine {
         ~UILayer() override;
 
         void on_attach(SystemContext& context) override;
-
         void on_detach(SystemContext& context) override;
 
         void on_update(SystemContext& context, float delta_time) override;
-
         void on_render(SystemContext& context, float delta_time) override;
-
         void on_event(SystemContext& context, Event& event) override;
 
-        [[nodiscard]] UIManager& get_manager() { return *manager_; }
+        [[nodiscard]] UIManager& manager() { return *manager_; }
 
     private:
         std::unique_ptr<UISystem> ui_system_;

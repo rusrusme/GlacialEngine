@@ -24,22 +24,22 @@ namespace engine {
     }
 
     void CameraController::update_keyboard(Camera& camera, const float delta_time) {
-        if (Input::is_keyboard_captured()) {
+        if (Input::keyboard_captured()) {
             return;
         }
-        if (Input::is_key_pressed(Key::LEFT_CONTROL) || Input::is_key_pressed(Key::RIGHT_CONTROL)
-            || Input::is_key_pressed(Key::LEFT_ALT) || Input::is_key_pressed(Key::RIGHT_ALT)
-            || Input::is_key_pressed(Key::LEFT_SHIFT) || Input::is_key_pressed(Key::RIGHT_SHIFT)) {
+        if (Input::key_pressed(Key::LEFT_CONTROL) || Input::key_pressed(Key::RIGHT_CONTROL)
+            || Input::key_pressed(Key::LEFT_ALT) || Input::key_pressed(Key::RIGHT_ALT)
+            || Input::key_pressed(Key::LEFT_SHIFT) || Input::key_pressed(Key::RIGHT_SHIFT)) {
             return;
         }
 
         float input_x = 0.0f;
         float input_z = 0.0f;
 
-        if (Input::is_key_pressed(Key::W)) input_z -= 1.0f; // W
-        if (Input::is_key_pressed(Key::A)) input_x += 1.0f; // A
-        if (Input::is_key_pressed(Key::S)) input_z += 1.0f; // S
-        if (Input::is_key_pressed(Key::D)) input_x -= 1.0f; // D
+        if (Input::key_pressed(Key::W)) input_z -= 1.0f; // W
+        if (Input::key_pressed(Key::A)) input_x += 1.0f; // A
+        if (Input::key_pressed(Key::S)) input_z += 1.0f; // S
+        if (Input::key_pressed(Key::D)) input_x -= 1.0f; // D
 
         if (input_x != 0.0f || input_z != 0.0f) {
             // Normalize diagonal movement (so W+A isn't ~41% faster than W alone)
@@ -62,7 +62,7 @@ namespace engine {
         // return;
         // }
 
-        const glm::vec2 mouse_pos = Input::get_mouse_position();
+        const glm::vec2 mouse_pos = Input::mouse_position();
 
         if (is_first_frame_) {
             last_x_ = mouse_pos.x;
@@ -77,7 +77,7 @@ namespace engine {
         last_x_ = mouse_pos.x;
         last_y_ = mouse_pos.y;
 
-        if (Input::is_mouse_button_pressed(Mouse::MOUSE_BUTTON_MIDDLE)) {
+        if (Input::mouse_button_pressed(Mouse::MOUSE_BUTTON_MIDDLE)) {
             // camera.orbit(
                 // delta_x * setting::camera_controller::ORBIT_SENSITIVITY,
                 // delta_y * setting::camera_controller::ORBIT_SENSITIVITY

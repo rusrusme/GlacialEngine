@@ -28,20 +28,11 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 # ----------------------------------------------------------------------------
 include(Dependencies.cmake)
 # ----------------------------------------------------------------------------
-add_library(glad STATIC lib/glad/src/glad.c)
-target_include_directories(glad PUBLIC lib/glad/include)
-
-add_library(stb_image INTERFACE)
-target_include_directories(stb_image INTERFACE lib/stb_image)
-# ----------------------------------------------------------------------------
 add_subdirectory(Engine)
 if (NOT ENGINE_DEBUG_DIST AND NOT ENGINE_RELEASE_DIST)
     # TEMPORARY add_subdirectory(Editor)
     add_subdirectory(test)
     add_subdirectory(Sandbox)
-
-endif ()
-if (BUILD_SANDBOX)
 endif ()
 # ----------------------------------------------------------------------------
 

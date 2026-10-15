@@ -10,16 +10,16 @@
 namespace engine {
     class Input {
     public:
-        static bool is_mouse_captured();
-        static bool is_keyboard_captured();
+        static bool mouse_captured();
+        static bool keyboard_captured();
 
-        static bool is_mouse_button_pressed(int key);
+        static bool mouse_button_pressed(int key);
 
-        static glm::vec2 get_mouse_position();
-        static float get_mouse_x();
-        static float get_mouse_y();
+        static glm::vec2 mouse_position();
+        static float mouse_x();
+        static float mouse_y();
 
-        static bool is_key_pressed(int key);
-        static bool is_key_pressed_once(int key);
+        static bool key_pressed(int key);
+        static bool key_pressed_once(int key);
     };
 }

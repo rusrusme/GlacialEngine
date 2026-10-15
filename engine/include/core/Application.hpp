@@ -20,8 +20,7 @@
 namespace engine {
     class Application {
     public:
-        Application();
-        explicit Application(std::string title);
+        explicit Application(std::string title = config::ENGINE_TITLE);
         virtual ~Application() = default;
 
         int run();
@@ -40,10 +39,10 @@ namespace engine {
     private:
         void shutdown();
 
-        static Application* instance_;
         std::string title_;
-
         std::unique_ptr<Window> window_;
+
+        LayerStack layers_;
 
         AudioSystem audio_system_;
         AssetManager asset_manager_;
@@ -58,8 +57,7 @@ namespace engine {
 
         std::optional<SystemContext> context_;
 
-        LayerStack layers_;
-
         bool running_ = true;
+        static Application* instance_;
     };
 }

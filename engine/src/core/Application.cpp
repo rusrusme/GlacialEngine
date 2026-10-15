@@ -8,17 +8,16 @@
 #include "core/Application.hpp"
 
 #include "core/Config.hpp"
+#include "core/FrameLimiter.hpp"
 #include "core/Log.hpp"
-#include "core/WindowAPI.hpp"
+#include "core/Timestep.hpp"
+#include "core/WindowSystem.hpp"
 #include "event/MouseEvents.hpp"
 #include "event/WindowEvents.hpp"
-#include "core/Timestep.hpp"
 #include "render/rhi/RenderCommand.hpp"
 #include "util/Instrumentor.hpp"
 
 namespace engine {
-    Application::Application() : Application(setting::ENGINE_TITLE_) {}
-
     Application::Application(std::string title) : title_(std::move(title)) {
         PROFILE_BEGIN_SESSION("Engine Profile");
         instance_ = this;
@@ -29,7 +28,7 @@ namespace engine {
 
         Log::init();
         CORE_INFO("Starting application");
-        setting::configuration::load();
+        config::load();
 
         if (!window::init(GraphicsFramework::GLFW)) {
             CORE_CRITICAL("Application initialization failed: Could not initialize window");
@@ -37,7 +36,7 @@ namespace engine {
         }
 
         window_ = std::make_unique<Window>(title_);
-        if (!window_->is_valid()) {
+        if (!window_->valid()) {
             CORE_CRITICAL("Application initialization failed: Could not create window");
             window::shutdown();
             return 1;
@@ -58,8 +57,8 @@ namespace engine {
             *gpu_mesh_manager_,
             *material_system_,
             *texture_system_,
-            window_->get_width(),
-            window_->get_height()
+            window_->width(),
+            window_->height()
         );
 
         context_.emplace(SystemContext{
@@ -87,13 +86,12 @@ namespace engine {
         CORE_INFO("Application startup complete");
 
         Clock clock;
-        clock.reset();
+        FrameLimiter frame_limiter;
 
         ///////////////////////////////////////////////////////
         // Run core loop
         while (running_) {
             const float delta_time = clock.update();
-            // Todo: Frame::begin missing -> Replace with new architecture
 
             ///////////////////////////////////////////////////////
             // Update pass
@@ -124,9 +122,10 @@ namespace engine {
             #endif
             ///////////////////////////////////////////////////////
 
-            // Todo: Frame::end missing -> Replace with new architecture
             window::swap_buffers(window_->native());
             window::poll_events();
+
+            frame_limiter.limit();
         }
         // In reverse
         CORE_INFO("Detaching application layers");
@@ -189,7 +188,7 @@ namespace engine {
 
         window_.reset();
 
-        setting::configuration::save();
+        config::save();
         window::shutdown();
         CORE_INFO("Engine shutdown complete");
     }

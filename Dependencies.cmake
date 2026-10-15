@@ -13,6 +13,15 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(glfw)
 # ----------------------------------------------------------------------------
+# Fetch SDL3
+FetchContent_Declare(
+        SDL3
+        GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
+        GIT_TAG release-3.4.18
+        GIT_SHALLOW TRUE
+)
+FetchContent_MakeAvailable(SDL3)
+# ----------------------------------------------------------------------------
 # Fetch GLM
 FetchContent_Declare(
         glm
@@ -90,6 +99,7 @@ if (ENABLE_IMGUI)
 
         target_link_libraries(imgui PUBLIC glfw)
     endif ()
+    add_library(DEPENDENCY::IMGUI ALIAS imgui)
 endif ()
 # ----------------------------------------------------------------------------
 # Fetch ImGuizmo
@@ -103,6 +113,7 @@ if (ENABLE_IMGUI)
     )
     FetchContent_MakeAvailable(imguizmo)
     target_link_libraries(imguizmo PUBLIC imgui)
+    add_library(DEPENDENCY::IMGUIZMO ALIAS imguizmo)
 endif ()
 # ----------------------------------------------------------------------------
 # Fetch cgltf
@@ -149,4 +160,22 @@ FetchContent_Declare(
 )
 set(BSHC_BUILD_EXECUTABLE ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(BasisShaderCompiler)
+# ----------------------------------------------------------------------------
+add_library(glad STATIC lib/glad/src/glad.c)
+target_include_directories(glad PUBLIC lib/glad/include)
+add_library(DEPENDENCY::GLAD ALIAS glad)
+# ----------------------------------------------------------------------------
+add_library(stb_image INTERFACE)
+target_include_directories(stb_image INTERFACE lib/stb_image)
+add_library(DEPENDENCY::STB_IMAGE ALIAS stb_image)
+# ----------------------------------------------------------------------------
+add_library(DEPENDENCY::GLFW ALIAS glfw)
+add_library(DEPENDENCY::SDL ALIAS SDL3-static)
+add_library(DEPENDENCY::RMLUI ALIAS rmlui)
+add_library(DEPENDENCY::GLM ALIAS glm)
+add_library(DEPENDENCY::ENTT ALIAS EnTT)
+add_library(DEPENDENCY::CGLTF ALIAS cgltf)
+add_library(DEPENDENCY::MINIAUDIO ALIAS miniaudio)
+add_library(DEPENDENCY::NLOHMANN ALIAS nlohmann_json)
+add_library(DEPENDENCY::BSHC ALIAS bshc_core)
 # ----------------------------------------------------------------------------

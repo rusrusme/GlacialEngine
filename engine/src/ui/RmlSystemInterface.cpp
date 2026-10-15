@@ -6,11 +6,11 @@
 #include "ui/RmlSystemInterface.hpp"
 
 #include "core/Log.hpp"
-#include "core/WindowAPI.hpp"
+#include "core/WindowSystem.hpp"
 
 namespace engine {
     double RmlSystemInterface::GetElapsedTime() {
-        return window::get_time();
+        return window::time();
     }
 
     bool RmlSystemInterface::LogMessage(const Rml::Log::Type type, const Rml::String& message) {

@@ -5,11 +5,25 @@
 
 #include "core/Timestep.hpp"
 
+#include <GLFW/glfw3.h>
+
+#include "core/WindowSystem.hpp"
+
 namespace engine {
     float Clock::update() {
-        const double current_time = glfwGetTime();
-        const float delta_time = static_cast<float>(current_time - last_frame_time_);
-        last_frame_time_ = current_time;
+        const double now = current_time();
+        const auto delta_time = static_cast<float>(now - last_frame_time_);
+        last_frame_time_ = now;
         return delta_time;
     }
-} // engine
+
+    double Clock::current_time() {
+        if (ACTIVE_FRAMEWORK == GraphicsFramework::GLFW) {
+            return glfwGetTime();
+        }
+        if (ACTIVE_FRAMEWORK == GraphicsFramework::SDL) {
+            return 0.0;
+        }
+        return 0.0;
+    }
+}

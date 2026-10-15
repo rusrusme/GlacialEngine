@@ -52,20 +52,16 @@ namespace engine {
     }
 }
 
-// -----------------------------------------------------------------------------------------------
 // Core Engine Logging Macros
-// -----------------------------------------------------------------------------------------------
-#define CORE_TRACE(...)    ::engine::Log::log(::engine::LogLevel::Trace,    "ENGINE", __VA_ARGS__)
-#define CORE_INFO(...)     ::engine::Log::log(::engine::LogLevel::Info,     "ENGINE", __VA_ARGS__)
-#define CORE_WARN(...)     ::engine::Log::log(::engine::LogLevel::Warn,     "ENGINE", __VA_ARGS__)
-#define CORE_ERROR(...)    ::engine::Log::log(::engine::LogLevel::Error,    "ENGINE", __VA_ARGS__)
-#define CORE_CRITICAL(...) ::engine::Log::log(::engine::LogLevel::Critical, "ENGINE", __VA_ARGS__)
+#define CORE_TRACE(...)    ::engine::Log::log(::engine::LogLevel::Trace,    "ENGINE ", __VA_ARGS__)
+#define CORE_INFO(...)     ::engine::Log::log(::engine::LogLevel::Info,     "ENGINE ", __VA_ARGS__)
+#define CORE_WARN(...)     ::engine::Log::log(::engine::LogLevel::Warn,     "ENGINE [WARN]", __VA_ARGS__)
+#define CORE_ERROR(...)    ::engine::Log::log(::engine::LogLevel::Error,    "ENGINE [ERROR]", __VA_ARGS__)
+#define CORE_CRITICAL(...) ::engine::Log::log(::engine::LogLevel::Critical, "ENGINE [CRITICAL]", __VA_ARGS__)
 
-// -----------------------------------------------------------------------------------------------
 // Client Application Logging Macros
-// -----------------------------------------------------------------------------------------------
 #define CLIENT_TRACE(...)    ::engine::Log::log(::engine::LogLevel::Trace,    "APP", __VA_ARGS__)
-#define CLIENT_INFO(...)     ::engine::Log::log(::engine::LogLevel::Info,     "APP", __VA_ARGS__)
-#define CLIENT_WARN(...)     ::engine::Log::log(::engine::LogLevel::Warn,     "APP", __VA_ARGS__)
-#define CLIENT_ERROR(...)    ::engine::Log::log(::engine::LogLevel::Error,    "APP", __VA_ARGS__)
-#define CLIENT_CRITICAL(...) ::engine::Log::log(::engine::LogLevel::Critical, "APP", __VA_ARGS__)
+#define CLIENT_INFO(...)     ::engine::Log::log(::engine::LogLevel::Info,     "APP ", __VA_ARGS__)
+#define CLIENT_WARN(...)     ::engine::Log::log(::engine::LogLevel::Warn,     "APP [WARN]", __VA_ARGS__)
+#define CLIENT_ERROR(...)    ::engine::Log::log(::engine::LogLevel::Error,  , "APP [ERROR]", __VA_ARGS__)
+#define CLIENT_CRITICAL(...) ::engine::Log::log(::engine::LogLevel::Critical, "APP [CRITICAL]", __VA_ARGS__)

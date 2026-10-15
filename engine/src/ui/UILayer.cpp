@@ -14,8 +14,8 @@ namespace engine {
     UILayer::~UILayer() = default;
 
     void UILayer::on_attach(SystemContext& context) {
-        auto width = Application::get().window().get_width();
-        auto height = Application::get().window().get_height();
+        auto width = Application::get().window().width();
+        auto height = Application::get().window().height();
 
         // ui_system_->init(context.renderer, width, height);
     }

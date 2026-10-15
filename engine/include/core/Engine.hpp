@@ -19,7 +19,7 @@
 #include "core/Log.hpp"
 #include "asset/UUID.hpp"
 #include "core/Window.hpp"
-#include "core/WindowAPI.hpp"
+#include "core/WindowSystem.hpp"
 // Event
 #include "event/Event.hpp"
 #include "event/KeyEvents.hpp"

@@ -7,51 +7,51 @@
 #include "core/Application.hpp"
 
 namespace engine {
-    bool Input::is_mouse_captured() {
+    bool Input::mouse_captured() {
         #ifdef ENABLE_IMGUI
         return ImGui::GetIO().WantCaptureMouse;
         #endif
         return false;
     }
 
-    bool Input::is_keyboard_captured() {
+    bool Input::keyboard_captured() {
         #ifdef ENABLE_IMGUI
         return ImGui::GetIO().WantTextInput;
         #endif
         return false;
     }
 
-    bool Input::is_mouse_button_pressed(const int key) {
+    bool Input::mouse_button_pressed(const int key) {
         auto* window = Application::get().window().native();
-        return window::is_mouse_button_pressed(window, key);
+        return window::mouse_button_pressed(window, key);
     }
 
-    glm::vec2 Input::get_mouse_position() {
+    glm::vec2 Input::mouse_position() {
         auto* window = Application::get().window().native();
         double x, y;
-        window::get_mouse_position(window, &x, &y);
+        window::mouse_position(window, &x, &y);
         return {static_cast<float>(x), static_cast<float>(y)};
     }
 
-    float Input::get_mouse_x() {
-        return get_mouse_position().x;
+    float Input::mouse_x() {
+        return mouse_position().x;
     }
 
-    float Input::get_mouse_y() {
-        return get_mouse_position().y;
+    float Input::mouse_y() {
+        return mouse_position().y;
     }
 
-    bool Input::is_key_pressed(const int key) {
+    bool Input::key_pressed(const int key) {
         auto* window = Application::get().window().native();
-        return window::is_key_pressed(window, key);
+        return window::key_pressed(window, key);
     }
 
-    bool Input::is_key_pressed_once(const int key) {
+    bool Input::key_pressed_once(const int key) {
         static std::unordered_map<int, bool> key_states;
         void* window = Application::get().window().native();
         if (!window) return false;
 
-        const bool is_pressed = window::is_key_pressed(window, key);
+        const bool is_pressed = window::key_pressed(window, key);
         bool& was_pressed_last_frame = key_states[key];
 
         if (is_pressed && !was_pressed_last_frame) {

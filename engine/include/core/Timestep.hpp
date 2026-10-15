@@ -5,15 +5,17 @@
 
 #pragma once
 
-#include <GLFW/glfw3.h>
-
 namespace engine {
     class Clock {
     public:
-        void reset() { last_frame_time_ = glfwGetTime(); }
+        Clock() { reset(); }
+
+        void reset() { last_frame_time_ = current_time(); }
         float update();
+
+        static double current_time();
 
     private:
         double last_frame_time_ = 0.0;
     };
-} // engine
+}

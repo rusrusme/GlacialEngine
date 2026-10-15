@@ -53,7 +53,7 @@ namespace engine {
         }
     }
 
-    Rml::ElementDocument* UIManager::get_document(const std::string& name) {
+    Rml::ElementDocument* UIManager::document(const std::string& name) {
         auto it = documents_.find(name);
         return (it != documents_.end()) ? it->second : nullptr;
     }

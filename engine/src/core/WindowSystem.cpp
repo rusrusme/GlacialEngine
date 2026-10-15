@@ -3,7 +3,7 @@
 // All rights reserved.
 //
 
-#include "core/WindowAPI.hpp"
+#include "core/WindowSystem.hpp"
 
 #include <GLFW/glfw3.h>
 
@@ -32,8 +32,8 @@ namespace engine::window {
     }
 
     bool init(const GraphicsFramework framework) {
-        active_framework = framework;
-        switch (active_framework) {
+        ACTIVE_FRAMEWORK = framework;
+        switch (ACTIVE_FRAMEWORK) {
             case GraphicsFramework::GLFW :
                 if (!glfwInit()) {
                     CORE_CRITICAL("Failed to initialize GLFW");
@@ -56,7 +56,7 @@ namespace engine::window {
             CORE_ERROR("Tried to call engine::window::shutdown before initializing");
             return;
         }
-        switch (active_framework) {
+        switch (ACTIVE_FRAMEWORK) {
             case GraphicsFramework::GLFW :
                 glfwTerminate();
                 break;
@@ -67,7 +67,7 @@ namespace engine::window {
     }
 
     void poll_events() {
-        if (active_framework == GraphicsFramework::GLFW) {
+        if (ACTIVE_FRAMEWORK == GraphicsFramework::GLFW) {
             glfwPollEvents();
         }
         else {
@@ -77,7 +77,7 @@ namespace engine::window {
 
     void swap_buffers(void* window_handle) {
         if (window_handle) {
-            if (active_framework == GraphicsFramework::GLFW) {
+            if (ACTIVE_FRAMEWORK == GraphicsFramework::GLFW) {
                 glfwSwapBuffers(static_cast<GLFWwindow*>(window_handle));
             }
         }
@@ -86,24 +86,24 @@ namespace engine::window {
         }
     }
 
-    double get_time() {
-        if (active_framework == GraphicsFramework::GLFW) {
+    double time() {
+        if (ACTIVE_FRAMEWORK == GraphicsFramework::GLFW) {
             return glfwGetTime();
         }
         CORE_WARN("No valid graphics framework found");
         return 0.0;
     }
 
-    void* get_proc_address(const char* procname) {
-        if (active_framework == GraphicsFramework::GLFW) {
+    void* proc_address(const char* procname) {
+        if (ACTIVE_FRAMEWORK == GraphicsFramework::GLFW) {
             return reinterpret_cast<void*>(glfwGetProcAddress(procname));
         }
         CORE_WARN("No valid graphics framework found");
         return nullptr;
     }
 
-    void* create_window(int width, int height, const char* title, WindowNativeData* window_data) {
-        if (active_framework == GraphicsFramework::GLFW) {
+    void* create(int width, int height, const char* title, WindowNativeData* window_data) {
+        if (ACTIVE_FRAMEWORK == GraphicsFramework::GLFW) {
             #if defined(DEBUG) || defined(_DEBUG)
             glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
             #endif
@@ -122,7 +122,7 @@ namespace engine::window {
 
     void destroy_window(void* window_handle) {
         if (window_handle) {
-            if (active_framework == GraphicsFramework::GLFW) {
+            if (ACTIVE_FRAMEWORK == GraphicsFramework::GLFW) {
                 glfwDestroyWindow(static_cast<GLFWwindow*>(window_handle));
             }
         }
@@ -133,7 +133,7 @@ namespace engine::window {
 
     void make_context_current(void* window_handle) {
         if (window_handle) {
-            if (active_framework == GraphicsFramework::GLFW) {
+            if (ACTIVE_FRAMEWORK == GraphicsFramework::GLFW) {
                 glfwMakeContextCurrent(static_cast<GLFWwindow*>(window_handle));
             }
         }
@@ -142,8 +142,8 @@ namespace engine::window {
         }
     }
 
-    void* get_current_context() {
-        if (active_framework == GraphicsFramework::GLFW) {
+    void* current_context() {
+        if (ACTIVE_FRAMEWORK == GraphicsFramework::GLFW) {
             return glfwGetCurrentContext();
         }
         CORE_WARN("No valid graphics framework found");
@@ -151,7 +151,7 @@ namespace engine::window {
     }
 
     void setup_callbacks(void* window_handle, WindowNativeData* window_data) {
-        if (!window_handle || !window_data || active_framework != GraphicsFramework::GLFW) return;
+        if (!window_handle || !window_data || ACTIVE_FRAMEWORK != GraphicsFramework::GLFW) return;
 
         auto* window = static_cast<GLFWwindow*>(window_handle);
         glfwSetWindowUserPointer(window, window_data);
@@ -237,9 +237,9 @@ namespace engine::window {
         });
     }
 
-    void set_position(void* window_handle, int x, int y) {
+    void position(void* window_handle, int x, int y) {
         if (window_handle) {
-            if (active_framework == GraphicsFramework::GLFW) {
+            if (ACTIVE_FRAMEWORK == GraphicsFramework::GLFW) {
                 glfwSetWindowPos(static_cast<GLFWwindow*>(window_handle), x, y);
             }
         }
@@ -248,9 +248,9 @@ namespace engine::window {
         }
     }
 
-    void get_position(void* window_handle, int* x, int* y) {
+    void position(void* window_handle, int* x, int* y) {
         if (window_handle) {
-            if (active_framework == GraphicsFramework::GLFW) {
+            if (ACTIVE_FRAMEWORK == GraphicsFramework::GLFW) {
                 glfwGetWindowPos(static_cast<GLFWwindow*>(window_handle), x, y);
             }
         }
@@ -259,9 +259,9 @@ namespace engine::window {
         }
     }
 
-    void get_size(void* window_handle, int* width, int* height) {
+    void size(void* window_handle, int* width, int* height) {
         if (window_handle) {
-            if (active_framework == GraphicsFramework::GLFW) {
+            if (ACTIVE_FRAMEWORK == GraphicsFramework::GLFW) {
                 glfwGetWindowSize(static_cast<GLFWwindow*>(window_handle), width, height);
             }
         }
@@ -270,9 +270,9 @@ namespace engine::window {
         }
     }
 
-    void get_framebuffer_size(void* window_handle, int* width, int* height) {
+    void framebuffer_size(void* window_handle, int* width, int* height) {
         if (window_handle) {
-            if (active_framework == GraphicsFramework::GLFW) {
+            if (ACTIVE_FRAMEWORK == GraphicsFramework::GLFW) {
                 glfwGetFramebufferSize(static_cast<GLFWwindow*>(window_handle), width, height);
             }
         }
@@ -281,9 +281,9 @@ namespace engine::window {
         }
     }
 
-    void maximize_window(void* window_handle) {
+    void maximize(void* window_handle) {
         if (window_handle) {
-            if (active_framework == GraphicsFramework::GLFW) {
+            if (ACTIVE_FRAMEWORK == GraphicsFramework::GLFW) {
                 glfwMaximizeWindow(static_cast<GLFWwindow*>(window_handle));
             }
         }
@@ -292,9 +292,9 @@ namespace engine::window {
         }
     }
 
-    bool is_maximized(void* window_handle) {
+    bool maximized(void* window_handle) {
         if (window_handle) {
-            if (active_framework == GraphicsFramework::GLFW) {
+            if (ACTIVE_FRAMEWORK == GraphicsFramework::GLFW) {
                 return glfwGetWindowAttrib(static_cast<GLFWwindow*>(window_handle), GLFW_MAXIMIZED) != 0;
             }
         }
@@ -304,9 +304,9 @@ namespace engine::window {
         return false;
     }
 
-    bool is_minimized(void* window_handle) {
+    bool minimized(void* window_handle) {
         if (window_handle) {
-            if (active_framework == GraphicsFramework::GLFW) {
+            if (ACTIVE_FRAMEWORK == GraphicsFramework::GLFW) {
                 return glfwGetWindowAttrib(static_cast<GLFWwindow*>(window_handle), GLFW_ICONIFIED) != 0;
             }
         }
@@ -318,7 +318,7 @@ namespace engine::window {
 
     void set_title(void* window_handle, const char* title) {
         if (window_handle) {
-            if (active_framework == GraphicsFramework::GLFW) {
+            if (ACTIVE_FRAMEWORK == GraphicsFramework::GLFW) {
                 glfwSetWindowTitle(static_cast<GLFWwindow*>(window_handle), title);
             }
         }
@@ -328,7 +328,7 @@ namespace engine::window {
     }
 
     void set_vsync(bool enabled) {
-        if (active_framework == GraphicsFramework::GLFW) {
+        if (ACTIVE_FRAMEWORK == GraphicsFramework::GLFW) {
             glfwSwapInterval(enabled ? 1 : 0);
         }
         else {
@@ -336,8 +336,8 @@ namespace engine::window {
         }
     }
 
-    float get_monitor_dpi_scale() {
-        if (active_framework == GraphicsFramework::GLFW) {
+    float monitor_dpi_scale() {
+        if (ACTIVE_FRAMEWORK == GraphicsFramework::GLFW) {
             GLFWmonitor* monitor = glfwGetPrimaryMonitor();
             if (!monitor) return 1.0f;
             float xscale, yscale;
@@ -348,9 +348,9 @@ namespace engine::window {
         return 1.0f;
     }
 
-    bool is_key_pressed(void* window_handle, const int key) {
+    bool key_pressed(void* window_handle, const int key) {
         if (window_handle) {
-            if (active_framework == GraphicsFramework::GLFW) {
+            if (ACTIVE_FRAMEWORK == GraphicsFramework::GLFW) {
                 const int state = glfwGetKey(static_cast<GLFWwindow*>(window_handle), get_glfw_key(key));
                 return state == GLFW_PRESS || state == GLFW_REPEAT;
             }
@@ -361,9 +361,9 @@ namespace engine::window {
         return false;
     }
 
-    bool is_mouse_button_pressed(void* window_handle, const int button) {
+    bool mouse_button_pressed(void* window_handle, const int button) {
         if (window_handle) {
-            if (active_framework == GraphicsFramework::GLFW) {
+            if (ACTIVE_FRAMEWORK == GraphicsFramework::GLFW) {
                 const int state = glfwGetMouseButton(static_cast<GLFWwindow*>(window_handle), get_glfw_mouse_button(button));
                 return state == GLFW_PRESS;
             }
@@ -374,9 +374,9 @@ namespace engine::window {
         return false;
     }
 
-    void get_mouse_position(void* window_handle, double* xpos, double* ypos) {
+    void mouse_position(void* window_handle, double* xpos, double* ypos) {
         if (window_handle) {
-            if (active_framework == GraphicsFramework::GLFW) {
+            if (ACTIVE_FRAMEWORK == GraphicsFramework::GLFW) {
                 glfwGetCursorPos(static_cast<GLFWwindow*>(window_handle), xpos, ypos);
             }
         }
