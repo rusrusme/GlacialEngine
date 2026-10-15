@@ -48,7 +48,7 @@ namespace engine {
             const auto& path = entry.path();
             if (path.extension() == ".meta") continue;
 
-            AssetMetadata metadata = MetaFileHandler::metadata(path);
+            AssetMetadata metadata = MetaFileHandler::get(path);
             if (metadata.valid()) {
                 if (asset_registry_.contains(metadata.handle)) {
                     CORE_WARN("Asset handle collision! Handle {0} for '{1}' conflicts with existing asset",

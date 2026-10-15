@@ -10,7 +10,7 @@
 using json = nlohmann::json;
 
 namespace engine {
-    AssetMetadata MetaFileHandler::metadata(const std::filesystem::path& asset_path) {
+    AssetMetadata MetaFileHandler::get(const std::filesystem::path& asset_path) {
         AssetMetadata meta;
         meta.filepath = asset_path;
         meta.type = deduce_asset_type(asset_path);
