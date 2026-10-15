@@ -10,13 +10,13 @@
 using json = nlohmann::json;
 
 namespace engine {
-    AssetMetadata MetaFileHandler::get_or_create_metadata(const std::filesystem::path& asset_path) {
-        AssetMetadata metadata;
-        metadata.filepath = asset_path;
-        metadata.type = deduce_asset_type(asset_path);
+    AssetMetadata MetaFileHandler::metadata(const std::filesystem::path& asset_path) {
+        AssetMetadata meta;
+        meta.filepath = asset_path;
+        meta.type = deduce_asset_type(asset_path);
 
-        if (metadata.type == AssetType::NONE) {
-            return metadata;
+        if (meta.type == AssetType::NONE) {
+            return meta;
         }
         const std::filesystem::path meta_path = asset_path.string() + ".meta";
 
@@ -26,21 +26,21 @@ namespace engine {
                 try {
                     json root;
                     in >> root;
-                    metadata.handle = AssetHandle(root["asset"]["handle"].get<uint64_t>());
+                    meta.handle = AssetHandle(root["asset"]["handle"].get<uint64_t>());
                     CORE_TRACE("Loaded existing metadata for '{0}' [Handle: {1}]",
-                               asset_path.string(), static_cast<uint64_t>(metadata.handle));
-                    return metadata;
+                               asset_path.string(), static_cast<uint64_t>(meta.handle));
+                    return meta;
                 }
                 catch (const std::exception& e) {
                     CORE_ERROR("Failed to parse metafile: {0} ({1})", meta_path.string(), e.what());
                 }
             }
         }
-        metadata.handle = AssetHandle();
+        meta.handle = AssetHandle();
 
         json root;
-        auto handle = static_cast<uint64_t>(metadata.handle);
-        std::string type(asset_type_to_string(metadata.type));
+        auto handle = static_cast<uint64_t>(meta.handle);
+        std::string type(asset_type_to_string(meta.type));
         root["asset"] = {
             {"handle", handle},
             {"type", type}
@@ -48,12 +48,12 @@ namespace engine {
 
         if (std::ofstream out(meta_path); out.is_open()) {
             out << root.dump(4);
-            CORE_TRACE("Created metadata for {0} asset from {1}", util::to_lowercase(type), metadata.filepath.string());
+            CORE_TRACE("Created metadata for {0} asset from {1}", util::to_lowercase(type), meta.filepath.string());
         }
         else {
             CORE_ERROR("Failed to write metadata file to disk: '{0}'", meta_path.string());
         }
-        return metadata;
+        return meta;
     }
 
     AssetType MetaFileHandler::deduce_asset_type(const std::filesystem::path& filepath) {

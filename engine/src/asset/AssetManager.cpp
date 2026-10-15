@@ -48,8 +48,8 @@ namespace engine {
             const auto& path = entry.path();
             if (path.extension() == ".meta") continue;
 
-            AssetMetadata metadata = MetaFileHandler::get_or_create_metadata(path);
-            if (metadata.is_valid()) {
+            AssetMetadata metadata = MetaFileHandler::metadata(path);
+            if (metadata.valid()) {
                 if (asset_registry_.contains(metadata.handle)) {
                     CORE_WARN("Asset handle collision! Handle {0} for '{1}' conflicts with existing asset",
                               static_cast<uint64_t>(metadata.handle), path.string());
@@ -93,6 +93,6 @@ namespace engine {
 
     std::filesystem::path AssetManager::path_from_handle(AssetHandle handle) const {
         const auto& meta = metadata(handle);
-        return meta.is_valid() ? meta.filepath : std::filesystem::path{};
+        return meta.valid() ? meta.filepath : std::filesystem::path{};
     }
 }

@@ -69,7 +69,7 @@ namespace engine {
         }
 
         const auto& meta = metadata(handle);
-        if (!meta.is_valid() || meta.type != AssetType::MESH) {
+        if (!meta.valid() || meta.type != AssetType::MESH) {
             return nullptr;
         }
 

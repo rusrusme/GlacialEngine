@@ -51,6 +51,6 @@ namespace engine {
         AssetType type = AssetType::NONE;
         std::filesystem::path filepath;
 
-        [[nodiscard]] bool is_valid() const { return handle != 0 && type != AssetType::NONE; }
+        [[nodiscard]] bool valid() const { return handle != 0 && type != AssetType::NONE; }
     };
 }
