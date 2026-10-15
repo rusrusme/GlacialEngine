@@ -7,7 +7,6 @@
 
 #include <cstdint>
 #include <memory>
-#include <vector>
 
 namespace engine {
     template<typename T>
@@ -89,42 +88,6 @@ namespace engine {
         UInt32
     };
 
-    // What a buffer is used for. Vulkan requires this at creation (VkBufferUsage)
-    // and DX12 derives resource states from it; the OpenGL backend uses it for
-    // storage flags and validation only.
-    enum class BufferUsageFlags : uint32_t {
-        None        = 0,
-        Vertex      = 1 << 0,
-        Index       = 1 << 1,
-        Uniform     = 1 << 2,
-        Storage     = 1 << 3,
-        Indirect    = 1 << 4,
-        TransferSrc = 1 << 5, // readback / copy source
-        TransferDst = 1 << 6, // staging / copy destination
-        All         = 0xFFFFFFFF
-    };
-
-    constexpr BufferUsageFlags operator|(const BufferUsageFlags a, const BufferUsageFlags b) {
-        return static_cast<BufferUsageFlags>(static_cast<uint32_t>(a) | static_cast<uint32_t>(b));
-    }
-
-    constexpr BufferUsageFlags operator&(const BufferUsageFlags a, const BufferUsageFlags b) {
-        return static_cast<BufferUsageFlags>(static_cast<uint32_t>(a) & static_cast<uint32_t>(b));
-    }
-
-    constexpr BufferUsageFlags& operator|=(BufferUsageFlags& a, const BufferUsageFlags b) {
-        a = a | b;
-        return a;
-    }
-
-    // Where a buffer's memory lives. Vulkan/DX12 must pick a heap from this;
-    // OpenGL only distinguishes whether the buffer is mappable by the CPU.
-    enum class MemoryUsage : uint32_t {
-        DeviceLocal         = 0, // GPU-only, fastest for shader access
-        HostVisible         = 1, // CPU writable, slower to read on the GPU
-        HostVisibleCoherent = 2  // CPU writable, no explicit flush required
-    };
-
     enum class DescriptorSetIndex : uint32_t {
         Frame    = 0, // Set 0: Per-Frame Uniforms (FrameData UBO, Time, View/Proj)
         Pass     = 1, // Set 1: Per-Pass Resources (Shadow Maps, G-Buffers, Light Lists)
@@ -169,7 +132,7 @@ namespace engine {
     }
 
     constexpr MemoryBarrierFlags operator~(MemoryBarrierFlags a) {
-        return static_cast<MemoryBarrierFlags>(static_cast<uint32_t>(~static_cast<uint32_t>(a)));
+        return static_cast<MemoryBarrierFlags>(~static_cast<uint32_t>(a));
     }
 
     constexpr MemoryBarrierFlags& operator|=(MemoryBarrierFlags& a, MemoryBarrierFlags b) {

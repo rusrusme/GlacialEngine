@@ -41,10 +41,6 @@ namespace engine {
         bool normalized = false;
         bool per_instance = false;
 
-        // Shader attribute location this element maps to. When left at
-        // kInvalidAttributeLocation the backend assigns locations in declaration
-        // order (the previous behaviour). Vulkan/DX12 need the explicit value to
-        // match the shader interface.
         uint32_t location = kInvalidAttributeLocation;
 
         // Which vertex buffer binding slot this element reads from. Element order

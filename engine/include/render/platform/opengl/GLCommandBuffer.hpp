@@ -5,10 +5,8 @@
 
 #pragma once
 
-#include "render/rhi/RenderPass.hpp"
 #include "render/rhi/RHITypes.hpp"
 
-#include <cstddef>
 #include <cstdint>
 #include <glad/glad.h>
 
@@ -54,9 +52,6 @@ namespace engine {
         void begin_render_pass(const GLFramebuffer& framebuffer, const float clear_color[4] = nullptr);
         void begin_render_pass(GLFramebuffer& framebuffer, const float clear_color[4] = nullptr);
         void begin_render_pass(const RenderPassBeginInfo& begin_info);
-        // Platform-neutral entry point: the per-attachment load ops in the pass
-        // description decide which clears are performed.
-        void begin_render_pass(const GLFramebuffer& framebuffer, const RenderPassDesc& pass_desc, const ClearValue& clear_value);
         void end_render_pass();
 
         // Pipeline & State Binding
@@ -77,33 +72,11 @@ namespace engine {
         void draw_indexed_indirect(const GLIndirectBuffer& indirect_buffer, size_t offset = 0, uint32_t draw_count = 1, uint32_t stride = sizeof(DrawIndexedIndirectCommand));
 
         [[nodiscard]] bool is_recording() const noexcept { return is_recording_; }
-        [[nodiscard]] bool has_index_buffer() const noexcept { return has_index_buffer_; }
 
     private:
-        static constexpr uint32_t kMaxVertexBindings = 16;
-
-        struct VertexBindingState {
-            uint32_t buffer_id{0};
-            size_t offset{0};
-            uint32_t stride{0};
-            bool valid{false};
-        };
-
-        // Vertex buffer bindings and the element buffer are per-VAO state in core
-        // OpenGL, while this API is stateful. Bindings are therefore recorded here
-        // and (re)applied to whichever VAO the bound pipeline owns, so the order of
-        // bind_pipeline / bind_vertex_buffer / bind_index_buffer cannot leave a VAO
-        // without its buffers.
-        void apply_vertex_bindings() const;
-        void attach_index_buffer() const;
-
-        const GLPipelineState* bound_pipeline_{nullptr};
-        uint32_t bound_vao_{0};
-
-        VertexBindingState vertex_bindings_[kMaxVertexBindings]{};
-        uint32_t pending_index_buffer_{0};
         IndexType current_index_type_{IndexType::UInt32};
-        bool has_index_buffer_{false};
+        GLenum gl_index_type_{GL_UNSIGNED_INT};
+        size_t index_element_size_{4};
         bool is_recording_{false};
     };
 } // namespace engine

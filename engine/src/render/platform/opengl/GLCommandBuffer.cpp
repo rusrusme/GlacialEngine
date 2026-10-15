@@ -4,20 +4,17 @@
 //
 
 #include "render/platform/opengl/GLCommandBuffer.hpp"
-
-#include "core/Log.hpp"
 #include "render/platform/opengl/GLDescriptorSet.hpp"
 #include "render/platform/opengl/GLFramebuffer.hpp"
 #include "render/platform/opengl/GLPipelineState.hpp"
 #include "render/rhi/Buffer.hpp"
 
 #include <cassert>
-#include <cstdint>
 #include <glad/glad.h>
 
 namespace engine {
     namespace {
-        constexpr GLenum convert_index_type(const IndexType type, size_t& out_size) {
+        constexpr GLenum convert_index_type(IndexType type, size_t& out_size) {
             switch (type) {
                 case IndexType::UInt8 : out_size = 1;
                     return GL_UNSIGNED_BYTE;
@@ -42,8 +39,6 @@ namespace engine {
     }
 
     void GLCommandBuffer::reset() noexcept {
-        // OpenGL has no command storage to rewind; pipeline/vertex state is not
-        // restored here either, so a reset buffer keeps whatever VAO was last bound.
         is_recording_ = false;
     }
 
@@ -69,32 +64,6 @@ namespace engine {
 
     void GLCommandBuffer::begin_render_pass(GLFramebuffer& framebuffer, const float clear_color[4]) {
         begin_render_pass(static_cast<const GLFramebuffer&>(framebuffer), clear_color);
-    }
-
-    void GLCommandBuffer::begin_render_pass(const GLFramebuffer& framebuffer, const RenderPassDesc& pass_desc, const ClearValue& clear_value) {
-        RenderPassBeginInfo begin_info{};
-        begin_info.framebuffer = &framebuffer;
-        begin_info.clear_color = {clear_value.color[0], clear_value.color[1], clear_value.color[2], clear_value.color[3]};
-        begin_info.clear_depth = clear_value.depth;
-        begin_info.clear_stencil = clear_value.stencil;
-
-        for (const RenderPassAttachmentDesc& attachment : pass_desc.attachments) {
-            if (attachment.load_op != AttachmentLoadOp::Clear) {
-                continue;
-            }
-            if (attachment.type == AttachmentType::Color) {
-                begin_info.clear_color_target = true;
-            }
-            else if (attachment.type == AttachmentType::Depth) {
-                begin_info.clear_depth_target = true;
-            }
-            else { // DepthStencil
-                begin_info.clear_depth_target = true;
-                begin_info.clear_stencil_target = true;
-            }
-        }
-
-        begin_render_pass(begin_info);
     }
 
     void GLCommandBuffer::begin_render_pass(const RenderPassBeginInfo& begin_info) {
@@ -157,65 +126,16 @@ namespace engine {
 
     void GLCommandBuffer::bind_pipeline(const GLPipelineState& pipeline) {
         pipeline.bind();
-
-        bound_pipeline_ = &pipeline;
-        bound_vao_ = pipeline.vao_id();
-
-        // Re-apply everything recorded so far onto the pipeline's VAO. Without this
-        // a binding issued before bind_pipeline would either be lost or land in the
-        // previously bound VAO.
-        apply_vertex_bindings();
-        attach_index_buffer();
     }
 
     void GLCommandBuffer::bind_vertex_buffer(uint32_t binding_slot, const GLVertexBuffer& buffer, size_t offset, uint32_t stride) {
-        if (binding_slot >= kMaxVertexBindings) {
-            CORE_ERROR("[GLCommandBuffer] Vertex binding slot {} exceeds the maximum supported slot {}",
-                       binding_slot, kMaxVertexBindings - 1);
-            return;
-        }
-
-        // A stride of zero is not meaningful for an interleaved vertex layout, so
-        // fall back to the stride declared by the bound pipeline's vertex layout.
-        if (stride == 0 && bound_pipeline_) {
-            stride = bound_pipeline_->description().vertex_layout.stride();
-        }
-
-        vertex_bindings_[binding_slot] = VertexBindingState{buffer.renderer_id(), offset, stride, true};
-
-        if (bound_vao_ != 0) {
-            glVertexArrayVertexBuffer(bound_vao_, binding_slot, buffer.renderer_id(),
-                                      static_cast<GLintptr>(offset), static_cast<GLsizei>(stride));
-        }
+        glBindVertexBuffer(binding_slot, buffer.renderer_id(), static_cast<GLintptr>(offset), static_cast<GLsizei>(stride));
     }
 
     void GLCommandBuffer::bind_index_buffer(const GLIndexBuffer& buffer, IndexType index_type) {
         current_index_type_ = index_type;
-        pending_index_buffer_ = buffer.renderer_id();
-        has_index_buffer_ = true;
-
-        attach_index_buffer();
-    }
-
-    void GLCommandBuffer::apply_vertex_bindings() const {
-        if (bound_vao_ == 0) {
-            return;
-        }
-
-        for (uint32_t slot = 0; slot < kMaxVertexBindings; ++slot) {
-            const VertexBindingState& binding = vertex_bindings_[slot];
-            if (!binding.valid) {
-                continue;
-            }
-            glVertexArrayVertexBuffer(bound_vao_, slot, binding.buffer_id,
-                                      static_cast<GLintptr>(binding.offset), static_cast<GLsizei>(binding.stride));
-        }
-    }
-
-    void GLCommandBuffer::attach_index_buffer() const {
-        if (bound_vao_ != 0 && pending_index_buffer_ != 0) {
-            glVertexArrayElementBuffer(bound_vao_, pending_index_buffer_);
-        }
+        gl_index_type_ = convert_index_type(index_type, index_element_size_);
+        glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer.renderer_id());
     }
 
     void GLCommandBuffer::bind_descriptor_set(DescriptorSetIndex set_index, const GLDescriptorSet& descriptor_set) {
@@ -266,21 +186,11 @@ namespace engine {
     }
 
     void GLCommandBuffer::draw_indexed(uint32_t index_count, uint32_t instance_count, uint32_t first_index, int32_t vertex_offset, uint32_t first_instance) {
-        if (!has_index_buffer_ || pending_index_buffer_ == 0) {
-            CORE_ERROR("[GLCommandBuffer] draw_indexed called without a bound index buffer");
-            return;
-        }
-
-        // Derived from the currently bound index type instead of a cached size, so
-        // the element offset can never lag behind an index buffer swap.
-        size_t element_size = 0;
-        const GLenum gl_index_type = convert_index_type(current_index_type_, element_size);
-
-        const auto index_ptr = reinterpret_cast<const void*>(static_cast<uintptr_t>(first_index) * element_size);
+        auto index_ptr = reinterpret_cast<const void*>(first_index * index_element_size_);
         glDrawElementsInstancedBaseVertexBaseInstance(
             GL_TRIANGLES,
             static_cast<GLsizei>(index_count),
-            gl_index_type,
+            gl_index_type_,
             index_ptr,
             static_cast<GLsizei>(instance_count),
             static_cast<GLint>(vertex_offset),
@@ -289,18 +199,10 @@ namespace engine {
     }
 
     void GLCommandBuffer::draw_indexed_indirect(const GLIndirectBuffer& indirect_buffer, size_t offset, uint32_t draw_count, uint32_t stride) {
-        if (!has_index_buffer_ || pending_index_buffer_ == 0) {
-            CORE_ERROR("[GLCommandBuffer] draw_indexed_indirect called without a bound index buffer");
-            return;
-        }
-
-        size_t element_size = 0;
-        const GLenum gl_index_type = convert_index_type(current_index_type_, element_size);
-
         glBindBuffer(GL_DRAW_INDIRECT_BUFFER, indirect_buffer.renderer_id());
         glMultiDrawElementsIndirect(
             GL_TRIANGLES,
-            gl_index_type,
+            gl_index_type_,
             reinterpret_cast<const void*>(offset),
             static_cast<GLsizei>(draw_count),
             static_cast<GLsizei>(stride)
