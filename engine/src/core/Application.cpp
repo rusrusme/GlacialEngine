@@ -12,6 +12,7 @@
 #include "core/Log.hpp"
 #include "core/Timestep.hpp"
 #include "core/WindowSystem.hpp"
+#include "debug/ImguiSystem.hpp"
 #include "event/MouseEvents.hpp"
 #include "event/WindowEvents.hpp"
 #include "render/rhi/RenderCommand.hpp"
@@ -73,6 +74,10 @@ namespace engine {
         });
 
         audio_system_.on_attach();
+
+        #if defined(ENABLE_IMGUI)
+        ImguiSystem::on_attach(window_->native());
+        #endif
         ///////////////////////////////////////////////////////
 
         PROFILE_START("Application::run - Scan Assets");
@@ -91,6 +96,10 @@ namespace engine {
         ///////////////////////////////////////////////////////
         // Run core loop
         while (running_) {
+            #if defined(ENABLE_IMGUI)
+            ImguiSystem::begin_frame();
+            #endif
+
             const float delta_time = clock.update();
 
             ///////////////////////////////////////////////////////
@@ -111,21 +120,17 @@ namespace engine {
                 layer->on_render(*context_, delta_time);
             }
 
-            PROFILE_END();
-
-            #ifdef ENABLE_IMGUI
-            PROFILE_START("Application::run - Imgui Render");
-            for (const auto& layer : layers_) {
-                layer->on_imgui_render(*context_, delta_time);
-            }
-            PROFILE_END();
+            #if defined(ENABLE_IMGUI)
+            ImguiSystem::end_frame();
             #endif
-            ///////////////////////////////////////////////////////
 
             window::swap_buffers(window_->native());
             window::poll_events();
 
             frame_limiter.limit();
+
+            PROFILE_END();
+            ///////////////////////////////////////////////////////
         }
         // In reverse
         CORE_INFO("Detaching application layers");
@@ -185,6 +190,10 @@ namespace engine {
         shader_library_.reset();
 
         RenderCommand::shutdown();
+
+        #if defined(ENABLE_IMGUI)
+        ImguiSystem::on_detach();
+        #endif
 
         window_.reset();
 

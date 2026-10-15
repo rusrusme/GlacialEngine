@@ -21,10 +21,7 @@ namespace engine {
         virtual void on_detach(SystemContext& context) {}
 
         virtual void on_update(SystemContext& context, float delta_time) {}
-
         virtual void on_render(SystemContext& context, float delta_time) {}
-        virtual void on_imgui_render(SystemContext& context, float delta_time) {}
-
         virtual void on_event(SystemContext& context, Event& event) {}
 
     protected:

@@ -120,7 +120,7 @@ namespace engine::window {
         return nullptr;
     }
 
-    void destroy_window(void* window_handle) {
+    void destroy(void* window_handle) {
         if (window_handle) {
             if (ACTIVE_FRAMEWORK == GraphicsFramework::GLFW) {
                 glfwDestroyWindow(static_cast<GLFWwindow*>(window_handle));
