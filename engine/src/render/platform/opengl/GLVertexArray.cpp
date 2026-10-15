@@ -56,7 +56,7 @@ namespace engine {
         glBindVertexArray(0);
     }
 
-    void GLVertexArray::add_vertex_buffer(const GLVertexBuffer& vertex_buffer, const BufferLayout& layout) {
+    void GLVertexArray::add_vertex_buffer(const GLVertexBuffer& vertex_buffer, const BufferLayout& layout, uint32_t divisor) {
         for (const auto& element : layout) {
             GLenum base_type = shader_data_type_to_opengl_base_type(element.type);
 
@@ -105,6 +105,11 @@ namespace engine {
             }
         }
         glVertexArrayVertexBuffer(renderer_id_, binding_index_, vertex_buffer.renderer_id(), 0, static_cast<GLsizei>(layout.stride()));
+
+        if (divisor > 0) {
+            glVertexArrayBindingDivisor(renderer_id_, binding_index_, divisor);
+        }
+
         binding_index_++;
     }
 

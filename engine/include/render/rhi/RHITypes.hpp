@@ -7,6 +7,7 @@
 
 #include <cstdint>
 #include <memory>
+#include <vector>
 
 namespace engine {
     template<typename T>
@@ -69,6 +70,12 @@ namespace engine {
         Fill,
         Wireframe,
         Point
+    };
+
+    enum class BlendMode {
+        Opaque = 0,
+        Alpha,
+        Additive
     };
 
     enum class CompareOp {

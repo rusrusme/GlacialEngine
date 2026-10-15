@@ -26,5 +26,10 @@ namespace engine {
         CompareOp depth_compare = CompareOp::Less;
 
         bool blend_enable = false;
+        BlendMode blend_mode = BlendMode::Alpha;
+
+        bool polygon_offset_enable = false;
+        float polygon_offset_factor = 0.0f;
+        float polygon_offset_units = 0.0f;
     };
 }

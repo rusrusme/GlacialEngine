@@ -89,6 +89,14 @@ namespace engine {
             command_buffer.draw_indexed_indirect(indirect_buffer, offset, draw_count);
         }
 
+        static void set_clear_color(const glm::vec4& color) {
+            renderer_api_.set_clear_color(color);
+        }
+
+        static void clear(bool clear_color = true, bool clear_depth = true, bool clear_stencil = false) {
+            renderer_api_.clear(clear_color, clear_depth, clear_stencil);
+        }
+
     private:
         inline static RendererAPI renderer_api_{};
 

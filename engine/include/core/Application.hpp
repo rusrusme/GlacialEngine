@@ -11,10 +11,6 @@
 #include "core/SystemContext.hpp"
 #include "core/Window.hpp"
 #include "project/scene/SceneManager.hpp"
-#include "render/SceneRenderer.hpp"
-#include "render/gpu/GPUMeshManager.hpp"
-#include "render/gpu/MaterialSystem.hpp"
-#include "render/gpu/TextureSystem.hpp"
 #include "render/shader/ShaderLibrary.hpp"
 
 namespace engine {
@@ -30,7 +26,7 @@ namespace engine {
 
         static Application& get() { return *instance_; }
         [[nodiscard]] Window& window() const { return *window_; }
-        [[nodiscard]] SystemContext& context() { return *context_; }
+        [[nodiscard]] SystemContext& context() { return context_; }
 
     protected:
         void push_layer(std::unique_ptr<Layer> layer);
@@ -44,18 +40,24 @@ namespace engine {
 
         LayerStack layers_;
 
+        // Core Subsystems
         AudioSystem audio_system_;
         AssetManager asset_manager_;
         SceneManager scene_manager_;
+        ShaderLibrary shader_library_;
 
-        // Rendering Core Subsystems
-        std::unique_ptr<ShaderLibrary> shader_library_;
-        std::unique_ptr<GPUMeshManager> gpu_mesh_manager_;
-        std::unique_ptr<MaterialSystem> material_system_;
-        std::unique_ptr<TextureSystem> texture_system_;
-        std::unique_ptr<SceneRenderer> scene_renderer_;
+        // TODO broken mess
+        // GPUMeshManager gpu_mesh_manager_{};
+        // MaterialSystem material_system_{};
+        // TextureSystem texture_system_{};
+        // SceneRenderer scene_renderer_;
 
-        std::optional<SystemContext> context_;
+        SystemContext context_{
+            .audio   = audio_system_,
+            .assets  = asset_manager_,
+            .scenes  = scene_manager_,
+            .shaders = shader_library_
+        };
 
         bool running_ = true;
         static Application* instance_;

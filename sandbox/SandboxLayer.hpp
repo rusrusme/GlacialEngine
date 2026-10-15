@@ -5,9 +5,12 @@
 
 #pragma once
 
+#include <memory>
+
 #include "core/Layer.hpp"
-#include "input/CameraController.hpp"
-#include "render/Camera.hpp"
+#include "render/platform/opengl/GLPipelineState.hpp"
+#include "render/platform/opengl/GLVertexArray.hpp"
+#include "render/rhi/Shader.hpp"
 
 class SandboxLayer : public engine::Layer {
 public:
@@ -21,6 +24,12 @@ public:
     void on_event(engine::SystemContext& context, engine::Event& event) override;
 
 private:
-    engine::Camera camera_;
-    engine::CameraController camera_controller_;
+    std::shared_ptr<engine::Shader> shader_;
+    std::unique_ptr<engine::GLVertexBuffer> vertex_buffer_;
+    std::unique_ptr<engine::GLIndexBuffer> index_buffer_;
+    std::unique_ptr<engine::GLPipelineState> pipeline_state_;
+    engine::BufferLayout layout_;
+
+    std::unique_ptr<engine::GLVertexBuffer> triangle_vb_;
+    std::unique_ptr<engine::GLVertexArray> triangle_va_;
 };

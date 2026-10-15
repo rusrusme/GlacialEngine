@@ -120,10 +120,25 @@ namespace engine {
 
         if (desc_.blend_enable) {
             glEnable(GL_BLEND);
-            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            switch (desc_.blend_mode) {
+                case BlendMode::Additive:
+                    glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+                    break;
+                case BlendMode::Alpha:
+                default:
+                    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+                    break;
+            }
         }
         else {
             glDisable(GL_BLEND);
+        }
+
+        if (desc_.polygon_offset_enable) {
+            glEnable(GL_POLYGON_OFFSET_FILL);
+            glPolygonOffset(desc_.polygon_offset_factor, desc_.polygon_offset_units);
+        } else {
+            glDisable(GL_POLYGON_OFFSET_FILL);
         }
     }
 

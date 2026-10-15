@@ -23,12 +23,12 @@ namespace engine {
         AssetManager& assets;
         SceneManager& scenes;
 
-        // GPU pipeline & subsystems
-        SceneRenderer& renderer;
         ShaderLibrary& shaders;
-        GPUMeshManager& mesh_manager;
-        MaterialSystem& materials;
-        TextureSystem& textures;
+        // TODO
+        // SceneRenderer& renderer;
+        // GPUMeshManager& mesh_manager;
+        // MaterialSystem& materials;
+        // TextureSystem& textures;
 
         std::shared_ptr<Project> current_project;
     };

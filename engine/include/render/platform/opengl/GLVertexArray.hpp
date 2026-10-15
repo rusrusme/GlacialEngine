@@ -23,7 +23,7 @@ namespace engine {
         void bind() const;
         void unbind() const;
 
-        void add_vertex_buffer(const GLVertexBuffer& vertex_buffer, const BufferLayout& layout);
+        void add_vertex_buffer(const GLVertexBuffer& vertex_buffer, const BufferLayout& layout, uint32_t divisor = 0);
         void set_index_buffer(const GLIndexBuffer& index_buffer);
 
         [[nodiscard]] uint32_t renderer_id() const { return renderer_id_; }
