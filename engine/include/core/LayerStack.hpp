@@ -33,6 +33,6 @@ namespace engine {
 
     private:
         std::vector<std::unique_ptr<Layer>> layers_;
-        uint32_t layer_insert_index_ = 0;
+        uint32_t insert_index_ = 0;
     };
 }

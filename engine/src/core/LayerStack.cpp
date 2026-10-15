@@ -10,8 +10,8 @@ namespace engine {
     LayerStack::~LayerStack() = default;
 
     void LayerStack::push_layer(std::unique_ptr<Layer> layer) {
-        layers_.emplace(layers_.begin() + layer_insert_index_, std::move(layer));
-        layer_insert_index_++;
+        layers_.emplace(layers_.begin() + insert_index_, std::move(layer));
+        insert_index_++;
     }
 
     void LayerStack::push_overlay(std::unique_ptr<Layer> overlay) {
@@ -19,20 +19,20 @@ namespace engine {
     }
 
     std::unique_ptr<Layer> LayerStack::pop_layer(Layer* layer, SystemContext& context) {
-        const auto it = std::find_if(layers_.begin(), layers_.begin() + layer_insert_index_, [layer](const std::unique_ptr<Layer>& ptr) { return ptr.get() == layer; });
+        const auto it = std::find_if(layers_.begin(), layers_.begin() + insert_index_, [layer](const std::unique_ptr<Layer>& ptr) { return ptr.get() == layer; });
 
-        if (it != layers_.begin() + layer_insert_index_) {
+        if (it != layers_.begin() + insert_index_) {
             (*it)->on_detach(context);
             std::unique_ptr<Layer> removed = std::move(*it);
             layers_.erase(it);
-            layer_insert_index_--;
+            insert_index_--;
             return removed;
         }
         return nullptr;
     }
 
     std::unique_ptr<Layer> LayerStack::pop_overlay(Layer* overlay, SystemContext& context) {
-        const auto it = std::find_if(layers_.begin() + layer_insert_index_, layers_.end(), [overlay](const std::unique_ptr<Layer>& ptr) { return ptr.get() == overlay; });
+        const auto it = std::find_if(layers_.begin() + insert_index_, layers_.end(), [overlay](const std::unique_ptr<Layer>& ptr) { return ptr.get() == overlay; });
 
         if (it != layers_.end()) {
             (*it)->on_detach(context);
