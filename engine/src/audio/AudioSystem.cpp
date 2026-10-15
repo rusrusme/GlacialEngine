@@ -190,7 +190,7 @@ namespace engine {
 
         // Resolve handle from AssetManager metadata if valid
         if (source.sound_handle != 0) {
-            const auto& meta = context.assets.get_metadata(source.sound_handle);
+            const auto& meta = context.assets.metadata(source.sound_handle);
             if (meta.is_valid()) {
                 path_to_load = meta.filepath.string();
             }

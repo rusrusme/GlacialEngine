@@ -70,7 +70,7 @@ namespace engine {
                   loaded_count, skipped_count, asset_registry_.size());
     }
 
-    const AssetMetadata& AssetManager::get_metadata(AssetHandle handle) const {
+    const AssetMetadata& AssetManager::metadata(AssetHandle handle) const {
         auto it = asset_registry_.find(handle);
         if (it != asset_registry_.end()) {
             return it->second;
@@ -78,12 +78,12 @@ namespace engine {
         return null_metadata_;
     }
 
-    const AssetMetadata& AssetManager::get_metadata(const std::filesystem::path& filepath) const {
-        AssetHandle handle = get_handle_from_path(filepath);
-        return get_metadata(handle);
+    const AssetMetadata& AssetManager::metadata(const std::filesystem::path& filepath) const {
+        AssetHandle handle = handle_from_path(filepath);
+        return metadata(handle);
     }
 
-    AssetHandle AssetManager::get_handle_from_path(const std::filesystem::path& filepath) const {
+    AssetHandle AssetManager::handle_from_path(const std::filesystem::path& filepath) const {
         auto it = path_to_handle_map_.find(filepath);
         if (it != path_to_handle_map_.end()) {
             return it->second;
@@ -91,8 +91,8 @@ namespace engine {
         return {0};
     }
 
-    std::filesystem::path AssetManager::get_path_from_handle(AssetHandle handle) const {
-        const auto& meta = get_metadata(handle);
+    std::filesystem::path AssetManager::path_from_handle(AssetHandle handle) const {
+        const auto& meta = metadata(handle);
         return meta.is_valid() ? meta.filepath : std::filesystem::path{};
     }
 }

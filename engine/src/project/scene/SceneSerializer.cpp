@@ -62,7 +62,7 @@ namespace engine {
             // MeshComponent
             if (entity.has_component<MeshComponent>()) {
                 auto& mc = entity.get_component<MeshComponent>();
-                std::string path = asset_manager.get_path_from_handle(mc.handle).string();
+                std::string path = asset_manager.path_from_handle(mc.handle).string();
                 entity_json["mesh"] = {
                     {"handle", static_cast<uint64_t>(mc.handle)},
                     {"path", path}
@@ -179,11 +179,11 @@ namespace engine {
                     handle = AssetHandle(m_json["handle"].get<uint64_t>());
                 }
                 // Asset recovery via path
-                if (!asset_manager.is_asset_handle_valid(handle) && m_json.contains("path")) {
+                if (!asset_manager.asset_handle_valid(handle) && m_json.contains("path")) {
                     const std::string path = m_json["path"].get<std::string>();
-                    AssetHandle resolved_handle = asset_manager.get_handle_from_path(path);
+                    AssetHandle resolved_handle = asset_manager.handle_from_path(path);
 
-                    if (asset_manager.is_asset_handle_valid(resolved_handle)) {
+                    if (asset_manager.asset_handle_valid(resolved_handle)) {
                         CORE_WARN("Handle mismatch for entity '{0}': Stored handle: [{1}] Recovered handle [{2}] via path '{3}'",
                                   name, static_cast<uint64_t>(handle), static_cast<uint64_t>(resolved_handle), path);
                         handle = resolved_handle;

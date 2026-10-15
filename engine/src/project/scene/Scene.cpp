@@ -154,7 +154,7 @@ namespace engine {
                 }
             }
 
-            Mesh* mesh_asset = context.assets.get_asset<Mesh>(target_mesh_handle).get();
+            Mesh* mesh_asset = context.assets.asset<Mesh>(target_mesh_handle).get();
             if (!mesh_asset) {
                 CORE_WARN("Failed to retrieve mesh asset handle {0} for entity '{1}'",
                           static_cast<uint64_t>(target_mesh_handle),

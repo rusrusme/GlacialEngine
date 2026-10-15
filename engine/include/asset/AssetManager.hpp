@@ -25,21 +25,21 @@ namespace engine {
 
         void scan_directory(const std::filesystem::path& asset_directory);
 
-        [[nodiscard]] const AssetMetadata& get_metadata(AssetHandle handle) const;
-        [[nodiscard]] const AssetMetadata& get_metadata(const std::filesystem::path& filepath) const;
+        [[nodiscard]] const AssetMetadata& metadata(AssetHandle handle) const;
+        [[nodiscard]] const AssetMetadata& metadata(const std::filesystem::path& filepath) const;
 
-        [[nodiscard]] AssetHandle get_handle_from_path(const std::filesystem::path& filepath) const;
-        [[nodiscard]] std::filesystem::path get_path_from_handle(AssetHandle handle) const;
+        [[nodiscard]] AssetHandle handle_from_path(const std::filesystem::path& filepath) const;
+        [[nodiscard]] std::filesystem::path path_from_handle(AssetHandle handle) const;
 
-        [[nodiscard]] bool is_asset_handle_valid(const AssetHandle handle) const { return asset_registry_.contains(handle); }
+        [[nodiscard]] bool asset_handle_valid(const AssetHandle handle) const { return asset_registry_.contains(handle); }
 
-        [[nodiscard]] const std::unordered_map<AssetHandle, AssetMetadata>& get_registry() const { return asset_registry_; }
+        [[nodiscard]] const std::unordered_map<AssetHandle, AssetMetadata>& registry() const { return asset_registry_; }
 
         /**
          * @brief Generic asset getter fetching from CPU cache or loading from disk into GPU mega-buffers.
          */
         template<typename T>
-        std::shared_ptr<T> get_asset(AssetHandle handle);
+        std::shared_ptr<T> asset(AssetHandle handle);
 
         void clear_cache() {
             mesh_cache_.clear();
@@ -62,14 +62,14 @@ namespace engine {
     };
 
     template<>
-    inline std::shared_ptr<Mesh> AssetManager::get_asset<Mesh>(const AssetHandle handle) {
+    inline std::shared_ptr<Mesh> AssetManager::asset<Mesh>(const AssetHandle handle) {
         auto it = mesh_cache_.find(handle);
         if (it != mesh_cache_.end()) {
             return it->second;
         }
 
-        const auto& metadata = get_metadata(handle);
-        if (!metadata.is_valid() || metadata.type != AssetType::MESH) {
+        const auto& meta = metadata(handle);
+        if (!meta.is_valid() || meta.type != AssetType::MESH) {
             return nullptr;
         }
 
@@ -77,7 +77,7 @@ namespace engine {
             return nullptr; // GPU managers not initialized
         }
 
-        Mesh loaded_mesh = MeshLoader::load(metadata.filepath.string(),
+        Mesh loaded_mesh = MeshLoader::load(meta.filepath.string(),
                                             *mesh_manager_,
                                             *material_system_,
                                             *texture_system_);

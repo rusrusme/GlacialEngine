@@ -17,9 +17,9 @@
 void SandboxLayer::on_attach(engine::SystemContext& context) {
     const auto scene = context.scenes.create("Main Scene");
 
-    engine::AssetHandle firehouse_handle = context.assets.get_handle_from_path("assets/models/Firehouse.glb");
+    engine::AssetHandle firehouse_handle = context.assets.handle_from_path("assets/models/Firehouse.glb");
 
-    if (!context.assets.is_asset_handle_valid(firehouse_handle)) {
+    if (!context.assets.asset_handle_valid(firehouse_handle)) {
         CORE_ERROR("Firehouse.glb konnte im AssetManager nicht gefunden werden!");
         return;
     }
