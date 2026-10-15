@@ -1,9 +1,0 @@
-#ifndef CAMERA_GLSL
-#define CAMERA_GLSL
-
-layout(std140, binding = 0) uniform CameraData {
-    mat4 u_view;
-    mat4 u_projection;
-};
-
-#endif
