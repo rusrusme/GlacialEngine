@@ -82,26 +82,28 @@ include(PackageDistribution.cmake)
 set(RUNTIME_ASSETS "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/assets")
 set(SOURCE_ASSETS "${CMAKE_SOURCE_DIR}/assets")
 add_custom_target(SyncAssets ALL
-                  COMMAND ${CMAKE_COMMAND} -E remove_directory "${RUNTIME_ASSETS}"
-                  COMMAND ${CMAKE_COMMAND} -E copy_directory "${SOURCE_ASSETS}" "${RUNTIME_ASSETS}"
+                  COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different "${SOURCE_ASSETS}" "${RUNTIME_ASSETS}"
                   COMMENT "Syncing assets to runtime output directory"
                   VERBATIM
 )
 # ----------------------------------------------------------------------------
 file(GLOB_RECURSE BSH_SOURCES RELATIVE "${SOURCE_ASSETS}/shaders" CONFIGURE_DEPENDS "${SOURCE_ASSETS}/shaders/*.bsh")
-if (BSH_SOURCES)
-    add_custom_target(CompileBSH ALL
-                      COMMAND $<TARGET_FILE:bshc::bshc> ${BSH_SOURCES} -o "${RUNTIME_ASSETS}/shaders/compiled" -b ${BSHC_BACKEND}
-                      WORKING_DIRECTORY "${SOURCE_ASSETS}/shaders"
-                      COMMENT "Compiling shaders via BSHC (${BSHC_BACKEND}) into runtime directory"
-                      VERBATIM
+set(COMPILED_SHADERS "")
+
+foreach(SHADER_REL IN LISTS BSH_SOURCES)
+    set(SHADER_IN "${SOURCE_ASSETS}/shaders/${SHADER_REL}")
+    set(SHADER_OUT "${RUNTIME_ASSETS}/shaders/compiled/${SHADER_REL}.bin")
+    add_custom_command(
+            OUTPUT "${SHADER_OUT}"
+            COMMAND $<TARGET_FILE:bshc::bshc> "${SHADER_IN}" -o "${SHADER_OUT}" -b ${BSHC_BACKEND}
+            DEPENDS "${SHADER_IN}" $<TARGET_FILE:bshc::bshc>
+            COMMENT "Compiling shader: ${SHADER_REL} [${BSHC_BACKEND}]"
+            VERBATIM
     )
-else ()
-    add_custom_target(CompileBSH ALL
-                      COMMENT "No BSH shader sources found"
-    )
-endif ()
+    list(APPEND COMPILED_SHADERS "${SHADER_OUT}")
+endforeach()
+add_custom_target(CompileShaders ALL DEPENDS ${COMPILED_SHADERS})
 # ----------------------------------------------------------------------------
 add_dependencies(Engine SyncAssets)
-add_dependencies(Engine CompileBSH)
+add_dependencies(Engine CompileShaders)
 # ----------------------------------------------------------------------------
