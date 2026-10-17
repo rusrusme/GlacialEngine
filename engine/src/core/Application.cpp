@@ -15,7 +15,7 @@
 #include "debug/ImguiLayer.hpp"
 #include "event/MouseEvents.hpp"
 #include "event/WindowEvents.hpp"
-#include "render/rhi/RenderCommand.hpp"
+#include "render/rhi/RenderContext.hpp"
 #include "util/Instrumentor.hpp"
 
 namespace engine {
@@ -46,7 +46,7 @@ namespace engine {
 
         ///////////////////////////////////////////////////////
         // Initialize core systems
-        RenderCommand::init();
+        render_context_.init(*window_);
 
         // shader_library_ = std::make_unique<ShaderLibrary>();
         // gpu_mesh_manager_ = std::make_unique<GPUMeshManager>(1024 * 1024 * 64, 1024 * 1024 * 16); // 64MB VBO, 16MB IBO
@@ -66,6 +66,7 @@ namespace engine {
             asset_manager_,
             scene_manager_,
             shader_library_,
+            render_context_,
             *window_
         );
 
@@ -104,12 +105,13 @@ namespace engine {
             ///////////////////////////////////////////////////////
             // Render pass
             PROFILE_START("Application::run - Render");
-
+            render_context_.begin_frame();
             for (const auto& layer : layers_) {
                 layer->on_render(*context_, delta_time);
             }
+            render_context_.end_frame();
 
-            window::swap_buffers(window_->native());
+            // window::swap_buffers(window_->native()); -> Swapchain does that now
             window::poll_events();
 
             frame_limiter.limit();
@@ -135,10 +137,9 @@ namespace engine {
             return true;
         });
 
-        dispatcher.dispatch<WindowResizedEvent>([](const WindowResizedEvent& e) {
+        dispatcher.dispatch<WindowResizedEvent>([this](const WindowResizedEvent& e) {
             CORE_TRACE("Window resized to {0}x{1}", e.width(), e.height());
-            // TODO
-            // scene_renderer_.resize_viewport(e.width(), e.height());
+            render_context_.on_window_resize(e.width(), e.height());
             return false; // Forward to layer
         });
 
@@ -162,16 +163,13 @@ namespace engine {
     void Application::shutdown() {
         CORE_INFO("Shutting down engine application");
 
-
         scene_manager_.on_detach();
         if (context_) {
             audio_system_.on_detach(*context_);
         }
 
         context_.reset();
-
-        RenderCommand::shutdown();
-
+        render_context_.shutdown();
         window_.reset();
 
         config::save();

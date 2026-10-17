@@ -8,6 +8,7 @@
 #include <memory>
 
 namespace engine {
+    class RenderContext;
     class Window;
     class AudioSystem;
     class AssetManager;
@@ -25,6 +26,7 @@ namespace engine {
         SceneManager& scenes;
 
         ShaderLibrary& shaders;
+        RenderContext& render_context;
         // TODO
         // SceneRenderer& renderer;
         // GPUMeshManager& mesh_manager;
@@ -39,11 +41,13 @@ namespace engine {
                       AssetManager& asset_manager,
                       SceneManager& scene_manager,
                       ShaderLibrary& shader_library,
+                      RenderContext& render_context,
                       Window& window)
             : audio(audio_system),
               assets(asset_manager),
               scenes(scene_manager),
               shaders(shader_library),
+              render_context(render_context),
               window(window) {}
     };
 }

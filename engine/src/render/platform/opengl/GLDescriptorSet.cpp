@@ -138,6 +138,7 @@ namespace engine {
         }
 
         // Image
+        // TODO internal_format is not set
         for (const auto& [binding_slot, texture_id, internal_format, mip_level, access] : image_bindings_) {
             if (!texture_id) continue;
 

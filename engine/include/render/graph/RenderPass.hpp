@@ -13,10 +13,10 @@ namespace engine {
     class RenderGraphBuilder;
     class RenderGraphRegistry;
 
-    struct RenderContext {
-        CommandBuffer& command_buffer;
-        uint32_t current_frame_index{0};
-    };
+    // struct RenderContext {
+    //     CommandBuffer& command_buffer;
+    //     uint32_t current_frame_index{0};
+    // };
 
     /**
      * @brief Abstract base class for all CPU/GPU render passes.
@@ -27,7 +27,7 @@ namespace engine {
         virtual ~RenderPass() = default;
 
         virtual void setup(RenderGraphBuilder& builder) = 0;
-        virtual void execute(const RenderContext& context, const RenderGraphRegistry& registry) = 0;
+        // virtual void execute(const RenderContext& context, const RenderGraphRegistry& registry) = 0;
 
         [[nodiscard]] const Vector<std::string>& read_textures() const { return read_textures_; }
         [[nodiscard]] const Vector<std::string>& write_textures() const { return write_textures_; }

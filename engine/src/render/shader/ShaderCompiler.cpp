@@ -8,12 +8,12 @@
 #include <bshc/BSHCompiler.hpp>
 
 #include "core/Log.hpp"
-#include "render/rhi/RendererAPI.hpp"
+#include "render/rhi/RHIDevice.hpp"
 #include "render/rhi/RHITypes.hpp"
 
 namespace engine {
     LoadedBSHData ShaderCompiler::compile_source(const std::string& source, const std::string& name) {
-        const auto active_backend = native_backend(RendererAPI::backend());
+        const auto active_backend = native_backend(RHIDevice::backend());
 
         const std::vector<uint8_t> bin = bshc::BSHCompiler::compile_source(source, active_backend);
         if (bin.empty()) {
@@ -35,7 +35,7 @@ namespace engine {
         }
 
         const std::string content((std::istreambuf_iterator(file)), std::istreambuf_iterator<char>());
-        const auto active_backend = native_backend(RendererAPI::backend());
+        const auto active_backend = native_backend(RHIDevice::backend());
 
         const std::vector<uint8_t> bin = bshc::BSHCompiler::compile_source(content, active_backend, source.parent_path());
         if (bin.empty()) {

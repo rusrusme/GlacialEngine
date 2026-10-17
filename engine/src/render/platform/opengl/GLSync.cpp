@@ -5,8 +5,6 @@
 
 #include "render/platform/opengl/GLSync.hpp"
 
-#include <utility>
-
 namespace engine {
     GLFence::~GLFence() {
         release();

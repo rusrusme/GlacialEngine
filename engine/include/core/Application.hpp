@@ -11,6 +11,7 @@
 #include "core/SystemContext.hpp"
 #include "core/Window.hpp"
 #include "project/scene/SceneManager.hpp"
+#include "render/rhi/RenderContext.hpp"
 #include "render/shader/ShaderLibrary.hpp"
 
 namespace engine {
@@ -45,6 +46,7 @@ namespace engine {
         AssetManager asset_manager_;
         SceneManager scene_manager_;
         ShaderLibrary shader_library_;
+        RenderContext render_context_;
 
         // TODO broken mess
         // GPUMeshManager gpu_mesh_manager_{};

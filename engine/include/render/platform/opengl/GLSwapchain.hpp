@@ -5,14 +5,13 @@
 
 #pragma once
 
-#include <GLFW/glfw3.h>
-
 #include "render/rhi/RHITypes.hpp"
 
 namespace engine {
+    class GLFramebuffer;
+
     class GLSwapchain {
     public:
-        GLSwapchain() = default;
         explicit GLSwapchain(const SwapchainSpec& spec);
         ~GLSwapchain() = default;
 
@@ -28,16 +27,14 @@ namespace engine {
         void set_vsync(bool enabled);
         [[nodiscard]] bool vsync() const noexcept { return spec_.vsync; }
 
+        [[nodiscard]] GLFramebuffer& backbuffer() const { return *backbuffer_; }
+
         [[nodiscard]] uint32_t width() const noexcept { return spec_.width; }
         [[nodiscard]] uint32_t height() const noexcept { return spec_.height; }
 
-        [[nodiscard]] uint32_t current_frame_index() const noexcept { return current_frame_index_; }
-        [[nodiscard]] uint32_t max_frames_in_flight() const noexcept { return spec_.max_frames_in_flight; }
-        [[nodiscard]] const SwapchainSpec& specification() const noexcept { return spec_; }
-
     private:
         SwapchainSpec spec_{};
-        GLFWwindow* window_{nullptr};
-        uint32_t current_frame_index_{0};
+        void* window_{nullptr};
+        Unique<GLFramebuffer> backbuffer_{nullptr};
     };
 }

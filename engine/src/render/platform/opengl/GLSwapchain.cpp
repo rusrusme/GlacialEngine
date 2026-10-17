@@ -6,39 +6,44 @@
 #include "render/platform/opengl/GLSwapchain.hpp"
 
 #include "core/Log.hpp"
+#include "core/WindowSystem.hpp"
+#include "render/platform/opengl/GLFramebuffer.hpp"
 
 namespace engine {
     GLSwapchain::GLSwapchain(const SwapchainSpec& spec)
-        : spec_(spec), window_(static_cast<GLFWwindow*>(spec.window_handle)) {
+        : spec_(spec),
+          window_(spec.window_handle) {
         if (!window_) {
             CORE_ERROR("[GLSwapchain] Window handle provided is null");
         }
+
+        FramebufferSpecification fbo_spec{};
+        fbo_spec.width = spec_.width;
+        fbo_spec.height = spec_.height;
+        fbo_spec.swapchain_target = true;
+        backbuffer_ = std::make_unique<GLFramebuffer>(fbo_spec);
 
         set_vsync(spec_.vsync);
     }
 
     GLSwapchain::GLSwapchain(GLSwapchain&& other) noexcept
         : spec_(other.spec_),
-          window_(other.window_),
-          current_frame_index_(other.current_frame_index_) {
-        other.window_ = nullptr;
-    }
+          window_(std::exchange(other.window_, nullptr)),
+          backbuffer_(std::move(other.backbuffer_)) {}
 
     GLSwapchain& GLSwapchain::operator=(GLSwapchain&& other) noexcept {
         if (this != &other) {
             spec_ = other.spec_;
-            window_ = other.window_;
-            current_frame_index_ = other.current_frame_index_;
-            other.window_ = nullptr;
+            window_ = std::exchange(other.window_, nullptr);
+            backbuffer_ = std::move(other.backbuffer_);
         }
         return *this;
     }
 
     void GLSwapchain::present() {
         if (window_) {
-            glfwSwapBuffers(window_);
+            window::swap_buffers(window_);
         }
-        current_frame_index_ = (current_frame_index_ + 1) % spec_.max_frames_in_flight;
     }
 
     void GLSwapchain::resize(uint32_t width, uint32_t height) {
@@ -47,11 +52,13 @@ namespace engine {
         }
         spec_.width = width;
         spec_.height = height;
-        glViewport(0, 0, static_cast<GLsizei>(width), static_cast<GLsizei>(height));
+        if (backbuffer_) {
+            backbuffer_->resize(width, height);
+        }
     }
 
     void GLSwapchain::set_vsync(bool enabled) {
         spec_.vsync = enabled;
-        glfwSwapInterval(enabled ? 1 : 0);
+        window::set_vsync(enabled);
     }
 }

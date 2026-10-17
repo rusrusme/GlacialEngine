@@ -60,18 +60,18 @@ namespace engine {
     }
 
     void RenderGraph::execute(CommandBuffer& command, uint32_t frame_index) {
-        const RenderContext context{.command_buffer = command, .current_frame_index = frame_index};
-
-        for (RenderPass* pass : passes_) {
-            if (!pass || !pass->enabled()) {
-                continue;
-            }
-
-            // Automatische Memory Barriers zwischen den Pass-Ausführungen setzen
-            command.memory_barrier(MemoryBarrierFlags::FramebufferAttachment | MemoryBarrierFlags::ShaderStorage);
-
-            pass->execute(context, registry_);
-        }
+        // const RenderContext context{.command_buffer = command, .current_frame_index = frame_index};
+        //
+        // for (RenderPass* pass : passes_) {
+        //     if (!pass || !pass->enabled()) {
+        //         continue;
+        //     }
+        //
+        //     // Automatische Memory Barriers zwischen den Pass-Ausführungen setzen
+        //     command.memory_barrier(MemoryBarrierFlags::FramebufferAttachment | MemoryBarrierFlags::ShaderStorage);
+        //
+        //     pass->execute(context, registry_);
+        // }
     }
 
     void RenderGraph::reset() {

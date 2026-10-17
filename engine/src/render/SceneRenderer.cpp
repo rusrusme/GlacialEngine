@@ -9,7 +9,7 @@
 #include "render/gpu/GPUMeshManager.hpp"
 #include "render/gpu/MaterialSystem.hpp"
 #include "render/pass/MainOpaquePass.hpp"
-#include "render/rhi/RenderCommand.hpp"
+#include "render/rhi/RenderContext.hpp"
 
 namespace engine {
     SceneRenderer::SceneRenderer(ShaderLibrary& shader_lib,
@@ -64,8 +64,8 @@ namespace engine {
             return;
         }
 
-        CommandBuffer& cmd = RenderCommand::active_command_buffer();
-        const uint32_t frame_index = RenderCommand::current_frame_index();
+        // CommandBuffer& cmd = RenderContext::active_command_buffer();
+        // const uint32_t frame_index = RenderContext::current_frame_index();
 
         material_system_.flush_to_gpu();
         mesh_manager_.flush_to_gpu();
@@ -84,17 +84,17 @@ namespace engine {
 
         const auto total_instances = static_cast<uint32_t>(frame_instances_.size());
 
-        if (main_depth_target_ && hzb_texture_) {
-            hzb_generator_->generate(cmd, *main_depth_target_, *hzb_texture_);
-            gpu_culler_->dispatch_occlusion_cull(cmd, total_instances, *instance_buffer_, *indirect_draw_buffer_, *camera_buffer_, *hzb_texture_);
-        }
-        else {
-            gpu_culler_->dispatch_frustum_cull(cmd, total_instances, *instance_buffer_, *indirect_draw_buffer_, *camera_buffer_);
-        }
-
-        cmd.memory_barrier(MemoryBarrierFlags::CommandData | MemoryBarrierFlags::ShaderStorage);
-
-        render_graph_.execute(cmd, frame_index);
+        // if (main_depth_target_ && hzb_texture_) {
+        //     hzb_generator_->generate(cmd, *main_depth_target_, *hzb_texture_);
+        //     gpu_culler_->dispatch_occlusion_cull(cmd, total_instances, *instance_buffer_, *indirect_draw_buffer_, *camera_buffer_, *hzb_texture_);
+        // }
+        // else {
+        //     gpu_culler_->dispatch_frustum_cull(cmd, total_instances, *instance_buffer_, *indirect_draw_buffer_, *camera_buffer_);
+        // }
+        //
+        // cmd.memory_barrier(MemoryBarrierFlags::CommandData | MemoryBarrierFlags::ShaderStorage);
+        //
+        // render_graph_.execute(cmd, frame_index);
     }
 
     void SceneRenderer::resize_viewport(uint32_t width, uint32_t height) {

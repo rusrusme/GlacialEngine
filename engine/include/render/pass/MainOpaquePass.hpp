@@ -28,7 +28,7 @@ namespace engine {
                        IndirectBuffer& indirect_buffer);
 
         void setup(RenderGraphBuilder& builder) override;
-        void execute(const RenderContext& context, const RenderGraphRegistry& registry) override;
+        // void execute(const RenderContext& context, const RenderGraphRegistry& registry) override;
 
     private:
         GPUMeshManager& mesh_manager_;

@@ -9,26 +9,26 @@
 
 #if defined(RENDER_API_OPENGL)
 
-#include "render/platform/opengl/GLRendererAPI.hpp"
+#include "render/platform/opengl/GLDevice.hpp"
 
 namespace engine {
-    using RendererAPI = GLRendererAPI;
+    using RHIDevice = GLDevice;
 }
 
 #elif defined(RENDER_API_VULKAN)
 
-#include "render/platform/vulkan/VulkanRendererAPI.hpp"
+#include "render/platform/vulkan/VulkanDevice.hpp"
 
 namespace engine {
-    using RendererAPI = VulkanRendererAPI;
+    using RHIDevice = VulkanDevice;
 }
 
 #elif defined(RENDER_API_DX12)
 
-#include "render/platform/dx12/DX12RendererAPI.hpp"
+#include "render/platform/dx12/DX12Device.hpp"
 
 namespace engine {
-    using RendererAPI = DX12RendererAPI;
+    using RHIDevice = DX12Device;
 }
 
 #else

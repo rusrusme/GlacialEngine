@@ -10,17 +10,9 @@
 #include "core/Application.hpp"
 #include "render/rhi/Buffer.hpp"
 #include "render/rhi/BufferLayout.hpp"
-#include "render/rhi/RenderCommand.hpp"
+#include "render/rhi/RenderContext.hpp"
 
 void SandboxLayer::on_attach(engine::SystemContext& context) {
-    // 1. FBO 0 Mock-Framebuffer initialisieren
-    engine::FramebufferSpecification fbo_spec{};
-    fbo_spec.width = 1280;  // Viewport-Größe für glViewport
-    fbo_spec.height = 720;
-    fbo_spec.swapchain_target = true; // Setzt intern renderer_id_ = 0
-
-    default_framebuffer_ = std::make_unique<engine::GLFramebuffer>(fbo_spec);
-
     const std::string shader_src = R"(
     #vert
     #pragma once
@@ -65,8 +57,10 @@ void SandboxLayer::on_attach(engine::SystemContext& context) {
         2, 3, 0  // Zweites Dreieck
     };
 
-    vertex_buffer_ = std::make_unique<engine::GLVertexBuffer>(sizeof(vertices), vertices);
-    index_buffer_ = std::make_unique<engine::GLIndexBuffer>(sizeof(indices), indices);
+    // vertex_buffer_ = std::make_unique<engine::GLVertexBuffer>(sizeof(vertices), vertices);
+    // index_buffer_ = std::make_unique<engine::GLIndexBuffer>(sizeof(indices), indices);
+    vertex_buffer_ = context.render_context.device().create_vertex_buffer(sizeof(vertices), vertices);
+    index_buffer_ = context.render_context.device().create_index_buffer(sizeof(indices), indices);
 
     layout_ = {
         {engine::ShaderDataType::Float3, "a_Position"},
@@ -83,13 +77,13 @@ void SandboxLayer::on_attach(engine::SystemContext& context) {
     desc.blend_enable = true;
     desc.blend_mode = engine::BlendMode::Alpha;
 
-    pipeline_state_ = std::make_unique<engine::GLPipelineState>(desc);
+    pipeline_state_ = context.render_context.device().create_pipeline_state(desc);
 
-
-    frame_ubo_ = std::make_unique<engine::GLUniformBuffer>(sizeof(glm::mat4), 0);
+    // frame_ubo_ = std::make_unique<engine::GLUniformBuffer>(sizeof(glm::mat4), 0);
+    frame_ubo_ = context.render_context.device().create_uniform_buffer(sizeof(glm::mat4), 0);
 
     // Erstelle DescriptorSet und schreibe das UBO an Binding Slot 0
-    frame_descriptor_set_ = std::make_unique<engine::GLDescriptorSet>();
+    frame_descriptor_set_ = context.render_context.device().create_descriptor_set();
     frame_descriptor_set_->write_uniform_buffer(0, *frame_ubo_);
 }
 
@@ -101,7 +95,9 @@ void SandboxLayer::on_update(engine::SystemContext& context, float delta_time) {
 }
 
 void SandboxLayer::on_render(engine::SystemContext& context, float delta_time) {
-    constexpr float aspect_ratio = 1280.0f / 720.0f;
+    const auto& swapchain = context.render_context.swapchain();
+    if (swapchain.width() == 0 || swapchain.height() == 0) { return; }
+    const float aspect_ratio = static_cast<float>(swapchain.width()) / static_cast<float>(swapchain.height());
     const glm::mat4 proj = glm::perspective(glm::radians(45.0f), aspect_ratio, 0.1f, 100.0f);
 
     // Kamera im Kreis bewegen lassen, schaut auf den Ursprung (0, 0, 0)
@@ -114,13 +110,10 @@ void SandboxLayer::on_render(engine::SystemContext& context, float delta_time) {
     // Daten auf die GPU hochladen
     frame_ubo_->set_data(&view_proj, sizeof(glm::mat4));
 
+    auto& cb = context.render_context.active_command_buffer();
 
-    engine::RenderCommand::begin_frame();
-    auto& cb = engine::RenderCommand::active_command_buffer();
-
-    // TODO Integrate swapchain framebuffer
     constexpr glm::vec4 clear_color = {0.1f, 0.1f, 0.12f, 1.0f};
-    cb.begin_render_pass(*default_framebuffer_, clear_color);
+    cb.begin_render_pass(context.render_context.swapchain().backbuffer(), clear_color);
 
     cb.bind_pipeline(*pipeline_state_);
 
@@ -132,7 +125,6 @@ void SandboxLayer::on_render(engine::SystemContext& context, float delta_time) {
     cb.draw_indexed(6);
 
     cb.end_render_pass();
-    engine::RenderCommand::end_frame();
 }
 
 void SandboxLayer::on_event(engine::SystemContext& context, engine::Event& event) {

@@ -74,20 +74,20 @@ namespace engine {
         builder.write_texture("MainDepthTarget");
     }
 
-    void MainOpaquePass::execute(const RenderContext& context, const RenderGraphRegistry& registry) {
-        CommandBuffer& cmd = context.command_buffer;
-
-        cmd.bind_pipeline(*pipeline_state_);
-        // TODO I removed the set_index Frame -> Needs to called somewhere else
-        cmd.bind_descriptor_set(*descriptor_set_);
-
-        if (mesh_manager_.vertex_buffer()) {
-            cmd.bind_vertex_buffer(0, *mesh_manager_.vertex_buffer());
-        }
-        if (mesh_manager_.index_buffer()) {
-            cmd.bind_index_buffer(*mesh_manager_.index_buffer());
-        }
-
-        cmd.draw_indexed_indirect(indirect_draw_buffer_);
-    }
+    // void MainOpaquePass::execute(const RenderContext& context, const RenderGraphRegistry& registry) {
+    //     CommandBuffer& cmd = context.command_buffer;
+    //
+    //     cmd.bind_pipeline(*pipeline_state_);
+    //     // TODO I removed the set_index Frame -> Needs to called somewhere else
+    //     cmd.bind_descriptor_set(*descriptor_set_);
+    //
+    //     if (mesh_manager_.vertex_buffer()) {
+    //         cmd.bind_vertex_buffer(0, *mesh_manager_.vertex_buffer());
+    //     }
+    //     if (mesh_manager_.index_buffer()) {
+    //         cmd.bind_index_buffer(*mesh_manager_.index_buffer());
+    //     }
+    //
+    //     cmd.draw_indexed_indirect(indirect_draw_buffer_);
+    // }
 }

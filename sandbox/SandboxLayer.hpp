@@ -32,7 +32,6 @@ private:
     std::unique_ptr<engine::GLPipelineState> pipeline_state_;
     engine::BufferLayout layout_;
     std::unique_ptr<engine::GLVertexBuffer> triangle_vb_;
-    engine::Unique<engine::GLFramebuffer> default_framebuffer_;
 
     engine::Unique<engine::GLUniformBuffer> frame_ubo_;
     engine::Unique<engine::GLDescriptorSet> frame_descriptor_set_;
