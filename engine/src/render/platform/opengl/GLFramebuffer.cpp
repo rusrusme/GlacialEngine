@@ -97,6 +97,12 @@ namespace engine {
             return;
         }
 
+        // Use ID 0 if this is the swapchain target
+        if (specification_.swapchain_target) {
+            renderer_id_ = 0;
+            return;
+        }
+
         release();
 
         color_attachment_specs_.clear();

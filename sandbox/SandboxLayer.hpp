@@ -9,6 +9,8 @@
 
 #include "core/Layer.hpp"
 #include "render/platform/opengl/GLBuffer.hpp"
+#include "render/platform/opengl/GLDescriptorSet.hpp"
+#include "render/platform/opengl/GLFramebuffer.hpp"
 #include "render/platform/opengl/GLPipelineState.hpp"
 #include "render/rhi/Shader.hpp"
 
@@ -29,6 +31,11 @@ private:
     std::unique_ptr<engine::GLIndexBuffer> index_buffer_;
     std::unique_ptr<engine::GLPipelineState> pipeline_state_;
     engine::BufferLayout layout_;
-
     std::unique_ptr<engine::GLVertexBuffer> triangle_vb_;
+    engine::Unique<engine::GLFramebuffer> default_framebuffer_;
+
+    engine::Unique<engine::GLUniformBuffer> frame_ubo_;
+    engine::Unique<engine::GLDescriptorSet> frame_descriptor_set_;
+
+    float camera_angle_ = 0.0f;
 };

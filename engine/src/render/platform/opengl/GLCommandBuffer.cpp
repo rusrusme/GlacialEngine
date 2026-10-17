@@ -50,19 +50,17 @@ namespace engine {
         );
     }
 
-    void GLCommandBuffer::begin_render_pass(const GLFramebuffer& framebuffer, const float clear_color[4]) {
+    void GLCommandBuffer::begin_render_pass(const GLFramebuffer& framebuffer, const glm::vec4& clear_color) {
         RenderPassBeginInfo begin_info{};
         begin_info.framebuffer = &framebuffer;
-        if (clear_color) {
-            begin_info.clear_color = {clear_color[0], clear_color[1], clear_color[2], clear_color[3]};
-        }
+        begin_info.clear_color = clear_color;
         begin_info.clear_color_target = true;
         begin_info.clear_depth_target = true;
 
         begin_render_pass(begin_info);
     }
 
-    void GLCommandBuffer::begin_render_pass(GLFramebuffer& framebuffer, const float clear_color[4]) {
+    void GLCommandBuffer::begin_render_pass(GLFramebuffer& framebuffer, const glm::vec4& clear_color) {
         begin_render_pass(static_cast<const GLFramebuffer&>(framebuffer), clear_color);
     }
 
@@ -176,6 +174,8 @@ namespace engine {
     }
 
     void GLCommandBuffer::draw(uint32_t vertex_count, uint32_t instance_count, uint32_t first_vertex, uint32_t first_instance) {
+        assert(is_recording_ && "Cannot record commands outside of begin() / end()");
+
         glDrawArraysInstancedBaseInstance(
             GL_TRIANGLES,
             static_cast<GLint>(first_vertex),

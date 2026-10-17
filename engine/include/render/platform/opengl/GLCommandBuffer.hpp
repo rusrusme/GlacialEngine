@@ -18,13 +18,9 @@ namespace engine {
     class GLPipelineState;
     class GLDescriptorSet;
 
-    struct ClearColor {
-        float r{0.0f}, g{0.0f}, b{0.0f}, a{1.0f};
-    };
-
     struct RenderPassBeginInfo {
         const GLFramebuffer* framebuffer{nullptr};
-        ClearColor clear_color{0.0f, 0.0f, 0.0f, 1.0f};
+        glm::vec4 clear_color{0.0f, 0.0f, 0.0f, 1.0f};
         float clear_depth{1.0f};
         uint32_t clear_stencil{0};
         bool clear_color_target{true};
@@ -49,8 +45,8 @@ namespace engine {
         void dispatch(uint32_t group_x, uint32_t group_y = 1, uint32_t group_z = 1);
 
         // RenderPass Management
-        void begin_render_pass(const GLFramebuffer& framebuffer, const float clear_color[4] = nullptr);
-        void begin_render_pass(GLFramebuffer& framebuffer, const float clear_color[4] = nullptr);
+        void begin_render_pass(const GLFramebuffer& framebuffer, const glm::vec4& clear_color = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
+        void begin_render_pass(GLFramebuffer& framebuffer, const glm::vec4& clear_color = glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
         void begin_render_pass(const RenderPassBeginInfo& begin_info);
         void end_render_pass();
 
