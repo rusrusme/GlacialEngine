@@ -8,8 +8,8 @@
 #include <memory>
 
 #include "core/Layer.hpp"
+#include "render/platform/opengl/GLBuffer.hpp"
 #include "render/platform/opengl/GLPipelineState.hpp"
-#include "render/platform/opengl/GLVertexArray.hpp"
 #include "render/rhi/Shader.hpp"
 
 class SandboxLayer : public engine::Layer {
@@ -31,5 +31,4 @@ private:
     engine::BufferLayout layout_;
 
     std::unique_ptr<engine::GLVertexBuffer> triangle_vb_;
-    std::unique_ptr<engine::GLVertexArray> triangle_va_;
 };
