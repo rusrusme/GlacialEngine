@@ -8,7 +8,6 @@
 #include <memory>
 
 #include "core/Application.hpp"
-#include "render/rhi/Buffer.hpp"
 #include "render/rhi/BufferLayout.hpp"
 #include "render/rhi/RenderContext.hpp"
 
@@ -17,7 +16,9 @@ void SandboxLayer::on_attach(engine::SystemContext& context) {
     #vert
     #pragma once
     layout(location = 0) in vec3 a_Position;
-    layout(location = 1) in vec4 a_Color;
+    layout(location = 1) in vec3 a_Normal;
+    layout(location = 2) in vec2 a_UV;
+    layout(location = 3) in vec4 a_Color;
 
     layout(std140, binding = 0) uniform FrameData {
         mat4 u_ViewProjection;
@@ -43,46 +44,20 @@ void SandboxLayer::on_attach(engine::SystemContext& context) {
 
     shader_ = std::make_shared<engine::Shader>("quad_shader", shader_src);
 
-    // 4 Vertices für 2 Dreiecke (Quad) mit Color-Attributen
-    float vertices[] = {
-        // Position (X, Y, Z)     // Color (R, G, B, A)
-        -0.5f, -0.5f, 0.0f, 1.0f, 0.2f, 0.2f, 0.9f, // Unten Links (Rot)
-        0.5f, -0.5f, 0.0f, 0.2f, 1.0f, 0.2f, 0.9f,  // Unten Rechts (Grün)
-        0.5f, 0.5f, 0.0f, 0.2f, 0.2f, 1.0f, 0.9f,   // Oben Rechts (Blau)
-        -0.5f, 0.5f, 0.0f, 1.0f, 1.0f, 0.2f, 0.9f   // Oben Links (Gelb)
-    };
+    cube_mesh_ = engine::Mesh::create_cube(context.render_context.device());
 
-    uint32_t indices[] = {
-        0, 1, 2, // Erste Dreieck
-        2, 3, 0  // Zweites Dreieck
-    };
-
-    // vertex_buffer_ = std::make_unique<engine::GLVertexBuffer>(sizeof(vertices), vertices);
-    // index_buffer_ = std::make_unique<engine::GLIndexBuffer>(sizeof(indices), indices);
-    vertex_buffer_ = context.render_context.device().create_vertex_buffer(sizeof(vertices), vertices);
-    index_buffer_ = context.render_context.device().create_index_buffer(sizeof(indices), indices);
-
-    layout_ = {
-        {engine::ShaderDataType::Float3, "a_Position"},
-        {engine::ShaderDataType::Float4, "a_Color"}
-    };
-
-    // Pipeline State Konfiguration testen (CullMode, Blending, Depth, Layout)
     engine::PipelineStateDesc desc{};
     desc.shader = shader_;
-    desc.vertex_layout = layout_;
-    desc.cull_mode = engine::CullMode::None;
+    desc.vertex_layout = engine::Vertex::layout();
+    desc.cull_mode = engine::CullMode::Back;
     desc.polygon_mode = engine::PolygonMode::Fill;
-    desc.depth_test = false;
-    desc.blend_enable = true;
-    desc.blend_mode = engine::BlendMode::Alpha;
+    desc.depth_test = true;
+    desc.blend_enable = false;
+    desc.blend_mode = engine::BlendMode::Opaque;
 
     pipeline_state_ = context.render_context.device().create_pipeline_state(desc);
 
-    // frame_ubo_ = std::make_unique<engine::GLUniformBuffer>(sizeof(glm::mat4), 0);
     frame_ubo_ = context.render_context.device().create_uniform_buffer(sizeof(glm::mat4), 0);
-
-    // Erstelle DescriptorSet und schreibe das UBO an Binding Slot 0
     frame_descriptor_set_ = context.render_context.device().create_descriptor_set();
     frame_descriptor_set_->write_uniform_buffer(0, *frame_ubo_);
 }
@@ -97,6 +72,7 @@ void SandboxLayer::on_update(engine::SystemContext& context, float delta_time) {
 void SandboxLayer::on_render(engine::SystemContext& context, float delta_time) {
     const auto& swapchain = context.render_context.swapchain();
     if (swapchain.width() == 0 || swapchain.height() == 0) { return; }
+
     const float aspect_ratio = static_cast<float>(swapchain.width()) / static_cast<float>(swapchain.height());
     const glm::mat4 proj = glm::perspective(glm::radians(45.0f), aspect_ratio, 0.1f, 100.0f);
 
@@ -116,13 +92,12 @@ void SandboxLayer::on_render(engine::SystemContext& context, float delta_time) {
     cb.begin_render_pass(context.render_context.swapchain().backbuffer(), clear_color);
 
     cb.bind_pipeline(*pipeline_state_);
-
     cb.bind_descriptor_set(*frame_descriptor_set_);
 
-    cb.bind_vertex_buffer(0, *vertex_buffer_, 0, layout_.stride());
-    cb.bind_index_buffer(*index_buffer_, engine::IndexType::UInt32);
+    cb.bind_vertex_buffer(0, cube_mesh_->vertex_buffer(), 0, sizeof(engine::Vertex));
+    cb.bind_index_buffer(cube_mesh_->index_buffer(), engine::IndexType::UInt32);
 
-    cb.draw_indexed(6);
+    cb.draw_indexed(cube_mesh_->index_count());
 
     cb.end_render_pass();
 }

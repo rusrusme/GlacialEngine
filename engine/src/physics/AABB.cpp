@@ -6,7 +6,6 @@
 #include "physics/AABB.hpp"
 
 #include "math/Ray.hpp"
-// #include "render/legacy/Frustum.hpp"
 
 namespace engine {
     bool AABB::intersects_aabb(const AABB& other) const {

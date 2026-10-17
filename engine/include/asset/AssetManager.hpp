@@ -77,13 +77,15 @@ namespace engine {
             return nullptr; // GPU managers not initialized
         }
 
-        Mesh loaded_mesh = MeshLoader::load(meta.filepath.string(),
-                                            *mesh_manager_,
-                                            *material_system_,
-                                            *texture_system_);
+        // Mesh loaded_mesh = MeshLoader::load(meta.filepath.string(),
+                                            // *mesh_manager_,
+                                            // *material_system_,
+                                            // *texture_system_);
 
-        auto mesh_ptr = std::make_shared<Mesh>(std::move(loaded_mesh));
-        mesh_cache_[handle] = mesh_ptr;
-        return mesh_ptr;
+        // TODO
+        // auto mesh_ptr = std::make_shared<Mesh>(std::move(loaded_mesh));
+        // mesh_cache_[handle] = mesh_ptr;
+        // return mesh_ptr;
+        return nullptr;
     }
 }

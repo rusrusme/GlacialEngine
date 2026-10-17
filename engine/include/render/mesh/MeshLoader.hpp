@@ -15,23 +15,24 @@ namespace engine {
     class TextureSystem;
 
     class MeshLoader {
+        // TODO Currently the return value is void (temporary) -> Make it Mesh
     public:
-        static Mesh load(const std::string& filepath,
+        static void load(const std::string& filepath,
                          GPUMeshManager& mesh_manager,
                          MaterialSystem& material_system,
                          TextureSystem& texture_system);
 
     private:
-        static Mesh load_primitive(const std::string& path,
+        static void load_primitive(const std::string& path,
                                    GPUMeshManager& mesh_manager,
                                    MaterialSystem& material_system);
 
-        static Mesh load_gltf(const std::string& path,
+        static void load_gltf(const std::string& path,
                               GPUMeshManager& mesh_manager,
                               MaterialSystem& material_system,
                               TextureSystem& texture_system);
 
-        static Mesh load_obj(const std::string& path,
+        static void load_obj(const std::string& path,
                              GPUMeshManager& mesh_manager,
                              MaterialSystem& material_system);
     };

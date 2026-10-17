@@ -10,6 +10,9 @@
 #include <glm/glm.hpp>
 
 #include "physics/AABB.hpp"
+#include "render/rhi/Buffer.hpp"
+#include "render/rhi/BufferLayout.hpp"
+#include "render/rhi/RHIDevice.hpp"
 #include "render/rhi/RHITypes.hpp"
 
 namespace engine {
@@ -18,31 +21,49 @@ namespace engine {
         glm::vec3 normal{0.0f};
         glm::vec2 uv{0.0f};
         glm::vec4 tangent{0.0f};
+
+        static BufferLayout layout() {
+            return {
+                {ShaderDataType::Float3, "a_Position"},
+                {ShaderDataType::Float3, "a_Normal"},
+                {ShaderDataType::Float2, "a_UV"},
+                {ShaderDataType::Float4, "a_Color"}
+            };
+        }
     };
 
     struct Submesh {
-        uint32_t mesh_id{0};             ///< Index in GPUSubmeshData SSBO
-        uint32_t first_index{0};         ///< Offset in global Index Buffer
-        int32_t base_vertex{0};          ///< Offset in global Vertex Buffer
-        uint32_t index_count{0};         ///< Index count for indirect draw command
-        uint32_t default_material_id{0}; ///< Reference into MaterialSystem SSBO
+        uint32_t index_count{0};    ///< Index count for indirect draw command
+        uint32_t first_index{0};    ///< Offset in global Index Buffer
+        int32_t vertex_offset{0};   ///< Offset in global Vertex Buffer
+        uint32_t material_index{0}; ///< Reference into MaterialSystem SSBO
 
-        AABB local_bounds;
+        AABB bounds;
     };
 
     class Mesh {
     public:
-        Mesh() = default;
+        Mesh(const RHIDevice& device,
+             std::span<const Vertex> vertices,
+             std::span<const uint32_t> indices,
+             Vector<Submesh> submeshes = {});
 
-        [[nodiscard]] const Vector<Submesh>& submeshes() const { return submeshes_; }
-        [[nodiscard]] const AABB& bounds() const { return bounds_; }
-        [[nodiscard]] const std::string& name() const { return name_; }
+        /** @brief For debug purposes */
+        [[nodiscard]] static Shared<Mesh> create_cube(const RHIDevice& device);
+
+        [[nodiscard]] const VertexBuffer& vertex_buffer() const noexcept { return *vertex_buffer_; }
+        [[nodiscard]] const IndexBuffer& index_buffer() const noexcept { return *index_buffer_; }
+        [[nodiscard]] uint32_t vertex_count() const noexcept { return vertex_count_; }
+        [[nodiscard]] uint32_t index_count() const noexcept { return index_count_; }
+        [[nodiscard]] const Vector<Submesh>& submeshes() const noexcept { return submeshes_; }
+        [[nodiscard]] const AABB& bounds() const noexcept { return bounds_; }
 
     private:
-        friend class MeshLoader;
-
-        std::string name_;
-        Vector<Submesh> submeshes_;
-        AABB bounds_;
+        Unique<VertexBuffer> vertex_buffer_{nullptr};
+        Unique<IndexBuffer> index_buffer_{nullptr};
+        uint32_t vertex_count_{0};
+        uint32_t index_count_{0};
+        Vector<Submesh> submeshes_{};
+        AABB bounds_{};
     };
 }

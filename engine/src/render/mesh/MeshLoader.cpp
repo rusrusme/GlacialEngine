@@ -83,19 +83,19 @@ namespace engine {
         );
 
         Submesh submesh{};
-        submesh.mesh_id = alloc.mesh_id;
+        // submesh.mesh_id = alloc.mesh_id;
         submesh.first_index = alloc.first_index;
-        submesh.base_vertex = alloc.base_vertex;
+        submesh.vertex_offset = alloc.base_vertex;
         submesh.index_count = alloc.index_count;
-        submesh.default_material_id = material_id;
-        submesh.local_bounds.min = glm::vec3(submesh_bounds.min);
-        submesh.local_bounds.max = glm::vec3(submesh_bounds.max);
+        submesh.material_index = material_id;
+        // submesh.local_bounds.min = glm::vec3(submesh_bounds.min);
+        // submesh.local_bounds.max = glm::vec3(submesh_bounds.max);
 
         return submesh;
     }
 
     // Public Entry Point
-    Mesh MeshLoader::load(const std::string& filepath,
+    void MeshLoader::load(const std::string& filepath,
                           GPUMeshManager& mesh_manager,
                           MaterialSystem& material_system,
                           TextureSystem& texture_system) {
@@ -112,14 +112,14 @@ namespace engine {
         }
 
         CORE_ERROR("[MeshLoader] Unsupported format for file: {}", filepath.c_str());
-        return Mesh{};
+        // return Mesh{};
     }
 
-    Mesh MeshLoader::load_primitive(const std::string& path,
+    void MeshLoader::load_primitive(const std::string& path,
                                     GPUMeshManager& mesh_manager,
                                     MaterialSystem& material_system) {
-        Mesh mesh_asset;
-        mesh_asset.name_ = path;
+        // Mesh mesh_asset;
+        // mesh_asset.name_ = path;
 
         Vector<Vertex> vertices;
         Vector<uint32_t> indices;
@@ -160,18 +160,18 @@ namespace engine {
         uint32_t mat_id = material_system.register_material(default_mat);
 
         Submesh submesh = process_geometry(vertices, indices, mat_id, mesh_manager);
-        mesh_asset.submeshes_.push_back(submesh);
-        mesh_asset.bounds_ = submesh.local_bounds;
+        // mesh_asset.submeshes_.push_back(submesh);
+        // mesh_asset.bounds_ = submesh.local_bounds;
 
-        return mesh_asset;
+        // return mesh_asset;
     }
 
-    Mesh MeshLoader::load_gltf(const std::string& path,
+    void MeshLoader::load_gltf(const std::string& path,
                                GPUMeshManager& mesh_manager,
                                MaterialSystem& material_system,
                                TextureSystem& texture_system) {
-        Mesh mesh_asset;
-        mesh_asset.name_ = std::filesystem::path(path).stem().string();
+        // Mesh mesh_asset;
+        // mesh_asset.name_ = std::filesystem::path(path).stem().string();
 
         cgltf_options options{};
         cgltf_data* data = nullptr;
@@ -179,12 +179,12 @@ namespace engine {
 
         if (result != cgltf_result_success) {
             CORE_ERROR("[MeshLoader] Failed to parse glTF/GLB: {}", path.c_str());
-            return mesh_asset;
+            // return mesh_asset;
         }
 
         if (cgltf_load_buffers(&options, data, path.c_str()) != cgltf_result_success) {
             cgltf_free(data);
-            return mesh_asset;
+            // return mesh_asset;
         }
 
         const std::string directory = std::filesystem::path(path).parent_path().string();
@@ -299,32 +299,32 @@ namespace engine {
                     }
                 }
 
-                Submesh submesh = process_geometry(vertices, indices, mat_id, mesh_manager);
-                mesh_asset.submeshes_.push_back(submesh);
+                // Submesh submesh = process_geometry(vertices, indices, mat_id, mesh_manager);
+                // mesh_asset.submeshes_.push_back(submesh);
 
-                global_min = glm::min(global_min, submesh.local_bounds.min);
-                global_max = glm::max(global_max, submesh.local_bounds.max);
+                // global_min = glm::min(global_min, submesh.local_bounds.min);
+                // global_max = glm::max(global_max, submesh.local_bounds.max);
             }
         }
 
         cgltf_free(data);
 
-        mesh_asset.bounds_.min = global_min;
-        mesh_asset.bounds_.max = global_max;
+        // mesh_asset.bounds_.min = global_min;
+        // mesh_asset.bounds_.max = global_max;
 
-        return mesh_asset;
+        // return mesh_asset;
     }
 
-    Mesh MeshLoader::load_obj(const std::string& path,
+    void MeshLoader::load_obj(const std::string& path,
                               GPUMeshManager& mesh_manager,
                               MaterialSystem& material_system) {
-        Mesh mesh_asset;
-        mesh_asset.name_ = std::filesystem::path(path).stem().string();
+        // Mesh mesh_asset;
+        // mesh_asset.name_ = std::filesystem::path(path).stem().string();
 
         std::ifstream file(path);
         if (!file.is_open()) {
             CORE_ERROR("[MeshLoader] Failed to open OBJ file: {}", path.c_str());
-            return mesh_asset;
+            // return mesh_asset;
         }
 
         Vector<glm::vec3> temp_positions;
@@ -382,9 +382,9 @@ namespace engine {
         uint32_t mat_id = material_system.register_material(default_mat);
 
         Submesh submesh = process_geometry(vertices, indices, mat_id, mesh_manager);
-        mesh_asset.submeshes_.push_back(submesh);
-        mesh_asset.bounds_ = submesh.local_bounds;
+        // mesh_asset.submeshes_.push_back(submesh);
+        // mesh_asset.bounds_ = submesh.local_bounds;
 
-        return mesh_asset;
+        // return mesh_asset;
     }
 }
