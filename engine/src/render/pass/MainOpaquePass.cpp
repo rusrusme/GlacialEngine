@@ -78,7 +78,8 @@ namespace engine {
         CommandBuffer& cmd = context.command_buffer;
 
         cmd.bind_pipeline(*pipeline_state_);
-        cmd.bind_descriptor_set(DescriptorSetIndex::Frame, *descriptor_set_);
+        // TODO I removed the set_index Frame -> Needs to called somewhere else
+        cmd.bind_descriptor_set(*descriptor_set_);
 
         if (mesh_manager_.vertex_buffer()) {
             cmd.bind_vertex_buffer(0, *mesh_manager_.vertex_buffer());

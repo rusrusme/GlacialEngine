@@ -95,11 +95,16 @@ namespace engine {
         UInt32
     };
 
-    enum class DescriptorSetIndex : uint32_t {
-        Frame    = 0, // Set 0: Per-Frame Uniforms (FrameData UBO, Time, View/Proj)
-        Pass     = 1, // Set 1: Per-Pass Resources (Shadow Maps, G-Buffers, Light Lists)
-        Material = 2  // Set 2: Per-Material Data (Albedo, Normal, Roughness)
-    };
+    // TODO Frame    0-3
+    //      Pass     4-7
+    //      Material 8-15
+    // BSH does not support set = X
+
+    // enum class DescriptorSetIndex : uint32_t {
+        // Frame    = 0, // Set 0: Per-Frame Uniforms (FrameData UBO, Time, View/Proj)
+        // Pass     = 1, // Set 1: Per-Pass Resources (Shadow Maps, G-Buffers, Light Lists)
+        // Material = 2  // Set 2: Per-Material Data (Albedo, Normal, Roughness)
+    // };
 
     struct DrawArraysIndirectCommand {
         uint32_t count{0};

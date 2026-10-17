@@ -136,8 +136,8 @@ namespace engine {
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, buffer.renderer_id());
     }
 
-    void GLCommandBuffer::bind_descriptor_set(DescriptorSetIndex set_index, const GLDescriptorSet& descriptor_set) {
-        descriptor_set.bind(set_index);
+    void GLCommandBuffer::bind_descriptor_set(const GLDescriptorSet& descriptor_set) {
+        descriptor_set.bind();
     }
 
     void GLCommandBuffer::set_viewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height) {

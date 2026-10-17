@@ -124,7 +124,7 @@ void SandboxLayer::on_render(engine::SystemContext& context, float delta_time) {
 
     cb.bind_pipeline(*pipeline_state_);
 
-    cb.bind_descriptor_set(engine::DescriptorSetIndex::Frame, *frame_descriptor_set_);
+    cb.bind_descriptor_set(*frame_descriptor_set_);
 
     cb.bind_vertex_buffer(0, *vertex_buffer_, 0, layout_.stride());
     cb.bind_index_buffer(*index_buffer_, engine::IndexType::UInt32);

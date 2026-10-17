@@ -18,7 +18,7 @@ namespace engine {
 
     struct UniformBufferBinding {
         uint32_t binding_slot{0};
-        const GLUniformBuffer* buffer{nullptr};
+        uint32_t buffer{0};
         size_t offset{0};
         size_t range{0};
     };
@@ -32,14 +32,15 @@ namespace engine {
 
     struct TextureBinding {
         uint32_t binding_slot{0};
-        const GLTexture2D* texture{nullptr};
+        uint32_t texture{0};
     };
 
     enum class ImageAccess { ReadOnly, WriteOnly, ReadWrite };
 
     struct ImageBinding {
         uint32_t binding_slot{0};
-        const GLTexture2D* texture{nullptr};
+        uint32_t texture{0};
+        uint32_t internal_format{0};
         uint32_t mip_level{0};
         ImageAccess access{ImageAccess::WriteOnly};
     };
@@ -63,7 +64,8 @@ namespace engine {
         /// No-Op in OpenGL (For Vulkan/DX12)
         void update() noexcept {}
 
-        void bind(DescriptorSetIndex set_index) const;
+        // TODO Remove set_index -> BSH does not support set = X only binding = X
+        void bind() const;
 
     private:
         Vector<UniformBufferBinding> ubo_bindings_;

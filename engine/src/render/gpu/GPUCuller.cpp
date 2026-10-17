@@ -46,7 +46,8 @@ namespace engine {
         descriptor_set_.write_uniform_buffer(0, camera_buffer);
         descriptor_set_.write_storage_buffer(0, instance_buffer);
         descriptor_set_.write_storage_buffer(1, indirect_draw_buffer);
-        descriptor_set_.bind(DescriptorSetIndex::Pass);
+        // TODO I removed the set_index PASS -> Needs to called somewhere else
+        descriptor_set_.bind();
 
         frustum_cull_pipeline_->bind();
         const uint32_t workgroup_x = (total_instances + 63) / 64;
@@ -62,7 +63,8 @@ namespace engine {
         descriptor_set_.write_storage_buffer(0, instance_buffer);
         descriptor_set_.write_storage_buffer(1, indirect_draw_buffer);
         descriptor_set_.write_texture(0, hzb_texture);
-        descriptor_set_.bind(DescriptorSetIndex::Pass);
+        // TODO I removed the set_index PASS -> Needs to called somewhere else
+        descriptor_set_.bind();
 
         hzb_cull_pipeline_->bind();
         const uint32_t workgroup_x = (total_instances + 63) / 64;

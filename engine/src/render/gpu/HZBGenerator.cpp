@@ -50,7 +50,8 @@ namespace engine {
         initial_pipeline_->bind();
         descriptor_set_.write_texture(0, depth_texture);
         descriptor_set_.write_storage_image(0, hzb_texture, 0, ImageAccess::WriteOnly);
-        descriptor_set_.bind(DescriptorSetIndex::Pass);
+        // TODO I removed the set_index PASS -> Needs to called somewhere else
+        descriptor_set_.bind();
 
         cmd.dispatch((current_width + 15) / 16, (current_height + 15) / 16, 1);
         ComputePipeline::set_memory_barrier(MemoryBarrierFlags::TextureFetch | MemoryBarrierFlags::ShaderStorage);
@@ -63,7 +64,8 @@ namespace engine {
 
             descriptor_set_.write_storage_image(0, hzb_texture, level - 1, ImageAccess::ReadOnly);
             descriptor_set_.write_storage_image(1, hzb_texture, level, ImageAccess::WriteOnly);
-            descriptor_set_.bind(DescriptorSetIndex::Pass);
+            // TODO I removed the set_index PASS -> Needs to called somewhere else
+            descriptor_set_.bind();
 
             cmd.dispatch((next_width + 15) / 16, (next_height + 15) / 16, 1);
             ComputePipeline::set_memory_barrier(MemoryBarrierFlags::TextureFetch | MemoryBarrierFlags::ShaderStorage);

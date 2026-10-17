@@ -54,7 +54,7 @@ namespace engine {
         void bind_pipeline(const GLPipelineState& pipeline);
         void bind_vertex_buffer(uint32_t binding_slot, const GLVertexBuffer& buffer, size_t offset = 0, uint32_t stride = 0);
         void bind_index_buffer(const GLIndexBuffer& buffer, IndexType index_type = IndexType::UInt32);
-        void bind_descriptor_set(DescriptorSetIndex set_index, const GLDescriptorSet& descriptor_set);
+        void bind_descriptor_set(const GLDescriptorSet& descriptor_set);
 
         // Dynamic States
         void set_viewport(uint32_t x, uint32_t y, uint32_t width, uint32_t height);
