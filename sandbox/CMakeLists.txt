@@ -7,6 +7,8 @@ add_executable(Sandbox
                Sandbox.cpp
                Sandbox.hpp
                SandboxLayer.cpp
-               SandboxLayer.hpp)
+               SandboxLayer.hpp
+               Imgui.hpp
+)
 
 target_link_libraries(Sandbox PRIVATE Engine)

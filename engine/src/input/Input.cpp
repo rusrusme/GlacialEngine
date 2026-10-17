@@ -47,8 +47,12 @@ namespace engine {
     }
 
     bool Input::key_pressed_once(const int key) {
+        if (keyboard_captured()) {
+            return false;
+        }
+
         static std::unordered_map<int, bool> key_states;
-        void* window = Application::get().window().native();
+        auto window = Application::get().window().native();
         if (!window) return false;
 
         const bool is_pressed = window::key_pressed(window, key);

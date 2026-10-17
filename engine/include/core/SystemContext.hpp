@@ -8,6 +8,7 @@
 #include <memory>
 
 namespace engine {
+    class Window;
     class AudioSystem;
     class AssetManager;
     class Project;
@@ -30,6 +31,19 @@ namespace engine {
         // MaterialSystem& materials;
         // TextureSystem& textures;
 
-        std::shared_ptr<Project> current_project;
+        Window& window;
+
+        std::shared_ptr<Project> current_project{nullptr};
+
+        SystemContext(AudioSystem& audio_system,
+                      AssetManager& asset_manager,
+                      SceneManager& scene_manager,
+                      ShaderLibrary& shader_library,
+                      Window& window)
+            : audio(audio_system),
+              assets(asset_manager),
+              scenes(scene_manager),
+              shaders(shader_library),
+              window(window) {}
     };
 }

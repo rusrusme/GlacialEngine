@@ -26,7 +26,7 @@ namespace engine {
 
         static Application& get() { return *instance_; }
         [[nodiscard]] Window& window() const { return *window_; }
-        [[nodiscard]] SystemContext& context() { return context_; }
+        [[nodiscard]] SystemContext& context() const { return *context_; }
 
     protected:
         void push_layer(std::unique_ptr<Layer> layer);
@@ -52,12 +52,7 @@ namespace engine {
         // TextureSystem texture_system_{};
         // SceneRenderer scene_renderer_;
 
-        SystemContext context_{
-            .audio   = audio_system_,
-            .assets  = asset_manager_,
-            .scenes  = scene_manager_,
-            .shaders = shader_library_
-        };
+        std::unique_ptr<SystemContext> context_;
 
         bool running_ = true;
         static Application* instance_;

@@ -20,6 +20,9 @@
 
 #include "core/Application.hpp"
 #include "debug/ImguiPlatform.hpp"
+#include "event/Event.hpp"
+#include "event/KeyEvents.hpp"
+#include "event/MouseEvents.hpp"
 
 namespace engine {
     void ImguiSystem::on_attach(void* window, const char* glsl_version) {
@@ -199,6 +202,35 @@ namespace engine {
             ImGui::RenderPlatformWindowsDefault();
             window::make_context_current(current_context);
         }
+    }
+
+    void ImguiSystem::on_event(SystemContext& context, Event& event) {
+        ImGuiIO& io = ImGui::GetIO();
+        EventDispatcher dispatcher(event);
+
+        dispatcher.dispatch<MouseMovedEvent>([&io](const MouseMovedEvent&) {
+            return io.WantCaptureMouse;
+        });
+
+        dispatcher.dispatch<MouseButtonPressedEvent>([&io](const MouseButtonPressedEvent&) {
+            return io.WantCaptureMouse;
+        });
+
+        dispatcher.dispatch<MouseButtonReleasedEvent>([&io](const MouseButtonReleasedEvent&) {
+            return io.WantCaptureMouse;
+        });
+
+        dispatcher.dispatch<MouseScrolledEvent>([&io](const MouseScrolledEvent&) {
+            return io.WantCaptureMouse;
+        });
+
+        dispatcher.dispatch<KeyPressedEvent>([&io](const KeyPressedEvent&) {
+            return io.WantCaptureKeyboard;
+        });
+
+        dispatcher.dispatch<KeyReleasedEvent>([&io](const KeyReleasedEvent&) {
+            return io.WantCaptureKeyboard;
+        });
     }
 }
 

@@ -95,7 +95,7 @@ void SandboxLayer::on_update(engine::SystemContext& context, float delta_time) {
 }
 
 void SandboxLayer::on_render(engine::SystemContext& context, float delta_time) {
-    engine::RenderCommand::begin_frame();
+    // engine::RenderCommand::begin_frame();
     engine::RenderCommand::set_clear_color({ 0.1f, 0.1f, 0.12f, 1.0f });
     engine::RenderCommand::clear(true, true);
 
@@ -115,7 +115,7 @@ void SandboxLayer::on_render(engine::SystemContext& context, float delta_time) {
     shader_->bind();
     triangle_va_->bind(); // VAO hält bereits das VBO-Binding im Speicher
     cb.draw(3);
-    engine::RenderCommand::end_frame();
+    // engine::RenderCommand::end_frame();
 }
 
 void SandboxLayer::on_event(engine::SystemContext& context, engine::Event& event) {

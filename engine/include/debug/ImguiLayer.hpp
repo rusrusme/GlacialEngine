@@ -4,20 +4,36 @@
 //
 
 #pragma once
-
-#include "core/Layer.hpp"
+#include "debug/ImguiSystem.hpp"
 
 namespace engine {
+    class Event;
+    struct SystemContext;
+
     class ImguiLayer : public Layer {
     public:
         ImguiLayer() : Layer("Imgui Layer") {}
-        virtual ~ImguiLayer() override = default;
+        ~ImguiLayer() override = default;
 
-        virtual void on_attach(SystemContext& context) override {}
-        virtual void on_detach(SystemContext& context) override {}
+        void on_attach(SystemContext& context) final {
+            ImguiSystem::on_attach(context.window.native());
+        }
 
-        virtual void on_update(SystemContext& context, float delta_time) override {}
-        virtual void on_render(SystemContext& context, float delta_time) override {}
-        virtual void on_event(SystemContext& context, Event& event) override {}
+        void on_detach(SystemContext& context) final { ImguiSystem::on_detach(); }
+        void on_update(SystemContext& context, float delta_time) override {}
+
+        void on_render(SystemContext& context, float delta_time) final {
+            ImguiSystem::begin_frame();
+            on_imgui_render(context, delta_time);
+            ImguiSystem::end_frame();
+        }
+
+        void on_event(SystemContext& context, Event& event) final {
+            ImguiSystem::on_event(context, event);
+        }
+
+    protected:
+        /// Override this function to render Imgui
+        virtual void on_imgui_render(SystemContext& context, float delta_time) {}
     };
 }

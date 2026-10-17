@@ -4,6 +4,8 @@
 //
 
 #pragma once
+#include "core/SystemContext.hpp"
+#include "event/Event.hpp"
 
 namespace engine {
     class ImguiSystem {
@@ -13,5 +15,7 @@ namespace engine {
 
         static void begin_frame();
         static void end_frame();
+
+        static void on_event(SystemContext& context, Event& event);
     };
 }

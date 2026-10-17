@@ -12,7 +12,7 @@
 #include "core/Log.hpp"
 #include "core/Timestep.hpp"
 #include "core/WindowSystem.hpp"
-#include "debug/ImguiSystem.hpp"
+#include "debug/ImguiLayer.hpp"
 #include "event/MouseEvents.hpp"
 #include "event/WindowEvents.hpp"
 #include "render/rhi/RenderCommand.hpp"
@@ -61,23 +61,15 @@ namespace engine {
         //     window_->width(),
         //     window_->height()
         // );
-        //
-        // context_.emplace(SystemContext{
-        //     .audio        = audio_system_,
-        //     .assets       = asset_manager_,
-        //     .scenes       = scene_manager_,
-        //     .renderer     = *scene_renderer_,
-        //     .shaders      = *shader_library_,
-        //     .mesh_manager = *gpu_mesh_manager_,
-        //     .materials    = *material_system_,
-        //     .textures     = *texture_system_
-        // });
+        context_ = std::make_unique<SystemContext>(
+            audio_system_,
+            asset_manager_,
+            scene_manager_,
+            shader_library_,
+            *window_
+        );
 
         audio_system_.on_attach();
-
-        #if defined(ENABLE_IMGUI)
-        ImguiSystem::on_attach(window_->native());
-        #endif
         ///////////////////////////////////////////////////////
 
         PROFILE_START("Application::run - Scan Assets");
@@ -86,8 +78,9 @@ namespace engine {
 
         CORE_INFO("Attaching application layers");
         for (const auto& layer : layers_) {
-            layer->on_attach(context_);
+            layer->on_attach(*context_);
         }
+
         CORE_INFO("Application startup complete");
 
         Clock clock;
@@ -96,19 +89,15 @@ namespace engine {
         ///////////////////////////////////////////////////////
         // Run core loop
         while (running_) {
-            #if defined(ENABLE_IMGUI)
-            ImguiSystem::begin_frame();
-            #endif
-
             const float delta_time = clock.update();
 
             ///////////////////////////////////////////////////////
             // Update pass
-            audio_system_.on_update(context_, delta_time);
+            audio_system_.on_update(*context_, delta_time);
 
             PROFILE_START("Application::run - Update");
             for (const auto& layer : layers_) {
-                layer->on_update(context_, delta_time);
+                layer->on_update(*context_, delta_time);
             }
             PROFILE_END();
 
@@ -117,12 +106,8 @@ namespace engine {
             PROFILE_START("Application::run - Render");
 
             for (const auto& layer : layers_) {
-                layer->on_render(context_, delta_time);
+                layer->on_render(*context_, delta_time);
             }
-
-            #if defined(ENABLE_IMGUI)
-            ImguiSystem::end_frame();
-            #endif
 
             window::swap_buffers(window_->native());
             window::poll_events();
@@ -135,7 +120,7 @@ namespace engine {
         // In reverse
         CORE_INFO("Detaching application layers");
         for (auto it = layers_.rbegin(); it != layers_.rend(); ++it) {
-            (*it)->on_detach(context_);
+            (*it)->on_detach(*context_);
         }
 
         shutdown();
@@ -162,7 +147,7 @@ namespace engine {
             if (event.handled) {
                 break; // Event consumed
             }
-            (*it)->on_event(context_, event);
+            (*it)->on_event(*context_, event);
         }
     }
 
@@ -177,14 +162,15 @@ namespace engine {
     void Application::shutdown() {
         CORE_INFO("Shutting down engine application");
 
+
         scene_manager_.on_detach();
-        audio_system_.on_detach(context_);
+        if (context_) {
+            audio_system_.on_detach(*context_);
+        }
+
+        context_.reset();
 
         RenderCommand::shutdown();
-
-        #if defined(ENABLE_IMGUI)
-        ImguiSystem::on_detach();
-        #endif
 
         window_.reset();
 
