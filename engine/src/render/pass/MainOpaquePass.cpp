@@ -5,89 +5,72 @@
 
 #include "render/pass/MainOpaquePass.hpp"
 
-#include <memory>
-
-#include "render/gpu/GPUMeshManager.hpp"
-#include "render/gpu/MaterialSystem.hpp"
-#include "render/gpu/TextureSystem.hpp"
-#include "render/graph/RenderGraph.hpp"
-#include "render/rhi/PipelineSpecs.hpp"
-#include "render/rhi/Shader.hpp"
-#include "render/shader/ShaderLibrary.hpp"
+#include "render/mesh/Mesh.hpp"
 
 namespace engine {
-    MainOpaquePass::MainOpaquePass(ShaderLibrary& shader_library,
-                                   GPUMeshManager& mesh_manager,
-                                   MaterialSystem& material_system,
-                                   TextureSystem& texture_system,
-                                   UniformBuffer& camera_buffer,
-                                   ShaderStorageBuffer& instance_buffer,
-                                   IndirectBuffer& indirect_buffer)
-        : RenderPass("Main Opaque Pass"),
-          mesh_manager_(mesh_manager),
-          material_system_(material_system),
-          texture_system_(texture_system),
-          camera_buffer_(camera_buffer),
-          instance_buffer_(instance_buffer),
-          indirect_draw_buffer_(indirect_buffer) {
-        //////////////////////////////////////////////////////////
-        const Shared<Shader> mesh_shader = shader_library.exists("mesh")
-                                               ? shader_library.get("mesh")
-                                               : shader_library.load("mesh", "assets/shaders/compiled/mesh.bshb");
+    void MainOpaquePass::init(const RHIDevice& device) {
+        shader_ = std::make_shared<Shader>("assets/shaders/compiled/OpaqueMesh.bshb");
 
-        PipelineStateDesc pipeline_desc{};
-        pipeline_desc.shader = mesh_shader;
+        PipelineStateDesc desc{};
+        desc.shader = shader_;
+        desc.vertex_layout = Vertex::layout();
+        desc.cull_mode = CullMode::Back;
+        desc.polygon_mode = PolygonMode::Fill;
+        desc.depth_test = true;
+        desc.depth_write = true;
+        desc.depth_compare = CompareOp::Less;
+        desc.blend_enable = false;
+        desc.blend_mode = BlendMode::Opaque;
 
-        pipeline_desc.vertex_layout = {
-            {ShaderDataType::Float3, "a_position"},
-            {ShaderDataType::Float3, "a_normal"},
-            {ShaderDataType::Float2, "a_uv"},
-            {ShaderDataType::Float4, "a_tangent"}
-        };
+        pipeline_ = device.create_pipeline_state(desc);
 
-        pipeline_desc.cull_mode = CullMode::None;
-        pipeline_desc.polygon_mode = PolygonMode::Fill;
-        pipeline_desc.depth_test = false;
-        pipeline_desc.depth_write = true;
-        pipeline_desc.depth_compare = CompareOp::Less;
-        pipeline_desc.blend_enable = false;
+        object_ssbo_ = device.create_shader_storage_buffer(max_objects_ * sizeof(glm::mat4), 1);
 
-        pipeline_state_ = std::make_shared<PipelineState>(pipeline_desc);
+        pass_descriptor_set_ = device.create_descriptor_set();
+        pass_descriptor_set_->write_storage_buffer(1, *object_ssbo_);
+    }
 
-        descriptor_set_ = std::make_unique<DescriptorSet>();
-
-        descriptor_set_->write_uniform_buffer(0, camera_buffer_);   // Camera UBO (Slot 0)
-        descriptor_set_->write_storage_buffer(1, instance_buffer_); // Instance SSBO (Slot 1)
-
-        if (mesh_manager_.submesh_ssbo()) {
-            descriptor_set_->write_storage_buffer(2, *mesh_manager_.submesh_ssbo()); // Submesh SSBO (Slot 2)
+    void MainOpaquePass::execute(CommandBuffer& cb,
+                                 Framebuffer& target_framebuffer,
+                                 const DescriptorSet& frame_descriptor_set,
+                                 std::span<const RenderObject> objects) {
+        if (objects.empty()) {
+            return;
         }
 
-        material_system_.bind(*descriptor_set_, 3); // Material SSBO (Slot 3)
-        texture_system_.bind(*descriptor_set_, 4);  // Texture Array Sampler (Slot 4)
+        std::vector<glm::mat4> transforms;
+        transforms.reserve(objects.size());
+        for (const auto& [mesh, transform] : objects) {
+            transforms.push_back(transform);
+        }
+        object_ssbo_->set_data(transforms.data(), transforms.size() * sizeof(glm::mat4));
 
-        descriptor_set_->update();
+        constexpr glm::vec4 clear_color = {0.1f, 0.1f, 0.12f, 1.0f};
+        cb.begin_render_pass(target_framebuffer, clear_color);
+
+        cb.bind_pipeline(*pipeline_);
+        cb.bind_descriptor_set(frame_descriptor_set);  // Slot 0: Kamera (ViewProjection)
+        cb.bind_descriptor_set(*pass_descriptor_set_); // Slot 1: Objekt-Transforms
+
+        for (uint32_t i = 0; i < objects.size(); ++i) {
+            const auto* mesh = objects[i].mesh;
+            if (!mesh) continue;
+
+            cb.bind_vertex_buffer(0, mesh->vertex_buffer(), 0, sizeof(Vertex));
+            cb.bind_index_buffer(mesh->index_buffer(), IndexType::UInt32);
+
+            for (const auto& submesh : mesh->submeshes()) {
+                // first_instance = i übergibt den Index für u_Models[gl_BaseInstance]
+                cb.draw_indexed(
+                    submesh.index_count,
+                    1,
+                    submesh.first_index,
+                    submesh.vertex_offset,
+                    i // first_instance
+                );
+            }
+        }
+
+        cb.end_render_pass();
     }
-
-    void MainOpaquePass::setup(RenderGraphBuilder& builder) {
-        builder.write_texture("MainColorTarget");
-        builder.write_texture("MainDepthTarget");
-    }
-
-    // void MainOpaquePass::execute(const RenderContext& context, const RenderGraphRegistry& registry) {
-    //     CommandBuffer& cmd = context.command_buffer;
-    //
-    //     cmd.bind_pipeline(*pipeline_state_);
-    //     // TODO I removed the set_index Frame -> Needs to called somewhere else
-    //     cmd.bind_descriptor_set(*descriptor_set_);
-    //
-    //     if (mesh_manager_.vertex_buffer()) {
-    //         cmd.bind_vertex_buffer(0, *mesh_manager_.vertex_buffer());
-    //     }
-    //     if (mesh_manager_.index_buffer()) {
-    //         cmd.bind_index_buffer(*mesh_manager_.index_buffer());
-    //     }
-    //
-    //     cmd.draw_indexed_indirect(indirect_draw_buffer_);
-    // }
 }

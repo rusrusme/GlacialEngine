@@ -8,38 +8,35 @@
 #include "render/graph/RenderPass.hpp"
 #include "render/rhi/Buffer.hpp"
 #include "render/rhi/DescriptorSet.hpp"
+#include "render/rhi/Framebuffer.hpp"
 #include "render/rhi/PipelineState.hpp"
-#include "render/rhi/RHITypes.hpp"
+#include "render/rhi/RHIDevice.hpp"
 
 namespace engine {
-    class ShaderLibrary;
-    class GPUMeshManager;
-    class MaterialSystem;
-    class TextureSystem;
+    class Mesh;
 
-    class MainOpaquePass : public RenderPass {
+    struct RenderObject {
+        const Mesh* mesh{nullptr};
+        glm::mat4 transform{1.0f};
+    };
+
+    class MainOpaquePass {
     public:
-        MainOpaquePass(ShaderLibrary& shader_library,
-                       GPUMeshManager& mesh_manager,
-                       MaterialSystem& material_system,
-                       TextureSystem& texture_system,
-                       UniformBuffer& camera_buffer,
-                       ShaderStorageBuffer& instance_buffer,
-                       IndirectBuffer& indirect_buffer);
+        MainOpaquePass() = default;
+        ~MainOpaquePass() = default;
 
-        void setup(RenderGraphBuilder& builder) override;
-        // void execute(const RenderContext& context, const RenderGraphRegistry& registry) override;
+        void init(const RHIDevice& device);
+        void execute(CommandBuffer& cb,
+                     Framebuffer& target_framebuffer,
+                     const DescriptorSet& frame_descriptor_set,
+                     std::span<const RenderObject> objects);
 
     private:
-        GPUMeshManager& mesh_manager_;
-        MaterialSystem& material_system_;
-        TextureSystem& texture_system_;
+        Shared<Shader> shader_{nullptr};
+        Unique<PipelineState> pipeline_{nullptr};
 
-        UniformBuffer& camera_buffer_;
-        ShaderStorageBuffer& instance_buffer_;
-        IndirectBuffer& indirect_draw_buffer_;
-
-        Shared<PipelineState> pipeline_state_;
-        Unique<DescriptorSet> descriptor_set_;
+        Unique<ShaderStorageBuffer> object_ssbo_{nullptr};
+        Unique<DescriptorSet> pass_descriptor_set_{nullptr};
+        size_t max_objects_{1024};
     };
 }

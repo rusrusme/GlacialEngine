@@ -91,8 +91,12 @@ file(GLOB_RECURSE BSH_SOURCES RELATIVE "${SOURCE_ASSETS}/shaders" CONFIGURE_DEPE
 set(COMPILED_SHADERS "")
 
 foreach(SHADER_REL IN LISTS BSH_SOURCES)
+    # Input
     set(SHADER_IN "${SOURCE_ASSETS}/shaders/${SHADER_REL}")
-    set(SHADER_OUT "${RUNTIME_ASSETS}/shaders/compiled/${SHADER_REL}.bin")
+    # Output
+    cmake_path(REPLACE_EXTENSION SHADER_REL "bshb" OUTPUT_VARIABLE SHADER_OUT_REL)
+    set(SHADER_OUT "${RUNTIME_ASSETS}/shaders/compiled/${SHADER_OUT_REL}")
+
     add_custom_command(
             OUTPUT "${SHADER_OUT}"
             COMMAND $<TARGET_FILE:bshc::bshc> "${SHADER_IN}" -o "${SHADER_OUT}" -b ${BSHC_BACKEND}
@@ -106,4 +110,5 @@ add_custom_target(CompileShaders ALL DEPENDS ${COMPILED_SHADERS})
 # ----------------------------------------------------------------------------
 add_dependencies(Engine SyncAssets)
 add_dependencies(Engine CompileShaders)
+set_target_properties(SyncAssets CompileShaders PROPERTIES FOLDER "BasisEngine")
 # ----------------------------------------------------------------------------

@@ -109,16 +109,16 @@ namespace engine {
     }
 
     void SceneRenderer::setup_passes() {
-        render_graph_.add_pass<MainOpaquePass>(
-            shader_library_,
-            mesh_manager_,
-            material_system_,
-            texture_system_,
-            *camera_buffer_,
-            *instance_buffer_,
-            *indirect_draw_buffer_
-        );
-        render_graph_.compile();
+        // render_graph_.add_pass<MainOpaquePass>(
+        //     shader_library_,
+        //     mesh_manager_,
+        //     material_system_,
+        //     texture_system_,
+        //     *camera_buffer_,
+        //     *instance_buffer_,
+        //     *indirect_draw_buffer_
+        // );
+        // render_graph_.compile();
     }
 
     void SceneRenderer::recreate_viewport_targets(uint32_t width, uint32_t height) {

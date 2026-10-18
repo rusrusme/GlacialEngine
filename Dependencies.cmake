@@ -1,9 +1,16 @@
 # Dependencies.cmake
 # ----------------------------------------------------------------------------
 include(FetchContent)
-set(FETCHCONTENT_UPDATES_DISCONNECTED ON CACHE BOOL "" FORCE)
+set(FETCHCONTENT_UPDATES_DISCONNECTED OFF CACHE BOOL "" FORCE)
+# ----------------------------------------------------------------------------
+set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+set(CMAKE_FOLDER "ThirdParty")
 # ----------------------------------------------------------------------------
 # Fetch GLFW
+set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
+set(GLFW_INSTALL OFF CACHE BOOL "" FORCE)
 FetchContent_Declare(
         glfw
         GIT_REPOSITORY https://github.com/glfw/glfw.git
@@ -12,8 +19,15 @@ FetchContent_Declare(
         GIT_SUBMODULES ""
 )
 FetchContent_MakeAvailable(glfw)
+foreach(target glfw update_mappings)
+    if (TARGET ${target})
+        set_target_properties(${target} PROPERTIES FOLDER "ThirdParty")
+    endif ()
+endforeach()
 # ----------------------------------------------------------------------------
 # Fetch SDL3
+set(SDL_TEST OFF CACHE BOOL "" FORCE)
+set(SDL_TESTS OFF CACHE BOOL "" FORCE)
 FetchContent_Declare(
         SDL3
         GIT_REPOSITORY https://github.com/libsdl-org/SDL.git
@@ -141,6 +155,7 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(json)
 # ----------------------------------------------------------------------------
 # Fetch miniaudio
+set(MINIAUDIO_BUILD_SAMPLES OFF CACHE BOOL "" FORCE)
 FetchContent_Declare(
         miniaudio
         GIT_REPOSITORY https://github.com/mackron/miniaudio.git
@@ -179,3 +194,4 @@ add_library(DEPENDENCY::MINIAUDIO ALIAS miniaudio)
 add_library(DEPENDENCY::NLOHMANN ALIAS nlohmann_json)
 add_library(DEPENDENCY::BSHC ALIAS bshc_core)
 # ----------------------------------------------------------------------------
+unset(CMAKE_FOLDER)
