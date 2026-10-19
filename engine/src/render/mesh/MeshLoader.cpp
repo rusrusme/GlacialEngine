@@ -53,8 +53,8 @@ namespace engine {
     }
 
     static Shared<Texture2D> load_gltf_image(const RHIDevice& device,
-                                                      const cgltf_image& img,
-                                                      const std::filesystem::path& gltf_filepath) {
+                                             const cgltf_image& img,
+                                             const std::filesystem::path& gltf_filepath) {
         int width = 0, height = 0, channels = 0;
         stbi_uc* pixels = nullptr;
 
@@ -113,7 +113,7 @@ namespace engine {
         if (cgltf_load_buffers(&options, data, filepath.string().c_str()) != cgltf_result_success) {
             CORE_ERROR("[MeshLoader] Failed to load glTF buffers: {0}", filepath.string());
             cgltf_free(data);
-            return nullptr; 
+            return nullptr;
         }
 
         Vector<Shared<Texture2D>> loaded_images(data->images_count);
@@ -203,8 +203,10 @@ namespace engine {
                 }
 
                 uint32_t mat_index = 0;
+                bool is_double_sided = false;
                 if (prim.material) {
                     mat_index = static_cast<uint32_t>(prim.material - data->materials);
+                    is_double_sided = prim.material->double_sided;
                 }
 
                 Submesh submesh{};
@@ -213,6 +215,7 @@ namespace engine {
                 submesh.index_count = static_cast<uint32_t>(prim_indices.size());
                 submesh.material_index = mat_index;
                 submesh.bounds = submesh_bounds;
+                submesh.double_sided = is_double_sided;
                 submeshes.push_back(submesh);
 
                 all_vertices.insert(all_vertices.end(), prim_vertices.begin(), prim_vertices.end());

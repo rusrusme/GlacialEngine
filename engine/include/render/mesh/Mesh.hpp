@@ -39,6 +39,8 @@ namespace engine {
         int32_t vertex_offset{0};   ///< Offset in global Vertex Buffer
         uint32_t material_index{0}; ///< Reference into MaterialSystem SSBO
 
+        bool double_sided{false};
+
         AABB bounds;
     };
 
