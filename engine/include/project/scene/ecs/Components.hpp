@@ -16,7 +16,7 @@
 #include "asset/AssetType.hpp"
 #include "asset/UUID.hpp"
 #include "physics/AABB.hpp"
-#include "render/Camera.hpp"
+#include "render/StaticCamera.hpp"
 
 namespace engine {
     // ----------------------------
@@ -119,11 +119,11 @@ namespace engine {
     };
 
     struct CameraComponent {
-        Camera camera;
+        StaticCamera camera;
         bool is_primary = true;
 
         CameraComponent() = default;
-        CameraComponent(const Camera& camera) : camera(camera) {}
+        CameraComponent(const StaticCamera& camera) : camera(camera) {}
     };
 
     struct LODLevel {

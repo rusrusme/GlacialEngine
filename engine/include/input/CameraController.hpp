@@ -5,23 +5,34 @@
 
 #pragma once
 
+#include <glm/glm.hpp>
+
+#include "event/MouseEvents.hpp"
+#include "event/WindowEvents.hpp"
+
 namespace engine {
-    class Camera;
+    class Event;
+    class StaticCamera;
 
     class CameraController {
     public:
-        void reset_mouse_state();
-
-        void update(Camera& camera, float delta_time);
-
-        static void on_scroll(Camera& camera, double y_offset);
+        void on_update(StaticCamera& camera, float delta_time);
+        void on_event(StaticCamera& camera, Event& event);
 
     private:
-        double last_x_ = 0.0;
-        double last_y_ = 0.0;
-        bool is_first_frame_ = true;
+        bool on_mouse_scrolled(StaticCamera& camera, const MouseScrolledEvent& e);
+        bool on_window_resized(StaticCamera& camera, const WindowResizedEvent& e);
 
-        void update_keyboard(Camera& camera, float delta_time);
-        void update_mouse(Camera& camera);
+        glm::vec2 last_mouse_position_{0.0f};
+        bool is_first_frame_{true};
+
+        // Normalized (Default: 0.5f)
+        float orbit_speed_{0.5f};
+        float pan_speed_{0.5f};
+        float zoom_speed_{0.5f};
+
+        static constexpr float MAX_ORBIT_SPEED = 0.5f; // 0.5f * 0.5f = 0.25 Degrees per Pixel
+        static constexpr float MAX_PAN_SPEED = 0.002f; // 0.5f * 0.002f = 0.001
+        static constexpr float MAX_ZOOM_SPEED = 1.0f;  // 0.5f * 1.0f = 0.5 Units per Scroll
     };
 }

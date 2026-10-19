@@ -63,9 +63,6 @@ namespace engine {
         RenderGraph(RenderGraph&&) noexcept = delete;
         RenderGraph& operator=(RenderGraph&&) noexcept = delete;
 
-        /**
-         * @brief Registriert einen Pass via Lambdas ohne dynamische Vererbung.
-         */
         template<typename PassData, typename SetupFn, typename ExecuteFn>
             requires std::is_invocable_v<SetupFn, RenderGraphBuilder&, PassData&> &&
             std::is_invocable_v<ExecuteFn, const PassData&, const RenderGraphRegistry&, CommandBuffer&>

@@ -8,6 +8,8 @@
 #include <memory>
 
 #include "core/Layer.hpp"
+#include "input/CameraController.hpp"
+#include "render/StaticCamera.hpp"
 #include "render/mesh/Mesh.hpp"
 #include "render/pass/MainOpaquePass.hpp"
 #include "render/rhi/DescriptorSet.hpp"
@@ -25,6 +27,9 @@ public:
     void on_event(engine::SystemContext& context, engine::Event& event) override;
 
 private:
+    engine::StaticCamera camera_;
+    engine::CameraController camera_controller_;
+
     engine::MainOpaquePass opaque_pass_;
     engine::Unique<engine::GLUniformBuffer> frame_ubo_;
     engine::Unique<engine::GLDescriptorSet> frame_descriptor_set_;

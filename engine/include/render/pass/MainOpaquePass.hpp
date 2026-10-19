@@ -28,10 +28,10 @@ namespace engine {
                      std::span<const RenderObject> objects);
 
         // TODO Once RenderGraphs are added implement this
-        void add_to_graph(RenderGraph& graph,
-                          std::span<const RenderObject> objects,
-                          const std::string& out_color,
-                          const std::string& out_depth);
+        // void add_to_graph(RenderGraph& graph,
+        //                   std::span<const RenderObject> objects,
+        //                   const std::string& out_color,
+        //                   const std::string& out_depth);
 
     private:
         Shared<Shader> shader_{nullptr};

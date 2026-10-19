@@ -13,11 +13,8 @@ namespace engine {
 
     class CameraSystem {
     public:
-        void reset_mouse_state();
-
-        void update(const std::shared_ptr<Scene>& scene, float delta_time);
-
-        void on_scroll(const std::shared_ptr<Scene>& scene, double y_offset);
+        void on_update(const std::shared_ptr<Scene>& scene, float delta_time);
+        void on_event(const std::shared_ptr<Scene>& scene, double y_offset);
 
     private:
         CameraController controller_;
