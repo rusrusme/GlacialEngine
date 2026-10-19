@@ -12,16 +12,16 @@
 
 namespace engine {
     class Event;
-    class StaticCamera;
+    class Camera;
 
     class CameraController {
     public:
-        void on_update(StaticCamera& camera);
-        void on_event(StaticCamera& camera, Event& event);
+        void on_update(Camera& camera);
+        void on_event(Camera& camera, Event& event);
 
     private:
-        bool on_mouse_scrolled(StaticCamera& camera, const MouseScrolledEvent& e);
-        bool on_window_resized(StaticCamera& camera, const WindowResizedEvent& e);
+        bool on_mouse_scrolled(Camera& camera, const MouseScrolledEvent& e);
+        bool on_window_resized(Camera& camera, const WindowResizedEvent& e);
 
         glm::vec2 last_mouse_position_{0.0f};
         bool is_first_frame_{true};

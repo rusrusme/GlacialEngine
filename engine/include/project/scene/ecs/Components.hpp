@@ -16,7 +16,6 @@
 #include "asset/AssetType.hpp"
 #include "asset/UUID.hpp"
 #include "physics/AABB.hpp"
-#include "render/camera/StaticCamera.hpp"
 
 namespace engine {
     // ----------------------------
@@ -26,6 +25,7 @@ namespace engine {
         std::string tag;
 
         LabelComponent() = default;
+
         LabelComponent(std::string t) : tag(std::move(t)) {}
     };
 
@@ -33,6 +33,7 @@ namespace engine {
         UUID id;
 
         IDComponent() = default;
+
         IDComponent(const UUID& uuid) : id(uuid) {}
     };
 
@@ -90,12 +91,14 @@ namespace engine {
         mutable bool is_dirty_{true};
     };
 
-    struct DisabledComponent { /* Empty */ };
+    struct DisabledComponent { /* Empty */
+    };
 
     struct MeshComponent {
         AssetHandle handle{0};
 
         MeshComponent() = default;
+
         MeshComponent(const AssetHandle h) : handle(h) {}
     };
 
@@ -119,11 +122,20 @@ namespace engine {
     };
 
     struct CameraComponent {
-        StaticCamera camera;
+        float fov = 45.0f;
+        float near_clip = 0.1f;
+        float far_clip = 1000.0f;
+
         bool is_primary = true;
 
         CameraComponent() = default;
-        CameraComponent(const StaticCamera& camera) : camera(camera) {}
+
+        CameraComponent(float fov, float near_clip = 0.1f, float far_clip = 1000.0f, bool is_primary = true)
+            : fov(fov), near_clip(near_clip), far_clip(far_clip), is_primary(is_primary) {}
+
+        [[nodiscard]] glm::mat4 projection(float aspect_ratio) const {
+            return glm::perspective(glm::radians(fov), aspect_ratio, near_clip, far_clip);
+        }
     };
 
     struct LODLevel {
@@ -144,6 +156,7 @@ namespace engine {
         float intensity{1.0f};
 
         DirectionalLightComponent() = default;
+
         DirectionalLightComponent(const glm::vec3& color, float intensity = 1.0f) : color(color), intensity(intensity) {}
     };
 
@@ -223,6 +236,7 @@ namespace engine {
         void* runtime_sound_ptr = nullptr;
 
         AudioSourceComponent() = default;
+
         explicit AudioSourceComponent(const AssetHandle handle) : sound_handle(handle) {}
     };
 

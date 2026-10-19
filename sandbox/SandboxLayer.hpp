@@ -9,7 +9,7 @@
 
 #include "core/Layer.hpp"
 #include "render/camera/CameraController.hpp"
-#include "render/camera/StaticCamera.hpp"
+#include "render/camera/Camera.hpp"
 #include "render/mesh/Mesh.hpp"
 #include "render/pass/MainOpaquePass.hpp"
 #include "render/rhi/DescriptorSet.hpp"
@@ -27,7 +27,7 @@ public:
     void on_event(engine::SystemContext& context, engine::Event& event) override;
 
 private:
-    engine::StaticCamera camera_;
+    engine::Camera camera_;
     engine::CameraController camera_controller_;
 
     engine::MainOpaquePass opaque_pass_;

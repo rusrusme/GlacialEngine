@@ -9,10 +9,10 @@
 #include "input/Input.hpp"
 #include "input/KeyCodes.hpp"
 #include "input/MouseCodes.hpp"
-#include "render/camera/StaticCamera.hpp"
+#include "render/camera/Camera.hpp"
 
 namespace engine {
-    void CameraController::on_update(StaticCamera& camera) {
+    void CameraController::on_update(Camera& camera) {
         const auto mouse_position = Input::mouse_position();
 
         if (is_first_frame_) {
@@ -41,7 +41,7 @@ namespace engine {
         }
     }
 
-    void CameraController::on_event(StaticCamera& camera, Event& event) {
+    void CameraController::on_event(Camera& camera, Event& event) {
         EventDispatcher dispatcher(event);
         dispatcher.dispatch<MouseScrolledEvent>([this, &camera](const MouseScrolledEvent& e) {
             return on_mouse_scrolled(camera, e);
@@ -51,12 +51,12 @@ namespace engine {
         });
     }
 
-    bool CameraController::on_mouse_scrolled(StaticCamera& camera, const MouseScrolledEvent& e) {
+    bool CameraController::on_mouse_scrolled(Camera& camera, const MouseScrolledEvent& e) {
         camera.zoom(e.y_offset() * zoom_speed_);
         return false;
     }
 
-    bool CameraController::on_window_resized(StaticCamera& camera, const WindowResizedEvent& e) {
+    bool CameraController::on_window_resized(Camera& camera, const WindowResizedEvent& e) {
         camera.set_viewport_size(e.width(), e.height());
         return false;
     }

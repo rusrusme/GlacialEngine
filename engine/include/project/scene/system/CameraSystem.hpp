@@ -10,8 +10,6 @@
 
 // TODO Update to new CameraController class
 namespace engine {
-    class Camera;
-
     class CameraSystem {
     public:
         void on_update(const std::shared_ptr<Scene>& scene, float delta_time);
