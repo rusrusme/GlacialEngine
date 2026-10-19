@@ -7,6 +7,7 @@
 
 #include "render/mesh/Mesh.hpp"
 
+// TODO if material has double_sided -> pipeline state no cull!
 namespace engine {
     void MainOpaquePass::init(const RHIDevice& device) {
         shader_ = std::make_shared<Shader>("assets/shaders/compiled/OpaqueMesh.bshb");
@@ -99,8 +100,8 @@ namespace engine {
                 for (const auto& submesh : obj.mesh->submeshes()) {
                     const Texture2D* tex = obj.albedo_texture;
 
-                    if (!tex && submesh.material_index < obj.mesh->textures().size()) {
-                        tex = obj.mesh->textures()[submesh.material_index].get();
+                    if (!tex && submesh.material_index < obj.mesh->materials().size()) {
+                        tex = obj.mesh->materials()[submesh.material_index].albedo_map.get();
                     }
 
                     bind_texture_if_needed(tex);

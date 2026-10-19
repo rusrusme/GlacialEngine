@@ -13,11 +13,11 @@ namespace engine {
         std::span<const Vertex> vertices,
         std::span<const uint32_t> indices,
         Vector<Submesh> submeshes,
-        Vector<Shared<Texture2D>> textures)
+        Vector<Material> materials)
         : vertex_count_(vertices.size()),
           index_count_(indices.size()),
           submeshes_(std::move(submeshes)),
-          textures_(std::move(textures))  {
+          materials_(std::move(materials)) {
         //////////////////////////////////////////////////////
         vertex_buffer_ = device.create_vertex_buffer(vertices.size_bytes(), vertices.data());
         index_buffer_ = device.create_index_buffer(indices.size_bytes(), indices.data());

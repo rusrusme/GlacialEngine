@@ -121,17 +121,45 @@ namespace engine {
             loaded_images[i] = load_gltf_image(device, data->images[i], filepath);
         }
 
-        Vector<Shared<Texture2D>> material_textures(data->materials_count);
-        for (cgltf_size i = 0; i < data->materials_count; ++i) {
-            const auto& mat = data->materials[i];
-            if (mat.has_pbr_metallic_roughness && mat.pbr_metallic_roughness.base_color_texture.texture) {
-                const auto* img = mat.pbr_metallic_roughness.base_color_texture.texture->image;
-                if (img) {
-                    const auto img_idx = static_cast<size_t>(img - data->images);
-                    if (img_idx < loaded_images.size()) {
-                        material_textures[i] = loaded_images[img_idx];
-                    }
+        // Helper
+        auto resolve_texture = [&](const cgltf_texture_view& view) -> Shared<Texture2D> {
+            if (view.texture && view.texture->image) {
+                const auto img_idx = static_cast<size_t>(view.texture->image - data->images);
+                if (img_idx < loaded_images.size()) {
+                    return loaded_images[img_idx];
                 }
+            }
+            return nullptr;
+        };
+
+        Vector<Material> materials(data->materials_count);
+        for (cgltf_size i = 0; i < data->materials_count; ++i) {
+            const auto& gltf_mat = data->materials[i];
+            Material& mat = materials[i];
+
+            mat.name = gltf_mat.name ? gltf_mat.name : "Material_" + std::to_string(i);
+            mat.double_sided = gltf_mat.double_sided;
+
+            // PBR Metallic-Roughness + Albedo
+            if (gltf_mat.has_pbr_metallic_roughness) {
+                const auto& pbr = gltf_mat.pbr_metallic_roughness;
+
+                mat.albedo_map = resolve_texture(pbr.base_color_texture);
+                mat.metallic_roughness_map = resolve_texture(pbr.metallic_roughness_texture);
+
+                mat.base_color_factor = glm::vec4(
+                    pbr.base_color_factor[0],
+                    pbr.base_color_factor[1],
+                    pbr.base_color_factor[2],
+                    pbr.base_color_factor[3]
+                );
+                mat.metallic_factor = pbr.metallic_factor;
+                mat.roughness_factor = pbr.roughness_factor;
+            }
+
+            // Normal Map
+            if (gltf_mat.normal_texture.texture) {
+                mat.normal_map = resolve_texture(gltf_mat.normal_texture);
             }
         }
 
@@ -203,10 +231,8 @@ namespace engine {
                 }
 
                 uint32_t mat_index = 0;
-                bool is_double_sided = false;
                 if (prim.material) {
                     mat_index = static_cast<uint32_t>(prim.material - data->materials);
-                    is_double_sided = prim.material->double_sided;
                 }
 
                 Submesh submesh{};
@@ -215,7 +241,6 @@ namespace engine {
                 submesh.index_count = static_cast<uint32_t>(prim_indices.size());
                 submesh.material_index = mat_index;
                 submesh.bounds = submesh_bounds;
-                submesh.double_sided = is_double_sided;
                 submeshes.push_back(submesh);
 
                 all_vertices.insert(all_vertices.end(), prim_vertices.begin(), prim_vertices.end());
@@ -230,6 +255,6 @@ namespace engine {
             return nullptr;
         }
 
-        return std::make_shared<Mesh>(device, all_vertices, all_indices, std::move(submeshes), std::move(material_textures));
+        return std::make_shared<Mesh>(device, all_vertices, all_indices, std::move(submeshes), std::move(materials));
     }
 }

@@ -17,6 +17,20 @@
 #include "render/rhi/Texture.hpp"
 
 namespace engine {
+    struct Material {
+        std::string name;
+
+        Shared<Texture2D> albedo_map;
+        Shared<Texture2D> normal_map;
+        Shared<Texture2D> metallic_roughness_map;
+
+        glm::vec4 base_color_factor{1.0f};
+        float metallic_factor{1.0f};
+        float roughness_factor{1.0f};
+
+        bool double_sided{false};
+    };
+
     struct Vertex {
         glm::vec3 position{0.0f};
         glm::vec3 normal{0.0f};
@@ -39,8 +53,6 @@ namespace engine {
         int32_t vertex_offset{0};   ///< Offset in global Vertex Buffer
         uint32_t material_index{0}; ///< Reference into MaterialSystem SSBO
 
-        bool double_sided{false};
-
         AABB bounds;
     };
 
@@ -50,7 +62,7 @@ namespace engine {
              std::span<const Vertex> vertices,
              std::span<const uint32_t> indices,
              Vector<Submesh> submeshes = {},
-             Vector<Shared<Texture2D>> textures = {});
+             Vector<Material> materials = {});
 
         /** @brief For debug purposes */
         [[nodiscard]] static Shared<Mesh> create_cube(const RHIDevice& device);
@@ -59,9 +71,10 @@ namespace engine {
         [[nodiscard]] const IndexBuffer& index_buffer() const noexcept { return *index_buffer_; }
         [[nodiscard]] uint32_t vertex_count() const noexcept { return vertex_count_; }
         [[nodiscard]] uint32_t index_count() const noexcept { return index_count_; }
+
         [[nodiscard]] const Vector<Submesh>& submeshes() const noexcept { return submeshes_; }
-        [[nodiscard]] const Vector<Shared<Texture2D>>& textures() const noexcept { return textures_; }
         [[nodiscard]] const AABB& bounds() const noexcept { return bounds_; }
+        [[nodiscard]] const Vector<Material>& materials() const noexcept { return materials_; }
 
     private:
         Unique<VertexBuffer> vertex_buffer_{nullptr};
@@ -69,7 +82,7 @@ namespace engine {
         uint32_t vertex_count_{0};
         uint32_t index_count_{0};
         Vector<Submesh> submeshes_{};
-        Vector<Shared<Texture2D>> textures_{};
+        Vector<Material> materials_{};
         AABB bounds_{};
     };
 }
