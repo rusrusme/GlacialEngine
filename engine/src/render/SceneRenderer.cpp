@@ -22,6 +22,14 @@ namespace engine {
         opaque_queue_.reserve(1024);
     }
 
+    void SceneRenderer::shutdown() {
+        opaque_pass_.shutdown();
+
+        frame_descriptor_set_.reset();
+        frame_ubo_.reset();
+        opaque_queue_.clear();
+    }
+
     void SceneRenderer::begin_scene(const Camera& camera) {
         begin_scene(camera.view_projection());
     }

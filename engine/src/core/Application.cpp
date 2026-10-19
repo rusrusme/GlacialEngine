@@ -3,6 +3,7 @@
 // All rights reserved.
 //
 
+#include <ranges>
 #include <utility>
 
 #include "core/Application.hpp"
@@ -50,6 +51,7 @@ namespace engine {
 
         audio_system_.init();
         asset_manager_.init(render_context_.device());
+        scene_renderer_.init(render_context_.device());
 
         context_ = std::make_unique<SystemContext>(
             audio_system_,
@@ -57,6 +59,7 @@ namespace engine {
             scene_manager_,
             shader_library_,
             render_context_,
+            scene_renderer_,
             *window_
         );
         ///////////////////////////////////////////////////////
@@ -109,8 +112,8 @@ namespace engine {
         }
         // In reverse
         CORE_INFO("Detaching application layers");
-        for (auto it = layers_.rbegin(); it != layers_.rend(); ++it) {
-            (*it)->on_detach(*context_);
+        for (auto & layer : std::views::reverse(layers_)) {
+            layer->on_detach(*context_);
         }
 
         shutdown();
@@ -132,11 +135,11 @@ namespace engine {
         });
 
         // From top to bottom
-        for (auto it = layers_.rbegin(); it != layers_.rend(); ++it) {
+        for (auto & layer : std::views::reverse(layers_)) {
             if (event.handled) {
                 break; // Event consumed
             }
-            (*it)->on_event(*context_, event);
+            layer->on_event(*context_, event);
         }
     }
 
@@ -157,6 +160,8 @@ namespace engine {
         }
 
         context_.reset();
+
+        scene_renderer_.shutdown();
         render_context_.shutdown();
         window_.reset();
 

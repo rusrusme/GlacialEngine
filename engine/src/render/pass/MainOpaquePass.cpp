@@ -41,6 +41,14 @@ namespace engine {
         pass_descriptor_set_->write_texture(2, *default_white_texture_);
     }
 
+    void MainOpaquePass::shutdown() {
+        pass_descriptor_set_.reset();
+        object_ssbo_.reset();
+        default_white_texture_.reset();
+        pipeline_.reset();
+        shader_.reset();
+    }
+
     void MainOpaquePass::execute(CommandBuffer& cb,
                                  Framebuffer& target_framebuffer,
                                  const DescriptorSet& frame_descriptor_set,

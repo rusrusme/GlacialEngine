@@ -30,6 +30,7 @@ namespace engine {
         SceneRenderer& operator=(SceneRenderer&&) noexcept = delete;
 
         void init(const RHIDevice& device);
+        void shutdown();
 
         void begin_scene(const Camera& camera);
         void begin_scene(const glm::mat4& view_projection);

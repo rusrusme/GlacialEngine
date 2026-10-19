@@ -22,6 +22,7 @@ namespace engine {
         ~MainOpaquePass() = default;
 
         void init(const RHIDevice& device);
+        void shutdown();
         void execute(CommandBuffer& cb,
                      Framebuffer& target_framebuffer,
                      const DescriptorSet& frame_descriptor_set,

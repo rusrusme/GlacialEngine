@@ -11,6 +11,7 @@
 #include "core/SystemContext.hpp"
 #include "core/Window.hpp"
 #include "project/scene/SceneManager.hpp"
+#include "render/SceneRenderer.hpp"
 #include "render/rhi/RenderContext.hpp"
 #include "render/shader/ShaderLibrary.hpp"
 
@@ -47,12 +48,12 @@ namespace engine {
         SceneManager scene_manager_;
         ShaderLibrary shader_library_;
         RenderContext render_context_;
+        SceneRenderer scene_renderer_;
 
         // TODO broken mess
         // GPUMeshManager gpu_mesh_manager_{};
         // MaterialSystem material_system_{};
         // TextureSystem texture_system_{};
-        // SceneRenderer scene_renderer_;
 
         std::unique_ptr<SystemContext> context_;
 

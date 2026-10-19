@@ -27,8 +27,8 @@ namespace engine {
 
         ShaderLibrary& shaders;
         RenderContext& render_context;
+        SceneRenderer& renderer;
         // TODO
-        // SceneRenderer& renderer;
         // GPUMeshManager& mesh_manager;
         // MaterialSystem& materials;
         // TextureSystem& textures;
@@ -42,12 +42,14 @@ namespace engine {
                       SceneManager& scene_manager,
                       ShaderLibrary& shader_library,
                       RenderContext& render_context,
+                      SceneRenderer& scene_renderer,
                       Window& window)
             : audio(audio_system),
               assets(asset_manager),
               scenes(scene_manager),
               shaders(shader_library),
               render_context(render_context),
+              renderer(scene_renderer),
               window(window) {}
     };
 }

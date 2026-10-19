@@ -6,50 +6,62 @@
 #include "SandboxLayer.hpp"
 
 #include "core/Application.hpp"
+#include "input/Input.hpp"
+#include "input/KeyCodes.hpp"
+#include "project/scene/ecs/Entity.hpp"
 #include "render/rhi/RenderContext.hpp"
 
 void SandboxLayer::on_attach(SystemContext& context) {
-    const auto& device = context.render_context.device();
-    const auto& swapchain = context.render_context.swapchain();
-
-    scene_renderer_.init(device);
+    std::shared_ptr<Scene> scene = context.scenes.create("Sandbox Scene");
 
     const auto cube_mesh_handle = context.assets.asset_handle_from_path("primitive://cube");
-    const auto texture_handle   = context.assets.asset_handle_from_path("assets/textures/marble_rock.jpg");
+    const auto texture_handle = context.assets.asset_handle_from_path("assets/textures/marble_rock.jpg");
 
-    {
-        auto left_cube = scene_.create_entity("TexturedCube");
-        auto& transform = left_cube.get_component<TransformComponent>();
-        transform.position = {-1.2f, 0.0f, 0.0f};
+    auto left_cube = scene->create_entity("Textured Cube");
+    auto& l_transform = left_cube.get_component<TransformComponent>();
+    l_transform.position = {-1.2f, 0.0f, 0.0f};
 
-        left_cube.add_component<MeshComponent>(cube_mesh_handle);
+    left_cube.add_component<MeshComponent>(cube_mesh_handle);
 
-        auto& material = left_cube.add_component<MaterialComponent>();
-        material.texture_handle = texture_handle;
-    }
+    auto& material = left_cube.add_component<MaterialComponent>();
+    material.texture_handle = texture_handle;
 
-    {
-        rotating_cube_ = scene_.create_entity("RotatingWhiteCube");
-        auto& transform = rotating_cube_.get_component<TransformComponent>();
-        transform.position = {1.2f, 0.0f, 0.0f};
+    auto rotating_cube_ = scene->create_entity("Rotating White Cube");
+    auto& r_transform = rotating_cube_.get_component<TransformComponent>();
+    r_transform.position = {1.2f, 0.0f, 0.0f};
 
-        rotating_cube_.add_component<MeshComponent>(cube_mesh_handle);
-        rotating_cube_.add_component<MaterialComponent>(); // texture_handle = 0 -> White
-    }
+    rotating_cube_.add_component<MeshComponent>(cube_mesh_handle);
+    rotating_cube_.add_component<MaterialComponent>(); // texture_handle = 0 -> White
 
+    const auto& swapchain = context.render_context.swapchain();
     camera_.set_viewport_size(swapchain.width(), swapchain.height());
     camera_.set_distance(4.0f);
 }
 
-void SandboxLayer::on_detach(SystemContext& context) {
-    scene_.clear();
-}
+void SandboxLayer::on_detach(SystemContext& context) {}
 
 void SandboxLayer::on_update(SystemContext& context, float delta_time) {
     camera_controller_.on_update(camera_);
-    if (rotating_cube_) {
-        auto& transform = rotating_cube_.get_component<engine::TransformComponent>();
-        transform.rotation.y += delta_time * 45.0f; // 45 Grad pro Sekunde
+
+    context.scenes.on_update(delta_time);
+
+    if (Input::key_pressed_once(Key::SPACE)) {
+        if (context.scenes.scene_state() == SceneState::Edit) {
+            context.scenes.on_play();
+        }
+        else {
+            context.scenes.on_stop();
+        }
+    }
+
+    const auto scene = context.scenes.active_scene();
+    if (scene && context.scenes.scene_state() == SceneState::Play) {
+        const auto view = scene->view<LabelComponent, TransformComponent>(exclude<DisabledComponent>);
+        for (const auto& [entity, label, transform] : view.each()) {
+            if (label.tag == "Rotating White Cube") {
+                transform.rotation.y += delta_time * 45.0f; // 45 Grad pro Sekunde
+            }
+        }
     }
 }
 
@@ -57,9 +69,12 @@ void SandboxLayer::on_render(SystemContext& context, float delta_time) {
     const auto& swapchain = context.render_context.swapchain();
     if (swapchain.width() == 0 || swapchain.height() == 0) return;
 
+    auto active_scene = context.scenes.active_scene();
+    if (!active_scene) return;
+
     camera_.set_viewport_size(swapchain.width(), swapchain.height());
 
-    scene_renderer_.render_scene(scene_, context, &camera_);
+    context.renderer.render_scene(*active_scene, context, &camera_);
 }
 
 void SandboxLayer::on_event(SystemContext& context, Event& event) {
