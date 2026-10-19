@@ -16,7 +16,7 @@
 #include "asset/AssetType.hpp"
 #include "asset/UUID.hpp"
 #include "physics/AABB.hpp"
-#include "render/StaticCamera.hpp"
+#include "render/camera/StaticCamera.hpp"
 
 namespace engine {
     // ----------------------------

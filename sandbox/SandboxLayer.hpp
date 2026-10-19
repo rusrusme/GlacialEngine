@@ -8,8 +8,8 @@
 #include <memory>
 
 #include "core/Layer.hpp"
-#include "input/CameraController.hpp"
-#include "render/StaticCamera.hpp"
+#include "render/camera/CameraController.hpp"
+#include "render/camera/StaticCamera.hpp"
 #include "render/mesh/Mesh.hpp"
 #include "render/pass/MainOpaquePass.hpp"
 #include "render/rhi/DescriptorSet.hpp"

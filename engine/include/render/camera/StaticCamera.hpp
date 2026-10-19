@@ -7,7 +7,6 @@
 
 #include <algorithm>
 #include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 
 namespace engine {
     class StaticCamera {
@@ -16,13 +15,8 @@ namespace engine {
 
         void set_viewport_size(uint32_t width, uint32_t height);
 
-        // Orbit um das Target (Winkel in Grad)
         void orbit(float delta_yaw, float delta_pitch);
-
-        // Verschieben des Targets (Panning)
         void pan(const glm::vec2& delta);
-
-        // Heran-/Wegzoomen
         void zoom(float delta);
 
         [[nodiscard]] const glm::mat4& view() const noexcept { return view_; }

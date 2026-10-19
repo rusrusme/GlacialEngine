@@ -3,7 +3,7 @@
 // All rights reserved.
 //
 
-#include "render/Camera.hpp"
+#include "render/camera/Camera.hpp"
 
 namespace engine {
     Camera::Camera(float fov, float aspect, float near_p, float far_p)

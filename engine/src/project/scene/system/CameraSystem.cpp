@@ -15,7 +15,7 @@ namespace engine {
         for (const auto& [entity, transform, camera_comp] : view.each()) {
             if (!camera_comp.is_primary) continue;
 
-            controller_.on_update(camera_comp.camera, delta_time);
+            controller_.on_update(camera_comp.camera);
             transform.position = camera_comp.camera.position();
         }
     }

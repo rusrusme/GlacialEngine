@@ -16,7 +16,7 @@ namespace engine {
 
     class CameraController {
     public:
-        void on_update(StaticCamera& camera, float delta_time);
+        void on_update(StaticCamera& camera);
         void on_event(StaticCamera& camera, Event& event);
 
     private:

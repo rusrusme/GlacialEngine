@@ -13,7 +13,7 @@
 #include "core/SystemContext.hpp"
 #include "physics/CollisionSystem.hpp"
 #include "project/scene/ecs/Entity.hpp"
-#include "render/Camera.hpp"
+#include "render/camera/Camera.hpp"
 #include "render/SceneRenderer.hpp"
 #include "render/mesh/Mesh.hpp"
 #include "util/Instrumentor.hpp"

@@ -5,9 +5,10 @@
 
 #pragma once
 
-#include "input/CameraController.hpp"
 #include "project/scene/Scene.hpp"
+#include "render/camera/CameraController.hpp"
 
+// TODO Update to new CameraController class
 namespace engine {
     class Camera;
 

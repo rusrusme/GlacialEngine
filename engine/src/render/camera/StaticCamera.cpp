@@ -3,7 +3,7 @@
 // All rights reserved.
 //
 
-#include "render/StaticCamera.hpp"
+#include "render/camera/StaticCamera.hpp"
 
 namespace engine {
     StaticCamera::StaticCamera(float fov_degrees, float aspect_ratio, float near_clip, float far_clip)

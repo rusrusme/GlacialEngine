@@ -31,7 +31,7 @@ void SandboxLayer::on_detach(engine::SystemContext& context) {
 }
 
 void SandboxLayer::on_update(engine::SystemContext& context, float delta_time) {
-    camera_controller_.on_update(camera_, delta_time);
+    camera_controller_.on_update(camera_);
     camera_angle_ += delta_time * 0.5f;
 }
 

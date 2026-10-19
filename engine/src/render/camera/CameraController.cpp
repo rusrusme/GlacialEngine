@@ -3,16 +3,16 @@
 // All rights reserved.
 //
 
-#include "input/CameraController.hpp"
+#include "render/camera/CameraController.hpp"
 
 #include "event/Event.hpp"
 #include "input/Input.hpp"
 #include "input/KeyCodes.hpp"
 #include "input/MouseCodes.hpp"
-#include "render/StaticCamera.hpp"
+#include "render/camera/StaticCamera.hpp"
 
 namespace engine {
-    void CameraController::on_update(StaticCamera& camera, float delta_time) {
+    void CameraController::on_update(StaticCamera& camera) {
         const auto mouse_position = Input::mouse_position();
 
         if (is_first_frame_) {

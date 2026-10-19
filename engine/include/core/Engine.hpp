@@ -27,7 +27,7 @@
 #include "event/MouseEvents.hpp"
 #include "event/WindowEvents.hpp"
 // Input
-#include "input/CameraController.hpp"
+#include "render/camera/CameraController.hpp"
 #include "input/Input.hpp"
 #include "input/KeyCodes.hpp"
 #include "input/MouseCodes.hpp"
