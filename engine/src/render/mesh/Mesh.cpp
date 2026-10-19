@@ -3,12 +3,21 @@
 // All rights reserved.
 //
 
+#include <utility>
+
 #include "render/mesh/Mesh.hpp"
 
 namespace engine {
-    Mesh::Mesh(const RHIDevice& device, std::span<const Vertex> vertices, std::span<const uint32_t> indices, Vector<Submesh> submeshes): vertex_count_(vertices.size()),
-                                                                                                                                         index_count_(indices.size()),
-                                                                                                                                         submeshes_(std::move(submeshes)) {
+    Mesh::Mesh(
+        const RHIDevice& device,
+        std::span<const Vertex> vertices,
+        std::span<const uint32_t> indices,
+        Vector<Submesh> submeshes,
+        Vector<Shared<Texture2D>> textures)
+        : vertex_count_(vertices.size()),
+          index_count_(indices.size()),
+          submeshes_(std::move(submeshes)),
+          textures_(std::move(textures))  {
         //////////////////////////////////////////////////////
         vertex_buffer_ = device.create_vertex_buffer(vertices.size_bytes(), vertices.data());
         index_buffer_ = device.create_index_buffer(indices.size_bytes(), indices.data());

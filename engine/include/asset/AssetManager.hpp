@@ -12,6 +12,7 @@
 #include "asset/AssetType.hpp"
 #include "core/Log.hpp"
 #include "render/mesh/Mesh.hpp"
+#include "render/mesh/MeshLoader.hpp"
 #include "render/rhi/Texture.hpp"
 
 namespace engine {
@@ -79,9 +80,14 @@ namespace engine {
             return cube;
         }
 
-        // TODO Mesh loading
-        CORE_WARN("[AssetManager] File loading for mesh '{0}' not yet implemented", meta.filepath.string());
-        return nullptr;
+        auto loaded_mesh = MeshLoader::load(*device_, meta.filepath);
+        if (!loaded_mesh) {
+            CORE_ERROR("[AssetManager] Failed to load mesh from '{0}'", meta.filepath.string());
+            return nullptr;
+        }
+
+        mesh_cache_[handle] = loaded_mesh;
+        return loaded_mesh;
     }
 
     ////////////////////////////////////////////////////////////////////////////////////////////

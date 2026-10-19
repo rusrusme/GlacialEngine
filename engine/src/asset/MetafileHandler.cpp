@@ -87,7 +87,7 @@ namespace engine {
         if (ext == ".png" || ext == ".jpg" || ext == ".jpeg" || ext == ".tga") {
             return AssetType::TEXTURE_2D;
         }
-        if (ext == ".glb" || ext == ".gltf" || ext == ".obj") {
+        if (ext == ".glb" || ext == ".gltf") {
             return AssetType::MESH;
         }
         if (ext == ".vert" || ext == ".frag" || ext == ".geom" || ext == ".glsl") {

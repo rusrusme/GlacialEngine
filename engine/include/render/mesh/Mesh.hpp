@@ -14,6 +14,7 @@
 #include "render/rhi/BufferLayout.hpp"
 #include "render/rhi/RHIDevice.hpp"
 #include "render/rhi/RHITypes.hpp"
+#include "render/rhi/Texture.hpp"
 
 namespace engine {
     struct Vertex {
@@ -46,7 +47,8 @@ namespace engine {
         Mesh(const RHIDevice& device,
              std::span<const Vertex> vertices,
              std::span<const uint32_t> indices,
-             Vector<Submesh> submeshes = {});
+             Vector<Submesh> submeshes = {},
+             Vector<Shared<Texture2D>> textures = {});
 
         /** @brief For debug purposes */
         [[nodiscard]] static Shared<Mesh> create_cube(const RHIDevice& device);
@@ -56,6 +58,7 @@ namespace engine {
         [[nodiscard]] uint32_t vertex_count() const noexcept { return vertex_count_; }
         [[nodiscard]] uint32_t index_count() const noexcept { return index_count_; }
         [[nodiscard]] const Vector<Submesh>& submeshes() const noexcept { return submeshes_; }
+        [[nodiscard]] const Vector<Shared<Texture2D>>& textures() const noexcept { return textures_; }
         [[nodiscard]] const AABB& bounds() const noexcept { return bounds_; }
 
     private:
@@ -64,6 +67,7 @@ namespace engine {
         uint32_t vertex_count_{0};
         uint32_t index_count_{0};
         Vector<Submesh> submeshes_{};
+        Vector<Shared<Texture2D>> textures_{};
         AABB bounds_{};
     };
 }
