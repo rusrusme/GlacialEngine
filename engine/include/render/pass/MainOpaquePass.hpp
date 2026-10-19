@@ -14,6 +14,8 @@
 #include "render/rhi/RHIDevice.hpp"
 
 namespace engine {
+    class RenderGraph;
+
     class MainOpaquePass {
     public:
         MainOpaquePass() = default;
@@ -24,6 +26,12 @@ namespace engine {
                      Framebuffer& target_framebuffer,
                      const DescriptorSet& frame_descriptor_set,
                      std::span<const RenderObject> objects);
+
+        // TODO Once RenderGraphs are added implement this
+        void add_to_graph(RenderGraph& graph,
+                          std::span<const RenderObject> objects,
+                          const std::string& out_color,
+                          const std::string& out_depth);
 
     private:
         Shared<Shader> shader_{nullptr};

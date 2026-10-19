@@ -5,6 +5,7 @@
 
 #include "render/pass/MainOpaquePass.hpp"
 
+#include "render/graph/RenderGraph.hpp"
 #include "render/mesh/Mesh.hpp"
 
 namespace engine {
@@ -87,5 +88,28 @@ namespace engine {
             }
         }
         cb.end_render_pass();
+    }
+
+    // Exemplary setup
+    void MainOpaquePass::add_to_graph(RenderGraph& graph,
+                                      std::span<const RenderObject> objects,
+                                      const std::string& out_color,
+                                      const std::string& out_depth) {
+        struct OpaquePassData {
+            std::span<const RenderObject> objects;
+        };
+        graph.add_pass<OpaquePassData>(
+            "MainOpaque",
+            [&](RenderGraphBuilder& builder, OpaquePassData& data) {
+                data.objects = objects;
+                builder.write_texture(out_color);
+                builder.write_texture(out_depth);
+            },
+            [this](const OpaquePassData& data, const RenderGraphRegistry& reg, CommandBuffer& cb) {
+                cb.bind_pipeline(*pipeline_);
+                for (const auto& obj : data.objects) {
+                    // ...
+                }
+            });
     }
 }
