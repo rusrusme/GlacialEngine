@@ -29,6 +29,7 @@ namespace engine {
 
         [[nodiscard]] AssetHandle asset_handle_from_path(const std::filesystem::path& filepath) const;
         [[nodiscard]] std::filesystem::path path_from_asset_handle(AssetHandle handle) const;
+        [[nodiscard]] std::filesystem::path source_path_from_asset_handle(AssetHandle handle) const;
         [[nodiscard]] bool valid_asset(const AssetHandle handle) const { return asset_registry_.contains(handle); }
 
         [[nodiscard]] const std::unordered_map<AssetHandle, AssetMetadata>& registry() const { return asset_registry_; }

@@ -4,6 +4,7 @@
 //
 
 #include "asset/MetafileHandler.hpp"
+#include <fstream>
 
 #include "core/Log.hpp"
 
@@ -20,6 +21,7 @@ namespace engine {
         }
         const std::filesystem::path meta_path = asset_path.string() + ".meta";
 
+        bool needs_save = false;
         if (std::filesystem::exists(meta_path)) {
             std::ifstream in(meta_path);
             if (in.is_open()) {
@@ -27,16 +29,35 @@ namespace engine {
                     json root;
                     in >> root;
                     meta.handle = AssetHandle(root["asset"]["handle"].get<uint64_t>());
-                    CORE_TRACE("Loaded existing metadata for '{0}' [Handle: {1}]",
-                               asset_path.string(), static_cast<uint64_t>(meta.handle));
-                    return meta;
+
+                    if (root["asset"].contains("source")) {
+                        meta.source_filepath = root["asset"]["source"].get<std::string>();
+                    }
+                    else if (asset_path.extension() == ".bshb") {
+                        meta.source_filepath = find_shader_source(asset_path);
+                        if (!meta.source_filepath.empty()) {
+                            needs_save = true;
+                        }
+                    }
+
+                    if (!needs_save) {
+                        CORE_TRACE("Loaded existing metadata for '{0}' [Handle: {1}]",
+                                   asset_path.string(), static_cast<uint64_t>(meta.handle));
+                        return meta;
+                    }
                 }
                 catch (const std::exception& e) {
                     CORE_ERROR("Failed to parse metafile: {0} ({1})", meta_path.string(), e.what());
                 }
             }
         }
-        meta.handle = AssetHandle();
+
+        if (meta.handle == 0) {
+            meta.handle = AssetHandle();
+            if (asset_path.extension() == ".bshb") {
+                meta.source_filepath = find_shader_source(asset_path);
+            }
+        }
 
         json root;
         auto handle = static_cast<uint64_t>(meta.handle);
@@ -46,9 +67,13 @@ namespace engine {
             {"type", type}
         };
 
+        if (!meta.source_filepath.empty()) {
+            root["asset"]["source"] = meta.source_filepath.generic_string();
+        }
+
         if (std::ofstream out(meta_path); out.is_open()) {
             out << root.dump(4);
-            CORE_TRACE("Created metadata for {0} asset from {1}", util::to_lowercase(type), meta.filepath.string());
+            CORE_TRACE("Created/Updated metadata for {0} asset from {1}", util::to_lowercase(type), meta.filepath.string());
         }
         else {
             CORE_ERROR("Failed to write metadata file to disk: '{0}'", meta_path.string());
@@ -81,5 +106,31 @@ namespace engine {
             return AssetType::FONT;
         }
         return AssetType::NONE;
+    }
+
+    std::filesystem::path MetaFileHandler::find_shader_source(const std::filesystem::path& compiled_path) {
+        std::string path_str = compiled_path.generic_string();
+
+        if (path_str.ends_with(".bshb")) {
+            path_str.replace(path_str.length() - 5, 5, ".bsh");
+        }
+
+        constexpr std::string_view compiled_segment = "compiled/";
+        if (const size_t pos = path_str.find(compiled_segment); pos != std::string::npos) {
+            path_str.erase(pos, compiled_segment.length());
+        }
+
+        std::filesystem::path candidate(path_str);
+        if (std::filesystem::exists(candidate)) {
+            return candidate;
+        }
+
+        std::filesystem::path sibling = compiled_path;
+        sibling.replace_extension(".bsh");
+        if (std::filesystem::exists(sibling)) {
+            return sibling;
+        }
+
+        return {};
     }
 }

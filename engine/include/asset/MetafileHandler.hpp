@@ -17,5 +17,6 @@ namespace engine {
 
     private:
         static AssetType deduce_asset_type(const std::filesystem::path& filepath);
+        static std::filesystem::path find_shader_source(const std::filesystem::path& compiled_path);
     };
 }

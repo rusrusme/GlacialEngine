@@ -26,7 +26,7 @@ namespace engine {
 
     inline std::string_view asset_type_to_string(const AssetType type) {
         switch (type) {
-            case AssetType::TEXTURE_2D : return "Texture2d";
+            case AssetType::TEXTURE_2D : return "Texture2D";
             case AssetType::MESH : return "Mesh";
             case AssetType::MATERIAL : return "Material";
             case AssetType::SHADER : return "Shader";
@@ -37,7 +37,7 @@ namespace engine {
     }
 
     inline AssetType string_to_asset_type(const std::string_view type_str) {
-        if (type_str == "Texture2d") return AssetType::TEXTURE_2D;
+        if (type_str == "Texture2D") return AssetType::TEXTURE_2D;
         if (type_str == "Mesh") return AssetType::MESH;
         if (type_str == "Material") return AssetType::MATERIAL;
         if (type_str == "Shader") return AssetType::SHADER;
@@ -50,7 +50,9 @@ namespace engine {
         AssetHandle handle{0};
         AssetType type = AssetType::NONE;
         std::filesystem::path filepath;
+        std::filesystem::path source_filepath; // bshb -> bsh
 
         [[nodiscard]] bool valid() const { return handle != 0 && type != AssetType::NONE; }
+        [[nodiscard]] bool has_source() const { return !source_filepath.empty(); }
     };
 }

@@ -89,7 +89,7 @@ namespace engine {
 
         begin_scene(view_proj);
 
-        auto mesh_view = scene.view<TransformComponent, MeshComponent>(exclude<DisabledComponent>);
+        const auto mesh_view = scene.view<TransformComponent, MeshComponent>(exclude<DisabledComponent>);
         for (const auto& [entity_handle, transform, mesh_comp] : mesh_view.each()) {
             const Shared<Mesh> mesh_asset = context.assets.get<Mesh>(mesh_comp.handle);
             if (!mesh_asset) {

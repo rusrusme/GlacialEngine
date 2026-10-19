@@ -95,4 +95,9 @@ namespace engine {
         const auto& meta = metadata(handle);
         return meta.valid() ? meta.filepath : std::filesystem::path{};
     }
+
+    std::filesystem::path AssetManager::source_path_from_asset_handle(AssetHandle handle) const {
+        const auto& meta = metadata(handle);
+        return meta.valid() ? meta.source_filepath : std::filesystem::path{};
+    }
 }
