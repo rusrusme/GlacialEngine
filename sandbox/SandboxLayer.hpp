@@ -10,10 +10,8 @@
 #include "core/Layer.hpp"
 #include "render/mesh/Mesh.hpp"
 #include "render/pass/MainOpaquePass.hpp"
-#include "render/platform/opengl/GLBuffer.hpp"
-#include "render/platform/opengl/GLDescriptorSet.hpp"
-#include "render/platform/opengl/GLPipelineState.hpp"
-#include "render/rhi/Shader.hpp"
+#include "render/rhi/DescriptorSet.hpp"
+#include "render/rhi/Texture.hpp"
 
 class SandboxLayer : public engine::Layer {
 public:
@@ -33,4 +31,5 @@ private:
 
     std::shared_ptr<engine::Mesh> cube_mesh_;
     float camera_angle_ = 0.0f;
+    engine::Unique<engine::Texture2D> test_texture_;
 };

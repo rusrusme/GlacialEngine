@@ -1,7 +1,8 @@
 # Dependencies.cmake
 # ----------------------------------------------------------------------------
 include(FetchContent)
-set(FETCHCONTENT_UPDATES_DISCONNECTED OFF CACHE BOOL "" FORCE)
+set(FETCHCONTENT_UPDATES_DISCONNECTED ON CACHE BOOL "" FORCE)
+set(FETCHCONTENT_UPDATES_DISCONNECTED_BASISSHADERCOMPILER OFF CACHE BOOL "" FORCE)
 # ----------------------------------------------------------------------------
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set(CMAKE_FOLDER "ThirdParty")
@@ -169,7 +170,7 @@ FetchContent_MakeAvailable(miniaudio)
 FetchContent_Declare(
         BasisShaderCompiler
         GIT_REPOSITORY https://github.com/rusrusme/BasisShaderCompiler.git
-        GIT_TAG v1.2.0
+        GIT_TAG v1.2.1
         GIT_SHALLOW TRUE
         GIT_SUBMODULES ""
 )

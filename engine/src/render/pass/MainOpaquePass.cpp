@@ -26,51 +26,66 @@ namespace engine {
 
         object_ssbo_ = device.create_shader_storage_buffer(max_objects_ * sizeof(glm::mat4), 1);
 
+        TextureSpecification white_spec{};
+        white_spec.width = 1;
+        white_spec.height = 1;
+        white_spec.format = TextureFormat::RGBA8;
+        white_spec.generate_mipmaps = false;
+
+        constexpr uint32_t white_pixel = 0xFFFFFFFF;
+        default_white_texture_ = device.create_texture_2d(white_spec);
+        default_white_texture_->set_data(&white_pixel, sizeof(uint32_t));
+
         pass_descriptor_set_ = device.create_descriptor_set();
         pass_descriptor_set_->write_storage_buffer(1, *object_ssbo_);
+        pass_descriptor_set_->write_texture(2, *default_white_texture_);
     }
 
     void MainOpaquePass::execute(CommandBuffer& cb,
                                  Framebuffer& target_framebuffer,
                                  const DescriptorSet& frame_descriptor_set,
                                  std::span<const RenderObject> objects) {
-        if (objects.empty()) {
-            return;
-        }
-
-        std::vector<glm::mat4> transforms;
-        transforms.reserve(objects.size());
-        for (const auto& [mesh, transform] : objects) {
-            transforms.push_back(transform);
-        }
-        object_ssbo_->set_data(transforms.data(), transforms.size() * sizeof(glm::mat4));
-
         constexpr glm::vec4 clear_color = {0.1f, 0.1f, 0.12f, 1.0f};
         cb.begin_render_pass(target_framebuffer, clear_color);
 
+        if (objects.empty()) {
+            cb.end_render_pass();
+            return;
+        }
+
+        const size_t draw_count = std::min(objects.size(), max_objects_);
+
+        std::vector<glm::mat4> transforms;
+        transforms.reserve(draw_count);
+        for (size_t i = 0; i < draw_count; ++i) {
+            transforms.push_back(objects[i].transform);
+        }
+        object_ssbo_->set_data(transforms.data(), transforms.size() * sizeof(glm::mat4));
+
         cb.bind_pipeline(*pipeline_);
-        cb.bind_descriptor_set(frame_descriptor_set);  // Slot 0: Kamera (ViewProjection)
-        cb.bind_descriptor_set(*pass_descriptor_set_); // Slot 1: Objekt-Transforms
+        cb.bind_descriptor_set(frame_descriptor_set); // Slot 0: FrameData UBO
 
-        for (uint32_t i = 0; i < objects.size(); ++i) {
-            const auto* mesh = objects[i].mesh;
-            if (!mesh) continue;
+        for (uint32_t i = 0; i < static_cast<uint32_t>(draw_count); ++i) {
+            const auto& obj = objects[i];
+            if (!obj.mesh) continue;
 
-            cb.bind_vertex_buffer(0, mesh->vertex_buffer(), 0, sizeof(Vertex));
-            cb.bind_index_buffer(mesh->index_buffer(), IndexType::UInt32);
+            const auto* texture = obj.albedo_texture ? obj.albedo_texture : default_white_texture_.get();
+            pass_descriptor_set_->write_texture(2, *texture);
+            cb.bind_descriptor_set(*pass_descriptor_set_);
 
-            for (const auto& submesh : mesh->submeshes()) {
-                // first_instance = i übergibt den Index für u_Models[gl_BaseInstance]
+            cb.bind_vertex_buffer(0, obj.mesh->vertex_buffer(), 0, sizeof(Vertex));
+            cb.bind_index_buffer(obj.mesh->index_buffer(), IndexType::UInt32);
+
+            for (const auto& submesh : obj.mesh->submeshes()) {
                 cb.draw_indexed(
                     submesh.index_count,
                     1,
                     submesh.first_index,
                     submesh.vertex_offset,
-                    i // first_instance
+                    i // first_instance -> a_ObjectIndex
                 );
             }
         }
-
         cb.end_render_pass();
     }
 }

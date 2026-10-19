@@ -16,6 +16,8 @@ void SandboxLayer::on_attach(engine::SystemContext& context) {
     cube_mesh_ = engine::Mesh::create_cube(device);
     opaque_pass_.init(device);
 
+    test_texture_ = device.create_texture_2d("assets/textures/marble_rock.jpg");
+
     frame_ubo_ = device.create_uniform_buffer(sizeof(glm::mat4), 0);
     frame_descriptor_set_ = device.create_descriptor_set();
     frame_descriptor_set_->write_uniform_buffer(0, *frame_ubo_);
@@ -47,8 +49,8 @@ void SandboxLayer::on_render(engine::SystemContext& context, float delta_time) {
     model_right = glm::rotate(model_right, camera_angle_ * 2.0f, glm::vec3(0.0f, 1.0f, 0.0f));
 
     const engine::RenderObject objects[] = {
-        {cube_mesh_.get(), model_left},
-        {cube_mesh_.get(), model_right}
+        {cube_mesh_.get(), model_left, test_texture_.get()},
+        {cube_mesh_.get(), model_right, nullptr}
     };
 
     opaque_pass_.execute(

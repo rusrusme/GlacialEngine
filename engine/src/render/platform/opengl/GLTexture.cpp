@@ -99,7 +99,7 @@ namespace engine {
         int channels = 0;
 
         stbi_set_flip_vertically_on_load(1);
-        stbi_uc* data = stbi_load(filepath.c_str(), &width, &height, &channels, 0);
+        stbi_uc* data = stbi_load(filepath.c_str(), &width, &height, &channels, 4);
 
         if (!data) {
             CORE_ERROR("[GLTexture] Failed to load image: '{0}'", filepath);
@@ -108,22 +108,12 @@ namespace engine {
 
         specification_.width = static_cast<uint32_t>(width);
         specification_.height = static_cast<uint32_t>(height);
-
-        if (channels == 4) {
-            specification_.format = TextureFormat::RGBA8;
-        }
-        else if (channels == 3) {
-            specification_.format = TextureFormat::RGB8;
-        }
-        else {
-            CORE_WARN("[GLTexture] Image '{0}' has {1} channels. Defaulting to RGBA8.", filepath, channels);
-            specification_.format = TextureFormat::RGBA8;
-        }
+        specification_.format = TextureFormat::RGBA8;
 
         texture_format_to_gl(specification_.format, internal_format_, data_format_, data_type_);
         create_gpu_resources();
 
-        const size_t size = static_cast<size_t>(width * height * channels);
+        const size_t size = width * height * 4;
         set_data(data, size);
 
         stbi_image_free(data);

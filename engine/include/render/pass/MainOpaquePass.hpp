@@ -5,21 +5,15 @@
 
 #pragma once
 
-#include "render/graph/RenderPass.hpp"
+#include "render/RenderObject.hpp"
 #include "render/rhi/Buffer.hpp"
+#include "render/rhi/CommandBuffer.hpp"
 #include "render/rhi/DescriptorSet.hpp"
 #include "render/rhi/Framebuffer.hpp"
 #include "render/rhi/PipelineState.hpp"
 #include "render/rhi/RHIDevice.hpp"
 
 namespace engine {
-    class Mesh;
-
-    struct RenderObject {
-        const Mesh* mesh{nullptr};
-        glm::mat4 transform{1.0f};
-    };
-
     class MainOpaquePass {
     public:
         MainOpaquePass() = default;
@@ -37,6 +31,7 @@ namespace engine {
 
         Unique<ShaderStorageBuffer> object_ssbo_{nullptr};
         Unique<DescriptorSet> pass_descriptor_set_{nullptr};
+        Unique<Texture2D> default_white_texture_{nullptr};
         size_t max_objects_{1024};
     };
 }
