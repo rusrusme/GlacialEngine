@@ -11,7 +11,7 @@ namespace engine {
     void CameraSystem::on_update(const std::shared_ptr<Scene>& scene, float delta_time) {
         if (!scene) return;
 
-        auto view = scene->view<TransformComponent, CameraComponent>(entt::exclude<DisabledComponent>);
+        auto view = scene->view<TransformComponent, CameraComponent>(exclude<DisabledComponent>);
         for (const auto& [entity, transform, camera_comp] : view.each()) {
             if (!camera_comp.is_primary) continue;
 

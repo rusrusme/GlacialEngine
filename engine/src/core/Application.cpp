@@ -48,19 +48,9 @@ namespace engine {
         // Initialize core systems
         render_context_.init(*window_);
 
-        // shader_library_ = std::make_unique<ShaderLibrary>();
-        // gpu_mesh_manager_ = std::make_unique<GPUMeshManager>(1024 * 1024 * 64, 1024 * 1024 * 16); // 64MB VBO, 16MB IBO
-        // material_system_ = std::make_unique<MaterialSystem>(256);
-        // texture_system_ = std::make_unique<TextureSystem>(2048, 2048, 256);
-        //
-        // scene_renderer_ = std::make_unique<SceneRenderer>(
-        //     *shader_library_,
-        //     *gpu_mesh_manager_,
-        //     *material_system_,
-        //     *texture_system_,
-        //     window_->width(),
-        //     window_->height()
-        // );
+        audio_system_.init();
+        asset_manager_.init(render_context_.device());
+
         context_ = std::make_unique<SystemContext>(
             audio_system_,
             asset_manager_,
@@ -69,8 +59,6 @@ namespace engine {
             render_context_,
             *window_
         );
-
-        audio_system_.on_attach();
         ///////////////////////////////////////////////////////
 
         PROFILE_START("Application::run - Scan Assets");
@@ -163,9 +151,9 @@ namespace engine {
     void Application::shutdown() {
         CORE_INFO("Shutting down engine application");
 
-        scene_manager_.on_detach();
+        scene_manager_.shutdown();
         if (context_) {
-            audio_system_.on_detach(*context_);
+            audio_system_.shutdown(*context_);
         }
 
         context_.reset();

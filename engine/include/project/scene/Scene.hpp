@@ -12,6 +12,12 @@
 #include "project/scene/ecs/Components.hpp"
 
 namespace engine {
+    template<typename... Components>
+    using exclude_types = entt::exclude_t<Components...>;
+
+    template<typename... Components>
+    inline constexpr auto exclude = entt::exclude<Components...>;
+
     class Camera;
     class CollisionSystem;
     class Entity;
@@ -33,12 +39,18 @@ namespace engine {
         void on_init();
         void on_shutdown();
         void on_update(float delta_time);
-        void on_render(const SystemContext& context, float delta_time, const Camera* override_camera = nullptr);
 
         void clear();
 
-        template<typename... Components, typename... Args>
-        auto view(Args&&... args) { return registry_.view<Components...>(std::forward<Args>(args)...); }
+        template<typename... Components, typename... Excluded>
+        auto view(entt::exclude_t<Excluded...> excluded) {
+            return registry_.view<Components...>(excluded);
+        }
+
+        template<typename... Components>
+        auto view() {
+            return registry_.view<Components...>();
+        }
 
         template<typename... Components>
         auto clear_component() { return registry_.clear<Components...>(); }

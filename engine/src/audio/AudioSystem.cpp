@@ -15,7 +15,7 @@
 #include "project/scene/SceneManager.hpp"
 
 namespace engine {
-    void AudioSystem::on_attach() {
+    void AudioSystem::init() {
         ma_result result = ma_engine_init(nullptr, &m_engine);
         if (result != MA_SUCCESS) {
             CORE_ERROR("Failed to initialize audio engine");
@@ -26,7 +26,7 @@ namespace engine {
         CORE_INFO("Audio system initialized successfully");
     }
 
-    void AudioSystem::on_detach(SystemContext& context) {
+    void AudioSystem::shutdown(SystemContext& context) {
         if (!m_initialized) return;
 
         // ECS sounds
@@ -127,7 +127,7 @@ namespace engine {
         const auto scene = context.scenes.active_scene();
         if (!scene) return;
 
-        const auto view = scene->view<TransformComponent, AudioListenerComponent>(entt::exclude<DisabledComponent>);
+        const auto view = scene->view<TransformComponent, AudioListenerComponent>(exclude<DisabledComponent>);
         for (const auto& [entity, transform, listener] : view.each()) {
             if (!listener.is_primary) continue;
 
@@ -147,7 +147,7 @@ namespace engine {
         const auto scene = context.scenes.active_scene();
         if (!scene) return;
 
-        const auto view = scene->view<TransformComponent, AudioSourceComponent>(entt::exclude<DisabledComponent>);
+        const auto view = scene->view<TransformComponent, AudioSourceComponent>(exclude<DisabledComponent>);
         for (const auto& [entity, transform, source] : view.each()) {
             if (source.runtime_sound_ptr) {
                 auto* sound = static_cast<ma_sound*>(source.runtime_sound_ptr);

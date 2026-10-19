@@ -5,15 +5,23 @@
 
 #pragma once
 
-namespace engine {
-    class ShaderLibrary;
+#include <glm/glm.hpp>
 
-    // TODO Temporary setup
+#include "render/RenderObject.hpp"
+#include "render/camera/Camera.hpp"
+#include "render/pass/MainOpaquePass.hpp"
+#include "render/rhi/CommandBuffer.hpp"
+#include "render/rhi/Framebuffer.hpp"
+#include "render/rhi/RHIDevice.hpp"
+#include "render/rhi/Texture.hpp"
+
+namespace engine {
+    class Scene;
+    struct SystemContext;
+
     class SceneRenderer {
     public:
-        SceneRenderer(ShaderLibrary& shaders,
-                      uint32_t viewport_width = 1920,
-                      uint32_t viewport_height = 1080);
+        SceneRenderer() = default;
         ~SceneRenderer() = default;
 
         SceneRenderer(const SceneRenderer&) = delete;
@@ -21,8 +29,24 @@ namespace engine {
         SceneRenderer(SceneRenderer&&) noexcept = delete;
         SceneRenderer& operator=(SceneRenderer&&) noexcept = delete;
 
-        void begin_scene();
-        void submit_instance();
-        void end_scene();
+        void init(const RHIDevice& device);
+
+        void begin_scene(const Camera& camera);
+        void begin_scene(const glm::mat4& view_projection);
+
+        void end_scene(CommandBuffer& cb, Framebuffer& target_framebuffer);
+
+        void submit(const RenderObject& object);
+        void submit(const Mesh* mesh, const glm::mat4& transform, const Texture2D* albedo_texture = nullptr);
+
+        void render_scene(Scene& scene, const SystemContext& context, const Camera* override_camera = nullptr);
+
+    private:
+        MainOpaquePass opaque_pass_{};
+
+        Unique<UniformBuffer> frame_ubo_{nullptr};
+        Unique<DescriptorSet> frame_descriptor_set_{nullptr};
+
+        Vector<RenderObject> opaque_queue_{};
     };
 }

@@ -81,11 +81,11 @@ namespace engine {
         return std::make_unique<GLDescriptorSet>();
     }
 
-    Unique<GLTexture2D> GLDevice::create_texture_2d(const TextureSpecification& spec) const {
+    Unique<GLTexture2D> GLDevice::create_texture_2d(const TextureSpecification& spec, const void* data = nullptr) const {
+        if (data) {
+            const size_t size = spec.width * spec.height * 4;
+            return std::make_unique<GLTexture2D>(spec, data, size);
+        }
         return std::make_unique<GLTexture2D>(spec);
-    }
-
-    Unique<GLTexture2D> GLDevice::create_texture_2d(const std::string& filepath) const {
-        return std::make_unique<GLTexture2D>(filepath);
     }
 }

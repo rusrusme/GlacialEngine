@@ -10,57 +10,48 @@
 #include "core/Application.hpp"
 #include "render/rhi/RenderContext.hpp"
 
-void SandboxLayer::on_attach(engine::SystemContext& context) {
-    auto& device = context.render_context.device();
+void SandboxLayer::on_attach(SystemContext& context) {
+    const auto& device = context.render_context.device();
     const auto& swapchain = context.render_context.swapchain();
 
-    cube_mesh_ = engine::Mesh::create_cube(device);
-    opaque_pass_.init(device);
+    scene_renderer_.init(device);
 
-    test_texture_ = device.create_texture_2d("assets/textures/marble_rock.jpg");
+    const auto cube_handle = context.assets.asset_handle_from_path("primitive://cube");
+    cube_mesh_ = context.assets.get<Mesh>(cube_handle);
 
-    frame_ubo_ = device.create_uniform_buffer(sizeof(glm::mat4), 0);
-    frame_descriptor_set_ = device.create_descriptor_set();
-    frame_descriptor_set_->write_uniform_buffer(0, *frame_ubo_);
+    const auto texture_handle = context.assets.asset_handle_from_path("assets/textures/marble_rock.jpg");
+    test_texture_ = context.assets.get<Texture2D>(texture_handle);
 
     camera_.set_viewport_size(swapchain.width(), swapchain.height());
     camera_.set_distance(4.0f);
 }
 
-void SandboxLayer::on_detach(engine::SystemContext& context) {
-}
+void SandboxLayer::on_detach(SystemContext& context) {}
 
-void SandboxLayer::on_update(engine::SystemContext& context, float delta_time) {
+void SandboxLayer::on_update(SystemContext& context, float delta_time) {
     camera_controller_.on_update(camera_);
-    camera_angle_ += delta_time * 0.5f;
+    rotation_angle_ += delta_time * 0.5f;
 }
 
-void SandboxLayer::on_render(engine::SystemContext& context, float delta_time) {
+void SandboxLayer::on_render(SystemContext& context, float delta_time) {
     const auto& swapchain = context.render_context.swapchain();
-    if (swapchain.width() == 0 || swapchain.height() == 0) { return; }
+    if (swapchain.width() == 0 || swapchain.height() == 0) return;
 
-    const glm::mat4& view_proj = camera_.view_projection();
-    frame_ubo_->set_data(&view_proj, sizeof(glm::mat4));
+    camera_.set_viewport_size(swapchain.width(), swapchain.height());
 
     glm::mat4 model_left = glm::translate(glm::mat4(1.0f), glm::vec3(-1.2f, 0.0f, 0.0f));
     glm::mat4 model_right = glm::translate(glm::mat4(1.0f), glm::vec3(1.2f, 0.0f, 0.0f));
+    model_right = glm::rotate(model_right, rotation_angle_, glm::vec3(0.0f, 1.0f, 0.0f));
 
-    // Rotate white cube
-    model_right = glm::rotate(model_right, camera_angle_ * 2.0f, glm::vec3(0.0f, 1.0f, 0.0f));
-
-    const engine::RenderObject objects[] = {
-        {cube_mesh_.get(), model_left, test_texture_.get()},
-        {cube_mesh_.get(), model_right, nullptr}
-    };
-
-    opaque_pass_.execute(
+    scene_renderer_.begin_scene(camera_);
+    scene_renderer_.submit(cube_mesh_.get(), model_left, test_texture_.get());
+    scene_renderer_.submit(cube_mesh_.get(), model_right, nullptr);
+    scene_renderer_.end_scene(
         context.render_context.active_command_buffer(),
-        context.render_context.swapchain().backbuffer(),
-        *frame_descriptor_set_,
-        objects
+        context.render_context.swapchain().backbuffer()
     );
 }
 
-void SandboxLayer::on_event(engine::SystemContext& context, engine::Event& event) {
+void SandboxLayer::on_event(SystemContext& context, Event& event) {
     camera_controller_.on_event(camera_, event);
 }

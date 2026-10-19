@@ -20,8 +20,8 @@ namespace engine {
         AudioSystem() = default;
         ~AudioSystem() = default;
 
-        void on_attach();
-        void on_detach(SystemContext& context);
+        void init();
+        void shutdown(SystemContext& context);
         void on_update(SystemContext& context, float delta_time);
 
         // -----------------------------------

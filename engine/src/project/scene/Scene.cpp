@@ -10,11 +10,9 @@
 #include "asset/AssetManager.hpp"
 #include "asset/UUID.hpp"
 #include "core/Log.hpp"
-#include "core/SystemContext.hpp"
 #include "physics/CollisionSystem.hpp"
 #include "project/scene/ecs/Entity.hpp"
 #include "render/camera/Camera.hpp"
-#include "render/SceneRenderer.hpp"
 #include "render/mesh/Mesh.hpp"
 #include "util/Instrumentor.hpp"
 
@@ -104,90 +102,6 @@ namespace engine {
     void Scene::on_update(float delta_time) {
         PROFILE_FUNCTION();
         collision_system_->update_broadphase(*this);
-    }
-
-    void Scene::on_render(const SystemContext& context, float delta_time, const Camera* override_camera) {
-        PROFILE_FUNCTION();
-
-        // TODO
-        // const Camera* active_camera = override_camera;
-        // Camera scene_camera;
-        //
-        // if (!active_camera) {
-        //     const auto camera_view = registry_.view<TransformComponent, CameraComponent>(entt::exclude<DisabledComponent>);
-        //     for (const auto& [entity, transform, camera_comp] : camera_view.each()) {
-        //         if (!camera_comp.is_primary) continue;
-        //
-        //         scene_camera = camera_comp.camera;
-        //         scene_camera.set_position(transform.position);
-        //         scene_camera.set_target(transform.position + transform.get_forward());
-        //         active_camera = &scene_camera;
-        //         break;
-        //     }
-        // }
-        //
-        // if (!active_camera) return;
-        //
-        // context.renderer.begin_scene(active_camera->gpu_data());
-        //
-        // const glm::vec3 camera_pos = active_camera->position();
-        //
-        // const auto mesh_view = registry_.view<TransformComponent, MeshComponent>(entt::exclude<DisabledComponent>);
-        // for (const auto& [entity, transform, mesh_comp] : mesh_view.each()) {
-        //     AssetHandle target_mesh_handle = mesh_comp.handle;
-        //
-        //     const float max_scale = std::max({transform.scale.x, transform.scale.y, transform.scale.z});
-        //     const float distance_to_camera = glm::distance(transform.position, camera_pos) / std::max(max_scale, 0.001f);
-        //
-        //     if (registry_.all_of<LODComponent>(entity)) {
-        //         const auto& [levels, max_draw_distance] = registry_.get<LODComponent>(entity);
-        //         if (distance_to_camera > max_draw_distance) {
-        //             continue;
-        //         }
-        //
-        //         for (const auto& level : levels) {
-        //             if (distance_to_camera > level.max_distance) {
-        //                 target_mesh_handle = level.mesh_handle;
-        //             }
-        //             else {
-        //                 break;
-        //             }
-        //         }
-        //     }
-        //
-        //     Mesh* mesh_asset = context.assets.asset<Mesh>(target_mesh_handle).get();
-        //     if (!mesh_asset) {
-        //         CORE_WARN("Failed to retrieve mesh asset handle {0} for entity '{1}'",
-        //                   static_cast<uint64_t>(target_mesh_handle),
-        //                   registry_.all_of<LabelComponent>(entity) ? registry_.get<LabelComponent>(entity).tag : "Entity");
-        //         continue;
-        //     }
-        //
-        //     const glm::mat4 model_matrix = transform.get_matrix();
-        //
-        //     // Bounding Sphere in World-Space für GPU Compute Culling berechnen
-        //     const AABB& local_bounds = mesh_asset->bounds();
-        //     const glm::vec3 bounds_center_local = (local_bounds.min + local_bounds.max) * 0.5f;
-        //     const glm::vec3 bounds_extent_local = (local_bounds.max - local_bounds.min) * 0.5f;
-        //
-        //     const auto world_center = glm::vec3(model_matrix * glm::vec4(bounds_center_local, 1.0f));
-        //     const float world_radius = glm::length(bounds_extent_local * transform.scale);
-        //
-        //     GPUInstanceData instance_data{};
-        //     instance_data.model_matrix = model_matrix;
-        //     instance_data.bounding_center_radius = glm::vec4(world_center, world_radius);
-        //     instance_data.bounding_box_min = glm::vec4(local_bounds.min, 1.0f);
-        //     instance_data.bounding_box_max = glm::vec4(local_bounds.max, 1.0f);
-        //
-        //     // Submeshes an den SceneRenderer übergeben
-        //     for (const Submesh& submesh : mesh_asset->submeshes()) {
-        //         instance_data.mesh_id = submesh.mesh_id;
-        //         instance_data.material_id = submesh.default_material_id;
-        //
-        //         context.renderer.submit_instance(instance_data, submesh.mesh_id);
-        //     }
-        // }
-        // context.renderer.end_scene();
     }
 
     void Scene::clear() {

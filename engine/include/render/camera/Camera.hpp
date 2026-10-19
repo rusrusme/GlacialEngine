@@ -32,7 +32,6 @@ namespace engine {
 
     private:
         void update_camera();
-
         void update_projection();
 
         float fov_{45.0f};

@@ -79,11 +79,11 @@ namespace engine {
     }
 
     const AssetMetadata& AssetManager::metadata(const std::filesystem::path& filepath) const {
-        AssetHandle handle = handle_from_path(filepath);
+        AssetHandle handle = asset_handle_from_path(filepath);
         return metadata(handle);
     }
 
-    AssetHandle AssetManager::handle_from_path(const std::filesystem::path& filepath) const {
+    AssetHandle AssetManager::asset_handle_from_path(const std::filesystem::path& filepath) const {
         auto it = path_to_handle_map_.find(filepath);
         if (it != path_to_handle_map_.end()) {
             return it->second;
@@ -91,7 +91,7 @@ namespace engine {
         return {0};
     }
 
-    std::filesystem::path AssetManager::path_from_handle(AssetHandle handle) const {
+    std::filesystem::path AssetManager::path_from_asset_handle(AssetHandle handle) const {
         const auto& meta = metadata(handle);
         return meta.valid() ? meta.filepath : std::filesystem::path{};
     }

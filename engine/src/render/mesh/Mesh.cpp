@@ -13,7 +13,7 @@ namespace engine {
         vertex_buffer_ = device.create_vertex_buffer(vertices.size_bytes(), vertices.data());
         index_buffer_ = device.create_index_buffer(indices.size_bytes(), indices.data());
 
-        if (vertices.empty()) {
+        if (!vertices.empty()) {
             bounds_.min = vertices[0].position;
             bounds_.max = vertices[0].position;
             for (const auto& v : vertices) {

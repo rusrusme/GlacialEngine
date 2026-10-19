@@ -34,8 +34,7 @@ namespace engine {
         white_spec.generate_mipmaps = false;
 
         constexpr uint32_t white_pixel = 0xFFFFFFFF;
-        default_white_texture_ = device.create_texture_2d(white_spec);
-        default_white_texture_->set_data(&white_pixel, sizeof(uint32_t));
+        default_white_texture_ = device.create_texture_2d(white_spec, &white_pixel);
 
         pass_descriptor_set_ = device.create_descriptor_set();
         pass_descriptor_set_->write_storage_buffer(1, *object_ssbo_);

@@ -15,7 +15,7 @@ namespace engine {
         inline static const std::string DEFAULT_SCENE = "Untitled Scene";
 
         void on_attach(std::shared_ptr<Scene> scene);
-        void on_detach();
+        void shutdown();
 
         // --- Scene Management ---
         void save(const std::string& filepath, const SystemContext& context);

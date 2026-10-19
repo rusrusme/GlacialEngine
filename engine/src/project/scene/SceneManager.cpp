@@ -20,7 +20,7 @@ namespace engine {
         }
     }
 
-    void SceneManager::on_detach() {
+    void SceneManager::shutdown() {
         on_stop();
         if (scene_) {
             scene_->on_shutdown();

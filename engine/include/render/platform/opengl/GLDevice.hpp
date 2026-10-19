@@ -32,8 +32,7 @@ namespace engine {
         [[nodiscard]] Shared<GLSwapchain> create_swapchain(const SwapchainSpec& spec) const;
 
         [[nodiscard]] Unique<GLDescriptorSet> create_descriptor_set() const;
-        [[nodiscard]] Unique<GLTexture2D> create_texture_2d(const TextureSpecification& spec) const;
-        [[nodiscard]] Unique<GLTexture2D> create_texture_2d(const std::string& filepath) const;
+        [[nodiscard]] Unique<GLTexture2D> create_texture_2d(const TextureSpecification& spec, const void* data) const;
 
         [[nodiscard]] static constexpr RendererBackend backend() noexcept { return RendererBackend::OpenGL; }
     };
