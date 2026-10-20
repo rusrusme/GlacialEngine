@@ -15,7 +15,7 @@ namespace engine {
     LoadedShaderData ShaderCompiler::compile_source(const std::string& source, const std::string& name) {
         const auto active_backend = native_backend(RHIDevice::backend());
 
-        const std::vector<uint8_t> bin = glacialc::GShaderCompiler::compile_source(source, active_backend);
+        const Vector<uint8_t> bin = glacialc::GShaderCompiler::compile_source(source, active_backend);
         if (bin.empty()) {
             return {.valid = false, .error_message = "Shader compilation failed for " + name };
         }
@@ -37,7 +37,7 @@ namespace engine {
         const std::string content((std::istreambuf_iterator(file)), std::istreambuf_iterator<char>());
         const auto active_backend = native_backend(RHIDevice::backend());
 
-        const std::vector<uint8_t> bin = glacialc::GShaderCompiler::compile_source(content, active_backend, source.parent_path());
+        const Vector<uint8_t> bin = glacialc::GShaderCompiler::compile_source(content, active_backend, source.parent_path());
         if (bin.empty()) {
             return { .valid = false, .error_message = "Shader compilation failed for " + source.string() };
         }

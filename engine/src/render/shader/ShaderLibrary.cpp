@@ -64,7 +64,7 @@ namespace engine {
     }
 
     void ShaderLibrary::reload_all() {
-        std::vector<Shared<Shader>> target_shaders;
+        Vector<Shared<Shader>> target_shaders;
         {
             std::shared_lock lock(mutex_);
             target_shaders.reserve(shaders_.size());

@@ -9,7 +9,8 @@
 
 #include <initializer_list>
 #include <string>
-#include <vector>
+
+#include "render/rhi/RHITypes.hpp"
 
 namespace engine {
     // Sentinel meaning "let the backend assign the next free attribute location".
@@ -109,7 +110,7 @@ namespace engine {
         BufferLayout(std::initializer_list<BufferElement> elements);
 
         [[nodiscard]] uint32_t stride() const { return stride_; }
-        [[nodiscard]] const std::vector<BufferElement>& elements() const { return elements_; }
+        [[nodiscard]] const Vector<BufferElement>& elements() const { return elements_; }
 
         [[nodiscard]] Vector<BufferElement>::iterator begin() { return elements_.begin(); }
         [[nodiscard]] Vector<BufferElement>::iterator end() { return elements_.end(); }

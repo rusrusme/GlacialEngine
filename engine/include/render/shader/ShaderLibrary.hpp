@@ -10,6 +10,7 @@
 #include <string>
 #include <unordered_map>
 
+#include "render/rhi/RHITypes.hpp"
 #include "render/rhi/Shader.hpp"
 
 namespace engine {

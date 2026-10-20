@@ -181,7 +181,7 @@ namespace engine {
         }
 
         if (!color_attachments_.empty()) {
-            std::vector<GLenum> draw_buffers(color_attachments_.size());
+            Vector<GLenum> draw_buffers(color_attachments_.size());
             for (size_t i = 0; i < draw_buffers.size(); ++i) {
                 draw_buffers[i] = static_cast<GLenum>(GL_COLOR_ATTACHMENT0 + i);
             }

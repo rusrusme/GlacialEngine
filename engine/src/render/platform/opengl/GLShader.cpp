@@ -11,6 +11,7 @@
 #include <glad/glad.h>
 
 #include "core/Log.hpp"
+#include "render/rhi/RHITypes.hpp"
 #include "render/shader/ShaderCompiler.hpp"
 
 namespace engine {
@@ -146,7 +147,7 @@ namespace engine {
 
     void GLShader::create_program(const std::unordered_map<uint32_t, std::string>& sources) {
         const GLuint program = glCreateProgram();
-        std::vector<GLuint> gl_shader_ids;
+        Vector<GLuint> gl_shader_ids;
         gl_shader_ids.reserve(sources.size());
 
         for (auto&& [stage_type, stage_source] : sources) {
@@ -161,7 +162,7 @@ namespace engine {
                 GLint max_length = 0;
                 glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &max_length);
 
-                std::vector<GLchar> info_log(max_length);
+                Vector<GLchar> info_log(max_length);
                 glGetShaderInfoLog(shader, max_length, &max_length, info_log.data());
 
                 glDeleteShader(shader);
@@ -185,7 +186,7 @@ namespace engine {
             GLint max_length = 0;
             glGetProgramiv(program, GL_INFO_LOG_LENGTH, &max_length);
 
-            std::vector<GLchar> info_log(max_length);
+            Vector<GLchar> info_log(max_length);
             glGetProgramInfoLog(program, max_length, &max_length, info_log.data());
 
             glDeleteProgram(program);

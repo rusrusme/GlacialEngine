@@ -55,7 +55,7 @@ namespace engine {
         Unique<IndexBuffer> global_ibo_{nullptr};
         Unique<ShaderStorageBuffer> submesh_ssbo_{nullptr};
 
-        std::vector<GPUSubmeshData> submeshes_;
+        Vector<GPUSubmeshData> submeshes_;
 
         uint32_t current_vertex_offset_{0};
         uint32_t current_index_offset_{0};

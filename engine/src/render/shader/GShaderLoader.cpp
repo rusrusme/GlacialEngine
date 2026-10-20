@@ -5,6 +5,8 @@
 
 #include "render/shader/GShaderLoader.hpp"
 
+#include "render/rhi/RHITypes.hpp"
+
 namespace engine {
     std::optional<LoadedShaderStage> LoadedShaderData::get_stage(const glacialc::ShaderStage stage_type) const {
         for (const auto& stage : stages) {
@@ -24,7 +26,7 @@ namespace engine {
             return {.valid = false, .error_message = "File is smaller than GShaderHeader size"};
         }
 
-        std::vector<uint8_t> buffer(file_size);
+        Vector<uint8_t> buffer(file_size);
         file.seekg(0, std::ios::beg);
         file.read(reinterpret_cast<char*>(buffer.data()), file_size);
 
