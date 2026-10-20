@@ -19,29 +19,29 @@ namespace engine {
         const std::filesystem::path path(filepath_);
         name_ = path.stem().string();
 
-        LoadedBSHData bsh_data;
-        if (path.extension() == ".bsh") {
-            bsh_data = ShaderCompiler::compile_file(filepath_);
+        LoadedShaderData shader_data;
+        if (path.extension() == ".gshader") {
+            shader_data = ShaderCompiler::compile_file(filepath_);
         }
-        else { // .bshb
-            bsh_data = BSHLoader::load_from_binary(filepath_);
+        else { // .gsb
+            shader_data = GShaderLoader::load_from_binary(filepath_);
         }
 
-        if (!bsh_data.valid) {
-            CORE_ERROR("[GLShader] Failed to load BSHB file '{0}': {1}", filepath_, bsh_data.error_message);
+        if (!shader_data.valid) {
+            CORE_ERROR("[GLShader] Failed to load compiled shader file '{0}': {1}", filepath_, shader_data.error_message);
             return;
         }
-        load(bsh_data);
+        load(shader_data);
     }
 
     GLShader::GLShader(std::string name, const std::string& shader_code)
         : name_(std::move(name)) {
-        const LoadedBSHData bsh_data = ShaderCompiler::compile_source(shader_code, name_);
-        if (!bsh_data.valid) {
-            CORE_ERROR("[GLShader] Failed to compile in-memory shader '{0}': {1}", name_, bsh_data.error_message);
+        const LoadedShaderData shader_data = ShaderCompiler::compile_source(shader_code, name_);
+        if (!shader_data.valid) {
+            CORE_ERROR("[GLShader] Failed to compile in-memory shader '{0}': {1}", name_, shader_data.error_message);
             return;
         }
-        load(bsh_data);
+        load(shader_data);
     }
 
     GLShader::~GLShader() {
@@ -77,25 +77,25 @@ namespace engine {
         }
 
         const std::filesystem::path path(filepath_);
-        LoadedBSHData bsh_data;
-        if (path.extension() == ".bsh") {
-            // Hot-reload .bsh source file
-            bsh_data = ShaderCompiler::compile_file(filepath_);
+        LoadedShaderData shader_data;
+        if (path.extension() == ".gshader") {
+            // Hot-reload .gshader source file
+            shader_data = ShaderCompiler::compile_file(filepath_);
         }
         else {
-            // Load compiled .bshb binary
-            bsh_data = BSHLoader::load_from_binary(filepath_);
+            // Load compiled .gsb binary
+            shader_data = GShaderLoader::load_from_binary(filepath_);
         }
 
-        if (!bsh_data.valid) {
-            CORE_ERROR("[GLShader] Reload failed for '{0}': {1}", name_, bsh_data.error_message);
+        if (!shader_data.valid) {
+            CORE_ERROR("[GLShader] Reload failed for '{0}': {1}", name_, shader_data.error_message);
             return false;
         }
 
         const uint32_t old_program_id = renderer_id_;
         renderer_id_ = 0;
 
-        load(bsh_data);
+        load(shader_data);
 
         if (renderer_id_ == 0) {
             renderer_id_ = old_program_id;
@@ -118,25 +118,25 @@ namespace engine {
         glUseProgram(0);
     }
 
-    void GLShader::load(const LoadedBSHData& bsh_data) {
-        if (!bsh_data.valid) { return; }
-        if (bsh_data.backend != bshc::RenderBackend::OpenGL) {
-            CORE_ERROR("[GLShader] Cannot load BSH shader '{0}': Target backend is not OpenGL", name_);
+    void GLShader::load(const LoadedShaderData& shader_data) {
+        if (!shader_data.valid) { return; }
+        if (shader_data.backend != glacialc::RenderBackend::OpenGL) {
+            CORE_ERROR("[GLShader] Cannot load shader '{0}': Target backend is not OpenGL", name_);
             return;
         }
 
-        auto to_gl_stage = [](bshc::ShaderStage stage) -> uint32_t {
+        auto to_gl_stage = [](glacialc::ShaderStage stage) -> uint32_t {
             switch (stage) {
-                case bshc::ShaderStage::Vertex : return GL_VERTEX_SHADER;
-                case bshc::ShaderStage::Fragment : return GL_FRAGMENT_SHADER;
-                case bshc::ShaderStage::Geometry : return GL_GEOMETRY_SHADER;
-                case bshc::ShaderStage::Compute : return GL_COMPUTE_SHADER;
+                case glacialc::ShaderStage::Vertex : return GL_VERTEX_SHADER;
+                case glacialc::ShaderStage::Fragment : return GL_FRAGMENT_SHADER;
+                case glacialc::ShaderStage::Geometry : return GL_GEOMETRY_SHADER;
+                case glacialc::ShaderStage::Compute : return GL_COMPUTE_SHADER;
                 default : return 0;
             }
         };
 
         std::unordered_map<uint32_t, std::string> sources;
-        for (const auto& stage : bsh_data.stages) {
+        for (const auto& stage : shader_data.stages) {
             if (uint32_t gl_stage = to_gl_stage(stage.stage)) {
                 sources[gl_stage] = std::string(stage.as_string_view());
             }

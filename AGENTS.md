@@ -1,6 +1,6 @@
 # AGENTS.md
 
-Workflow and project guidelines for BasisEngine, including build commands, execution steps, target outputs, and documentation rules.
+Workflow and project guidelines for GlacialEngine, including build commands, execution steps, target outputs, and documentation rules.
 
 --- 
 
@@ -10,7 +10,7 @@ Workflow and project guidelines for BasisEngine, including build commands, execu
     * Current features
     * Completed features (tracked using tick boxes - [x])
 * Existing documentation files:
-  * `Basis Shader Language.md`
+  * `Glacial Shader Language.md`
   * `Rendering Architecture.md`
 
 ---

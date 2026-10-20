@@ -10,7 +10,7 @@
 // TODO if material has double_sided -> pipeline state no cull!
 namespace engine {
     void MainOpaquePass::init(const RHIDevice& device) {
-        shader_ = std::make_shared<Shader>("assets/shaders/compiled/OpaqueMesh.bshb");
+        shader_ = std::make_shared<Shader>("assets/shaders/compiled/OpaqueMesh.gsb");
 
         PipelineStateDesc desc{};
         desc.shader = shader_;

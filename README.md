@@ -1,4 +1,4 @@
-# Basis Engine
+# Glacial Engine
 
 ---
 
@@ -15,7 +15,7 @@
 
 1. Clone the repository:
     ```bash
-    git clone https://github.com/rusrusme/BasisEngine.git
+    git clone https://github.com/rusrusme/GlacialEngine.git
     ```
 
 2. Standard Build (Engine + Editor)
@@ -26,4 +26,4 @@
 
 ---
 
-## Basis Engine Documentation
+## Glacial Engine Documentation

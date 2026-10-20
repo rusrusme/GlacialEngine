@@ -33,7 +33,7 @@ namespace engine {
                     if (root["asset"].contains("source")) {
                         meta.source_filepath = root["asset"]["source"].get<std::string>();
                     }
-                    else if (asset_path.extension() == ".bshb") {
+                    else if (asset_path.extension() == ".gsb") {
                         meta.source_filepath = find_shader_source(asset_path);
                         if (!meta.source_filepath.empty()) {
                             needs_save = true;
@@ -54,7 +54,7 @@ namespace engine {
 
         if (meta.handle == 0) {
             meta.handle = AssetHandle();
-            if (asset_path.extension() == ".bshb") {
+            if (asset_path.extension() == ".gsb") {
                 meta.source_filepath = find_shader_source(asset_path);
             }
         }
@@ -93,7 +93,7 @@ namespace engine {
         if (ext == ".vert" || ext == ".frag" || ext == ".geom" || ext == ".glsl") {
             return AssetType::SHADER;
         }
-        if (ext == ".bsh" || ext == ".bshb") {
+        if (ext == ".gshader" || ext == ".gsb") {
             return AssetType::SHADER;
         }
         if (ext == ".mat") {
@@ -111,8 +111,8 @@ namespace engine {
     std::filesystem::path MetaFileHandler::find_shader_source(const std::filesystem::path& compiled_path) {
         std::string path_str = compiled_path.generic_string();
 
-        if (path_str.ends_with(".bshb")) {
-            path_str.replace(path_str.length() - 5, 5, ".bsh");
+        if (path_str.ends_with(".gsb")) {
+            path_str.replace(path_str.length() - 5, 5, ".gshader");
         }
 
         constexpr std::string_view compiled_segment = "compiled/";
@@ -126,7 +126,7 @@ namespace engine {
         }
 
         std::filesystem::path sibling = compiled_path;
-        sibling.replace_extension(".bsh");
+        sibling.replace_extension(".gshader");
         if (std::filesystem::exists(sibling)) {
             return sibling;
         }

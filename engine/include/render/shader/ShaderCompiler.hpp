@@ -5,18 +5,18 @@
 
 #pragma once
 
-#include <bshc/BSH.hpp>
+#include <glacialc/GShader.hpp>
 
 #include "render/rhi/RHITypes.hpp"
-#include "render/shader/BSHLoader.hpp"
+#include "render/shader/GShaderLoader.hpp"
 
 namespace engine {
     class ShaderCompiler {
     public:
-        static LoadedBSHData compile_source(const std::string& source, const std::string& name);
-        static LoadedBSHData compile_file(const std::filesystem::path& source);
+        static LoadedShaderData compile_source(const std::string& source, const std::string& name);
+        static LoadedShaderData compile_file(const std::filesystem::path& source);
 
     private:
-        static bshc::RenderBackend native_backend(RendererBackend backend);
+        static glacialc::RenderBackend native_backend(RendererBackend backend);
     };
 }

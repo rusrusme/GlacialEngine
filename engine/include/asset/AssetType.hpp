@@ -50,7 +50,7 @@ namespace engine {
         AssetHandle handle{0};
         AssetType type = AssetType::NONE;
         std::filesystem::path filepath;
-        std::filesystem::path source_filepath; // bshb -> bsh
+        std::filesystem::path source_filepath; // gbs -> gshader
 
         [[nodiscard]] bool valid() const { return handle != 0 && type != AssetType::NONE; }
         [[nodiscard]] bool has_source() const { return !source_filepath.empty(); }

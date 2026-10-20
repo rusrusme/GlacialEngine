@@ -12,7 +12,7 @@
 namespace engine {
     class SceneManager {
     public:
-        static constexpr std::string DEFAULT_SCENE = "Untitled Scene";
+        static inline const std::string DEFAULT_SCENE = "Untitled Scene";
 
         void on_attach(std::shared_ptr<Scene> scene);
         void shutdown();

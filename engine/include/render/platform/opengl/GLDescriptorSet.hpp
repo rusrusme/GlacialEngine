@@ -64,7 +64,7 @@ namespace engine {
         /// No-Op in OpenGL (For Vulkan/DX12)
         void update() noexcept {}
 
-        // TODO Remove set_index -> BSH does not support set = X only binding = X
+        // TODO Remove set_index -> GShader does not support set = X only binding = X
         void bind() const;
 
     private:

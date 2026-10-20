@@ -14,11 +14,11 @@
 void SandboxLayer::on_attach(SystemContext& context) {
     std::shared_ptr<Scene> scene = context.scenes.create("Sandbox Scene");
 
-    const auto tree_handle = context.assets.asset_handle_from_path("assets/models/Tree.glb");
+    const auto cube_handle = context.assets.asset_handle_from_path("assets/models/Concrete Cube.glb");
 
-    auto tree = scene->create_entity("Tree");
-    tree.add_component<MeshComponent>(tree_handle);
-    tree.add_component<MaterialComponent>();
+    auto cube = scene->create_entity("Cube");
+    cube.add_component<MeshComponent>(cube_handle);
+    cube.add_component<MaterialComponent>();
 
     const auto& swapchain = context.render_context.swapchain();
     camera_.set_viewport_size(swapchain.width(), swapchain.height());

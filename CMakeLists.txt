@@ -2,7 +2,7 @@
 # ----------------------------------------------------------------------------
 cmake_minimum_required(VERSION 3.20)
 # ----------------------------------------------------------------------------
-project(BasisEngine CXX C)
+project(GlacialEngine CXX C)
 set(CMAKE_CXX_STANDARD 20)
 # ----------------------------------------------------------------------------
 option(ENGINE_DEBUG_DIST "Engine-only debug distribution build for developers" OFF)

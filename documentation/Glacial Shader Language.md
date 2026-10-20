@@ -1,10 +1,10 @@
-# Basis Shader Language (BSH) - Language Specification
+# Glacial Shader Language (GShader) - Language Specification
 
 ---
 
 ## 1. Overview & Architecture
 
-The **Basis Shader Language (BSH)** is a unified, single-file shader language created for the **Basis Engine**. BSH shaders are preprocessed and compiled by the **BSHC (Basis Shader Compiler)** tool into binary shader assets (`.bshb`) targeting OpenGL, Vulkan, and DirectX 12 backends.
+The **Glacial Shader Language (GShader)** is a unified, single-file shader language created for the **Glacial Engine**. GShader shaders are preprocessed and compiled by the **glacialc (Glacial Shader Compiler)** tool into binary shader assets (`.gsb`) targeting OpenGL, Vulkan, and DirectX 12 backends.
 
 Key features include:
 * Single-file multi-stage shader definitions (`#vert`, `#frag`, `#geom`, `#comp`).
@@ -13,18 +13,9 @@ Key features include:
 
 ---
 
-## 2. File Extension & Grammar Metadata
+## 2. Preprocessor & Stage Directives
 
-* **File Extension**: `.bsh` (compiled to `.bshb`)
-* **Parser Class**: `net.rusrusme.bsh.parser.BshParser`
-* **PSI Package**: `net.rusrusme.bsh.psi`
-* **Element Type Holder**: `net.rusrusme.bsh.psi.BshTypes`
-
----
-
-## 3. Preprocessor & Stage Directives
-
-A `.bsh` file consists of top-level preprocessor directives, interface blocks, struct declarations, global variables, and function definitions.
+A `.gshader` file consists of top-level preprocessor directives, interface blocks, struct declarations, global variables, and function definitions.
 
 ### Stage Directives
 * `#vert` : Marks Vertex Shader stage code.
@@ -41,7 +32,7 @@ A `.bsh` file consists of top-level preprocessor directives, interface blocks, s
 
 ---
 
-## 4. Tokens & Lexical Rules
+## 3. Tokens & Lexical Rules
 
 ### Identifiers & Literals
 * **Identifier**: `[a-zA-Z_][a-zA-Z0-9_]*`
@@ -58,7 +49,7 @@ A `.bsh` file consists of top-level preprocessor directives, interface blocks, s
 
 ---
 
-## 5. Type System
+## 4. Type System
 
 ### Scalar Types
 `void`, `bool`, `int`, `uint`, `float`, `double`
@@ -79,7 +70,7 @@ A `.bsh` file consists of top-level preprocessor directives, interface blocks, s
 * **Storage Images**: `image2D`
 
 ### Custom Structs
-```bsh
+```gshader
 struct GPUInstanceData {
     mat4 model_matrix;
     vec4 bounding_center_radius;
@@ -94,12 +85,12 @@ struct GPUInstanceData {
 
 ---
 
-## 6. Memory & Interface Declarations
+## 5. Memory & Interface Declarations
 
 ### Layout Qualifiers
 Variables and interface blocks accept explicit layout parameters:
 
-```bsh
+```gshader
 layout(local_size_x = 16, local_size_y = 16, local_size_z = 1) in;
 layout(location = 0) uniform int u_IsFirstPass;
 layout(r32f, binding = 0) readonly uniform image2D u_InputHZB;
@@ -108,7 +99,7 @@ layout(r32f, binding = 0) readonly uniform image2D u_InputHZB;
 ### Interface Blocks (UBOs & SSBOs)
 
 **Uniform Buffer Block (`uniform`):**
-```bsh
+```gshader
 layout(std140, binding = 0) uniform CameraBuffer {
     mat4 view;
     mat4 projection;
@@ -122,7 +113,7 @@ layout(std140, binding = 0) uniform CameraBuffer {
 ```
 
 **Shader Storage Buffer Block (`buffer`):**
-```bsh
+```gshader
 layout(std430, binding = 0) buffer InstanceBuffer {
     GPUInstanceData instances[];
 };
@@ -130,7 +121,7 @@ layout(std430, binding = 0) buffer InstanceBuffer {
 
 ---
 
-## 7. Operator Precedence & Expression Syntax
+## 6. Operator Precedence & Expression Syntax
 
 1. **Primary Expressions**: Identifiers, Numeric/Bool/String Literals, Type Constructors (e.g., `vec4(0.0)`), Parenthesized expressions `(expr)`.
 2. **Postfix Operators**: Member Access (`.`), Array Access (`[]`), Function Calls (`()`), Post-Increment (`++`), Post-Decrement (`--`).
@@ -147,9 +138,9 @@ layout(std430, binding = 0) buffer InstanceBuffer {
 
 ---
 
-## 8. Concrete BSH Code Example
+## 7. Concrete GShader Code Example
 
-```bsh
+```gshader
 #comp
 #pragma once
 

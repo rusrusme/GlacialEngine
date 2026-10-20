@@ -1,7 +1,7 @@
 # IDE & Build
 /.idea/
 /.vscode/
-/build-*/
+/build/
 
 /.temp/
 

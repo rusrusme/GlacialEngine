@@ -66,7 +66,7 @@ namespace {
 
         std::filesystem::create_directories(basis_dir, ec);
         if (ec) {
-            CORE_ERROR("ProjectWizard: Failed to create basis directory '{0}': {1}", basis_dir.string(), ec.message());
+            CORE_ERROR("ProjectWizard: Failed to create glacial directory '{0}': {1}", basis_dir.string(), ec.message());
             return false;
         }
 

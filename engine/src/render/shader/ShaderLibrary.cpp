@@ -41,7 +41,7 @@ namespace engine {
 
         auto shader = std::make_shared<Shader>(shader_path);
         if (shader->renderer_id() == 0) {
-            CORE_ERROR("Failed to load BSH shader '{0}' from path '{1}'", name, shader_path);
+            CORE_ERROR("Failed to load shader '{0}' from path '{1}'", name, shader_path);
             return nullptr;
         }
         std::string key(name);

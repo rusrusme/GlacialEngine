@@ -98,7 +98,7 @@ namespace engine {
     // TODO Frame    0-3
     //      Pass     4-7
     //      Material 8-15
-    // BSH does not support set = X
+    // GShader does not support set = X
 
     // enum class DescriptorSetIndex : uint32_t {
         // Frame    = 0, // Set 0: Per-Frame Uniforms (FrameData UBO, Time, View/Proj)

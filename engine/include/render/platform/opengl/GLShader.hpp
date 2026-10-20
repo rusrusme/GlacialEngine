@@ -9,13 +9,13 @@
 #include <string>
 #include <unordered_map>
 
-#include "render/shader/BSHLoader.hpp"
+#include "render/shader/GShaderLoader.hpp"
 
 namespace engine {
     class GLShader {
     public:
         GLShader() = default;
-        /** @brief Uses .bshb or .bsh (Hot-reload) */
+        /** @brief Uses .gsb or .gshader (Hot-reload) */
         explicit GLShader(std::string filepath);
         GLShader(std::string name, const std::string& shader_code);
 
@@ -38,7 +38,7 @@ namespace engine {
         [[nodiscard]] const std::string& filepath() const { return filepath_; }
 
     private:
-        void load(const LoadedBSHData& bsh_data);
+        void load(const LoadedShaderData& shader_data);
         void create_program(const std::unordered_map<uint32_t, std::string>& sources);
 
         uint32_t renderer_id_ = 0;

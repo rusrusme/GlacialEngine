@@ -25,13 +25,13 @@ set_property(CACHE RENDER_API PROPERTY STRINGS "OPENGL" "VULKAN" "DX12")
 # ----------------------------------------------------------------------------
 if (RENDER_API STREQUAL "OPENGL")
     target_compile_definitions(Engine PUBLIC RENDER_API_OPENGL)
-    set(BSHC_BACKEND "opengl")
+    set(GSHADER_BACKEND "opengl")
     find_package(OpenGL REQUIRED)
     target_link_libraries(Engine PUBLIC OpenGL::GL DEPENDENCY::GLAD)
 # ----------------------------------------------------------------------------
 elseif (RENDER_API STREQUAL "VULKAN")
     target_compile_definitions(Engine PUBLIC RENDER_API_VULKAN)
-    set(BSHC_BACKEND "vulkan")
+    set(GSHADER_BACKEND "vulkan")
     find_package(Vulkan REQUIRED)
 # ----------------------------------------------------------------------------
 elseif (RENDER_API STREQUAL "DX12")
@@ -40,7 +40,7 @@ elseif (RENDER_API STREQUAL "DX12")
     endif ()
     target_compile_definitions(Engine PUBLIC RENDER_API_DX12)
     target_link_libraries(Engine PUBLIC d3d12.lib dxgi.lib dxguid.lib)
-    set(BSHC_BACKEND "dx12")
+    set(GSHADER_BACKEND "dx12")
 # ----------------------------------------------------------------------------
 else ()
     message(FATAL_ERROR "Unsupported Render API: ${RENDER_API}")
@@ -68,7 +68,7 @@ target_link_libraries(Engine PUBLIC
                       DEPENDENCY::CGLTF
                       DEPENDENCY::MINIAUDIO
                       DEPENDENCY::NLOHMANN
-                      DEPENDENCY::BSHC
+                      DEPENDENCY::GLACIALC
 )
 # ----------------------------------------------------------------------------
 if (ENABLE_IMGUI)
@@ -87,21 +87,21 @@ add_custom_target(SyncAssets ALL
                   VERBATIM
 )
 # ----------------------------------------------------------------------------
-file(GLOB_RECURSE BSH_SOURCES RELATIVE "${SOURCE_ASSETS}/shaders" CONFIGURE_DEPENDS "${SOURCE_ASSETS}/shaders/*.bsh")
+file(GLOB_RECURSE SHADER_SOURCES RELATIVE "${SOURCE_ASSETS}/shaders" CONFIGURE_DEPENDS "${SOURCE_ASSETS}/shaders/*.gshader")
 set(COMPILED_SHADERS "")
 
-foreach(SHADER_REL IN LISTS BSH_SOURCES)
+foreach(SHADER_REL IN LISTS SHADER_SOURCES)
     # Input
     set(SHADER_IN "${SOURCE_ASSETS}/shaders/${SHADER_REL}")
     # Output
-    cmake_path(REPLACE_EXTENSION SHADER_REL "bshb" OUTPUT_VARIABLE SHADER_OUT_REL)
+    cmake_path(REPLACE_EXTENSION SHADER_REL "gsb" OUTPUT_VARIABLE SHADER_OUT_REL)
     set(SHADER_OUT "${RUNTIME_ASSETS}/shaders/compiled/${SHADER_OUT_REL}")
 
     add_custom_command(
             OUTPUT "${SHADER_OUT}"
-            COMMAND $<TARGET_FILE:bshc::bshc> "${SHADER_IN}" -o "${SHADER_OUT}" -b ${BSHC_BACKEND}
-            DEPENDS "${SHADER_IN}" $<TARGET_FILE:bshc::bshc>
-            COMMENT "Compiling shader: ${SHADER_REL} [${BSHC_BACKEND}]"
+            COMMAND $<TARGET_FILE:glacialc::glacialc> "${SHADER_IN}" -o "${SHADER_OUT}" -b ${GSHADER_BACKEND}
+            DEPENDS "${SHADER_IN}" $<TARGET_FILE:glacialc::glacialc>
+            COMMENT "Compiling shader: ${SHADER_REL} [${GSHADER_BACKEND}]"
             VERBATIM
     )
     list(APPEND COMPILED_SHADERS "${SHADER_OUT}")
@@ -110,5 +110,5 @@ add_custom_target(CompileShaders ALL DEPENDS ${COMPILED_SHADERS})
 # ----------------------------------------------------------------------------
 add_dependencies(Engine SyncAssets)
 add_dependencies(Engine CompileShaders)
-set_target_properties(SyncAssets CompileShaders PROPERTIES FOLDER "BasisEngine")
+set_target_properties(SyncAssets CompileShaders PROPERTIES FOLDER "GlacialEngine")
 # ----------------------------------------------------------------------------

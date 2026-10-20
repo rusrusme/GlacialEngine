@@ -1,10 +1,10 @@
 # engine-lib/CMakeLists.txt
 cmake_minimum_required(VERSION 3.20)
-project(BasisEngineLib LANGUAGES CXX C)
+project(GlacialEngineLib LANGUAGES CXX C)
 
 # Define core interface library target
 add_library(Engine INTERFACE)
-add_library(BasisEngine::Engine ALIAS Engine)
+add_library(GlacialEngine::Engine ALIAS Engine)
 
 # Force C++20 requirement for consumers
 target_compile_features(Engine INTERFACE cxx_std_20)

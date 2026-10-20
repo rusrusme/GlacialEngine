@@ -28,7 +28,7 @@ namespace {
     //
     void handle_new_project(engine::SystemContext& context) {
         const std::string selected_file = engine::platform::FileDialogAPI::save_file(
-            engine::platform::FileDialogFilter::PROJECT, "basis"
+            engine::platform::FileDialogFilter::PROJECT, "glacial"
         );
         if (selected_file.empty()) return;
 
@@ -262,7 +262,7 @@ namespace editor {
     void Menubar::help_menu(engine::SystemContext& context) {
         if (ImGui::BeginMenu("Help")) {
             if (ImGui::MenuItem("Documentation")) {
-                engine::platform::ShellAPI::open_url("https://github.com/rusrusme/BasisEngine/wiki");
+                engine::platform::ShellAPI::open_url("https://github.com/rusrusme/GlacialEngine/wiki");
             }
             ImGui::EndMenu();
         }
