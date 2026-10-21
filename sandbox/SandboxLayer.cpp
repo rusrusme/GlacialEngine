@@ -14,11 +14,24 @@
 void SandboxLayer::on_attach(SystemContext& context) {
     std::shared_ptr<Scene> scene = context.scenes.create("Sandbox Scene");
 
-    const auto cube_handle = context.assets.asset_handle_from_path("assets/models/Concrete Cube.glb");
+    const auto cube_mesh_handle = context.assets.asset_handle_from_path("primitive://cube");
+    const auto texture_handle = context.assets.asset_handle_from_path("assets/textures/marble_rock.jpg");
 
-    auto cube = scene->create_entity("Cube");
-    cube.add_component<MeshComponent>(cube_handle);
-    cube.add_component<MaterialComponent>();
+    auto left_cube = scene->create_entity("Textured Cube");
+    auto& l_transform = left_cube.get_component<TransformComponent>();
+    l_transform.position = {-1.2f, 0.0f, 0.0f};
+
+    left_cube.add_component<MeshComponent>(cube_mesh_handle);
+
+    auto& material = left_cube.add_component<MaterialComponent>();
+    material.texture_handle = texture_handle;
+
+    auto rotating_cube_ = scene->create_entity("Rotating White Cube");
+    auto& r_transform = rotating_cube_.get_component<TransformComponent>();
+    r_transform.position = {1.2f, 0.0f, 0.0f};
+
+    rotating_cube_.add_component<MeshComponent>(cube_mesh_handle);
+    rotating_cube_.add_component<MaterialComponent>(); // texture_handle = 0 -> White
 
     const auto& swapchain = context.render_context.swapchain();
     camera_.set_viewport_size(swapchain.width(), swapchain.height());
