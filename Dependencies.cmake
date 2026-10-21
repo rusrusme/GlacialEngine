@@ -1,7 +1,7 @@
 # Dependencies.cmake
 # ----------------------------------------------------------------------------
 include(FetchContent)
-set(FETCHCONTENT_UPDATES_DISCONNECTED ON CACHE BOOL "" FORCE)
+set(FETCHCONTENT_UPDATES_DISCONNECTED OFF CACHE BOOL "" FORCE)
 # ----------------------------------------------------------------------------
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set(CMAKE_FOLDER "ThirdParty")
@@ -169,7 +169,7 @@ FetchContent_MakeAvailable(miniaudio)
 FetchContent_Declare(
         glacialc
         GIT_REPOSITORY https://github.com/rusrusme/glacialc.git
-        GIT_TAG v1.3.0
+        GIT_TAG v1.4.0
         GIT_SHALLOW TRUE
         GIT_SUBMODULES ""
 )

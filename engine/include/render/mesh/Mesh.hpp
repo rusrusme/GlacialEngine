@@ -48,10 +48,10 @@ namespace engine {
     };
 
     struct Submesh {
-        uint32_t index_count{0};    ///< Index count for indirect draw command
-        uint32_t first_index{0};    ///< Offset in global Index Buffer
-        int32_t vertex_offset{0};   ///< Offset in global Vertex Buffer
-        uint32_t material_index{0}; ///< Reference into MaterialSystem SSBO
+        uint32_t index_count{0};
+        uint32_t first_index{0};
+        int32_t vertex_offset{0};
+        uint32_t material_index{0};
 
         AABB bounds;
     };
