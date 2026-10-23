@@ -15,23 +15,29 @@ void SandboxLayer::on_attach(SystemContext& context) {
     std::shared_ptr<Scene> scene = context.scenes.create("Sandbox Scene");
 
     const auto cube_mesh_handle = context.assets.asset_handle_from_path("primitive://cube");
-    const auto texture_handle = context.assets.asset_handle_from_path("assets/textures/marble_rock.jpg");
 
-    auto left_cube = scene->create_entity("Textured Cube");
-    auto& l_transform = left_cube.get_component<TransformComponent>();
-    l_transform.position = {-1.2f, 0.0f, 0.0f};
+    {
+        const AssetHandle albedo_handle = context.assets.asset_handle_from_path("assets/textures/brick/rock_wall_13_diff_1k.jpg");
+        const AssetHandle normal_handle = context.assets.asset_handle_from_path("assets/textures/brick/rock_wall_13_nor_gl_1k.jpg");
+        auto cube = scene->create_entity("Textured Cube");
+        auto& transform = cube.get_component<TransformComponent>();
+        transform.position = {-1.2f, 0.0f, 0.0f};
 
-    left_cube.add_component<MeshComponent>(cube_mesh_handle);
+        cube.add_component<MeshComponent>(cube_mesh_handle);
+        auto& material = cube.add_component<MaterialComponent>();
+        material.color = glm::vec4(1.0f);
+        material.texture_handle = albedo_handle;
+        material.normal_texture_handle = normal_handle;
+    }
 
-    auto& material = left_cube.add_component<MaterialComponent>();
-    material.texture_handle = texture_handle;
+    {
+        auto cube = scene->create_entity("Rotating White Cube");
+        auto& transform = cube.get_component<TransformComponent>();
+        transform.position = {1.2f, 0.0f, 0.0f};
 
-    auto rotating_cube_ = scene->create_entity("Rotating White Cube");
-    auto& r_transform = rotating_cube_.get_component<TransformComponent>();
-    r_transform.position = {1.2f, 0.0f, 0.0f};
-
-    rotating_cube_.add_component<MeshComponent>(cube_mesh_handle);
-    rotating_cube_.add_component<MaterialComponent>(); // texture_handle = 0 -> White
+        cube.add_component<MeshComponent>(cube_mesh_handle);
+        cube.add_component<MaterialComponent>(); // texture_handle = 0 -> White
+    }
 
     auto camera = scene->create_entity("Camera");
     auto& cam_comp = camera.add_component<CameraComponent>();

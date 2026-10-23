@@ -106,7 +106,7 @@ namespace engine {
     struct MaterialComponent {
         glm::vec4 color{1.0f};
         AssetHandle texture_handle{0};
-        AssetHandle normal_handle{0};
+        AssetHandle normal_texture_handle{0};
         AssetHandle metallic_roughness_handle{0};
 
         float roughness = 0.5f;
@@ -119,7 +119,7 @@ namespace engine {
             const AssetHandle texture = {0},
             const AssetHandle normal = {0},
             const AssetHandle pbr = {0}
-        ) : color(color), texture_handle(texture), normal_handle(normal), metallic_roughness_handle(pbr) {}
+        ) : color(color), texture_handle(texture), normal_texture_handle(normal), metallic_roughness_handle(pbr) {}
     };
 
     struct CameraComponent {

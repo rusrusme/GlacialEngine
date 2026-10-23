@@ -15,7 +15,9 @@ namespace engine {
     struct RenderObject {
         const Mesh* mesh{nullptr};
         glm::mat4 transform{1.0f};
-        const Texture2D* albedo_texture{nullptr};
         glm::vec4 color{1.0f};
+
+        const Texture2D* albedo_texture{nullptr};
+        const Texture2D* normal_texture{nullptr};
     };
 }

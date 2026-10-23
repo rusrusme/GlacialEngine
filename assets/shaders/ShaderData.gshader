@@ -20,8 +20,3 @@ struct InstanceData {
 layout(std430, binding = 1) readonly buffer InstanceBuffer {
     InstanceData instances[];
 };
-
-layout(std140, binding = 3) uniform DirectionalLightBuffer {
-    vec4 u_LightDirection;
-    vec4 u_LightColor;
-};

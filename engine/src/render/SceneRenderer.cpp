@@ -45,13 +45,14 @@ namespace engine {
         opaque_queue_.push_back(object);
     }
 
-    void SceneRenderer::submit(const Mesh* mesh, const glm::mat4& transform, const Texture2D* albedo_texture, const glm::vec4& albedo_color) {
+    void SceneRenderer::submit(const Mesh* mesh, const glm::mat4& transform, const Texture2D* albedo_texture, const Texture2D* normal_texture, const glm::vec4& albedo_color) {
         if (!mesh) return;
         opaque_queue_.push_back(RenderObject{
             .mesh           = mesh,
             .transform      = transform,
+            .color          = albedo_color,
             .albedo_texture = albedo_texture,
-            .color          = albedo_color
+            .normal_texture = normal_texture
         });
     }
 
@@ -109,22 +110,29 @@ namespace engine {
                 continue;
             }
 
-            const Texture2D* albedo_tex = nullptr;
+            const Texture2D* albedo_texture = nullptr;
+            const Texture2D* normal_texture = nullptr;
             glm::vec4 albedo_color{1.0f};
 
             Entity entity{entity_handle, scene.get()};
             if (entity.has_component<MaterialComponent>()) {
-                const auto& mat = entity.get_component<MaterialComponent>();
-                albedo_color = mat.color;
+                const auto& material = entity.get_component<MaterialComponent>();
+                albedo_color = material.color;
 
-                if (mat.texture_handle != AssetHandle(0)) {
-                    if (auto tex_asset = context.assets.get<Texture2D>(mat.texture_handle)) {
-                        albedo_tex = tex_asset.get();
+                if (material.texture_handle != AssetHandle(0)) {
+                    if (auto texture_asset = context.assets.get<Texture2D>(material.texture_handle)) {
+                        albedo_texture = texture_asset.get();
+                    }
+                }
+
+                if (material.normal_texture_handle != AssetHandle(0)) {
+                    if (auto normal_asset = context.assets.get<Texture2D>(material.normal_texture_handle)) {
+                        normal_texture = normal_asset.get();
                     }
                 }
             }
 
-            submit(mesh_asset.get(), transform.get_matrix(), albedo_tex, albedo_color);
+            submit(mesh_asset.get(), transform.get_matrix(), albedo_texture, normal_texture, albedo_color);
         }
 
         end_scene(

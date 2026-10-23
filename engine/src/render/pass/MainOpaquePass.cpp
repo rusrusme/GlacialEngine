@@ -29,24 +29,30 @@ namespace engine {
         // SSBO for Per-Object Transforms (Slot 1)
         object_ssbo_ = device.create_shader_storage_buffer(max_objects_ * sizeof(GPUInstanceData), 1);
 
-        TextureSpecification white_spec{};
-        white_spec.width = 1;
-        white_spec.height = 1;
-        white_spec.format = TextureFormat::RGBA8;
-        white_spec.generate_mipmaps = false;
+        TextureSpecification default_texture_spec{};
+        default_texture_spec.width = 1;
+        default_texture_spec.height = 1;
+        default_texture_spec.format = TextureFormat::RGBA8;
+        default_texture_spec.generate_mipmaps = false;
 
         constexpr uint32_t white_pixel = 0xFFFFFFFF;
-        default_white_texture_ = device.create_texture_2d(white_spec, &white_pixel);
+        default_white_texture_ = device.create_texture_2d(default_texture_spec, &white_pixel);
+
+        // Neutral tangent-space normal (0, 0, 1) -> R=128 (0x80), G=128 (0x80), B=255 (0xFF), A=255 (0xFF)
+        constexpr uint32_t normal_pixel = 0xFFFF8080;
+        default_normal_texture_ = device.create_texture_2d(default_texture_spec, &normal_pixel);
 
         pass_descriptor_set_ = device.create_descriptor_set();
         pass_descriptor_set_->write_storage_buffer(1, *object_ssbo_);
         pass_descriptor_set_->write_texture(2, *default_white_texture_);
+        pass_descriptor_set_->write_texture(3, *default_normal_texture_);
     }
 
     void MainOpaquePass::shutdown() {
         pass_descriptor_set_.reset();
         object_ssbo_.reset();
         default_white_texture_.reset();
+        default_normal_texture_.reset();
         pipeline_.reset();
         shader_.reset();
     }
@@ -78,15 +84,27 @@ namespace engine {
         cb.bind_pipeline(*pipeline_);
         cb.bind_descriptor_set(frame_descriptor_set);
 
-        const Texture2D* currently_bound_texture = nullptr;
+        const Texture2D* currently_bound_albedo = nullptr;
+        const Texture2D* currently_bound_normal = nullptr;
         const Mesh* currently_bound_mesh = nullptr;
 
-        auto bind_texture_if_needed = [&](const Texture2D* target_tex) {
-            const Texture2D* tex = target_tex ? target_tex : default_white_texture_.get();
-            if (tex != currently_bound_texture) {
-                pass_descriptor_set_->write_texture(2, *tex);
+        auto bind_texture_if_needed = [&](const Texture2D* target_albedo, const Texture2D* target_normal) {
+            const Texture2D* albedo = target_albedo ? target_albedo : default_white_texture_.get();
+            const Texture2D* normal = target_normal ? target_normal : default_normal_texture_.get();
+
+            bool changed = false;
+            if (albedo != currently_bound_albedo) {
+                pass_descriptor_set_->write_texture(2, *albedo);
+                currently_bound_albedo = albedo;
+                changed = true;
+            }
+            if (normal != currently_bound_normal) {
+                pass_descriptor_set_->write_texture(3, *normal);
+                currently_bound_normal = normal;
+                changed = true;
+            }
+            if (changed) {
                 cb.bind_descriptor_set(*pass_descriptor_set_);
-                currently_bound_texture = tex;
             }
         };
 
@@ -102,13 +120,20 @@ namespace engine {
 
             if (!obj.mesh->submeshes().empty()) {
                 for (const auto& submesh : obj.mesh->submeshes()) {
-                    const Texture2D* tex = obj.albedo_texture;
+                    const Texture2D* albedo_texture = obj.albedo_texture;
+                    const Texture2D* normal_texture = obj.normal_texture;
 
-                    if (!tex && submesh.material_index < obj.mesh->materials().size()) {
-                        tex = obj.mesh->materials()[submesh.material_index].albedo_map.get();
+                    if (submesh.material_index < obj.mesh->materials().size()) {
+                        const auto& material = obj.mesh->materials()[submesh.material_index];
+                        if (!albedo_texture) {
+                            albedo_texture = material.albedo_map.get();
+                        }
+                        if (!normal_texture) {
+                            normal_texture = material.normal_map.get();
+                        }
                     }
 
-                    bind_texture_if_needed(tex);
+                    bind_texture_if_needed(albedo_texture, normal_texture);
 
                     cb.draw_indexed(
                         submesh.index_count,
@@ -120,7 +145,7 @@ namespace engine {
                 }
             }
             else {
-                bind_texture_if_needed(obj.albedo_texture);
+                bind_texture_if_needed(obj.albedo_texture, obj.normal_texture);
 
                 cb.draw_indexed(
                     obj.mesh->index_count(),

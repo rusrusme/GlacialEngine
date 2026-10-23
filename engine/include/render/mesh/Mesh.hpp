@@ -42,7 +42,7 @@ namespace engine {
                 {ShaderDataType::Float3, "a_Position"},
                 {ShaderDataType::Float3, "a_Normal"},
                 {ShaderDataType::Float2, "a_UV"},
-                {ShaderDataType::Float4, "a_Color"}
+                {ShaderDataType::Float4, "a_Tangent"}
             };
         }
     };

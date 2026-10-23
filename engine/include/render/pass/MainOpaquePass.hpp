@@ -37,10 +37,12 @@ namespace engine {
     private:
         Shared<Shader> shader_{nullptr};
         Unique<PipelineState> pipeline_{nullptr};
-
         Unique<ShaderStorageBuffer> object_ssbo_{nullptr};
         Unique<DescriptorSet> pass_descriptor_set_{nullptr};
+
         Unique<Texture2D> default_white_texture_{nullptr};
+        Unique<Texture2D> default_normal_texture_{nullptr};
+
         size_t max_objects_{1024};
     };
 }
