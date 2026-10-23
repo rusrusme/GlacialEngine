@@ -11,8 +11,9 @@
 #include "event/WindowEvents.hpp"
 
 namespace engine {
-    class Event;
     class Camera;
+    class CameraSystem;
+    class Event;
 
     class CameraController {
     public:
@@ -20,6 +21,8 @@ namespace engine {
         void on_event(Camera& camera, Event& event);
 
     private:
+        friend CameraSystem;
+
         bool on_mouse_scrolled(Camera& camera, const MouseScrolledEvent& e);
         bool on_window_resized(Camera& camera, const WindowResizedEvent& e);
 

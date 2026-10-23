@@ -43,9 +43,30 @@ namespace engine {
         update_camera();
     }
 
-    void Camera::set_distance(float distance) {
+    void Camera::set_fov(const float fov_degrees) {
+        fov_ = fov_degrees;
+        update_projection();
+    }
+
+    void Camera::set_near_clip(const float near_clip) {
+        near_clip_ = near_clip;
+        update_projection();
+    }
+
+    void Camera::set_far_clip(const float far_clip) {
+        far_clip_ = far_clip;
+        update_projection();
+    }
+
+    void Camera::set_distance(const float distance) {
         distance_ = std::max(0.5f, distance);
         update_camera();
+    }
+
+    void Camera::set_aspect_ratio(const float aspect_ratio) {
+        if (aspect_ratio <= 0.0f) return;
+        aspect_ratio_ = aspect_ratio;
+        update_projection();
     }
 
     void Camera::update_camera() {

@@ -33,15 +33,27 @@ void SandboxLayer::on_attach(SystemContext& context) {
     rotating_cube_.add_component<MeshComponent>(cube_mesh_handle);
     rotating_cube_.add_component<MaterialComponent>(); // texture_handle = 0 -> White
 
+    auto camera = scene->create_entity("Camera");
+    auto& cam_comp = camera.add_component<CameraComponent>();
+    cam_comp.native.set_far_clip(10);
+    cam_comp.native.set_near_clip(0.1);
+    cam_comp.native.set_fov(60);
+    cam_comp.is_primary = true;
+
     const auto& swapchain = context.render_context.swapchain();
-    camera_.set_viewport_size(swapchain.width(), swapchain.height());
-    camera_.set_distance(4.0f);
+    // camera_.set_viewport_size(swapchain.width(), swapchain.height());
+    // camera_.set_distance(4.0f);
+    cam_comp.native.set_viewport_size(swapchain.width(), swapchain.height());
+    cam_comp.native.set_distance(4.0f);
 }
 
 void SandboxLayer::on_detach(SystemContext& context) {}
 
 void SandboxLayer::on_update(SystemContext& context, float delta_time) {
-    camera_controller_.on_update(camera_);
+    // camera_controller_.on_update(camera_);
+
+    auto scene = context.scenes.active_scene();
+    if (!scene) return;
 
     context.scenes.on_update(delta_time);
 
@@ -54,8 +66,7 @@ void SandboxLayer::on_update(SystemContext& context, float delta_time) {
         }
     }
 
-    const auto scene = context.scenes.active_scene();
-    if (scene && context.scenes.scene_state() == SceneState::Play) {
+    if (context.scenes.scene_state() == SceneState::Play) {
         const auto view = scene->view<LabelComponent, TransformComponent>(exclude<DisabledComponent>);
         for (const auto& [entity, label, transform] : view.each()) {
             if (label.tag == "Rotating White Cube") {
@@ -72,11 +83,21 @@ void SandboxLayer::on_render(SystemContext& context, float delta_time) {
     auto active_scene = context.scenes.active_scene();
     if (!active_scene) return;
 
-    camera_.set_viewport_size(swapchain.width(), swapchain.height());
+    // camera_.set_viewport_size(swapchain.width(), swapchain.height());
+    auto view = active_scene->view<CameraComponent>();
+    for (const auto& [entity, cam_comp] : view.each()) {
+        if (!cam_comp.is_primary) { continue; }
+        cam_comp.native.set_viewport_size(swapchain.width(), swapchain.height());
+        break;
+    }
 
-    context.renderer.render_scene(*active_scene, context, &camera_);
+    context.renderer.render_scene(active_scene, context, delta_time, nullptr);
 }
 
 void SandboxLayer::on_event(SystemContext& context, Event& event) {
-    camera_controller_.on_event(camera_, event);
+    // camera_controller_.on_event(camera_, event);
+
+    if (!event.handled) {
+        context.scenes.on_event(event);
+    }
 }

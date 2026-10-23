@@ -58,6 +58,12 @@ namespace engine {
         }
     }
 
+    void SceneManager::on_event(Event& event) {
+        if (scene_state() == SceneState::Play && simulation_scene_) {
+            simulation_scene_->on_event(event);
+        }
+    }
+
     void SceneManager::on_play() {
         if (scene_state() == SceneState::Pause) {
             simulation_state_.play();

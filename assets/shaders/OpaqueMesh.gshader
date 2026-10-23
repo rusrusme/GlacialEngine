@@ -1,27 +1,23 @@
-#vert
 #pragma once
+
+#include "ShaderData.gshader"
+
+#vert
 
 layout(location = 0) in vec3 a_Position;
 layout(location = 1) in vec3 a_Normal;
 layout(location = 2) in vec2 a_UV;
-layout(location = 3) in vec4 a_Color;
-
-layout(std140, binding = 0) uniform FrameData {
-    mat4 u_ViewProjection;
-};
-
-layout(std430, binding = 1) readonly buffer ObjectBuffer {
-    mat4 u_Models[];
-};
+layout(location = 3) in vec4 a_Tangent;
 
 layout(location = 0) out vec4 v_Color;
 layout(location = 1) out vec3 v_Normal;
 layout(location = 2) out vec2 v_UV;
 
 void main() {
-    mat4 model = u_Models[gl_BaseInstanceARB + gl_InstanceID];
+    InstanceData instance = instances[gl_BaseInstanceARB + gl_InstanceID];
+    mat4 model = instance.model;
 
-    v_Color = a_Color;
+    v_Color = instance.color;
     v_Normal = normalize(mat3(transpose(inverse(model))) * a_Normal);
     v_UV = a_UV;
 
@@ -29,7 +25,6 @@ void main() {
 }
 
 #frag
-#pragma once
 
 layout(location = 0) in vec4 v_Color;
 layout(location = 1) in vec3 v_Normal;
@@ -46,8 +41,8 @@ void main() {
     float ambient = 0.25;
     float diff = max(dot(normal, light_dir), 0.0);
 
-    vec4 tex_color = texture(u_AlbedoTexture, v_UV);
+    vec4 tex_color = texture(u_AlbedoTexture, v_UV) * v_Color;
 
     vec3 lit_color = tex_color.rgb * (ambient + diff * 0.75);
-    FragColor = vec4(lit_color, 1.0);
+    FragColor = vec4(lit_color, tex_color.a);
 }

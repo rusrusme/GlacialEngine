@@ -44,36 +44,36 @@ namespace engine {
 
     Shared<Mesh> Mesh::create_cube(const RHIDevice& device) {
         const Vertex vertices[] = {
-            // Front (+Z) - Red
-            {.position = {-0.5f, -0.5f, 0.5f}, .normal = {0.0f, 0.0f, 1.0f}, .uv = {0.0f, 0.0f}, .tangent = {1.0f, 0.2f, 0.2f, 1.0f}},
-            {.position = {0.5f, -0.5f, 0.5f}, .normal = {0.0f, 0.0f, 1.0f}, .uv = {1.0f, 0.0f}, .tangent = {1.0f, 0.2f, 0.2f, 1.0f}},
-            {.position = {0.5f, 0.5f, 0.5f}, .normal = {0.0f, 0.0f, 1.0f}, .uv = {1.0f, 1.0f}, .tangent = {1.0f, 0.2f, 0.2f, 1.0f}},
-            {.position = {-0.5f, 0.5f, 0.5f}, .normal = {0.0f, 0.0f, 1.0f}, .uv = {0.0f, 1.0f}, .tangent = {1.0f, 0.2f, 0.2f, 1.0f}},
-            // Back (-Z) - Green
-            {.position = {0.5f, -0.5f, -0.5f}, .normal = {0.0f, 0.0f, -1.0f}, .uv = {0.0f, 0.0f}, .tangent = {0.2f, 1.0f, 0.2f, 1.0f}},
-            {.position = {-0.5f, -0.5f, -0.5f}, .normal = {0.0f, 0.0f, -1.0f}, .uv = {1.0f, 0.0f}, .tangent = {0.2f, 1.0f, 0.2f, 1.0f}},
-            {.position = {-0.5f, 0.5f, -0.5f}, .normal = {0.0f, 0.0f, -1.0f}, .uv = {1.0f, 1.0f}, .tangent = {0.2f, 1.0f, 0.2f, 1.0f}},
-            {.position = {0.5f, 0.5f, -0.5f}, .normal = {0.0f, 0.0f, -1.0f}, .uv = {0.0f, 1.0f}, .tangent = {0.2f, 1.0f, 0.2f, 1.0f}},
-            // Top (+Y) - Blue
-            {.position = {-0.5f, 0.5f, 0.5f}, .normal = {0.0f, 1.0f, 0.0f}, .uv = {0.0f, 0.0f}, .tangent = {0.2f, 0.4f, 1.0f, 1.0f}},
-            {.position = {0.5f, 0.5f, 0.5f}, .normal = {0.0f, 1.0f, 0.0f}, .uv = {1.0f, 0.0f}, .tangent = {0.2f, 0.4f, 1.0f, 1.0f}},
-            {.position = {0.5f, 0.5f, -0.5f}, .normal = {0.0f, 1.0f, 0.0f}, .uv = {1.0f, 1.0f}, .tangent = {0.2f, 0.4f, 1.0f, 1.0f}},
-            {.position = {-0.5f, 0.5f, -0.5f}, .normal = {0.0f, 1.0f, 0.0f}, .uv = {0.0f, 1.0f}, .tangent = {0.2f, 0.4f, 1.0f, 1.0f}},
-            // Bottom (-Y) - Yellow
-            {.position = {-0.5f, -0.5f, -0.5f}, .normal = {0.0f, -1.0f, 0.0f}, .uv = {0.0f, 0.0f}, .tangent = {1.0f, 1.0f, 0.2f, 1.0f}},
-            {.position = {0.5f, -0.5f, -0.5f}, .normal = {0.0f, -1.0f, 0.0f}, .uv = {1.0f, 0.0f}, .tangent = {1.0f, 1.0f, 0.2f, 1.0f}},
-            {.position = {0.5f, -0.5f, 0.5f}, .normal = {0.0f, -1.0f, 0.0f}, .uv = {1.0f, 1.0f}, .tangent = {1.0f, 1.0f, 0.2f, 1.0f}},
-            {.position = {-0.5f, -0.5f, 0.5f}, .normal = {0.0f, -1.0f, 0.0f}, .uv = {0.0f, 1.0f}, .tangent = {1.0f, 1.0f, 0.2f, 1.0f}},
-            // Right (+X) - Cyan
-            {.position = {0.5f, -0.5f, 0.5f}, .normal = {1.0f, 0.0f, 0.0f}, .uv = {0.0f, 0.0f}, .tangent = {0.2f, 1.0f, 1.0f, 1.0f}},
-            {.position = {0.5f, -0.5f, -0.5f}, .normal = {1.0f, 0.0f, 0.0f}, .uv = {1.0f, 0.0f}, .tangent = {0.2f, 1.0f, 1.0f, 1.0f}},
-            {.position = {0.5f, 0.5f, -0.5f}, .normal = {1.0f, 0.0f, 0.0f}, .uv = {1.0f, 1.0f}, .tangent = {0.2f, 1.0f, 1.0f, 1.0f}},
-            {.position = {0.5f, 0.5f, 0.5f}, .normal = {1.0f, 0.0f, 0.0f}, .uv = {0.0f, 1.0f}, .tangent = {0.2f, 1.0f, 1.0f, 1.0f}},
-            // Left (-X) - Magenta
-            {.position = {-0.5f, -0.5f, -0.5f}, .normal = {-1.0f, 0.0f, 0.0f}, .uv = {0.0f, 0.0f}, .tangent = {1.0f, 0.2f, 1.0f, 1.0f}},
-            {.position = {-0.5f, -0.5f, 0.5f}, .normal = {-1.0f, 0.0f, 0.0f}, .uv = {1.0f, 0.0f}, .tangent = {1.0f, 0.2f, 1.0f, 1.0f}},
-            {.position = {-0.5f, 0.5f, 0.5f}, .normal = {-1.0f, 0.0f, 0.0f}, .uv = {1.0f, 1.0f}, .tangent = {1.0f, 0.2f, 1.0f, 1.0f}},
-            {.position = {-0.5f, 0.5f, -0.5f}, .normal = {-1.0f, 0.0f, 0.0f}, .uv = {0.0f, 1.0f}, .tangent = {1.0f, 0.2f, 1.0f, 1.0f}},
+            // Front (+Z) -> +U is +X
+            {.position = {-0.5f, -0.5f, 0.5f}, .normal = {0.0f, 0.0f, 1.0f}, .uv = {0.0f, 0.0f}, .tangent = {1.0f, 0.0f, 0.0f, 1.0f}},
+            {.position = {0.5f, -0.5f, 0.5f}, .normal = {0.0f, 0.0f, 1.0f}, .uv = {1.0f, 0.0f}, .tangent = {1.0f, 0.0f, 0.0f, 1.0f}},
+            {.position = {0.5f, 0.5f, 0.5f}, .normal = {0.0f, 0.0f, 1.0f}, .uv = {1.0f, 1.0f}, .tangent = {1.0f, 0.0f, 0.0f, 1.0f}},
+            {.position = {-0.5f, 0.5f, 0.5f}, .normal = {0.0f, 0.0f, 1.0f}, .uv = {0.0f, 1.0f}, .tangent = {1.0f, 0.0f, 0.0f, 1.0f}},
+            // Back (-Z) -> +U is -X
+            {.position = {0.5f, -0.5f, -0.5f}, .normal = {0.0f, 0.0f, -1.0f}, .uv = {0.0f, 0.0f}, .tangent = {-1.0f, 0.0f, 0.0f, 1.0f}},
+            {.position = {-0.5f, -0.5f, -0.5f}, .normal = {0.0f, 0.0f, -1.0f}, .uv = {1.0f, 0.0f}, .tangent = {-1.0f, 0.0f, 0.0f, 1.0f}},
+            {.position = {-0.5f, 0.5f, -0.5f}, .normal = {0.0f, 0.0f, -1.0f}, .uv = {1.0f, 1.0f}, .tangent = {-1.0f, 0.0f, 0.0f, 1.0f}},
+            {.position = {0.5f, 0.5f, -0.5f}, .normal = {0.0f, 0.0f, -1.0f}, .uv = {0.0f, 1.0f}, .tangent = {-1.0f, 0.0f, 0.0f, 1.0f}},
+            // Top (+Y) -> +U is +X
+            {.position = {-0.5f, 0.5f, 0.5f}, .normal = {0.0f, 1.0f, 0.0f}, .uv = {0.0f, 0.0f}, .tangent = {1.0f, 0.0f, 0.0f, 1.0f}},
+            {.position = {0.5f, 0.5f, 0.5f}, .normal = {0.0f, 1.0f, 0.0f}, .uv = {1.0f, 0.0f}, .tangent = {1.0f, 0.0f, 0.0f, 1.0f}},
+            {.position = {0.5f, 0.5f, -0.5f}, .normal = {0.0f, 1.0f, 0.0f}, .uv = {1.0f, 1.0f}, .tangent = {1.0f, 0.0f, 0.0f, 1.0f}},
+            {.position = {-0.5f, 0.5f, -0.5f}, .normal = {0.0f, 1.0f, 0.0f}, .uv = {0.0f, 1.0f}, .tangent = {1.0f, 0.0f, 0.0f, 1.0f}},
+            // Bottom (-Y) -> +U is +X
+            {.position = {-0.5f, -0.5f, -0.5f}, .normal = {0.0f, -1.0f, 0.0f}, .uv = {0.0f, 0.0f}, .tangent = {1.0f, 0.0f, 0.0f, 1.0f}},
+            {.position = {0.5f, -0.5f, -0.5f}, .normal = {0.0f, -1.0f, 0.0f}, .uv = {1.0f, 0.0f}, .tangent = {1.0f, 0.0f, 0.0f, 1.0f}},
+            {.position = {0.5f, -0.5f, 0.5f}, .normal = {0.0f, -1.0f, 0.0f}, .uv = {1.0f, 1.0f}, .tangent = {1.0f, 0.0f, 0.0f, 1.0f}},
+            {.position = {-0.5f, -0.5f, 0.5f}, .normal = {0.0f, -1.0f, 0.0f}, .uv = {0.0f, 1.0f}, .tangent = {1.0f, 0.0f, 0.0f, 1.0f}},
+            // Right (+X) -> +U is -Z
+            {.position = {0.5f, -0.5f, 0.5f}, .normal = {1.0f, 0.0f, 0.0f}, .uv = {0.0f, 0.0f}, .tangent = {0.0f, 0.0f, -1.0f, 1.0f}},
+            {.position = {0.5f, -0.5f, -0.5f}, .normal = {1.0f, 0.0f, 0.0f}, .uv = {1.0f, 0.0f}, .tangent = {0.0f, 0.0f, -1.0f, 1.0f}},
+            {.position = {0.5f, 0.5f, -0.5f}, .normal = {1.0f, 0.0f, 0.0f}, .uv = {1.0f, 1.0f}, .tangent = {0.0f, 0.0f, -1.0f, 1.0f}},
+            {.position = {0.5f, 0.5f, 0.5f}, .normal = {1.0f, 0.0f, 0.0f}, .uv = {0.0f, 1.0f}, .tangent = {0.0f, 0.0f, -1.0f, 1.0f}},
+            // Left (-X) -> +U is +Z
+            {.position = {-0.5f, -0.5f, -0.5f}, .normal = {-1.0f, 0.0f, 0.0f}, .uv = {0.0f, 0.0f}, .tangent = {0.0f, 0.0f, 1.0f, 1.0f}},
+            {.position = {-0.5f, -0.5f, 0.5f}, .normal = {-1.0f, 0.0f, 0.0f}, .uv = {1.0f, 0.0f}, .tangent = {0.0f, 0.0f, 1.0f, 1.0f}},
+            {.position = {-0.5f, 0.5f, 0.5f}, .normal = {-1.0f, 0.0f, 0.0f}, .uv = {1.0f, 1.0f}, .tangent = {0.0f, 0.0f, 1.0f, 1.0f}},
+            {.position = {-0.5f, 0.5f, -0.5f}, .normal = {-1.0f, 0.0f, 0.0f}, .uv = {0.0f, 1.0f}, .tangent = {0.0f, 0.0f, 1.0f, 1.0f}},
         };
 
         const uint32_t indices[] = {

@@ -25,10 +25,16 @@ namespace engine {
         [[nodiscard]] const glm::vec3& position() const noexcept { return position_; }
         [[nodiscard]] const glm::vec3& target() const noexcept { return target_; }
         [[nodiscard]] float distance() const noexcept { return distance_; }
+        [[nodiscard]] float aspect_ratio() const noexcept { return aspect_ratio_; }
+        [[nodiscard]] float yaw() const noexcept { return yaw_; }
+        [[nodiscard]] float pitch() const noexcept { return pitch_; }
 
         void set_target(const glm::vec3& target);
-
+        void set_fov(float fov_degrees);
+        void set_near_clip(float near_clip);
+        void set_far_clip(float far_clip);
         void set_distance(float distance);
+        void set_aspect_ratio(float aspect_ratio);
 
     private:
         void update_camera();

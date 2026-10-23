@@ -19,8 +19,10 @@ namespace engine {
     inline constexpr auto exclude = entt::exclude<Components...>;
 
     class Camera;
+    class CameraSystem;
     class CollisionSystem;
     class Entity;
+    class Event;
     struct SystemContext;
 
     class Scene {
@@ -39,6 +41,7 @@ namespace engine {
         void on_init();
         void on_shutdown();
         void on_update(float delta_time);
+        void on_event(Event& event);
 
         void clear();
 
@@ -75,6 +78,8 @@ namespace engine {
         std::string path_;
 
         entt::registry registry_;
+
         std::unique_ptr<CollisionSystem> collision_system_ = nullptr;
+        std::unique_ptr<CameraSystem> camera_system_ = nullptr;
     };
 }

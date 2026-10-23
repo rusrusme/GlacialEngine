@@ -24,6 +24,7 @@ namespace engine {
         std::shared_ptr<Scene> create(const std::string& name = DEFAULT_SCENE);
 
         void on_update(float delta_time);
+        void on_event(Event& event);
 
         void on_play();
         void on_pause();

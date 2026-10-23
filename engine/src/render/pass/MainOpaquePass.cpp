@@ -5,6 +5,7 @@
 
 #include "render/pass/MainOpaquePass.hpp"
 
+#include "render/ShaderData.hpp"
 #include "render/mesh/Mesh.hpp"
 
 // TODO if material has double_sided -> pipeline state no cull!
@@ -25,8 +26,8 @@ namespace engine {
 
         pipeline_ = device.create_pipeline_state(desc);
 
-        // SSBO für Per-Object Transforms (Slot 1)
-        object_ssbo_ = device.create_shader_storage_buffer(max_objects_ * sizeof(glm::mat4), 1);
+        // SSBO for Per-Object Transforms (Slot 1)
+        object_ssbo_ = device.create_shader_storage_buffer(max_objects_ * sizeof(GPUInstanceData), 1);
 
         TextureSpecification white_spec{};
         white_spec.width = 1;
@@ -64,15 +65,18 @@ namespace engine {
 
         const size_t draw_count = std::min(objects.size(), max_objects_);
 
-        Vector<glm::mat4> transforms;
-        transforms.reserve(draw_count);
+        Vector<GPUInstanceData> instances;
+        instances.reserve(draw_count);
         for (size_t i = 0; i < draw_count; ++i) {
-            transforms.push_back(objects[i].transform);
+            instances.push_back(GPUInstanceData{
+                .model_matrix = objects[i].transform,
+                .color        = objects[i].color
+            });
         }
-        object_ssbo_->set_data(transforms.data(), transforms.size() * sizeof(glm::mat4));
+        object_ssbo_->set_data(instances.data(), instances.size() * sizeof(GPUInstanceData));
 
         cb.bind_pipeline(*pipeline_);
-        cb.bind_descriptor_set(frame_descriptor_set); // Set 0: Kamera / ViewProj
+        cb.bind_descriptor_set(frame_descriptor_set);
 
         const Texture2D* currently_bound_texture = nullptr;
         const Mesh* currently_bound_mesh = nullptr;

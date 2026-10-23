@@ -16,5 +16,6 @@ namespace engine {
         const Mesh* mesh{nullptr};
         glm::mat4 transform{1.0f};
         const Texture2D* albedo_texture{nullptr};
+        glm::vec4 color{1.0f};
     };
 }

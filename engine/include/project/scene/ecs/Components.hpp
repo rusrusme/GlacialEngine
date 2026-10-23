@@ -16,6 +16,7 @@
 #include "asset/AssetType.hpp"
 #include "asset/UUID.hpp"
 #include "physics/AABB.hpp"
+#include "render/camera/Camera.hpp"
 
 namespace engine {
     // ----------------------------
@@ -122,19 +123,25 @@ namespace engine {
     };
 
     struct CameraComponent {
-        float fov = 45.0f;
-        float near_clip = 0.1f;
-        float far_clip = 1000.0f;
-
+        Camera native;
         bool is_primary = true;
 
         CameraComponent() = default;
 
         CameraComponent(float fov, float near_clip = 0.1f, float far_clip = 1000.0f, bool is_primary = true)
-            : fov(fov), near_clip(near_clip), far_clip(far_clip), is_primary(is_primary) {}
+            : native{fov, 16.0f / 9.0f, near_clip, far_clip}, is_primary(is_primary) {
+        }
 
-        [[nodiscard]] glm::mat4 projection(float aspect_ratio) const {
-            return glm::perspective(glm::radians(fov), aspect_ratio, near_clip, far_clip);
+        [[nodiscard]] glm::mat4 projection() const {
+            return native.projection();
+        }
+
+        [[nodiscard]] const glm::mat4& view() const noexcept {
+            return native.view();
+        }
+
+        [[nodiscard]] const glm::mat4& view_projection() const noexcept {
+            return native.view_projection();
         }
     };
 

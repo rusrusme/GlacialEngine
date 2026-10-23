@@ -33,20 +33,20 @@ namespace engine {
      * @brief Per-instance data stored in SSBO (std430 layout).
      * @note Aligned to 128 bytes to maintain strict 16-byte field alignments.
      */
-    struct alignas(16) GPUInstanceData {
-        glm::mat4 model_matrix{1.0f};           ///< World transformation matrix
-        glm::vec4 bounding_center_radius{0.0f}; ///< xyz: Bounding sphere center (world space), w: Radius
-        glm::vec4 bounding_box_min{0.0f};       ///< Local or world AABB minimum extents
-        glm::vec4 bounding_box_max{0.0f};       ///< Local or world AABB maximum extents
-
-        uint32_t material_id{0}; ///< Material index for bindless texture lookups
-        uint32_t mesh_id{0};     ///< Mesh asset identifier
-        uint32_t flags{0};       ///< Render state flags (e.g., cast shadows, static/dynamic)
-        uint32_t padding{0};     ///< Explicit padding to reach 128-byte alignment
-    };
-
-    static_assert(sizeof(GPUInstanceData) == 128,
-              "GPUInstanceData must be exactly 128 bytes to match std430 SSBO layout.");
+    // struct alignas(16) GPUInstanceData {
+    //     glm::mat4 model_matrix{1.0f};           ///< World transformation matrix
+    //     glm::vec4 bounding_center_radius{0.0f}; ///< xyz: Bounding sphere center (world space), w: Radius
+    //     glm::vec4 bounding_box_min{0.0f};       ///< Local or world AABB minimum extents
+    //     glm::vec4 bounding_box_max{0.0f};       ///< Local or world AABB maximum extents
+    //
+    //     uint32_t material_id{0}; ///< Material index for bindless texture lookups
+    //     uint32_t mesh_id{0};     ///< Mesh asset identifier
+    //     uint32_t flags{0};       ///< Render state flags (e.g., cast shadows, static/dynamic)
+    //     uint32_t padding{0};     ///< Explicit padding to reach 128-byte alignment
+    // };
+    //
+    // static_assert(sizeof(GPUInstanceData) == 128,
+    //           "GPUInstanceData must be exactly 128 bytes to match std430 SSBO layout.");
 
     /**
      * @brief Global camera parameters stored in UBO (std140 layout).
