@@ -42,6 +42,7 @@ layout(location = 0) out vec4 FragColor;
 
 void main() {
     vec3 local_normal = texture(u_NormalMap, v_UV).rgb * 2.0 - 1.0;
+    // TODO In future add scalable normals (*= u_NormalScale)
     vec3 normal = normalize(v_TBN * local_normal);
     vec3 light_dir = normalize(vec3(0.6, 1.0, 0.4));
 
