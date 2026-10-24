@@ -48,41 +48,15 @@ namespace engine {
 
         TransformComponent() = default;
 
-        TransformComponent(const glm::vec3& pos, const glm::vec3& rot = glm::vec3(0.0f), const glm::vec3& scl = glm::vec3(1.0f))
-            : position(pos), rotation(rot), scale(scl) {}
+        TransformComponent(const glm::vec3& pos, const glm::vec3& rot = glm::vec3(0.0f), const glm::vec3& scl = glm::vec3(1.0f));
 
-        [[nodiscard]] glm::quat get_orientation() const {
-            return {glm::radians(rotation)};
-        }
+        [[nodiscard]] glm::quat get_orientation() const;
+        [[nodiscard]] glm::mat4 get_matrix() const;
+        [[nodiscard]] glm::vec3 get_forward() const;
+        [[nodiscard]] glm::vec3 get_up() const;
+        [[nodiscard]] glm::vec3 get_right() const;
 
-        [[nodiscard]] glm::mat4 get_matrix() const {
-            if (is_dirty_ || position != last_position_ || rotation != last_rotation_ || scale != last_scale_) {
-                glm::mat4 mat = glm::translate(glm::mat4(1.0f), position);
-                mat *= glm::toMat4(get_orientation());
-                cached_matrix_ = glm::scale(mat, scale);
-
-                last_position_ = position;
-                last_rotation_ = rotation;
-                last_scale_ = scale;
-                is_dirty_ = false;
-            }
-
-            return cached_matrix_;
-        }
-
-        [[nodiscard]] glm::vec3 get_forward() const {
-            return glm::rotate(get_orientation(), glm::vec3(0.0f, 0.0f, -1.0f));
-        }
-
-        [[nodiscard]] glm::vec3 get_up() const {
-            return glm::rotate(get_orientation(), glm::vec3(0.0f, 1.0f, 0.0f));
-        }
-
-        [[nodiscard]] glm::vec3 get_right() const {
-            return glm::rotate(get_orientation(), glm::vec3(1.0f, 0.0f, 0.0f));
-        }
-
-        void set_dirty() const { is_dirty_ = true; }
+        void set_dirty() const;
 
     private:
         mutable glm::mat4 cached_matrix_{1.0f};
@@ -107,10 +81,10 @@ namespace engine {
         glm::vec4 color{1.0f};
         AssetHandle texture_handle{0};
         AssetHandle normal_texture_handle{0};
-        AssetHandle metallic_roughness_handle{0};
+        AssetHandle metallic_roughness_texture_handle{0};
 
-        float roughness = 0.5f;
-        float metallic = 0.0f;
+        float roughness{0.5f};
+        float metallic{0.0f};
 
         MaterialComponent() = default;
 
@@ -119,30 +93,29 @@ namespace engine {
             const AssetHandle texture = {0},
             const AssetHandle normal = {0},
             const AssetHandle pbr = {0}
-        ) : color(color), texture_handle(texture), normal_texture_handle(normal), metallic_roughness_handle(pbr) {}
+        ) : color(color), texture_handle(texture), normal_texture_handle(normal), metallic_roughness_texture_handle(pbr) {}
     };
 
     struct CameraComponent {
-        Camera native;
         bool is_primary = true;
 
         CameraComponent() = default;
 
-        CameraComponent(float fov, float near_clip = 0.1f, float far_clip = 1000.0f, bool is_primary = true)
-            : native{fov, 16.0f / 9.0f, near_clip, far_clip}, is_primary(is_primary) {
-        }
+        CameraComponent(float fov, float near_clip = 0.1f, float far_clip = 1000.0f, bool is_primary = true);
 
-        [[nodiscard]] glm::mat4 projection() const {
-            return native.projection();
-        }
+        [[nodiscard]] const glm::mat4& view() const noexcept;
+        [[nodiscard]] const glm::mat4& view_projection() const noexcept;
+        [[nodiscard]] glm::mat4 projection() const;
 
-        [[nodiscard]] const glm::mat4& view() const noexcept {
-            return native.view();
-        }
+        void set_aspect_ratio(float aspect);
+        void set_viewport_size(uint32_t width, uint32_t height);
+        void set_fov(float fov);
+        void set_near_clip(float near_clip);
+        void set_far_clip(float far_clip);
 
-        [[nodiscard]] const glm::mat4& view_projection() const noexcept {
-            return native.view_projection();
-        }
+    private:
+        friend class CameraSystem;
+        Camera native;
     };
 
     struct LODLevel {

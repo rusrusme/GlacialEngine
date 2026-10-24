@@ -42,6 +42,7 @@ namespace engine {
 
         Unique<Texture2D> default_white_texture_{nullptr};
         Unique<Texture2D> default_normal_texture_{nullptr};
+        Unique<Texture2D> default_metallic_roughness_texture_{nullptr};
 
         size_t max_objects_{1024};
     };

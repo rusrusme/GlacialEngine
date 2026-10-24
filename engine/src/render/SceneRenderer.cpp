@@ -45,14 +45,24 @@ namespace engine {
         opaque_queue_.push_back(object);
     }
 
-    void SceneRenderer::submit(const Mesh* mesh, const glm::mat4& transform, const Texture2D* albedo_texture, const Texture2D* normal_texture, const glm::vec4& albedo_color) {
+    void SceneRenderer::submit(const Mesh* mesh,
+                               const glm::mat4& transform,
+                               const Texture2D* albedo_texture,
+                               const Texture2D* normal_texture,
+                               const Texture2D* metallic_roughness_texture,
+                               const glm::vec4& albedo_color,
+                               float metallic,
+                               float roughness) {
         if (!mesh) return;
         opaque_queue_.push_back(RenderObject{
-            .mesh           = mesh,
-            .transform      = transform,
-            .color          = albedo_color,
-            .albedo_texture = albedo_texture,
-            .normal_texture = normal_texture
+            .mesh                       = mesh,
+            .transform                  = transform,
+            .color                      = albedo_color,
+            .albedo_texture             = albedo_texture,
+            .normal_texture             = normal_texture,
+            .metallic_roughness_texture = metallic_roughness_texture,
+            .metallic                   = metallic,
+            .roughness                  = roughness
         });
     }
 
@@ -84,7 +94,7 @@ namespace engine {
             for (const auto& [entity_handle, transform, camera_comp] : camera_view.each()) {
                 if (!camera_comp.is_primary) continue;
 
-                camera_comp.native.set_aspect_ratio(aspect_ratio);
+                camera_comp.set_aspect_ratio(aspect_ratio);
 
                 frame_data.view_projection = camera_comp.view_projection();
                 frame_data.view = camera_comp.view();
@@ -112,12 +122,17 @@ namespace engine {
 
             const Texture2D* albedo_texture = nullptr;
             const Texture2D* normal_texture = nullptr;
+            const Texture2D* metallic_roughness_texture = nullptr;
             glm::vec4 albedo_color{1.0f};
+            float metallic = 0.0f;
+            float roughness = 1.0f;
 
             Entity entity{entity_handle, scene.get()};
             if (entity.has_component<MaterialComponent>()) {
                 const auto& material = entity.get_component<MaterialComponent>();
                 albedo_color = material.color;
+                metallic = material.metallic;
+                roughness = material.roughness;
 
                 if (material.texture_handle != AssetHandle(0)) {
                     if (auto texture_asset = context.assets.get<Texture2D>(material.texture_handle)) {
@@ -130,9 +145,24 @@ namespace engine {
                         normal_texture = normal_asset.get();
                     }
                 }
+
+                if (material.metallic_roughness_texture_handle != AssetHandle(0)) {
+                    if (auto mr_asset = context.assets.get<Texture2D>(material.metallic_roughness_texture_handle)) {
+                        metallic_roughness_texture = mr_asset.get();
+                    }
+                }
             }
 
-            submit(mesh_asset.get(), transform.get_matrix(), albedo_texture, normal_texture, albedo_color);
+            submit(
+                mesh_asset.get(),
+                transform.get_matrix(),
+                albedo_texture,
+                normal_texture,
+                metallic_roughness_texture,
+                albedo_color,
+                metallic,
+                roughness
+            );
         }
 
         end_scene(

@@ -19,5 +19,11 @@ namespace engine {
 
         const Texture2D* albedo_texture{nullptr};
         const Texture2D* normal_texture{nullptr};
+        const Texture2D* metallic_roughness_texture{nullptr};
+
+        float metallic{0.0f};
+        float roughness{1.0f};
+        float ao{1.0f};
+        float normal_scale{1.0f};
     };
 }

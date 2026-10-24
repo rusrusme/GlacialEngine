@@ -24,6 +24,7 @@ namespace engine {
     struct alignas(16) GPUInstanceData {
         glm::mat4 model_matrix{1.0f};
         glm::vec4 color{1.0f}; // Albedo-Tint from MaterialComponent
+        glm::vec4 material_params{0.0f, 1.0f, 1.0f, 1.0f};
     };
 
     static_assert(sizeof(GPUInstanceData) % 16 == 0, "GPUInstanceData size must be a multiple of 16 bytes!");

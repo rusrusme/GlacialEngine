@@ -37,7 +37,14 @@ namespace engine {
         void end_scene(CommandBuffer& cb, Framebuffer& target_framebuffer);
 
         void submit(const RenderObject& object);
-        void submit(const Mesh* mesh, const glm::mat4& transform, const Texture2D* albedo_texture = nullptr, const Texture2D* normal_texture = nullptr, const glm::vec4& albedo_color = glm::vec4(1.0f));
+        void submit(const Mesh* mesh,
+                    const glm::mat4& transform,
+                    const Texture2D* albedo_texture = nullptr,
+                    const Texture2D* normal_texture = nullptr,
+                    const Texture2D* metallic_roughness_texture = nullptr,
+                    const glm::vec4& albedo_color = glm::vec4(1.0f),
+                    float metallic = 0.0f,
+                    float roughness = 0.5f);
 
         void render_scene(const Shared<Scene>& scene, const SystemContext& context, float delta_time, const Camera* override_camera = nullptr);
 

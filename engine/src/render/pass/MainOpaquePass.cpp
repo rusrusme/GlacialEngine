@@ -42,10 +42,15 @@ namespace engine {
         constexpr uint32_t normal_pixel = 0xFFFF8080;
         default_normal_texture_ = device.create_texture_2d(default_texture_spec, &normal_pixel);
 
+        // Neutral multiplier (1.0, 1.0, 1.0, 1.0) so scalar metallic/roughness factors control the value directly
+        constexpr uint32_t mr_pixel = 0xFFFFFFFF;
+        default_metallic_roughness_texture_ = device.create_texture_2d(default_texture_spec, &mr_pixel);
+
         pass_descriptor_set_ = device.create_descriptor_set();
         pass_descriptor_set_->write_storage_buffer(1, *object_ssbo_);
         pass_descriptor_set_->write_texture(2, *default_white_texture_);
         pass_descriptor_set_->write_texture(3, *default_normal_texture_);
+        pass_descriptor_set_->write_texture(4, *default_metallic_roughness_texture_);
     }
 
     void MainOpaquePass::shutdown() {
@@ -53,6 +58,7 @@ namespace engine {
         object_ssbo_.reset();
         default_white_texture_.reset();
         default_normal_texture_.reset();
+        default_metallic_roughness_texture_.reset();
         pipeline_.reset();
         shader_.reset();
     }
@@ -74,9 +80,11 @@ namespace engine {
         Vector<GPUInstanceData> instances;
         instances.reserve(draw_count);
         for (size_t i = 0; i < draw_count; ++i) {
+            const auto& obj = objects[i];
             instances.push_back(GPUInstanceData{
-                .model_matrix = objects[i].transform,
-                .color        = objects[i].color
+                .model_matrix    = obj.transform,
+                .color           = obj.color,
+                .material_params = {obj.metallic, obj.roughness, obj.ao, obj.normal_scale}
             });
         }
         object_ssbo_->set_data(instances.data(), instances.size() * sizeof(GPUInstanceData));
@@ -86,11 +94,15 @@ namespace engine {
 
         const Texture2D* currently_bound_albedo = nullptr;
         const Texture2D* currently_bound_normal = nullptr;
+        const Texture2D* currently_bound_metallic_roughness = nullptr;
         const Mesh* currently_bound_mesh = nullptr;
 
-        auto bind_texture_if_needed = [&](const Texture2D* target_albedo, const Texture2D* target_normal) {
+        auto bind_texture_if_needed = [&](const Texture2D* target_albedo,
+                                          const Texture2D* target_normal,
+                                          const Texture2D* target_metallic_roughness) {
             const Texture2D* albedo = target_albedo ? target_albedo : default_white_texture_.get();
             const Texture2D* normal = target_normal ? target_normal : default_normal_texture_.get();
+            const Texture2D* mr = target_metallic_roughness ? target_metallic_roughness : default_metallic_roughness_texture_.get();
 
             bool changed = false;
             if (albedo != currently_bound_albedo) {
@@ -101,6 +113,11 @@ namespace engine {
             if (normal != currently_bound_normal) {
                 pass_descriptor_set_->write_texture(3, *normal);
                 currently_bound_normal = normal;
+                changed = true;
+            }
+            if (mr != currently_bound_metallic_roughness) {
+                pass_descriptor_set_->write_texture(4, *mr);
+                currently_bound_metallic_roughness = mr;
                 changed = true;
             }
             if (changed) {
@@ -122,6 +139,7 @@ namespace engine {
                 for (const auto& submesh : obj.mesh->submeshes()) {
                     const Texture2D* albedo_texture = obj.albedo_texture;
                     const Texture2D* normal_texture = obj.normal_texture;
+                    const Texture2D* metallic_roughness_texture = obj.metallic_roughness_texture;
 
                     if (submesh.material_index < obj.mesh->materials().size()) {
                         const auto& material = obj.mesh->materials()[submesh.material_index];
@@ -131,9 +149,14 @@ namespace engine {
                         if (!normal_texture) {
                             normal_texture = material.normal_map.get();
                         }
+                        if (!metallic_roughness_texture) {
+                            metallic_roughness_texture = material.metallic_roughness_map.get();
+                        }
                     }
 
-                    bind_texture_if_needed(albedo_texture, normal_texture);
+                    bind_texture_if_needed(albedo_texture,
+                                           normal_texture,
+                                           metallic_roughness_texture);
 
                     cb.draw_indexed(
                         submesh.index_count,
@@ -145,7 +168,9 @@ namespace engine {
                 }
             }
             else {
-                bind_texture_if_needed(obj.albedo_texture, obj.normal_texture);
+                bind_texture_if_needed(obj.albedo_texture,
+                                       obj.normal_texture,
+                                       obj.metallic_roughness_texture);
 
                 cb.draw_indexed(
                     obj.mesh->index_count(),
