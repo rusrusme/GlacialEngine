@@ -6,7 +6,8 @@
 #include "project/scene/ecs/Components.hpp"
 
 namespace engine {
-    TransformComponent::TransformComponent(const glm::vec3& pos, const glm::vec3& rot, const glm::vec3& scl) : position(pos), rotation(rot), scale(scl) {}
+    TransformComponent::TransformComponent(const glm::vec3& pos, const glm::vec3& rot, const glm::vec3& scl)
+        : position(pos), rotation(rot), scale(scl) {}
 
     glm::quat TransformComponent::get_orientation() const {
         return {glm::radians(rotation)};
@@ -42,21 +43,25 @@ namespace engine {
     void TransformComponent::set_dirty() const { is_dirty_ = true; }
 
     CameraComponent::CameraComponent(float fov, float near_clip, float far_clip, bool is_primary)
-        : is_primary(is_primary), native{fov, 16.0f / 9.0f, near_clip, far_clip} {}
+        : fov(fov), near_clip(near_clip), far_clip(far_clip), is_primary(is_primary) {}
 
-    const glm::mat4& CameraComponent::view() const noexcept { return native.view(); }
+    void CameraComponent::set_viewport_size(uint32_t width, uint32_t height) {
+        if (width == 0 || height == 0) return;
+        aspect_ratio = static_cast<float>(width) / static_cast<float>(height);
+    }
 
-    const glm::mat4& CameraComponent::view_projection() const noexcept { return native.view_projection(); }
+    void CameraComponent::set_aspect_ratio(float aspect) {
+        if (aspect <= 0.0f) return;
+        aspect_ratio = aspect;
+    }
 
-    glm::mat4 CameraComponent::projection() const { return native.projection(); }
+    void CameraComponent::set_fov(float fov_degrees) { fov = fov_degrees; }
+    void CameraComponent::set_near_clip(float near_c) { near_clip = near_c; }
+    void CameraComponent::set_far_clip(float far_c) { far_clip = far_c; }
 
-    void CameraComponent::set_aspect_ratio(float aspect) { native.set_aspect_ratio(aspect); }
-
-    void CameraComponent::set_viewport_size(uint32_t width, uint32_t height) { native.set_viewport_size(width, height); }
-
-    void CameraComponent::set_fov(float fov) { native.set_fov(fov); }
-
-    void CameraComponent::set_near_clip(float near_clip) { native.set_near_clip(near_clip); }
-
-    void CameraComponent::set_far_clip(float far_clip) { native.set_far_clip(far_clip); }
+    void CameraComponent::update_matrices(const TransformComponent& transform) {
+        projection_ = glm::perspective(glm::radians(fov), aspect_ratio, near_clip, far_clip);
+        view_ = glm::lookAt(transform.position, transform.position + transform.get_forward(), transform.get_up());
+        view_projection_ = projection_ * view_;
+    }
 }

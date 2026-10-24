@@ -73,7 +73,6 @@ namespace engine {
         const float yaw_rad = glm::radians(yaw_);
         const float pitch_rad = glm::radians(pitch_);
 
-        // Sphärische Koordinaten zu kartesischen Koordinaten
         position_.x = target_.x + distance_ * std::cos(pitch_rad) * std::sin(yaw_rad);
         position_.y = target_.y + distance_ * std::sin(pitch_rad);
         position_.z = target_.z + distance_ * std::cos(pitch_rad) * std::cos(yaw_rad);

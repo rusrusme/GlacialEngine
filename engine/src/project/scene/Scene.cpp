@@ -10,6 +10,7 @@
 #include "asset/AssetManager.hpp"
 #include "asset/UUID.hpp"
 #include "core/Log.hpp"
+#include "event/Event.hpp"
 #include "physics/CollisionSystem.hpp"
 #include "project/scene/ecs/Entity.hpp"
 #include "render/camera/CameraSystem.hpp"
@@ -92,23 +93,29 @@ namespace engine {
     void Scene::on_init() {
         collision_system_ = std::make_unique<CollisionSystem>(10.0f);
         camera_system_ = std::make_unique<CameraSystem>();
+        camera_controller_system_ = std::make_unique<CameraControllerSystem>();
         CORE_TRACE("Scene initialized");
     }
 
     void Scene::on_shutdown() {
         collision_system_.reset();
         camera_system_.reset();
+        camera_controller_system_.reset();
         CORE_TRACE("Scene shutdown");
     }
 
     void Scene::on_update(float delta_time) {
         PROFILE_FUNCTION();
         collision_system_->update_broadphase(*this);
+        camera_controller_system_->on_update(*this, delta_time);
         camera_system_->on_update(*this, delta_time);
     }
 
     void Scene::on_event(Event& event) {
         PROFILE_FUNCTION();
+        camera_controller_system_->on_event(*this, event);
+        if (event.handled) return;
+
         camera_system_->on_event(*this, event);
     }
 

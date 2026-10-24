@@ -7,6 +7,7 @@
 
 #include "core/Layer.hpp"
 #include "render/SceneRenderer.hpp"
+#include "render/camera/CameraController.hpp"
 
 using namespace engine;
 
@@ -20,4 +21,8 @@ public:
     void on_update(SystemContext& context, float delta_time) override;
     void on_render(SystemContext& context, float delta_time) override;
     void on_event(SystemContext& context, Event& event) override;
+
+private:
+    Camera camera_;
+    CameraController camera_controller_;
 };

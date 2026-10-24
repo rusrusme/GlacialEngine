@@ -10,6 +10,7 @@
 #include <entt/entt.hpp>
 
 #include "project/scene/ecs/Components.hpp"
+#include "render/camera/CameraControllerSystem.hpp"
 
 namespace engine {
     template<typename... Components>
@@ -81,5 +82,6 @@ namespace engine {
 
         std::unique_ptr<CollisionSystem> collision_system_ = nullptr;
         std::unique_ptr<CameraSystem> camera_system_ = nullptr;
+        std::unique_ptr<CameraControllerSystem> camera_controller_system_ = nullptr;
     };
 }

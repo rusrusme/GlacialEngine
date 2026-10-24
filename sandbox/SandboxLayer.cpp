@@ -53,21 +53,13 @@ void SandboxLayer::on_attach(SystemContext& context) {
         material.roughness = 0.15f;
     }
 
-    {
-        auto camera = scene->create_entity("Camera");
-        auto& cam_comp = camera.add_component<CameraComponent>();
-        cam_comp.set_far_clip(10);
-        cam_comp.set_near_clip(0.1);
-        cam_comp.set_fov(60);
-        cam_comp.is_primary = true;
+    camera_.set_far_clip(10);
+    camera_.set_near_clip(0.1f);
+    camera_.set_fov(60);
+    camera_.set_distance(4);
 
-        auto& transform = camera.get_component<TransformComponent>();
-        transform.position = {0.0f, 1.71f, 4.70f};
-        transform.rotation = {20.0f, 0.0f, 0.0f};
-
-        const auto& swapchain = context.render_context.swapchain();
-        cam_comp.set_viewport_size(swapchain.width(), swapchain.height());
-    }
+    const auto& swapchain = context.render_context.swapchain();
+    camera_.set_viewport_size(swapchain.width(), swapchain.height());
 }
 
 void SandboxLayer::on_detach(SystemContext& context) {}
@@ -77,6 +69,7 @@ void SandboxLayer::on_update(SystemContext& context, float delta_time) {
     if (!scene) return;
 
     context.scenes.on_update(delta_time);
+    camera_controller_.on_update(camera_);
 
     if (Input::key_pressed_once(Key::SPACE)) {
         if (context.scenes.scene_state() == SceneState::Edit) {
@@ -104,17 +97,13 @@ void SandboxLayer::on_render(SystemContext& context, float delta_time) {
     auto active_scene = context.scenes.active_scene();
     if (!active_scene) return;
 
-    auto view = active_scene->view<CameraComponent>();
-    for (const auto& [entity, cam_comp] : view.each()) {
-        if (!cam_comp.is_primary) { continue; }
-        cam_comp.set_viewport_size(swapchain.width(), swapchain.height());
-        break;
-    }
+    camera_.set_viewport_size(swapchain.width(), swapchain.height());
 
-    context.renderer.render_scene(active_scene, context, delta_time, nullptr);
+    context.renderer.render_scene(active_scene, context, delta_time, &camera_);
 }
 
 void SandboxLayer::on_event(SystemContext& context, Event& event) {
+    camera_controller_.on_event(camera_, event);
     if (!event.handled) {
         context.scenes.on_event(event);
     }

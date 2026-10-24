@@ -97,25 +97,45 @@ namespace engine {
     };
 
     struct CameraComponent {
+        float fov{45.0f};
+        float near_clip{0.1f};
+        float far_clip{1000.0f};
+        float aspect_ratio{16.0f / 9.0f};
         bool is_primary = true;
 
         CameraComponent() = default;
 
         CameraComponent(float fov, float near_clip = 0.1f, float far_clip = 1000.0f, bool is_primary = true);
 
-        [[nodiscard]] const glm::mat4& view() const noexcept;
-        [[nodiscard]] const glm::mat4& view_projection() const noexcept;
-        [[nodiscard]] glm::mat4 projection() const;
+        [[nodiscard]] const glm::mat4& view() const noexcept { return view_; }
+        [[nodiscard]] const glm::mat4& projection() const noexcept { return projection_; }
+        [[nodiscard]] const glm::mat4& view_projection() const noexcept { return view_projection_; }
 
-        void set_aspect_ratio(float aspect);
         void set_viewport_size(uint32_t width, uint32_t height);
-        void set_fov(float fov);
+        void set_aspect_ratio(float aspect);
+        void set_fov(float fov_degrees);
         void set_near_clip(float near_clip);
         void set_far_clip(float far_clip);
 
+        void update_matrices(const TransformComponent& transform);
+
     private:
-        friend class CameraSystem;
-        Camera native;
+        glm::mat4 view_{1.0f};
+        glm::mat4 projection_{1.0f};
+        glm::mat4 view_projection_{1.0f};
+    };
+
+    struct CameraControllerComponent {
+        float move_speed{6.0f};
+        float sprint_multiplier{2.0f};
+        float mouse_sensitivity{0.12f};
+
+        // false = mouse always moves camera
+        // true  = mouse moves camera with RMB
+        bool require_mouse_button{true};
+
+        glm::vec2 last_mouse_position{0.0f};
+        bool is_first_frame{true};
     };
 
     struct LODLevel {

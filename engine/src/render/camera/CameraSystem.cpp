@@ -5,6 +5,8 @@
 
 #include "render/camera/CameraSystem.hpp"
 
+#include "event/Event.hpp"
+#include "event/WindowEvents.hpp"
 #include "project/scene/Scene.hpp"
 #include "project/scene/ecs/Components.hpp"
 
@@ -12,22 +14,21 @@ namespace engine {
     void CameraSystem::on_update(Scene& active_scene, [[maybe_unused]] float delta_time) {
         auto view = active_scene.view<TransformComponent, CameraComponent>(exclude<DisabledComponent>);
         for (auto&& [entity, transform, camera_comp] : view.each()) {
-            if (!camera_comp.is_primary) continue;
-
-            controller_.on_update(camera_comp.native);
-
-            transform.position = camera_comp.native.position();
-            transform.rotation = {camera_comp.native.pitch(), camera_comp.native.yaw(), 0.0f};
+            camera_comp.update_matrices(transform);
         }
     }
 
     void CameraSystem::on_event(Scene& active_scene, Event& event) {
-        auto view = active_scene.view<TransformComponent, CameraComponent>(exclude<DisabledComponent>);
-        for (auto&& [entity, transform, camera_comp] : view.each()) {
-            if (!camera_comp.is_primary) continue;
+        EventDispatcher dispatcher(event);
+        dispatcher.dispatch<WindowResizedEvent>([&active_scene](const WindowResizedEvent& e) {
+            if (e.width() == 0 || e.height() == 0) return false;
 
-            controller_.on_event(camera_comp.native, event);
-            break;
-        }
+            auto view = active_scene.view<TransformComponent, CameraComponent>(exclude<DisabledComponent>);
+            for (auto&& [entity, transform, camera_comp] : view.each()) {
+                camera_comp.set_viewport_size(e.width(), e.height());
+                camera_comp.update_matrices(transform);
+            }
+            return false;
+        });
     }
 }
