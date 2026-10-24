@@ -125,7 +125,7 @@ namespace engine {
         glm::mat4 view_projection_{1.0f};
     };
 
-    struct CameraControllerComponent {
+    struct FlyCameraControllerComponent {
         float move_speed{6.0f};
         float sprint_multiplier{2.0f};
         float mouse_sensitivity{0.12f};

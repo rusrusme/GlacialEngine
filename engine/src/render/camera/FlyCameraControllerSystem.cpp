@@ -3,7 +3,7 @@
 // All rights reserved.
 //
 
-#include "render/camera/CameraControllerSystem.hpp"
+#include "render/camera/FlyCameraControllerSystem.hpp"
 
 #include <algorithm>
 
@@ -16,10 +16,10 @@
 #include "project/scene/ecs/Components.hpp"
 
 namespace engine {
-    void CameraControllerSystem::on_update(Scene& active_scene, float delta_time) {
+    void FlyCameraControllerSystem::on_update(Scene& active_scene, float delta_time) {
         const auto mouse_pos = Input::mouse_position();
 
-        auto view = active_scene.view<TransformComponent, CameraComponent, CameraControllerComponent>(exclude<DisabledComponent>);
+        auto view = active_scene.view<TransformComponent, CameraComponent, FlyCameraControllerComponent>(exclude<DisabledComponent>);
         for (auto [entity, transform, camera_comp, controller] : view.each()) {
             if (!camera_comp.is_primary) continue;
 
@@ -46,7 +46,7 @@ namespace engine {
 
             const glm::vec3 forward = transform.get_forward();
             const glm::vec3 right = transform.get_right();
-            constexpr glm::vec3 world_up = glm::vec3(0.0f, 1.0f, 0.0f);
+            constexpr glm::vec3 world_up = {0.0f, 1.0f, 0.0f};
 
             if (Input::key_pressed(Key::W)) move_direction += forward;
             if (Input::key_pressed(Key::S)) move_direction -= forward;
@@ -66,10 +66,10 @@ namespace engine {
         }
     }
 
-    void CameraControllerSystem::on_event(Scene& active_scene, Event& event) {
+    void FlyCameraControllerSystem::on_event(Scene& active_scene, Event& event) {
         EventDispatcher dispatcher(event);
         dispatcher.dispatch<MouseScrolledEvent>([&active_scene](const MouseScrolledEvent& e) {
-            auto view = active_scene.view<TransformComponent, CameraComponent, CameraControllerComponent>(exclude<DisabledComponent>);
+            auto view = active_scene.view<TransformComponent, CameraComponent, FlyCameraControllerComponent>(exclude<DisabledComponent>);
             for (auto [entity, transform, camera_comp, controller] : view.each()) {
                 if (!camera_comp.is_primary) continue;
                 controller.move_speed = std::clamp(controller.move_speed + e.y_offset() * 0.5f, 0.5f, 50.0f);

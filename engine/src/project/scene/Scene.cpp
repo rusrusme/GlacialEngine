@@ -14,6 +14,7 @@
 #include "physics/CollisionSystem.hpp"
 #include "project/scene/ecs/Entity.hpp"
 #include "render/camera/CameraSystem.hpp"
+#include "render/camera/FlyCameraControllerSystem.hpp"
 #include "render/mesh/Mesh.hpp"
 #include "util/Instrumentor.hpp"
 
@@ -36,6 +37,7 @@ namespace engine {
             entity_map[entity] = final_registry.create();
         }
         ComponentRegistry::copy_all_components(source_registry, final_registry, entity_map);
+        destination->systems_ = source->systems_;
 
         CORE_TRACE("Copied scene with {0} entities", entity_map.size());
         return destination;
@@ -92,31 +94,41 @@ namespace engine {
 
     void Scene::on_init() {
         collision_system_ = std::make_unique<CollisionSystem>(10.0f);
-        camera_system_ = std::make_unique<CameraSystem>();
-        camera_controller_system_ = std::make_unique<CameraControllerSystem>();
         CORE_TRACE("Scene initialized");
     }
 
     void Scene::on_shutdown() {
         collision_system_.reset();
-        camera_system_.reset();
-        camera_controller_system_.reset();
         CORE_TRACE("Scene shutdown");
     }
 
     void Scene::on_update(float delta_time) {
         PROFILE_FUNCTION();
-        collision_system_->update_broadphase(*this);
-        camera_controller_system_->on_update(*this, delta_time);
-        camera_system_->on_update(*this, delta_time);
+        if (collision_system_) {
+            collision_system_->update_broadphase(*this);
+        }
+        // TODO Dynamic user gameplay systems
+        for (const auto& system : systems_) {
+            if (system.on_update) {
+                system.on_update(*this, delta_time);
+            }
+        }
+
+        CameraSystem::on_update(*this, delta_time);
     }
 
     void Scene::on_event(Event& event) {
         PROFILE_FUNCTION();
-        camera_controller_system_->on_event(*this, event);
-        if (event.handled) return;
+        // FlyCameraControllerSystem::on_event(*this, event);
+        // if (event.handled) return;
+        for (const auto& system : systems_) {
+            if (system.on_event) {
+                system.on_event(*this, event);
+                if (event.handled) return;
+            }
+        }
 
-        camera_system_->on_event(*this, event);
+        CameraSystem::on_event(*this, event);
     }
 
     void Scene::clear() {

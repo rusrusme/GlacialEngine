@@ -11,7 +11,7 @@ namespace engine {
 
     class CameraSystem {
     public:
-        void on_update(Scene& active_scene, float delta_time);
-        void on_event(Scene& active_scene, Event& event);
+        static void on_update(Scene& active_scene, float delta_time);
+        static void on_event(Scene& active_scene, Event& event);
     };
 }
