@@ -54,28 +54,28 @@ void SandboxLayer::on_attach(SystemContext& context) {
         material.roughness = 0.15f;
     }
 
-    // camera_.set_far_clip(10);
-    // camera_.set_near_clip(0.1f);
-    // camera_.set_fov(60);
-    // camera_.set_distance(4);
+    camera_.set_far_clip(10);
+    camera_.set_near_clip(0.1f);
+    camera_.set_fov(60);
+    camera_.set_distance(4);
+
+    const auto& swapchain = context.render_context.swapchain();
+    camera_.set_viewport_size(swapchain.width(), swapchain.height());
+    // {
+    //     auto camera = scene->create_entity("Main Camera");
     //
-    // const auto& swapchain = context.render_context.swapchain();
-    // camera_.set_viewport_size(swapchain.width(), swapchain.height());
-    {
-        auto camera = scene->create_entity("Main Camera");
-
-        camera.add_component<CameraComponent>(60.0f, 0.1f, 100.0f, true);
-
-        auto& controller = camera.add_component<FlyCameraControllerComponent>();
-        controller.move_speed = 5.0f;
-        controller.require_mouse_button = true;
-
-        auto& transform = camera.get_component<TransformComponent>();
-        transform.position = {0.0f, 1.4f, 3.8f};
-        transform.rotation = {-15.0f, 0.0f, 0.0f};
-    }
-
-    scene->add_system<FlyCameraControllerSystem>();
+    //     camera.add_component<CameraComponent>(60.0f, 0.1f, 100.0f, true);
+    //
+    //     auto& controller = camera.add_component<FlyCameraControllerComponent>();
+    //     controller.move_speed = 5.0f;
+    //     controller.require_mouse_button = true;
+    //
+    //     auto& transform = camera.get_component<TransformComponent>();
+    //     transform.position = {0.0f, 1.4f, 3.8f};
+    //     transform.rotation = {-15.0f, 0.0f, 0.0f};
+    //
+    //     scene->add_system<FlyCameraControllerSystem>();
+    // }
 }
 
 void SandboxLayer::on_detach(SystemContext& context) {}
@@ -85,7 +85,7 @@ void SandboxLayer::on_update(SystemContext& context, float delta_time) {
     if (!scene) return;
 
     context.scenes.on_update(delta_time);
-    // camera_controller_.on_update(camera_);
+    camera_controller_.on_update(camera_);
 
     if (Input::key_pressed_once(Key::SPACE)) {
         if (context.scenes.scene_state() == SceneState::Edit) {
@@ -113,13 +113,13 @@ void SandboxLayer::on_render(SystemContext& context, float delta_time) {
     auto active_scene = context.scenes.active_scene();
     if (!active_scene) return;
 
-    // camera_.set_viewport_size(swapchain.width(), swapchain.height());
+    camera_.set_viewport_size(swapchain.width(), swapchain.height());
 
-    context.renderer.render_scene(active_scene, context, delta_time, nullptr);
+    context.renderer.render_scene(active_scene, context, delta_time, &camera_);
 }
 
 void SandboxLayer::on_event(SystemContext& context, Event& event) {
-    // camera_controller_.on_event(camera_, event);
+    camera_controller_.on_event(camera_, event);
     if (!event.handled) {
         context.scenes.on_event(event);
     }

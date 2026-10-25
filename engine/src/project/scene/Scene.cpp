@@ -119,8 +119,6 @@ namespace engine {
 
     void Scene::on_event(Event& event) {
         PROFILE_FUNCTION();
-        // FlyCameraControllerSystem::on_event(*this, event);
-        // if (event.handled) return;
         for (const auto& system : systems_) {
             if (system.on_event) {
                 system.on_event(*this, event);
@@ -128,6 +126,7 @@ namespace engine {
             }
         }
 
+        // TODO Consider if should be here
         CameraSystem::on_event(*this, event);
     }
 
