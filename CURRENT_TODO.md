@@ -1,3 +1,43 @@
+#### Rendering Architectural Migration
+
+---
+
+* With `(?)` marked todos need revision / fact-checks
+* With `(!)` marked todos require major effort
+---
+* Track progress with:
+    * **DONE**
+    * **PENDING**
+    * **POSTPONED**
+---
+
+**Not in implementation order:**
+
+* RenderQueue
+    * Sorting Phase
+      * Opaque: front to back
+      * Transparent: back to front 
+* Frustum + Occlusion Cull (GPU) `(!)`
+* GPU-driven computation (!?)
+* Offscreen HDR Framebuffer & Tone-mapping `(?)`
+    * Post-Processing Pass
+    * Tonemap-Pass `(?)`
+* Shadow Pass (CSM & Point Light Cube-maps)
+    * Directional Light 
+    * Point Lights
+* RenderGraph (Pass-Pipeline)
+    * Shadow Pass   
+    * Depth-Pre Pass 
+    * Opaque Pass
+    * Skybox (? order)
+    * Transparent Pass
+    * Post-Process Pass
+    * UI Pass
+
+---
+
+#### Old todos, which are partially complete and need a revision:
+
 Future features:
 
 - Frustum culling
