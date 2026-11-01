@@ -91,6 +91,10 @@ namespace engine {
     }
 
     bool ScriptEngine::reload(Scene* active_scene) {
+        // TODO Real hot reload needed -> Live recompilation
+        // Current process: Start sandbox -> Edit script -> Build GameScripts (Cmake) -> Press F5
+        // Expected process: Start sandbox -> Edit script -> Press F5
+
         CORE_INFO("[ScriptEngine] Reloading scripts...");
 
         if (active_scene) {
