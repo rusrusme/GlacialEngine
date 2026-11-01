@@ -7,7 +7,13 @@
 
 namespace engine {
     void ScriptRegistry::add_script_module(ComponentRegisterFun comp_fn, SystemRegisterFun sys_fn) {
-        get_modules().push_back({.register_components = comp_fn, .register_systems = sys_fn});
+        auto& modules = get_modules();
+        for (const auto& mod : modules) {
+            if (mod.register_systems == sys_fn) {
+                return; // Already registered
+            }
+        }
+        modules.push_back({.register_components = comp_fn, .register_systems = sys_fn});
     }
 
     void ScriptRegistry::bind_scene(Scene& scene) {

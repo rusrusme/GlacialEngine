@@ -14,8 +14,8 @@
 #include "physics/CollisionSystem.hpp"
 #include "project/scene/ecs/Entity.hpp"
 #include "render/camera/CameraSystem.hpp"
-#include "render/camera/FlyCameraControllerSystem.hpp"
 #include "render/mesh/Mesh.hpp"
+#include "script/ScriptRegistry.hpp"
 #include "util/Instrumentor.hpp"
 
 namespace engine {
@@ -93,11 +93,17 @@ namespace engine {
 
     void Scene::on_init() {
         collision_system_ = std::make_unique<CollisionSystem>(10.0f);
+
+        ScriptRegistry::bind_scene(*this);
+
         CORE_TRACE("Scene initialized");
     }
 
     void Scene::on_shutdown() {
         collision_system_.reset();
+
+        systems_.clear();
+
         CORE_TRACE("Scene shutdown");
     }
 
