@@ -37,7 +37,6 @@ namespace engine {
             entity_map[entity] = final_registry.create();
         }
         ComponentRegistry::copy_all_components(source_registry, final_registry, entity_map);
-        destination->systems_ = source->systems_;
 
         CORE_TRACE("Copied scene with {0} entities", entity_map.size());
         return destination;
