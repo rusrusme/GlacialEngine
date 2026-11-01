@@ -18,6 +18,10 @@ add_library(glaze_core STATIC
             src/GLexer.cpp
             src/GLexer.hpp
             src/Token.hpp
+            src/GParser.cpp
+            src/GParser.hpp
+            src/GChecker.cpp
+            src/GChecker.hpp
 )
 
 target_include_directories(glaze_core
