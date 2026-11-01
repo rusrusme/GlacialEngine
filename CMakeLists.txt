@@ -28,6 +28,7 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 # ----------------------------------------------------------------------------
 include(Dependencies.cmake)
 # ----------------------------------------------------------------------------
+add_subdirectory(GlazeScript)
 add_subdirectory(Engine)
 if (NOT ENGINE_DEBUG_DIST AND NOT ENGINE_RELEASE_DIST)
 #    add_subdirectory(Editor)

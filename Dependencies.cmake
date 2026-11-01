@@ -1,7 +1,7 @@
 # Dependencies.cmake
 # ----------------------------------------------------------------------------
 include(FetchContent)
-set(FETCHCONTENT_UPDATES_DISCONNECTED OFF CACHE BOOL "" FORCE)
+set(FETCHCONTENT_UPDATES_DISCONNECTED ON CACHE BOOL "" FORCE)
 # ----------------------------------------------------------------------------
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set(CMAKE_FOLDER "ThirdParty")
