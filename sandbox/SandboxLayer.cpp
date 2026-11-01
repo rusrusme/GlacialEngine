@@ -71,7 +71,6 @@ void SandboxLayer::on_attach(SystemContext& context) {
 }
 
 void SandboxLayer::on_detach(SystemContext& context) {
-    ScriptEngine::unload_library();
 }
 
 void SandboxLayer::on_update(SystemContext& context, float delta_time) {

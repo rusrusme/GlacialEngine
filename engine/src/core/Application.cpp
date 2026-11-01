@@ -156,6 +156,9 @@ namespace engine {
         CORE_INFO("Shutting down engine application");
 
         scene_manager_.shutdown();
+
+        ScriptEngine::unload_library();
+
         if (context_) {
             audio_system_.shutdown(*context_);
         }

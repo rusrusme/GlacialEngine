@@ -14,14 +14,23 @@
 #endif
 
 namespace engine {
+    static uint32_t s_reload_counter = 0;
+
     bool ScriptEngine::load_library(const std::filesystem::path& dll_path) {
+        if (s_library_handle != nullptr) {
+            unload_library();
+        }
+
         if (!std::filesystem::exists(dll_path)) {
             CORE_ERROR("[ScriptEngine] DLL not found: {}", dll_path.string());
             return false;
         }
 
         s_original_path = dll_path;
-        s_live_path = dll_path.parent_path() / (dll_path.stem().string() + "_live" + dll_path.extension().string());
+        s_live_path = dll_path.parent_path() / std::format("{}_live_{}{}",
+                                                           dll_path.stem().string(),
+                                                           s_reload_counter++,
+                                                           dll_path.extension().string());
 
         try {
             std::filesystem::copy_file(s_original_path, s_live_path, std::filesystem::copy_options::overwrite_existing);
@@ -53,7 +62,6 @@ namespace engine {
             return false;
         }
 
-        // Übergibt die Container der Haupt-EXE an die DLL!
         init_fn(&ScriptRegistry::get_modules(), &ComponentRegistry::get_copiers());
         CORE_INFO("[ScriptEngine] Successfully loaded script library: {}", s_original_path.filename().string());
         return true;
