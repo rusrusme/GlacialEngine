@@ -22,6 +22,10 @@ add_library(glaze_core STATIC
             src/GParser.hpp
             src/GChecker.cpp
             src/GChecker.hpp
+            src/SymbolTable.cpp
+            src/SymbolTable.hpp
+            src/GTranspiler.cpp
+            src/GTranspiler.hpp
 )
 
 target_include_directories(glaze_core
