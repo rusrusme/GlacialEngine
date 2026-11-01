@@ -69,6 +69,7 @@ target_link_libraries(Engine PUBLIC
                       DEPENDENCY::MINIAUDIO
                       DEPENDENCY::NLOHMANN
                       DEPENDENCY::GLACIALC
+                      GlazeCore
 )
 # ----------------------------------------------------------------------------
 if (ENABLE_IMGUI)
@@ -107,6 +108,51 @@ foreach(SHADER_REL IN LISTS SHADER_SOURCES)
     list(APPEND COMPILED_SHADERS "${SHADER_OUT}")
 endforeach()
 add_custom_target(CompileShaders ALL DEPENDS ${COMPILED_SHADERS})
+# ----------------------------------------------------------------------------
+set(SCRIPT_OUT_DIR "${RUNTIME_ASSETS}/scripts/compiled")
+set(SCRIPT_BUNDLE_CPP "${SCRIPT_OUT_DIR}/GlazeScriptsBundle.cpp")
+file(GLOB_RECURSE GSCRIPT_SOURCES RELATIVE "${SOURCE_ASSETS}/scripts" CONFIGURE_DEPENDS "${SOURCE_ASSETS}/scripts/*.gscript")
+
+set(COMPILED_SCRIPTS "")
+foreach(SCRIPT_REL IN LISTS GSCRIPT_SOURCES)
+    set(SCRIPT_IN "${SOURCE_ASSETS}/scripts/${SCRIPT_REL}")
+    cmake_path(REPLACE_EXTENSION SCRIPT_REL "hpp" OUTPUT_VARIABLE SCRIPT_OUT_REL)
+    set(SCRIPT_OUT "${SCRIPT_OUT_DIR}/${SCRIPT_OUT_REL}")
+
+    add_custom_command(
+            OUTPUT "${SCRIPT_OUT}"
+            COMMAND ${CMAKE_COMMAND} -E make_directory "${SCRIPT_OUT_DIR}"
+            COMMAND $<TARGET_FILE:GlazeScript> "${SCRIPT_IN}" -o "${SCRIPT_OUT_DIR}" -e "${CMAKE_SOURCE_DIR}"
+            DEPENDS "${SCRIPT_IN}" $<TARGET_FILE:GlazeScript>
+            COMMENT "Transpiling GlazeScript: ${SCRIPT_REL}"
+            VERBATIM
+    )
+    list(APPEND COMPILED_SCRIPTS "${SCRIPT_OUT}")
+endforeach()
+
+if (COMPILED_SCRIPTS)
+    add_custom_command(
+            OUTPUT "${SCRIPT_BUNDLE_CPP}"
+            COMMAND ${CMAKE_COMMAND} -E touch_nocreate "${SCRIPT_BUNDLE_CPP}"
+            DEPENDS ${COMPILED_SCRIPTS}
+            VERBATIM
+    )
+
+    add_library(GameScripts SHARED "${SCRIPT_BUNDLE_CPP}" ${COMPILED_SCRIPTS})
+    target_include_directories(GameScripts PRIVATE
+                               "${SCRIPT_OUT_DIR}"
+                               "${CMAKE_SOURCE_DIR}/engine/include"
+                               "${CMAKE_SOURCE_DIR}/GlazeScript/include"
+    )
+    target_link_libraries(GameScripts PRIVATE Engine)
+    set_target_properties(GameScripts PROPERTIES
+                          RUNTIME_OUTPUT_DIRECTORY "${RUNTIME_ASSETS}/scripts"
+                          LIBRARY_OUTPUT_DIRECTORY "${RUNTIME_ASSETS}/scripts"
+                          PREFIX ""
+                          FOLDER "GlacialEngine"
+    )
+    target_include_directories(Engine PUBLIC "${SCRIPT_OUT_DIR}")
+endif()
 # ----------------------------------------------------------------------------
 add_dependencies(Engine SyncAssets)
 add_dependencies(Engine CompileShaders)

@@ -12,3 +12,7 @@ add_executable(Sandbox
 )
 
 target_link_libraries(Sandbox PRIVATE Engine)
+
+if (TARGET GameScripts)
+    add_dependencies(Sandbox GameScripts)
+endif()

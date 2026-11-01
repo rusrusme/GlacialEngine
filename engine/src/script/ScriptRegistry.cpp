@@ -23,8 +23,14 @@ namespace engine {
         }
     }
 
-    std::vector<ScriptRegistry::ScriptModule>& ScriptRegistry::get_modules() {
-        static std::vector<ScriptModule> modules;
-        return modules;
+    void ScriptRegistry::clear() { get_modules().clear(); }
+
+    ScriptRegistry::ModuleList& ScriptRegistry::get_modules() {
+        static ModuleList local_modules;
+        return s_host_modules ? *s_host_modules : local_modules;
+    }
+
+    void ScriptRegistry::set_host_modules(ModuleList* host_modules) {
+        s_host_modules = host_modules;
     }
 }

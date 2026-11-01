@@ -26,6 +26,8 @@ namespace glaze {
                            const std::string& script_name,
                            const std::filesystem::path& output_dir);
 
+        static bool generate_bundle(const std::filesystem::path& output_dir);
+
     private:
         [[nodiscard]] std::optional<std::filesystem::path> resolve_fetch_content_deps(const std::filesystem::path& root_path) const;
         [[nodiscard]] int run_syntax_check(const std::filesystem::path& header_path) const;

@@ -15,15 +15,21 @@ namespace engine {
         using SystemRegisterFun = void(*)(Scene&);
         using ComponentRegisterFun = void(*)();
 
-        static void add_script_module(ComponentRegisterFun comp_fn, SystemRegisterFun sys_fn);
-        static void bind_scene(Scene& scene);
-
-    private:
         struct ScriptModule {
             ComponentRegisterFun register_components;
             SystemRegisterFun register_systems;
         };
 
-        static std::vector<ScriptModule>& get_modules();
+        using ModuleList = std::vector<ScriptModule>;
+
+        static void add_script_module(ComponentRegisterFun comp_fn, SystemRegisterFun sys_fn);
+        static void bind_scene(Scene& scene);
+        static void clear();
+
+        static ModuleList& get_modules();
+        static void set_host_modules(ModuleList* host_modules);
+
+    private:
+        inline static ModuleList* s_host_modules = nullptr;
     };
 }

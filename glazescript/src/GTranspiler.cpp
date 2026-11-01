@@ -120,12 +120,11 @@ namespace glaze {
         line("#include <glm/gtc/quaternion.hpp>");
         line("#include <glm/gtx/quaternion.hpp>");
         line("");
-        line("#include \"glaze/Runtime.hpp\"");
         line("#include \"project/scene/Scene.hpp\"");
         line("#include \"project/scene/ecs/ComponentRegistry.hpp\"");
         line("#include \"project/scene/ecs/Components.hpp\"");
         line("#include \"project/scene/ecs/Entity.hpp\"");
-        line("#include \"script/ScriptRegistry.hpp\"");
+        line("#include \"glaze/Runtime.hpp\"");
         line("");
         line("namespace script {");
         indent_++;
@@ -138,15 +137,12 @@ namespace glaze {
         std::string clean_name = program_name_;
         if (clean_name.size() >= 8) {
             std::string suffix = clean_name.substr(clean_name.size() - 8);
-            std::string suffix_lower = suffix;
-            std::ranges::transform(suffix_lower, suffix_lower.begin(),
-                                   [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
-            if (suffix_lower == ".gscript") {
+            std::ranges::transform(suffix, suffix.begin(), [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+            if (suffix == ".gscript") {
                 clean_name.erase(clean_name.size() - 8);
             }
         }
-        std::ranges::transform(clean_name, clean_name.begin(),
-                               [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
+        std::ranges::transform(clean_name, clean_name.begin(), [](unsigned char c) { return static_cast<char>(std::tolower(c)); });
 
         line(std::format("inline void register_components_{}() {{", clean_name));
         indent_++;
@@ -166,18 +162,6 @@ namespace glaze {
         }
         indent_--;
         line("}");
-
-        line("");
-        line(std::format("struct AutoRegister_{} {{", clean_name));
-        indent_++;
-        line(std::format("AutoRegister_{}() {{", clean_name));
-        indent_++;
-        line(std::format("engine::ScriptRegistry::add_script_module(register_components_{}, register_systems_{});", clean_name, clean_name));
-        indent_--;
-        line("}");
-        indent_--;
-        line("};");
-        line(std::format("inline static AutoRegister_{} s_auto_register_{};", clean_name, clean_name));
     }
 
     // TOPOLOGICAL SORT FOR STRUCTS & COMPONENTS

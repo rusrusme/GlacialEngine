@@ -17,6 +17,7 @@
 #include "event/MouseEvents.hpp"
 #include "event/WindowEvents.hpp"
 #include "render/rhi/RenderContext.hpp"
+#include "script/ScriptEngine.hpp"
 #include "util/Instrumentor.hpp"
 
 namespace engine {
