@@ -21,7 +21,8 @@ namespace engine {
         MATERIAL,
         SHADER,
         AUDIO,
-        FONT
+        FONT,
+        SCRIPT
     };
 
     inline std::string_view asset_type_to_string(const AssetType type) {
@@ -32,6 +33,7 @@ namespace engine {
             case AssetType::SHADER : return "Shader";
             case AssetType::AUDIO : return "Audio";
             case AssetType::FONT : return "Font";
+            case AssetType::SCRIPT : return "Script";
             default : return "None";
         }
     }
@@ -43,6 +45,7 @@ namespace engine {
         if (type_str == "Shader") return AssetType::SHADER;
         if (type_str == "Audio") return AssetType::AUDIO;
         if (type_str == "Font") return AssetType::FONT;
+        if (type_str == "Script") return AssetType::SCRIPT;
         return AssetType::NONE;
     }
 

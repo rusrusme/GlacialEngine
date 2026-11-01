@@ -105,6 +105,9 @@ namespace engine {
         if (ext == ".ttf") {
             return AssetType::FONT;
         }
+        if (ext == ".gscript") {
+            return AssetType::SCRIPT;
+        }
         return AssetType::NONE;
     }
 
