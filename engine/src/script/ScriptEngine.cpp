@@ -3,6 +3,8 @@
 // All rights reserved.
 //
 
+#include <chrono>
+
 #include "script/ScriptEngine.hpp"
 #include "core/Log.hpp"
 #include "project/scene/Scene.hpp"
@@ -27,9 +29,11 @@ namespace engine {
         }
 
         s_original_path = dll_path;
+
+        auto timestamp = std::chrono::system_clock::now().time_since_epoch().count();
         s_live_path = dll_path.parent_path() / std::format("{}_live_{}{}",
                                                            dll_path.stem().string(),
-                                                           s_reload_counter++,
+                                                           timestamp,
                                                            dll_path.extension().string());
 
         try {
