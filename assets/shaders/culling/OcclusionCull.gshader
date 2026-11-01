@@ -46,9 +46,9 @@ layout(binding = 0) uniform sampler2D u_HZBTexture;
 bool is_sphere_in_frustum(vec3 center, float radius) {
     for (int i = 0; i < 6; ++i) {
         float dist = dot(camera.frustum_planes[i].xyz, center) + camera.frustum_planes[i].w;
-            if (dist < -radius) {
-                return false;
-            }
+        if (dist < -radius) {
+            return false;
+        }
     }
     return true;
 }
@@ -87,18 +87,18 @@ void main() {
     float min_z = 1.0;
 
     for (int i = 0; i < 8; ++i) {
-    vec4 world_pos = instance.model_matrix * vec4(corners[i], 1.0);
-    vec4 clip_pos = camera.view_projection * world_pos;
+        vec4 world_pos = instance.model_matrix * vec4(corners[i], 1.0);
+        vec4 clip_pos = camera.view_projection * world_pos;
 
-    if (clip_pos.w <= 0.0) {
-        commands[g_id].instance_count = 1u;
-        return;
-    }
+        if (clip_pos.w <= 0.0) {
+            commands[g_id].instance_count = 1u;
+            return;
+        }
 
-    vec3 ndc = clip_pos.xyz / clip_pos.w;
-    min_ndc = min(min_ndc, ndc.xy);
-    max_ndc = max(max_ndc, ndc.xy);
-    min_z = min(min_z, ndc.z);
+        vec3 ndc = clip_pos.xyz / clip_pos.w;
+        min_ndc = min(min_ndc, ndc.xy);
+        max_ndc = max(max_ndc, ndc.xy);
+        min_z = min(min_z, ndc.z);
     }
 
     // Convert NDC [-1, 1] to UV [0, 1] and Depth [0, 1]

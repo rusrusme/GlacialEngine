@@ -26,7 +26,7 @@ namespace engine {
         SceneManager& scenes;
 
         ShaderLibrary& shaders;
-        RenderContext& render_context;
+        RenderContext& render_context; // TODO Abstraction leak -> Move to SceneRenderer
         SceneRenderer& renderer;
         // TODO
         // GPUMeshManager& mesh_manager;

@@ -164,7 +164,7 @@ namespace engine {
 
         entt::registry registry_;
 
-        std::unique_ptr<CollisionSystem> collision_system_ = nullptr;
+        std::unique_ptr<CollisionSystem> collision_system_;
         std::vector<SceneSystemEntry> systems_;
     };
 }

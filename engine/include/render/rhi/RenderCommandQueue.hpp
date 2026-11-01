@@ -11,21 +11,21 @@
 #include "render/rhi/RHITypes.hpp"
 
 namespace engine {
-    using RenderCommandFun = std::function<void()>;
+    using RenderCommand = std::function<void()>;
 
     class RenderCommandQueue {
     public:
         RenderCommandQueue() = default;
         ~RenderCommandQueue() = default;
 
-        void submit(RenderCommandFun command);
+        void submit(RenderCommand command);
         void execute();
         void clear();
 
-        [[nodiscard]] std::size_t command_count() const { return command_buffer_.size(); }
+        [[nodiscard]] std::size_t count() const { return buffer_.size(); }
 
     private:
-        Vector<RenderCommandFun> command_buffer_;
+        Vector<RenderCommand> buffer_;
         mutable std::mutex queue_mutex_;
     };
 }

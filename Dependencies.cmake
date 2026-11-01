@@ -169,7 +169,7 @@ FetchContent_MakeAvailable(miniaudio)
 FetchContent_Declare(
         glacialc
         GIT_REPOSITORY https://github.com/rusrusme/glacialc.git
-        GIT_TAG v1.4.0
+        GIT_TAG master
         GIT_SHALLOW TRUE
         GIT_SUBMODULES ""
 )
