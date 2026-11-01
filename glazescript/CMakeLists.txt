@@ -15,9 +15,9 @@ add_library(glaze_core STATIC
             include/glaze/Config.hpp
 
             # Private
-            src/Lexer.cpp
-            src/Lexer.hpp
-            src/TokenType.hpp
+            src/GLexer.cpp
+            src/GLexer.hpp
+            src/Token.hpp
 )
 
 target_include_directories(glaze_core

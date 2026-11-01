@@ -5,6 +5,12 @@
 
 #pragma once
 
+#include <cstdint>
+#include <format>
+#include <stdexcept>
+#include <string>
+#include <variant>
+
 namespace glaze {
     enum class TokenType {
         // Keywords
@@ -21,13 +27,13 @@ namespace glaze {
         LIST,
 
         // ECS Keywords & Built-in Types
-        ENTITY,    // ECS entity wrapper
-        COMPONENT, // ECS components are implemented as structs
-        SYSTEM,    // ECS system definition
-        EXCLUDE,   // ECS view exclude clause
-        ON_UPDATE, // System lifecycle hook
-        ON_EVENT,  // System lifecycle hook
-        EVENT,     // Built-in event type
+        ENTITY,
+        COMPONENT,
+        SYSTEM,
+        EXCLUDE,
+        ON_UPDATE,
+        ON_EVENT,
+        EVENT,
 
         // Primitive Types
         VOID,
@@ -76,8 +82,40 @@ namespace glaze {
         DOT,
 
         // Comments
-        HASH, // `#`
+        HASH,
 
-        EOF
+        END_OF_FILE
+    };
+
+    using TokenLiteral = std::variant<std::monostate, bool, int64_t, double, char, std::string>;
+
+    struct Token {
+        TokenType type{TokenType::END_OF_FILE};
+        std::string lexeme{};
+        TokenLiteral literal{std::monostate{}};
+        uint32_t line{1};
+        uint32_t column{0};
+
+        Token() = default;
+
+        Token(TokenType type, std::string lexeme, TokenLiteral literal, uint32_t line, uint32_t column)
+            : type(type), lexeme(std::move(lexeme)), literal(std::move(literal)), line(line), column(column) {}
+    };
+
+    class GlazeCompilerError : public std::runtime_error {
+    public:
+        explicit GlazeCompilerError(const std::string& message)
+            : std::runtime_error(message) {}
+
+        GlazeCompilerError(const std::string& message, uint32_t line, uint32_t column)
+            : std::runtime_error(std::format("{} at [{}:{}]", message, line, column)),
+              line_(line), column_(column) {}
+
+        [[nodiscard]] uint32_t line() const noexcept { return line_; }
+        [[nodiscard]] uint32_t column() const noexcept { return column_; }
+
+    private:
+        uint32_t line_{0};
+        uint32_t column_{0};
     };
 }
