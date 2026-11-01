@@ -26,7 +26,6 @@ namespace glaze {
 
     private:
         void emit_preamble();
-        void emit_runtime_helpers();
         void emit_engine_registration_helpers(const std::vector<const StructDeclaration*>& structs,
                                               const std::vector<const SystemDeclaration*>& systems);
 

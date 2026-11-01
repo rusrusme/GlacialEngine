@@ -14,6 +14,7 @@
 
 namespace glaze {
     class GParser {
+    public:
         GParser(std::string file_name, std::vector<Token> tokens);
 
         [[nodiscard]] Program construct();
