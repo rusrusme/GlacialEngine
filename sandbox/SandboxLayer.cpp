@@ -9,11 +9,10 @@
 #include "input/Input.hpp"
 #include "input/KeyCodes.hpp"
 #include "project/scene/ecs/Entity.hpp"
-#include "render/camera/FlyCameraControllerSystem.hpp"
 #include "render/rhi/RenderContext.hpp"
 #include "script/ScriptEngine.hpp"
 
-#include "Test01.hpp"
+// TODO Add ScriptComponent in Component.hpp
 
 void SandboxLayer::on_attach(SystemContext& context) {
     #if defined(_WIN32)
@@ -31,7 +30,8 @@ void SandboxLayer::on_attach(SystemContext& context) {
         const AssetHandle normal_handle = context.assets.asset_handle_from_path("assets/textures/brick/rock_wall_13_nor_gl_1k.jpg");
         const AssetHandle rough_handle = context.assets.asset_handle_from_path("assets/textures/brick/rock_wall_13_rough_1k.jpg");
 
-        auto cube = scene->create_entity("Textured Cube");
+        auto cube = scene->create_entity("Vehicle");
+
         auto& transform = cube.get_component<TransformComponent>();
         transform.position = {-1.2f, 0.0f, 0.0f};
 
@@ -44,9 +44,7 @@ void SandboxLayer::on_attach(SystemContext& context) {
         material.metallic = 0.0f;
         material.roughness = 1.0f;
 
-        // 2. Komponenten für TrafficSystem (Test01.gscript) hinzufügen!
         cube.add_component<RigidBodyComponent>();
-        cube.add_component<script::VehicleComponent>();
     }
 
     {
