@@ -69,7 +69,8 @@ target_link_libraries(Engine PUBLIC
                       DEPENDENCY::MINIAUDIO
                       DEPENDENCY::NLOHMANN
                       DEPENDENCY::GLACIALC
-                      GlazeCore
+
+                      INTERNAL::GLAZESCRIPT
 )
 # ----------------------------------------------------------------------------
 if (ENABLE_IMGUI)
@@ -122,8 +123,8 @@ foreach(SCRIPT_REL IN LISTS GSCRIPT_SOURCES)
     add_custom_command(
             OUTPUT "${SCRIPT_OUT}"
             COMMAND ${CMAKE_COMMAND} -E make_directory "${SCRIPT_OUT_DIR}"
-            COMMAND $<TARGET_FILE:GlazeScript> "${SCRIPT_IN}" -o "${SCRIPT_OUT_DIR}" -e "${CMAKE_SOURCE_DIR}"
-            DEPENDS "${SCRIPT_IN}" $<TARGET_FILE:GlazeScript>
+            COMMAND $<TARGET_FILE:glazec> "${SCRIPT_IN}" -o "${SCRIPT_OUT_DIR}" -e "${CMAKE_SOURCE_DIR}"
+            DEPENDS "${SCRIPT_IN}" $<TARGET_FILE:glazec>
             COMMENT "Transpiling GlazeScript: ${SCRIPT_REL}"
             VERBATIM
     )
@@ -138,14 +139,14 @@ if (COMPILED_SCRIPTS)
             VERBATIM
     )
 
-    add_library(GameScripts SHARED "${SCRIPT_BUNDLE_CPP}" ${COMPILED_SCRIPTS})
-    target_include_directories(GameScripts PRIVATE
+    add_library(Scripts SHARED "${SCRIPT_BUNDLE_CPP}" ${COMPILED_SCRIPTS})
+    target_include_directories(Scripts PRIVATE
                                "${SCRIPT_OUT_DIR}"
                                "${CMAKE_SOURCE_DIR}/engine/include"
                                "${CMAKE_SOURCE_DIR}/GlazeScript/include"
     )
-    target_link_libraries(GameScripts PRIVATE Engine)
-    set_target_properties(GameScripts PROPERTIES
+    target_link_libraries(Scripts PRIVATE Engine)
+    set_target_properties(Scripts PROPERTIES
                           RUNTIME_OUTPUT_DIRECTORY "${RUNTIME_ASSETS}/scripts"
                           LIBRARY_OUTPUT_DIRECTORY "${RUNTIME_ASSETS}/scripts"
                           PREFIX ""

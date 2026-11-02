@@ -68,6 +68,9 @@ namespace glaze {
         void check_call_arguments(const std::vector<ExpressionPtr>& actual_args,
                                   const std::vector<Parameter>& formal_params,
                                   const std::string& fn_name);
+        TypePtr check_builtin_math_call(const std::string& name, const std::vector<ExpressionPtr>& args);
+        static bool is_vector_type(const TypePtr& type);
+        static bool is_matrix_type(const TypePtr& type);
 
         // Type Helpers
         SymbolPtr require_component_type(const std::string& name);
@@ -93,6 +96,7 @@ namespace glaze {
         static const std::unordered_set<std::string> s_primitive_types;
         static const std::unordered_set<std::string> s_math_types;
         static const std::unordered_map<std::string, int> s_numeric_rank;
+        static const std::unordered_set<std::string> s_builtin_math_functions;
 
         SymbolTable symbols_{};
         std::unordered_map<const Expression*, SymbolPtr> resolved_symbols_{};

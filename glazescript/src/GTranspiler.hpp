@@ -94,6 +94,7 @@ namespace glaze {
         static const std::unordered_set<std::string> s_cpp_keywords;
         static const std::unordered_set<std::string> s_value_primitives;
         static const std::unordered_set<std::string> s_math_types;
+        static const std::unordered_set<std::string> s_builtin_math_functions;
 
         const SymbolTable& symbols_;
         const std::unordered_map<const Expression*, SymbolPtr>& resolved_;

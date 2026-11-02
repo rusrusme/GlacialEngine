@@ -34,6 +34,14 @@ namespace glaze {
         {"double", 7}
     };
 
+    const std::unordered_set<std::string> GChecker::s_builtin_math_functions = {
+        "length", "normalize", "distance", "dot", "cross",
+        "inverse", "transpose", "determinant",
+        "slerp", "angleAxis",
+        "abs", "sqrt", "min", "max", "clamp", "mix",
+        "sin", "cos", "radians", "degrees"
+    };
+
     void GChecker::check(const Program& program) {
         collect_declarations(program.declarations);
         check_declarations(program.declarations);
@@ -622,6 +630,10 @@ namespace glaze {
                 return Type::make_named(name);
             }
 
+            if (s_builtin_math_functions.contains(name)) {
+                return check_builtin_math_call(name, call.arguments);
+            }
+
             SymbolPtr fn_sym = nullptr;
             if (!current_system_.empty()) {
                 fn_sym = symbols_.lookup_member(current_system_, name);
@@ -769,6 +781,158 @@ namespace glaze {
             require_assignable(actual_args[i], formal_params[i].type,
                                std::format("argument {} of '{}'", i + 1, fn_name));
         }
+    }
+
+    TypePtr GChecker::check_builtin_math_call(const std::string& name, const std::vector<ExpressionPtr>& args) {
+        std::vector<TypePtr> arg_types;
+        arg_types.reserve(args.size());
+        for (const auto& arg : args) {
+            arg_types.push_back(check_expression(arg));
+        }
+
+        auto require_arity = [&](size_t expected) {
+            if (arg_types.size() != expected) {
+                throw error(std::format("built-in function '{}' expects {} argument(s), got {}",
+                                        name, expected, arg_types.size()));
+            }
+        };
+
+        // 1. Vektor-Funktionen
+        if (name == "length") {
+            require_arity(1);
+            if (!is_vector_type(arg_types[0])) {
+                throw error(std::format("'length' requires a vector type ('vec2', 'vec3', 'vec4'), got {}", format_type(arg_types[0])));
+            }
+            return Type::make_named("float");
+        }
+        if (name == "normalize") {
+            require_arity(1);
+            if (!is_vector_type(arg_types[0]) && !is_named(arg_types[0], "quat")) {
+                throw error(std::format("'normalize' requires a vector or quat type, got {}", format_type(arg_types[0])));
+            }
+            return arg_types[0];
+        }
+        if (name == "distance" || name == "dot") {
+            require_arity(2);
+            if (!is_vector_type(arg_types[0]) || *arg_types[0] != *arg_types[1]) {
+                throw error(std::format("'{}' requires two vectors of the same type, got {} and {}",
+                                        name, format_type(arg_types[0]), format_type(arg_types[1])));
+            }
+            return Type::make_named("float");
+        }
+        if (name == "cross") {
+            require_arity(2);
+            if (!is_named(arg_types[0], "vec3") || !is_named(arg_types[1], "vec3")) {
+                throw error(std::format("'cross' requires two 'vec3' arguments, got {} and {}",
+                                        format_type(arg_types[0]), format_type(arg_types[1])));
+            }
+            return Type::make_named("vec3");
+        }
+
+        // 2. Matrix-Funktionen
+        if (name == "inverse" || name == "transpose") {
+            require_arity(1);
+            if (!is_matrix_type(arg_types[0])) {
+                throw error(std::format("'{}' requires a matrix type ('mat2', 'mat3', 'mat4'), got {}", name, format_type(arg_types[0])));
+            }
+            return arg_types[0];
+        }
+        if (name == "determinant") {
+            require_arity(1);
+            if (!is_matrix_type(arg_types[0])) {
+                throw error(std::format("'determinant' requires a matrix type ('mat2', 'mat3', 'mat4'), got {}", format_type(arg_types[0])));
+            }
+            return Type::make_named("float");
+        }
+
+        // 3. Quaternion-Funktionen
+        if (name == "slerp") {
+            require_arity(3);
+            if (!is_named(arg_types[0], "quat") || !is_named(arg_types[1], "quat") || !is_numeric(arg_types[2])) {
+                throw error(std::format("'slerp' expects (quat, quat, float), got ({}, {}, {})",
+                                        format_type(arg_types[0]), format_type(arg_types[1]), format_type(arg_types[2])));
+            }
+            return Type::make_named("quat");
+        }
+        if (name == "angleAxis") {
+            require_arity(2);
+            if (!is_numeric(arg_types[0]) || !is_named(arg_types[1], "vec3")) {
+                throw error(std::format("'angleAxis' expects (float, vec3), got ({}, {})",
+                                        format_type(arg_types[0]), format_type(arg_types[1])));
+            }
+            return Type::make_named("quat");
+        }
+
+        // 4. Interpolation & Bounds
+        if (name == "abs") {
+            require_arity(1);
+            if (!is_numeric(arg_types[0]) && !is_vector_type(arg_types[0])) {
+                throw error(std::format("'abs' requires a numeric or vector type, got {}", format_type(arg_types[0])));
+            }
+            return arg_types[0];
+        }
+        if (name == "min" || name == "max") {
+            require_arity(2);
+            if (is_vector_type(arg_types[0]) && *arg_types[0] == *arg_types[1]) {
+                return arg_types[0];
+            }
+            if (is_numeric(arg_types[0]) && is_numeric(arg_types[1])) {
+                return promote_numeric(arg_types[0], arg_types[1]);
+            }
+            throw error(std::format("'{}' requires matching numeric or vector types, got {} and {}",
+                                    name, format_type(arg_types[0]), format_type(arg_types[1])));
+        }
+        if (name == "clamp") {
+            require_arity(3);
+            if (is_vector_type(arg_types[0]) && *arg_types[0] == *arg_types[1] && *arg_types[0] == *arg_types[2]) {
+                return arg_types[0];
+            }
+            if (is_numeric(arg_types[0]) && is_numeric(arg_types[1]) && is_numeric(arg_types[2])) {
+                return promote_numeric(arg_types[0], promote_numeric(arg_types[1], arg_types[2]));
+            }
+            throw error(std::format("'clamp' requires matching numeric or vector arguments, got ({}, {}, {})",
+                                    format_type(arg_types[0]), format_type(arg_types[1]), format_type(arg_types[2])));
+        }
+        if (name == "mix") {
+            require_arity(3);
+            if (!is_numeric(arg_types[2])) {
+                throw error(std::format("third argument of 'mix' must be a float factor, got {}", format_type(arg_types[2])));
+            }
+            if (is_vector_type(arg_types[0]) && *arg_types[0] == *arg_types[1]) {
+                return arg_types[0];
+            }
+            if (is_numeric(arg_types[0]) && is_numeric(arg_types[1])) {
+                return Type::make_named("float");
+            }
+            throw error(std::format("'mix' requires matching numeric or vector types for first two arguments, got {} and {}",
+                                    format_type(arg_types[0]), format_type(arg_types[1])));
+        }
+
+        // 5. Trigonometrie & Wurzeln
+        if (name == "sin" || name == "cos" || name == "radians" || name == "degrees" || name == "sqrt") {
+            require_arity(1);
+            if (is_vector_type(arg_types[0])) {
+                return arg_types[0];
+            }
+            if (is_numeric(arg_types[0])) {
+                return is_named(arg_types[0], "double") ? Type::make_named("double") : Type::make_named("float");
+            }
+            throw error(std::format("'{}' requires a numeric or vector argument, got {}", name, format_type(arg_types[0])));
+        }
+
+        throw error(std::format("unknown built-in math function '{}'", name));
+    }
+
+    bool GChecker::is_vector_type(const TypePtr& type) {
+        if (!type || !type->is<NamedType>()) return false;
+        const auto& n = type->as<NamedType>().name;
+        return n == "vec2" || n == "vec3" || n == "vec4";
+    }
+
+    bool GChecker::is_matrix_type(const TypePtr& type) {
+        if (!type || !type->is<NamedType>()) return false;
+        const auto& n = type->as<NamedType>().name;
+        return n == "mat2" || n == "mat3" || n == "mat4";
     }
 
     // TYPE HELPERS

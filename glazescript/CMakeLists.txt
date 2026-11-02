@@ -12,7 +12,7 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-add_library(GlazeCore STATIC
+add_library(glaze_core STATIC
             # Public headers
             include/glaze/AST.hpp
             include/glaze/Compiler.hpp
@@ -34,10 +34,12 @@ add_library(GlazeCore STATIC
             src/Compiler.cpp
 )
 
-target_include_directories(GlazeCore
+target_include_directories(glaze_core
                            PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
                            PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 
-add_executable(GlazeScript src/main.cpp)
-target_link_libraries(GlazeScript PRIVATE GlazeCore)
+add_executable(glazec src/main.cpp)
+target_link_libraries(glazec PRIVATE glaze_core)
+
+add_library(INTERNAL::GLAZESCRIPT ALIAS glaze_core)

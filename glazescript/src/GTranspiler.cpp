@@ -39,6 +39,14 @@ namespace glaze {
         "quat"
     };
 
+    const std::unordered_set<std::string> GTranspiler::s_builtin_math_functions = {
+        "length", "normalize", "distance", "dot", "cross",
+        "inverse", "transpose", "determinant",
+        "slerp", "angleAxis",
+        "abs", "sqrt", "min", "max", "clamp", "mix",
+        "sin", "cos", "radians", "degrees"
+    };
+
     GTranspiler::GTranspiler(const SymbolTable& symbols,
                              const std::unordered_map<const Expression*, SymbolPtr>& resolved,
                              const std::unordered_map<const Expression*, TypePtr>& expression_types)
@@ -110,6 +118,7 @@ namespace glaze {
         line("#pragma once");
         line("");
         line("#include <algorithm>");
+        line("#include <cmath>");
         line("#include <cstddef>");
         line("#include <cstdint>");
         line("#include <string>");
@@ -120,11 +129,11 @@ namespace glaze {
         line("#include <glm/gtc/quaternion.hpp>");
         line("#include <glm/gtx/quaternion.hpp>");
         line("");
+        line("#include \"glaze/Runtime.hpp\"");
         line("#include \"project/scene/Scene.hpp\"");
         line("#include \"project/scene/ecs/ComponentRegistry.hpp\"");
         line("#include \"project/scene/ecs/Components.hpp\"");
         line("#include \"project/scene/ecs/Entity.hpp\"");
-        line("#include \"glaze/Runtime.hpp\"");
         line("");
         line("namespace script {");
         indent_++;
@@ -148,13 +157,13 @@ namespace glaze {
         indent_++;
         for (const auto* s : structs) {
             if (s->is_component) {
-                line(std::format("engine::ComponentRegistry::register_type<{}>();", safe_name(s->name)));
+                line(std::format("ComponentRegistry::register_type<{}>();", safe_name(s->name)));
             }
         }
         indent_--;
         line("}");
         line("");
-        line(std::format("inline void register_systems_{}(engine::Scene& scene) {{", clean_name));
+        line(std::format("inline void register_systems_{}(Scene& scene) {{", clean_name));
         indent_++;
         line(std::format("register_components_{}();", clean_name));
         for (const auto* sys : systems) {
@@ -265,7 +274,7 @@ namespace glaze {
         indent_++;
 
         if (sys.on_update.has_value()) {
-            line(std::format("static void on_update(engine::Scene& glz$scene, float {}) {{",
+            line(std::format("static void on_update(Scene& glz$scene, float {}) {{",
                              safe_name(sys.on_update->delta_time_param)));
             indent_++;
             builder_ += emit_statements(sys.on_update->body.statements);
@@ -275,7 +284,7 @@ namespace glaze {
         }
 
         if (sys.on_event.has_value()) {
-            line(std::format("static void on_event(engine::Scene& glz$scene, engine::Event& {}) {{",
+            line(std::format("static void on_event(Scene& glz$scene, Event& {}) {{",
                              safe_name(sys.on_event->event_param)));
             indent_++;
             builder_ += emit_statements(sys.on_event->body.statements);
@@ -395,7 +404,7 @@ namespace glaze {
                 if (i > 0) excluded += ", ";
                 excluded += safe_name(for_ecs.excluded_components[i]);
             }
-            exclude_arg = "engine::exclude<" + excluded + ">";
+            exclude_arg = "exclude<" + excluded + ">";
         }
 
         std::string bindings = "glz$entity";
@@ -408,7 +417,7 @@ namespace glaze {
                           bindings, comp_types, exclude_arg);
         indent_++;
         if (for_ecs.entity_var_name.has_value()) {
-            sb += indent() + std::format("engine::Entity {}{{glz$entity, &glz$scene}};\n",
+            sb += indent() + std::format("Entity {}{{glz$entity, &glz$scene}};\n",
                                          safe_name(*for_ecs.entity_var_name));
         }
         else {
@@ -552,7 +561,7 @@ namespace glaze {
                     return std::format("{}.set_active({})", receiver, emit_expr(assign.value));
                 }
                 if (ma.member == "name") {
-                    return std::format("{}.get_component<engine::LabelComponent>().tag {} {}",
+                    return std::format("{}.get_component<LabelComponent>().tag {} {}",
                                        receiver, assign.op, emit_expr(assign.value));
                 }
             }
@@ -615,16 +624,41 @@ namespace glaze {
         return std::format("{}.{}", receiver, safe_name(ma.member));
     }
 
-    std::string GTranspiler::emit_function_call(const FunctionCall& call, const Expression* /*expr_raw*/) {
-        // Direct Identifier Call
+    std::string GTranspiler::emit_function_call(const FunctionCall& call, const Expression* expr_raw) {
         if (call.callee && call.callee->is<Identifier>()) {
             const auto& id = call.callee->as<Identifier>();
 
-            if (s_math_types.contains(id.name)) {
+            if (s_math_types.contains(id.name) || s_builtin_math_functions.contains(id.name)) {
+                TypePtr ret_type = type_of(expr_raw);
+                bool is_scalar_ret = ret_type && ret_type->is<NamedType>() &&
+                                     !s_math_types.contains(ret_type->as<NamedType>().name);
+
+                bool cast_scalars_to_ret = (id.name == "min" || id.name == "max" || id.name == "clamp" || id.name == "mix")
+                                           && is_scalar_ret;
+
+                bool force_float_args = (id.name == "sin" || id.name == "cos" || id.name == "radians" ||
+                                         id.name == "degrees" || id.name == "sqrt");
+
                 std::string args;
                 for (size_t i = 0; i < call.arguments.size(); ++i) {
                     if (i > 0) args += ", ";
-                    args += emit_expr(call.arguments[i]);
+                    std::string emitted = emit_expr(call.arguments[i]);
+                    TypePtr arg_t = type_of(call.arguments[i]);
+
+                    if ((id.name == "angleAxis" && i == 0) || (id.name == "slerp" && i == 2) || (id.name == "mix" && i == 2)) {
+                        args += std::format("static_cast<float>({})", emitted);
+                    }
+                    else if (cast_scalars_to_ret) {
+                        args += std::format("static_cast<{}>({})", cpp_type(ret_type), emitted);
+                    }
+                    else if (force_float_args && arg_t && arg_t->is<NamedType>() &&
+                             !s_math_types.contains(arg_t->as<NamedType>().name) &&
+                             arg_t->as<NamedType>().name != "float" && arg_t->as<NamedType>().name != "double") {
+                        args += std::format("static_cast<float>({})", emitted);
+                             }
+                    else {
+                        args += emitted;
+                    }
                 }
                 return std::format("glm::{}({})", id.name, args);
             }
@@ -750,8 +784,8 @@ namespace glaze {
             if (name == "double") return "double";
             if (name == "char") return "char";
             if (name == "string") return "std::string";
-            if (name == "entity") return "engine::Entity";
-            if (name == "event") return "engine::Event";
+            if (name == "entity") return "Entity";
+            if (name == "event") return "Event";
             if (name == "vec2" || name == "vec3" || name == "vec4" ||
                 name == "mat2" || name == "mat3" || name == "mat4" || name == "quat") {
                 return "glm::" + name;
