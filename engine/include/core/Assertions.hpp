@@ -29,7 +29,7 @@
         do { \
             if (!(condition)) { \
                 CORE_ERROR("Assertion failed: {} [{}:{}]", #condition, __FILE__, __LINE__); \
-                __VA_OPT__(CORE_ERROR("Details: " __VA_ARGS__);) \
+                CORE_ERROR("Details: " __VA_ARGS__); \
                 ENGINE_DEBUGBREAK(); \
             } \
         } while (false)
