@@ -24,7 +24,7 @@ namespace engine {
         [[nodiscard]] static bool is_loaded() noexcept { return s_library_handle != nullptr; }
 
     private:
-        using InitFun = void(*)(ScriptRegistry::ModuleList*, ComponentRegistry::CopierMap*);
+        using InitScriptsFun = void(*)(ScriptRegistry::ModuleList*, ComponentRegistry::CopierMap*);
 
         inline static void* s_library_handle = nullptr;
         inline static std::filesystem::path s_original_path{};

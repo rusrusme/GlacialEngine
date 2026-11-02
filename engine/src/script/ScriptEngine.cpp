@@ -30,8 +30,6 @@ namespace {
 }
 
 namespace engine {
-    static uint32_t s_reload_counter = 0;
-
     bool ScriptEngine::load_library(const std::filesystem::path& dll_path) {
         PROFILE_FUNCTION();
 
@@ -67,23 +65,23 @@ namespace engine {
             CORE_ERROR("[ScriptEngine] LoadLibrary failed. Error code: {}", GetLastError());
             return false;
         }
-        auto init_fn = reinterpret_cast<InitFun>(GetProcAddress(static_cast<HMODULE>(s_library_handle), "glaze_init_scripts"));
+        auto init_scripts_fun = reinterpret_cast<InitScriptsFun>(GetProcAddress(static_cast<HMODULE>(s_library_handle), "glaze_init_scripts"));
         #else
         s_library_handle = dlopen(s_live_path.string().c_str(), RTLD_NOW);
         if (!s_library_handle) {
             CORE_ERROR("[ScriptEngine] dlopen failed: {}", dlerror());
             return false;
         }
-        auto init_fn = reinterpret_cast<InitFun>(dlsym(s_library_handle, "glaze_init_scripts"));
+        auto init_fn = reinterpret_cast<InitScriptsFun>(dlsym(s_library_handle, "glaze_init_scripts"));
         #endif
 
-        if (!init_fn) {
+        if (!init_scripts_fun) {
             CORE_ERROR("[ScriptEngine] Entry point 'glaze_init_scripts' not found in DLL");
             unload_library();
             return false;
         }
 
-        init_fn(&ScriptRegistry::modules(), &ComponentRegistry::get_copiers());
+        init_scripts_fun(&ScriptRegistry::modules(), &ComponentRegistry::get_copiers());
         CORE_INFO("[ScriptEngine] Successfully loaded script library: {}", s_original_path.filename().string());
         return true;
     }
