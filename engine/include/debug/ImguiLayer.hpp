@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include "core/Window.hpp"
 #include "debug/ImguiSystem.hpp"
 
 namespace engine {
