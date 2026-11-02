@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include "core/Assertions.hpp"
+#include "core/Log.hpp"
 #include "project/scene/Scene.hpp"
 #include "project/scene/ecs/ComponentRegistry.hpp"
 
@@ -45,9 +47,7 @@ namespace engine {
 
     template<typename T, typename... Args>
     T& Entity::add_component(Args&&... args) {
-        if (has_component<T>()) {
-            throw std::runtime_error("Engine error: scenes: entity already has component of this type");
-        }
+        CORE_ASSERT(!has_component<T>(), "Entity already has component of this type");
         T& component = scene_->registry_.emplace<T>(entity_handle_, std::forward<Args>(args)...);
         ComponentRegistry::register_type<T>();
         return component;
@@ -55,17 +55,13 @@ namespace engine {
 
     template<typename T>
     void Entity::remove_component() const {
-        if (!has_component<T>()) {
-            throw std::runtime_error("Engine error: scenes: entity does not have component of this type");
-        }
+        CORE_ASSERT(has_component<T>(), "Entity does not have component of this type");
         scene_->registry_.remove<T>(entity_handle_);
     }
 
     template<typename T>
     T& Entity::get_component() {
-        if (!has_component<T>()) {
-            throw std::runtime_error("Engine error: scenes: entity does not have component of this type");
-        }
+        CORE_ASSERT(has_component<T>(), "Entity does not have component of this type");
         return scene_->registry_.get<T>(entity_handle_);
     }
 

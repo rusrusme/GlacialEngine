@@ -19,8 +19,7 @@ system TrafficSystem {
                 e.active = false
                 despawn_candidates.add(e.id)
             }
-
-            # TODO Improve entity built-ins functionality like e.get()
+            # TODO Improve entity built-ins functionality like e.get() to e.get<Component>() or e.add<Component>(args) with optional ()
         }
     }
 
