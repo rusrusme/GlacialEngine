@@ -7,6 +7,8 @@ add_executable(Editor
                src/CoreLayer.hpp
 
                src/command/Command.hpp
+               src/command/CommandHistory.cpp
+               src/command/CommandHistory.hpp
 
                src/ui/UIComponent.hpp
                src/ui/UILayer.cpp
