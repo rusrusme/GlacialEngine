@@ -5,10 +5,8 @@
 
 #pragma once
 
-#ifdef ENABLE_IMGUI
-#include <imgui.h>
-#endif
 #include <algorithm>
+#include <imgui.h>
 #include <string>
 
 namespace editor {
@@ -35,14 +33,13 @@ namespace editor {
         return EntityType::Transform;
     }
 
-    #ifdef ENABLE_IMGUI
     static void draw_entity_icon(ImDrawList* draw_list, const ImVec2 pos, const EntityType type) {
         constexpr float size = 14.0f;
         const auto center = ImVec2(pos.x + size * 0.5f, pos.y + size * 0.5f);
 
         switch (type) {
             case EntityType::Camera : {
-                ImU32 col = IM_COL32(90, 190, 255, 230); // Soft Cyan
+                constexpr ImU32 col = IM_COL32(90, 190, 255, 230); // Soft Cyan
                 draw_list->AddCircleFilled(ImVec2(pos.x + 3.5f, pos.y + 3.0f), 1.5f, col);
                 draw_list->AddCircleFilled(ImVec2(pos.x + 6.5f, pos.y + 3.0f), 1.5f, col);
                 draw_list->AddRectFilled(ImVec2(pos.x + 1.0f, pos.y + 4.5f), ImVec2(pos.x + 8.5f, pos.y + 11.5f), col, 1.5f);
@@ -55,27 +52,28 @@ namespace editor {
                 break;
             }
             case EntityType::Light : {
-                ImU32 col = IM_COL32(255, 210, 80, 240); // Amber Yellow
+                constexpr ImU32 col = IM_COL32(255, 210, 80, 240); // Amber Yellow
                 draw_list->AddCircleFilled(ImVec2(center.x, pos.y + 4.5f), 4.0f, col);
                 draw_list->AddRectFilled(ImVec2(center.x - 1.2f, pos.y + 11.0f), ImVec2(center.x + 1.2f, pos.y + 12.5f), col, 1.0f);
                 break;
             }
             case EntityType::Mesh2D : {
-                ImU32 col = IM_COL32(230, 120, 120, 230); // Flat Green Outline Icon
+                constexpr ImU32 col = IM_COL32(230, 120, 120, 230); // Flat Green Outline Icon
                 draw_list->AddRect(ImVec2(pos.x + 2, pos.y + 2), ImVec2(pos.x + 12, pos.y + 12), col, 2.0f, 0, 1.5f);
                 draw_list->AddLine(ImVec2(pos.x + 2, pos.y + 2), ImVec2(pos.x + 12, pos.y + 12), col, 1.2f);
                 break;
             }
             case EntityType::Mesh3D : {
-                ImU32 col = IM_COL32(160, 220, 140, 240); // 3D Isometric Cube
-                auto t = ImVec2(center.x, pos.y + 1.5f);
-                auto r = ImVec2(pos.x + 12.5f, pos.y + 4.5f);
-                auto m = ImVec2(center.x, pos.y + 7.5f);
-                auto l = ImVec2(pos.x + 1.5f, pos.y + 4.5f);
+                constexpr ImU32 col = IM_COL32(160, 220, 140, 240); // 3D Isometric Cube
 
-                auto b = ImVec2(center.x, pos.y + 13.5f);
-                auto br = ImVec2(pos.x + 12.5f, pos.y + 10.5f);
-                auto bl = ImVec2(pos.x + 1.5f, pos.y + 10.5f);
+                const auto t = ImVec2(center.x, pos.y + 1.5f);
+                const auto r = ImVec2(pos.x + 12.5f, pos.y + 4.5f);
+                const auto m = ImVec2(center.x, pos.y + 7.5f);
+                const auto l = ImVec2(pos.x + 1.5f, pos.y + 4.5f);
+
+                const auto b = ImVec2(center.x, pos.y + 13.5f);
+                const auto br = ImVec2(pos.x + 12.5f, pos.y + 10.5f);
+                const auto bl = ImVec2(pos.x + 1.5f, pos.y + 10.5f);
 
                 draw_list->AddQuadFilled(t, r, m, l, IM_COL32(160, 220, 140, 70));
 
@@ -149,9 +147,9 @@ namespace editor {
 
         // Line lengths (Right-aligned against arrow spacing)
         const float len_top = sort_ascending ? 6.5f : 2.5f;
-        const float len_mid = 4.5f;
         const float len_bot = sort_ascending ? 2.5f : 6.5f;
 
+        constexpr float len_mid = 4.5f;
         constexpr float line_thickness = 1.4f;
 
         // Draw 3 right-aligned horizontal bars
@@ -215,23 +213,22 @@ namespace editor {
 
     // Helper to render an ImGui button with a centered vector icon inside it
     static bool draw_icon_button(const char* str_id, void (*draw_icon)(ImDrawList*, ImVec2, ImU32), const ImVec2& size = ImVec2(32, 24)) {
-        bool clicked = ImGui::Button(str_id, size);
+        const bool clicked = ImGui::Button(str_id, size);
 
         ImDrawList* draw_list = ImGui::GetWindowDrawList();
-        ImVec2 btn_min = ImGui::GetItemRectMin();
-        ImVec2 btn_size = ImGui::GetItemRectSize();
+        const ImVec2 btn_min = ImGui::GetItemRectMin();
+        const ImVec2 btn_size = ImGui::GetItemRectSize();
 
         constexpr float icon_size = 14.0f;
-        ImVec2 icon_pos = ImVec2(
+        const auto icon_pos = ImVec2(
             btn_min.x + (btn_size.x - icon_size) * 0.5f,
             btn_min.y + (btn_size.y - icon_size) * 0.5f
         );
 
         // Brighten color on hover
-        ImU32 col = ImGui::IsItemHovered() ? IM_COL32(255, 255, 255, 255) : IM_COL32(200, 205, 215, 230);
+        const ImU32 col = ImGui::IsItemHovered() ? IM_COL32(255, 255, 255, 255) : IM_COL32(200, 205, 215, 230);
         draw_icon(draw_list, icon_pos, col);
 
         return clicked;
     }
-    #endif
 }

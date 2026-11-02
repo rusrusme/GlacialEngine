@@ -10,11 +10,14 @@
 namespace editor {
     class Command {
     public:
+        Command() = default;
         virtual ~Command() = default;
+
         virtual void execute() = 0;
         virtual void undo() = 0;
 
-        virtual bool merge_with(const Command* next) { return false; }
-        [[nodiscard]] virtual std::string_view get_name() const = 0;
+        virtual bool merge(const Command& next) { return false; }
+
+        [[nodiscard]] virtual std::string_view name() const = 0;
     };
 }

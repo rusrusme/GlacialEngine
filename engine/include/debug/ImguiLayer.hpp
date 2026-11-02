@@ -14,6 +14,7 @@ namespace engine {
     class ImguiLayer : public Layer {
     public:
         ImguiLayer() : Layer("Imgui Layer") {}
+        explicit ImguiLayer(std::string_view name) : Layer(name.data()) {}
         ~ImguiLayer() override = default;
 
         void on_attach(SystemContext& context) final {

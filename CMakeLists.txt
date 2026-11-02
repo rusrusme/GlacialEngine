@@ -34,7 +34,7 @@ unset(CMAKE_FOLDER )
 
 add_subdirectory(Engine)
 if (NOT ENGINE_DEBUG_DIST AND NOT ENGINE_RELEASE_DIST)
-#    add_subdirectory(Editor)
+    add_subdirectory(Editor)
 
     set(CMAKE_FOLDER "Tests")
     add_subdirectory(test)
