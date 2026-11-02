@@ -26,7 +26,7 @@ namespace engine {
         static void bind_scene(Scene& scene);
         static void clear();
 
-        static ModuleList& get_modules();
+        static ModuleList& modules();
         static void set_host_modules(ModuleList* host_modules);
 
     private:

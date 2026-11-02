@@ -10,8 +10,6 @@
 #include "asset/AssetManager.hpp"
 #include "asset/UUID.hpp"
 #include "core/Log.hpp"
-#include "event/Event.hpp"
-#include "physics/CollisionSystem.hpp"
 #include "project/scene/ecs/Entity.hpp"
 #include "render/camera/CameraSystem.hpp"
 #include "render/mesh/Mesh.hpp"
@@ -29,8 +27,8 @@ namespace engine {
         if (!source) return nullptr;
 
         auto destination = std::make_shared<Scene>();
-        auto& final_registry = destination->get_registry();
-        auto& source_registry = source->get_registry();
+        auto& final_registry = destination->registry();
+        auto& source_registry = source->registry();
 
         std::unordered_map<entt::entity, entt::entity> entity_map;
         for (auto entity : source_registry.view<entt::entity>()) {
@@ -92,16 +90,12 @@ namespace engine {
     }
 
     void Scene::on_init() {
-        collision_system_ = std::make_unique<CollisionSystem>(10.0f);
-
         ScriptRegistry::bind_scene(*this);
 
         CORE_TRACE("Scene initialized");
     }
 
     void Scene::on_shutdown() {
-        collision_system_.reset();
-
         systems_.clear();
 
         CORE_TRACE("Scene shutdown");
@@ -109,27 +103,16 @@ namespace engine {
 
     void Scene::on_update(float delta_time) {
         PROFILE_FUNCTION();
-        if (collision_system_) {
-            collision_system_->update_broadphase(*this);
-        }
-        // TODO Dynamic user gameplay systems
-        for (const auto& system : systems_) {
-            if (system.on_update) {
-                system.on_update(*this, delta_time);
-            }
-        }
+
+        systems_.on_update(*this, delta_time);
 
         CameraSystem::on_update(*this, delta_time);
     }
 
     void Scene::on_event(Event& event) {
         PROFILE_FUNCTION();
-        for (const auto& system : systems_) {
-            if (system.on_event) {
-                system.on_event(*this, event);
-                if (event.handled) return;
-            }
-        }
+
+        systems_.on_event(*this, event);
 
         // TODO Consider if should be here
         CameraSystem::on_event(*this, event);

@@ -83,7 +83,7 @@ namespace engine {
             return false;
         }
 
-        init_fn(&ScriptRegistry::get_modules(), &ComponentRegistry::get_copiers());
+        init_fn(&ScriptRegistry::modules(), &ComponentRegistry::get_copiers());
         CORE_INFO("[ScriptEngine] Successfully loaded script library: {}", s_original_path.filename().string());
         return true;
     }

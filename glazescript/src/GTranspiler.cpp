@@ -167,7 +167,7 @@ namespace glaze {
         indent_++;
         line(std::format("register_components_{}();", clean_name));
         for (const auto* sys : systems) {
-            line(std::format("scene.add_system<{}>();", safe_name(sys->name)));
+            line(std::format("scene.systems().add_system<{}>();", safe_name(sys->name)));
         }
         indent_--;
         line("}");
