@@ -171,6 +171,7 @@ namespace engine {
 
         config::save();
         window::shutdown();
+
         CORE_INFO("Engine shutdown complete");
     }
 

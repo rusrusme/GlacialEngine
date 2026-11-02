@@ -51,7 +51,7 @@ set_property(CACHE WINDOW_BACKEND PROPERTY STRINGS "GLFW" "SDL")
 # ----------------------------------------------------------------------------
 if (WINDOW_BACKEND STREQUAL "GLFW")
     target_compile_definitions(Engine PUBLIC WINDOW_BACKEND_GLFW)
-    target_compile_definitions(Engine PRIVATE GLFW_INCLUDE_NONE)
+    target_compile_definitions(Engine PUBLIC GLFW_INCLUDE_NONE)
     target_link_libraries(Engine PUBLIC DEPENDENCY::GLFW)
 elseif (WINDOW_BACKEND STREQUAL "SDL")
     target_compile_definitions(Engine PUBLIC WINDOW_BACKEND_SDL)
@@ -119,6 +119,7 @@ add_custom_target(CompileShaders ALL DEPENDS ${COMPILED_SHADERS})
 # ----------------------------------------------------------------------------
 set(SCRIPT_OUT_DIR "${RUNTIME_ASSETS}/scripts/compiled")
 set(SCRIPT_BUNDLE_CPP "${SCRIPT_OUT_DIR}/GlazeScriptsBundle.cpp")
+
 file(GLOB_RECURSE GSCRIPT_SOURCES RELATIVE "${SOURCE_ASSETS}/scripts" CONFIGURE_DEPENDS "${SOURCE_ASSETS}/scripts/*.gscript")
 
 set(COMPILED_SCRIPTS "")
@@ -129,7 +130,6 @@ foreach(SCRIPT_REL IN LISTS GSCRIPT_SOURCES)
 
     add_custom_command(
             OUTPUT "${SCRIPT_OUT}"
-            COMMAND ${CMAKE_COMMAND} -E make_directory "${SCRIPT_OUT_DIR}"
             COMMAND $<TARGET_FILE:glazec> "${SCRIPT_IN}" -o "${SCRIPT_OUT_DIR}" -e "${CMAKE_SOURCE_DIR}"
             DEPENDS "${SCRIPT_IN}" $<TARGET_FILE:glazec>
             COMMENT "Transpiling GlazeScript: ${SCRIPT_REL}"
@@ -146,14 +146,17 @@ if (COMPILED_SCRIPTS)
             VERBATIM
     )
 
-    add_library(Scripts SHARED "${SCRIPT_BUNDLE_CPP}" ${COMPILED_SCRIPTS})
+    add_library(Scripts SHARED "${SCRIPT_BUNDLE_CPP}")
+
     target_precompile_headers(Scripts REUSE_FROM Engine)
+
     target_include_directories(Scripts PRIVATE
                                "${SCRIPT_OUT_DIR}"
-                               "${CMAKE_SOURCE_DIR}/engine/include"
                                "${CMAKE_SOURCE_DIR}/GlazeScript/include"
     )
+
     target_link_libraries(Scripts PRIVATE Engine)
+
     set_target_properties(Scripts PROPERTIES
                           RUNTIME_OUTPUT_DIRECTORY "${RUNTIME_ASSETS}/scripts"
                           LIBRARY_OUTPUT_DIRECTORY "${RUNTIME_ASSETS}/scripts"

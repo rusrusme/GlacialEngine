@@ -8,6 +8,7 @@
 #include "script/ScriptEngine.hpp"
 #include "core/Log.hpp"
 #include "project/scene/Scene.hpp"
+#include "util/Instrumentor.hpp"
 
 #if defined(_WIN32)
 #include <windows.h>
@@ -17,6 +18,8 @@
 
 namespace {
     int build_scripts() {
+        PROFILE_FUNCTION();
+
         #if defined(_WIN32)
         return std::system("BuildScripts.cmd");
         #else // linux
@@ -29,6 +32,8 @@ namespace engine {
     static uint32_t s_reload_counter = 0;
 
     bool ScriptEngine::load_library(const std::filesystem::path& dll_path) {
+        PROFILE_FUNCTION();
+
         if (s_library_handle != nullptr) {
             unload_library();
         }
@@ -82,6 +87,8 @@ namespace engine {
     }
 
     void ScriptEngine::unload_library() {
+        PROFILE_FUNCTION();
+
         if (!s_library_handle) return;
 
         ScriptRegistry::clear();
@@ -101,6 +108,8 @@ namespace engine {
     }
 
     bool ScriptEngine::reload(Scene* active_scene) {
+        PROFILE_FUNCTION();
+
         CORE_INFO("[ScriptEngine] Reloading scripts...");
 
         int result = build_scripts();

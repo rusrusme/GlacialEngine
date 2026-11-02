@@ -1,0 +1,18 @@
+@echo off
+setlocal
+
+if defined VSCMD_VER goto :build
+
+for /f "usebackq tokens=*" %%i in (`"%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath`) do (
+    set "VS_PATH=%%i"
+)
+
+if defined VS_PATH (
+    call "%VS_PATH%\VC\Auxiliary\Build\vcvars64.bat" >nul 2>&1
+) else (
+    echo Error: C++ build tools not found on this system.
+    exit /b 1
+)
+
+:build
+cmake --build "@CMAKE_BINARY_DIR@" --target Scripts

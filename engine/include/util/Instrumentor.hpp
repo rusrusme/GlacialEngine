@@ -190,6 +190,7 @@ namespace engine {
     }
 }
 
+#define ENABLE_PROFILER 1
 #ifdef ENABLE_PROFILER
 #define PROFILE_BEGIN_SESSION(name, ...) ::engine::Instrumentor::get().begin_session(name, ##__VA_ARGS__)
 #define PROFILE_END_SESSION()            ::engine::Instrumentor::get().end_session()
