@@ -10,9 +10,8 @@ system TrafficSystem {
 
         for (entity e, TransformComponent t, RigidBodyComponent b, LabelComponent l) exclude DisabledComponent {
             if (e.name == "Vehicle") {
-                b.velocity.x += (delta_time * 2.7)
+                b.velocity.x -= (delta_time * 2.7)
                 # b.velocity.x += (delta_time * 0.2)
-
                 t.position -= b.velocity * delta_time
             }
 
@@ -20,6 +19,8 @@ system TrafficSystem {
                 e.active = false
                 despawn_candidates.add(e.id)
             }
+
+            # TODO Improve entity built-ins functionality like e.get()
         }
     }
 

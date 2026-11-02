@@ -17,6 +17,7 @@
 #endif
 
 namespace {
+    // TODO the cmd calls vcvars64.bat which could be called at the beginning of script ONCE and kept open until shutdown instead every time reload is triggered
     int build_scripts() {
         PROFILE_FUNCTION();
 
@@ -45,6 +46,7 @@ namespace engine {
 
         s_original_path = dll_path;
 
+        // Shadow copy
         auto timestamp = std::chrono::system_clock::now().time_since_epoch().count();
         s_live_path = dll_path.parent_path() / std::format("{}_live_{}{}",
                                                            dll_path.stem().string(),
