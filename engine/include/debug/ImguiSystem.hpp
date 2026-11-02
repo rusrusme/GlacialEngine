@@ -4,6 +4,7 @@
 //
 
 #pragma once
+
 #include "core/SystemContext.hpp"
 #include "event/Event.hpp"
 
