@@ -81,6 +81,13 @@ target_precompile_headers(Engine PRIVATE src/core/core_pch.hpp)
 # ----------------------------------------------------------------------------
 include(PackageDistribution.cmake)
 # ----------------------------------------------------------------------------
+# Generate cmd file
+configure_file(
+        "${CMAKE_SOURCE_DIR}/BuildScripts.cmd.in"
+        "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/BuildScripts.cmd"
+        @ONLY
+)
+# ----------------------------------------------------------------------------
 set(RUNTIME_ASSETS "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/assets")
 set(SOURCE_ASSETS "${CMAKE_SOURCE_DIR}/assets")
 add_custom_target(SyncAssets ALL
@@ -140,6 +147,7 @@ if (COMPILED_SCRIPTS)
     )
 
     add_library(Scripts SHARED "${SCRIPT_BUNDLE_CPP}" ${COMPILED_SCRIPTS})
+    target_precompile_headers(Scripts REUSE_FROM Engine)
     target_include_directories(Scripts PRIVATE
                                "${SCRIPT_OUT_DIR}"
                                "${CMAKE_SOURCE_DIR}/engine/include"

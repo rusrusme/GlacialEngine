@@ -17,9 +17,9 @@
 
 void SandboxLayer::on_attach(SystemContext& context) {
     #if defined(_WIN32)
-    ScriptEngine::load_library("assets/scripts/GameScripts.dll");
+    ScriptEngine::load_library("assets/scripts/Scripts.dll");
     #else
-    ScriptEngine::load_library("assets/scripts/GameScripts.so");
+    ScriptEngine::load_library("assets/scripts/Scripts.so");
     #endif
 
     std::shared_ptr<Scene> scene = context.scenes.create("Sandbox Scene");

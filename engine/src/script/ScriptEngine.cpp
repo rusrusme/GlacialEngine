@@ -15,6 +15,16 @@
 #include <dlfcn.h>
 #endif
 
+namespace {
+    int build_scripts() {
+        #if defined(_WIN32)
+        return std::system("BuildScripts.cmd");
+        #else // linux
+        return std::system("cmake --build .. --target Scripts")
+        #endif
+    }
+}
+
 namespace engine {
     static uint32_t s_reload_counter = 0;
 
@@ -91,16 +101,17 @@ namespace engine {
     }
 
     bool ScriptEngine::reload(Scene* active_scene) {
-        // TODO Real hot reload needed -> Live recompilation
-        // Current process: Start sandbox -> Edit script -> Build GameScripts (Cmake) -> Press F5
-        // Expected process: Start sandbox -> Edit script -> Press F5
-
         CORE_INFO("[ScriptEngine] Reloading scripts...");
+
+        int result = build_scripts();
+        if (result != 0) {
+            CORE_ERROR("[ScriptEngine] Compilation failed");
+            return false;
+        }
 
         if (active_scene) {
             active_scene->on_shutdown();
         }
-
         unload_library();
 
         if (!load_library(s_original_path)) {
