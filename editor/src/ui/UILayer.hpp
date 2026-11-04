@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include <array>
+
 #include "core/Layer.hpp"
 #include "debug/ImguiLayer.hpp"
 #include "layout/Menubar.hpp"
@@ -13,6 +15,8 @@
 #include "panel/ConsolePanel.hpp"
 #include "panel/Hierarchy.hpp"
 #include "panel/Inspector.hpp"
+#include "ui/layout/DockspaceLayout.hpp"
+#include "ui/panel/DebugPanel.hpp"
 #include "window/SettingsWindow.hpp"
 
 namespace editor {
@@ -31,13 +35,16 @@ namespace editor {
         void on_imgui_render(SystemContext& context, float delta_time) override;
 
     private:
+        std::array<UIComponent*, 9> ui_components_;
+
+        DockspaceLayout layout_;
         Menubar menubar_;
         Toolbar toolbar_;
         SettingsWindow settings_;
-
         Inspector inspector_;
         Hierarchy hierarchy_;
         AssetBrowser asset_browser_;
         ConsolePanel console_panel_;
+        DebugPanel debug_panel_;
     };
 }
