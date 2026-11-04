@@ -10,7 +10,7 @@
 namespace editor {
     using namespace engine;
 
-    class ConsolePanel : UIComponent {
+    class ConsolePanel : public UIComponent {
     public:
         ConsolePanel() = default;
         ~ConsolePanel() override = default;
