@@ -4,16 +4,16 @@
 //
 
 #pragma once
+
 #include "ui/UIComponent.hpp"
 
 namespace editor {
-    using namespace engine;
-
-    class DebugPanel : public UIComponent {
+    class SettingsWindow : public UIComponent {
     public:
-        DebugPanel() = default;
-        ~DebugPanel() override = default;
+        SettingsWindow() = default;
+        ~SettingsWindow() override = default;
 
+        void on_init(SystemContext& context) override;
         void on_render_ui(SystemContext& context) override;
 
         void load_config() override;

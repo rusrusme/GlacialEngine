@@ -8,11 +8,12 @@
 #include "ui/UIComponent.hpp"
 
 namespace editor {
-    class Inspector : public UIComponent {
+    class Menubar : public UIComponent {
     public:
-        Inspector() = default;
-        ~Inspector() override = default;
+        Menubar() = default;
+        ~Menubar() override = default;
 
+        void on_init(SystemContext& context) override;
         void on_render_ui(SystemContext& context) override;
     };
 }

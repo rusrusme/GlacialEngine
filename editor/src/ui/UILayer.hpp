@@ -7,6 +7,13 @@
 
 #include "core/Layer.hpp"
 #include "debug/ImguiLayer.hpp"
+#include "layout/Menubar.hpp"
+#include "layout/Toolbar.hpp"
+#include "panel/AssetBrowser.hpp"
+#include "panel/ConsolePanel.hpp"
+#include "panel/Hierarchy.hpp"
+#include "panel/Inspector.hpp"
+#include "window/SettingsWindow.hpp"
 
 namespace editor {
     using namespace engine;
@@ -16,7 +23,21 @@ namespace editor {
         UILayer() : ImguiLayer("Editor UI Layer") {}
         ~UILayer() override = default;
 
+        void on_attach(SystemContext& context) override;
+        void on_detach(SystemContext& context) override;
+        void on_update(SystemContext& context, float delta_time) override;
+
     protected:
         void on_imgui_render(SystemContext& context, float delta_time) override;
+
+    private:
+        Menubar menubar_;
+        Toolbar toolbar_;
+        SettingsWindow settings_;
+
+        Inspector inspector_;
+        Hierarchy hierarchy_;
+        AssetBrowser asset_browser_;
+        ConsolePanel console_panel_;
     };
 }

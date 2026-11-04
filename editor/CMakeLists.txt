@@ -14,17 +14,26 @@ add_executable(Editor
                src/ui/UILayer.cpp
                src/ui/UILayer.hpp
                src/ui/Icons.hpp
-               src/ui/AssetBrowser.cpp
-               src/ui/AssetBrowser.hpp
-               src/ui/Console.cpp
-               src/ui/Console.hpp
-               src/ui/DebugPanel.cpp
-               src/ui/DebugPanel.hpp
-               src/ui/Hierarchy.cpp
-               src/ui/Hierarchy.hpp
-               src/ui/Inspector.cpp
-               src/ui/Inspector.hpp
+               src/ui/panel/AssetBrowser.cpp
+               src/ui/panel/AssetBrowser.hpp
+               src/ui/panel/ConsolePanel.cpp
+               src/ui/panel/ConsolePanel.hpp
+               src/ui/panel/DebugPanel.cpp
+               src/ui/panel/DebugPanel.hpp
+               src/ui/panel/Hierarchy.cpp
+               src/ui/panel/Hierarchy.hpp
+               src/ui/panel/Inspector.cpp
+               src/ui/panel/Inspector.hpp
                src/editor_pch.hpp
+               src/Config.hpp
+               src/ui/layout/Toolbar.cpp
+               src/ui/layout/Toolbar.hpp
+               src/ui/layout/Menubar.cpp
+               src/ui/layout/Menubar.hpp
+               src/ui/window/SettingsWindow.cpp
+               src/ui/window/SettingsWindow.hpp
+               src/ui/layout/DockspaceLayout.cpp
+               src/ui/layout/DockspaceLayout.hpp
 )
 # ----------------------------------------------------------------------------
 target_include_directories(Editor PRIVATE ${CMAKE_SOURCE_DIR}/editor/src)

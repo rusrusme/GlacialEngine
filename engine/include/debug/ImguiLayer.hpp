@@ -18,20 +18,20 @@ namespace engine {
         explicit ImguiLayer(std::string_view name) : Layer(name.data()) {}
         ~ImguiLayer() override = default;
 
-        void on_attach(SystemContext& context) final {
+        void on_attach(SystemContext& context) override {
             ImguiSystem::on_attach(context.window.native());
         }
 
-        void on_detach(SystemContext& context) final { ImguiSystem::on_detach(); }
+        void on_detach(SystemContext& context) override { ImguiSystem::on_detach(); }
         void on_update(SystemContext& context, float delta_time) override {}
 
-        void on_render(SystemContext& context, float delta_time) final {
+        void on_render(SystemContext& context, float delta_time) override {
             ImguiSystem::begin_frame();
             on_imgui_render(context, delta_time);
             ImguiSystem::end_frame();
         }
 
-        void on_event(SystemContext& context, Event& event) final {
+        void on_event(SystemContext& context, Event& event) override {
             ImguiSystem::on_event(context, event);
         }
 

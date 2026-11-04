@@ -8,13 +8,14 @@
 #include "ui/UIComponent.hpp"
 
 namespace editor {
-    using namespace engine;
-
-    class Console : UIComponent {
+    class Hierarchy : public UIComponent {
     public:
-        Console() = default;
-        ~Console() override = default;
+        Hierarchy() = default;
+        ~Hierarchy() override = default;
 
         void on_render_ui(SystemContext& context) override;
+
+        void load_config() override;
+        void save_config() override;
     };
 }
