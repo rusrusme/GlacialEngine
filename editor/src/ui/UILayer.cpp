@@ -49,6 +49,10 @@ namespace editor {
         ImguiLayer::on_update(context, delta_time);
     }
 
+    void UILayer::on_event(SystemContext& context, Event& event) {
+        ImguiLayer::on_event(context, event);
+    }
+
     void UILayer::on_imgui_render(SystemContext& context, float delta_time) {
         console_panel_.on_render_ui(context);
     }

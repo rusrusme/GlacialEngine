@@ -30,12 +30,13 @@ namespace editor {
         void on_attach(SystemContext& context) override;
         void on_detach(SystemContext& context) override;
         void on_update(SystemContext& context, float delta_time) override;
+        void on_event(SystemContext& context, Event& event) override;
 
     protected:
         void on_imgui_render(SystemContext& context, float delta_time) override;
 
     private:
-        std::array<UIComponent*, 9> ui_components_;
+        std::array<UIComponent*, 9> ui_components_{};
 
         DockspaceLayout layout_;
         Menubar menubar_;

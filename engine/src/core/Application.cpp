@@ -14,6 +14,7 @@
 #include "core/Timestep.hpp"
 #include "core/WindowSystem.hpp"
 #include "debug/ImguiLayer.hpp"
+#include "event/EventQueue.hpp"
 #include "event/MouseEvents.hpp"
 #include "event/WindowEvents.hpp"
 #include "render/rhi/RenderContext.hpp"
@@ -105,6 +106,8 @@ namespace engine {
 
             // window::swap_buffers(window_->native()); -> Swapchain does that now
             window::poll_events();
+
+            EventQueue::dispatch_all();
 
             frame_limiter.limit();
 

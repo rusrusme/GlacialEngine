@@ -34,6 +34,11 @@ add_executable(Editor
                src/ui/window/SettingsWindow.hpp
                src/ui/layout/DockspaceLayout.cpp
                src/ui/layout/DockspaceLayout.hpp
+               src/event/ShortcutManager.cpp
+               src/event/ShortcutManager.hpp
+               src/event/EditorActions.hpp
+               src/event/EventType.hpp
+               src/event/EditorEvents.hpp
 )
 # ----------------------------------------------------------------------------
 target_include_directories(Editor PRIVATE ${CMAKE_SOURCE_DIR}/editor/src)
