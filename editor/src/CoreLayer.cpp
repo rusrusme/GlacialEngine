@@ -38,28 +38,35 @@ namespace editor {
         const auto& swapchain = context.render_context.swapchain();
         cam_.set_viewport_size(swapchain.width(), swapchain.height());
 
+        // TODO Add support for JSON binding: {"bindings": [{"action": "SaveScene", "key": "Ctrl+S", "context": "global"}, ...]}
         /////////////////////////////////////////////////////////////////////////////
         // Keybindings
-        shortcut_manager_.bind(EditorAction::NewScene, "Ctrl+N", Key::N, Key::LEFT_CONTROL);
-        shortcut_manager_.bind(EditorAction::OpenScene, "Ctrl+O", Key::O, Key::LEFT_CONTROL);
-        shortcut_manager_.bind(EditorAction::SaveScene, "Ctrl+S", Key::S, Key::LEFT_CONTROL);
-        shortcut_manager_.bind(EditorAction::SaveSceneAs, "Ctrl+Shift+S", Key::S, Key::LEFT_CONTROL | Key::LEFT_SHIFT);
+        shortcut_manager_.bind(EditorAction::NewScene, "Ctrl+N", Key::N, Ctrl);
+        shortcut_manager_.bind(EditorAction::OpenScene, "Ctrl+O", Key::O, Ctrl);
+        shortcut_manager_.bind(EditorAction::SaveScene, "Ctrl+S", Key::S, Ctrl);
+        shortcut_manager_.bind(EditorAction::SaveSceneAs,
+                               "Ctrl+Shift+S",
+                               Key::S, Ctrl | Shift);
 
-        shortcut_manager_.bind(EditorAction::Undo, "Ctrl+Z", Key::Z, Key::LEFT_CONTROL);
-        shortcut_manager_.bind(EditorAction::Redo, "Ctrl+Y", Key::Y, Key::LEFT_CONTROL);
-        shortcut_manager_.bind(EditorAction::Duplicate, "Ctrl+D", Key::D, Key::LEFT_CONTROL);
+        shortcut_manager_.bind(EditorAction::Undo, "Ctrl+Z", Key::Z, Ctrl);
+        shortcut_manager_.bind(EditorAction::Redo, "Ctrl+Y", Key::Y, Ctrl);
+        shortcut_manager_.bind(EditorAction::Duplicate, "Ctrl+D", Key::D, Ctrl);
         shortcut_manager_.bind(EditorAction::Delete, "Delete", Key::DELETE);
 
         shortcut_manager_.bind(EditorAction::TogglePlay, "Space", Key::SPACE);
-        shortcut_manager_.bind(EditorAction::StopPlay, "Shift+Space", Key::SPACE, Key::LEFT_SHIFT);
+        shortcut_manager_.bind(EditorAction::StopPlay, "Shift+Space", Key::SPACE, Shift);
 
-        shortcut_manager_.bind(EditorAction::GizmoSelect, "Q", Key::Q);
-        shortcut_manager_.bind(EditorAction::GizmoTranslate, "W", Key::W);
-        shortcut_manager_.bind(EditorAction::GizmoRotate, "E", Key::E);
-        shortcut_manager_.bind(EditorAction::GizmoScale, "R", Key::R);
+        shortcut_manager_.bind(EditorAction::GizmoSelect, "Q", Key::Q, None, ShortcutContext::Viewport);
+        shortcut_manager_.bind(EditorAction::GizmoTranslate, "W", Key::W, None, ShortcutContext::Viewport);
+        shortcut_manager_.bind(EditorAction::GizmoRotate, "E", Key::E, None, ShortcutContext::Viewport);
+        shortcut_manager_.bind(EditorAction::GizmoScale, "R", Key::R, None, ShortcutContext::Viewport);
 
-        shortcut_manager_.bind(EditorAction::ToggleConsole, "Ctrl+Shift+`", Key::GRAVE_ACCENT, Key::LEFT_CONTROL | Key::LEFT_SHIFT);
-        shortcut_manager_.bind(EditorAction::OpenSettings, "Ctrl+,", Key::COMMA, Key::LEFT_CONTROL);
+        shortcut_manager_.bind(EditorAction::ToggleConsole,
+                               "Ctrl+Shift+`",
+                               Key::GRAVE_ACCENT, Ctrl | Shift);
+        shortcut_manager_.bind(EditorAction::ToggleConsole, "Alt+F12", Key::F12, Alt);
+        shortcut_manager_.bind(EditorAction::OpenSettings, "Ctrl+,", Key::COMMA, Ctrl);
+        shortcut_manager_.bind(EditorAction::ToggleDebug, "F3", Key::F3);
     }
 
     void CoreLayer::on_detach(SystemContext& context) {
@@ -105,6 +112,8 @@ namespace editor {
             context.scenes.on_event(event);
         }
 
+        if (event.handled) return;
+
         EventDispatcher dispatcher(event);
         dispatcher.dispatch<WindowResizedEvent>([this](const WindowResizedEvent& e) {
             if (e.height() > 0) {
@@ -114,18 +123,32 @@ namespace editor {
         });
 
         dispatcher.dispatch<KeyPressedEvent>([this](const KeyPressedEvent& e) {
-            KeyCode active_modifier = 0;
-            if (Input::key_pressed(Key::LEFT_CONTROL)) active_modifier |= Key::LEFT_CONTROL;
-            if (Input::key_pressed(Key::LEFT_SHIFT)) active_modifier |= Key::LEFT_SHIFT;
-            if (Input::key_pressed(Key::LEFT_ALT)) active_modifier |= Key::LEFT_ALT;
+                KeyModifier active_modifier = None;
+                if (Input::key_pressed(Key::LEFT_CONTROL) || Input::key_pressed(Key::RIGHT_CONTROL)) {
+                    active_modifier |= Ctrl;
+                }
+                if (Input::key_pressed(Key::LEFT_SHIFT) || Input::key_pressed(Key::RIGHT_SHIFT)) {
+                    active_modifier |= Shift;
+                }
+                if (Input::key_pressed(Key::LEFT_ALT) || Input::key_pressed(Key::RIGHT_ALT)) {
+                    active_modifier |= Alt;
+                }
 
-            auto action = shortcut_manager_.find_action(e.key_code(), active_modifier);
-            if (action.has_value()) {
-                EventQueue::submit<EditorActionEvent>(action.value());
-                return true;
+                auto current_scope = ShortcutContext::Global;
+                if (viewport_hovered_ || viewport_focused_) {
+                    current_scope = ShortcutContext::Viewport;
+                }
+                // TODO Hierarchy, Inspector, AssetBrowser, Console, ... hovered/focused
+
+                auto action = shortcut_manager_.find_action(e.key_code(), active_modifier, current_scope);
+                if (action.has_value()) {
+                    EventQueue::submit<EditorActionEvent>(action.value());
+                    return true;
+                }
+                return false;
             }
-            return false;
-        });
+
+        );
 
         dispatcher.dispatch<EditorActionEvent>([&context](const EditorActionEvent& action) {
             switch (action.action()) {
@@ -183,16 +206,9 @@ namespace editor {
                     break;
                 case EditorAction::GizmoScale :
                     break;
-                case EditorAction::ToggleConsole :
-                    break;
-                case EditorAction::ToggleInspector :
-                    break;
-                case EditorAction::ToggleHierarchy :
-                    break;
-                case EditorAction::OpenSettings :
-                    break;
+                default : break;
             }
-            return true;
+            return false;
         });
     }
 }

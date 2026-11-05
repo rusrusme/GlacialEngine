@@ -225,11 +225,11 @@ namespace engine {
         });
 
         dispatcher.dispatch<KeyPressedEvent>([&io](const KeyPressedEvent&) {
-            return io.WantCaptureKeyboard;
+            return io.WantTextInput;
         });
 
         dispatcher.dispatch<KeyReleasedEvent>([&io](const KeyReleasedEvent&) {
-            return io.WantCaptureKeyboard;
+            return io.WantTextInput;
         });
     }
 }

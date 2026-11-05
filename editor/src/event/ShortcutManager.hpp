@@ -7,7 +7,7 @@
 
 #include <optional>
 #include <string_view>
-#include <unordered_map>
+#include <vector>
 
 #include "EditorActions.hpp"
 #include "input/KeyCodes.hpp"
@@ -15,10 +15,38 @@
 namespace editor {
     using namespace engine;
 
+    enum class ShortcutContext : uint8_t {
+        Global = 0,
+        Viewport,
+        Hierarchy,
+        Inspector,
+        AssetBrowser,
+        Console,
+    };
+
+    enum KeyModifier : uint8_t {
+        None  = 0,
+        Ctrl  = 1 << 0, // 1
+        Shift = 1 << 1, // 2
+        Alt   = 1 << 2, // 4
+        Super = 1 << 3  // 8
+    };
+
+    inline KeyModifier operator|(KeyModifier a, KeyModifier b) {
+        return static_cast<KeyModifier>(static_cast<uint8_t>(a) | static_cast<uint8_t>(b));
+    }
+
+    inline KeyModifier operator|=(KeyModifier& a, KeyModifier b) {
+        a = a | b;
+        return a;
+    }
+
     struct KeyBinding {
+        EditorAction action;
         std::string_view name;
         KeyCode key;
-        KeyCode modifiers; // Ctrl, Shift, Alt
+        KeyModifier modifiers = None; // Ctrl, Shift, Alt, Super
+        ShortcutContext context = ShortcutContext::Global;
     };
 
     class ShortcutManager {
@@ -26,13 +54,18 @@ namespace editor {
         ShortcutManager() = default;
         ~ShortcutManager() = default;
 
-        void bind(EditorAction action, std::string_view name, KeyCode key, KeyCode modifiers = 0);
-        [[nodiscard]] bool triggered(EditorAction action) const;
-        [[nodiscard]] std::optional<EditorAction> find_action(KeyCode key, KeyCode active_modifier) const;
+        void bind(EditorAction action,
+                  std::string_view name,
+                  KeyCode key,
+                  KeyModifier modifiers = None,
+                  ShortcutContext context = ShortcutContext::Global);
+        [[nodiscard]] std::optional<EditorAction> find_action(KeyCode key,
+                                                              KeyModifier active_modifier = None,
+                                                              ShortcutContext current_context = ShortcutContext::Global) const;
 
         [[nodiscard]] std::string_view shortcut_text(EditorAction action) const;
 
     private:
-        std::unordered_map<EditorAction, KeyBinding> bindings_;
+        std::vector<KeyBinding> bindings_;
     };
 }

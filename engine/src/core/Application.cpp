@@ -15,7 +15,6 @@
 #include "core/WindowSystem.hpp"
 #include "debug/ImguiLayer.hpp"
 #include "event/EventQueue.hpp"
-#include "event/MouseEvents.hpp"
 #include "event/WindowEvents.hpp"
 #include "render/rhi/RenderContext.hpp"
 #include "script/ScriptEngine.hpp"

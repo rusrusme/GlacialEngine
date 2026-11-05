@@ -5,6 +5,8 @@
 
 #include "Inspector.hpp"
 
+#include "Config.hpp"
+
 namespace editor {
     void Inspector::on_init(SystemContext& context) {
         UIComponent::on_init(context);
@@ -14,10 +16,10 @@ namespace editor {
     }
 
     void Inspector::load_config() {
-        UIComponent::load_config();
+        visible_ = config::get_value("Inspector_visible", visible_);
     }
 
     void Inspector::save_config() {
-        UIComponent::save_config();
+        config::set_value("Inspector_visible", visible_);
     }
 }

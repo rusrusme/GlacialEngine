@@ -10,7 +10,7 @@
 namespace editor {
     class Toolbar : public UIComponent {
     public:
-        Toolbar() = default;
+        Toolbar() : UIComponent("Toolbar") {}
         ~Toolbar() override = default;
 
         void on_init(SystemContext& context) override;

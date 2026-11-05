@@ -5,51 +5,65 @@
 
 #include "ShortcutManager.hpp"
 
-#include "input/Input.hpp"
+#include "core/Log.hpp"
 
 namespace editor {
-    void ShortcutManager::bind(EditorAction action, std::string_view name, KeyCode key, KeyCode modifiers) {
-        bindings_[action] = {.name = name, .key = key, .modifiers = modifiers};
-    }
+    void ShortcutManager::bind(EditorAction action,
+                               std::string_view name,
+                               KeyCode key,
+                               KeyModifier modifiers,
+                               ShortcutContext context) {
+        for (const auto& existing : bindings_) {
+            if (existing.key == key && existing.modifiers == modifiers) {
+                if (existing.context == context) {
+                    CLIENT_WARN("Shortcut conflict: '{0}' cannot be bound to key {1}. "
+                                "Already claimed by '{2}' in the same scope",
+                                name, key, existing.name);
+                    return;
+                }
 
-    // TODO needs work
-    bool ShortcutManager::triggered(EditorAction action) const {
-        if (Input::keyboard_captured()) {
-            return false;
-        }
-
-        auto it = bindings_.find(action);
-        if (it == bindings_.end()) return false;
-
-        const KeyBinding& binding = it->second;
-
-        bool key_pressed = Input::key_pressed_once(binding.key);
-
-        KeyCode active_mods = 0;
-        if (Input::key_pressed(Key::LEFT_CONTROL)) active_mods |= Key::LEFT_CONTROL;
-        if (Input::key_pressed(Key::LEFT_SHIFT)) active_mods |= Key::LEFT_SHIFT;
-        if (Input::key_pressed(Key::LEFT_ALT)) active_mods |= Key::LEFT_ALT;
-
-        bool mods_match = active_mods == binding.modifiers;
-
-        return key_pressed && mods_match;
-    }
-
-    std::optional<EditorAction> ShortcutManager::find_action(KeyCode key, KeyCode active_modifier) const {
-        for (const auto& [action, binding] : bindings_) {
-            if (binding.key == key) {
-                if (binding.modifiers == active_modifier) {
-                    return action;
+                if (existing.context == ShortcutContext::Global || context == ShortcutContext::Global) {
+                    CLIENT_TRACE("Shortcut notice: '{0}' overlaps with global shortcut '{1}' on key {2}.",
+                                 name, existing.name, key);
                 }
             }
+        }
+        bindings_.push_back({
+            .action    = action,
+            .name      = name,
+            .key       = key,
+            .modifiers = modifiers,
+            .context   = context
+        });
+    }
+
+    std::optional<EditorAction> ShortcutManager::find_action(KeyCode key,
+                                                             KeyModifier active_modifier,
+                                                             ShortcutContext current_context) const {
+        const KeyBinding* global_candidate = nullptr;
+
+        for (const auto& binding : bindings_) {
+            if (binding.key != key || binding.modifiers != active_modifier) {
+                continue;
+            }
+            if (binding.context == current_context && current_context != ShortcutContext::Global) {
+                return binding.action;
+            }
+            if (binding.context == ShortcutContext::Global) {
+                global_candidate = &binding;
+            }
+        }
+        if (global_candidate) {
+            return global_candidate->action;
         }
         return std::nullopt;
     }
 
     std::string_view ShortcutManager::shortcut_text(EditorAction action) const {
-        auto it = bindings_.find(action);
-        if (it != bindings_.end()) {
-            return it->second.name;
+        for (const auto& binding : bindings_) {
+            if (binding.action == action) {
+                return binding.name;
+            }
         }
         return "";
     }

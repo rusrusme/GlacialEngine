@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include <string_view>
+
 #include "core/SystemContext.hpp"
 
 namespace editor {
@@ -12,13 +14,20 @@ namespace editor {
 
     class UIComponent {
     public:
-        UIComponent() = default;
+        UIComponent(std::string_view name) : name_(name) {}
         virtual ~UIComponent() = default;
 
         virtual void on_init(SystemContext& context) {}
+        virtual void on_update(SystemContext& context, float delta_time) {}
+
         virtual void on_render_ui(SystemContext& context) = 0;
 
         virtual void load_config() {}
         virtual void save_config() {}
+
+        [[nodiscard]] std::string_view name() const { return name_; }
+
+    private:
+        std::string_view name_;
     };
 }

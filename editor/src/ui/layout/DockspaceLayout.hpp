@@ -10,7 +10,7 @@
 namespace editor {
     class DockspaceLayout : public UIComponent {
     public:
-        DockspaceLayout() = default;
+        DockspaceLayout() : UIComponent("Layout") {}
         ~DockspaceLayout() override = default;
 
         void on_init(SystemContext& context) override;

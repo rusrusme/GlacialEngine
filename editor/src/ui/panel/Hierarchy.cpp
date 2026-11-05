@@ -5,15 +5,17 @@
 
 #include "Hierarchy.hpp"
 
+#include "Config.hpp"
+
 namespace editor {
     void Hierarchy::on_render_ui(SystemContext& context) {
     }
 
     void Hierarchy::load_config() {
-        UIComponent::load_config();
+        visible_ = config::get_value("Hierarchy_visible", visible_);
     }
 
     void Hierarchy::save_config() {
-        UIComponent::save_config();
+        config::set_value("Hierarchy_visible", visible_);
     }
 }

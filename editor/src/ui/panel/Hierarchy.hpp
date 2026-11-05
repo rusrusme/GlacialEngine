@@ -10,12 +10,19 @@
 namespace editor {
     class Hierarchy : public UIComponent {
     public:
-        Hierarchy() = default;
+        Hierarchy() : UIComponent("Hierarchy") {}
         ~Hierarchy() override = default;
 
         void on_render_ui(SystemContext& context) override;
 
         void load_config() override;
         void save_config() override;
+
+        void toggle_visible() { visible_ = !visible_; }
+        [[nodiscard]] bool visible() const { return visible_; }
+        void set_visible(bool b) { visible_ = b; }
+
+    private:
+        bool visible_ = true;
     };
 }

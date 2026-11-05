@@ -5,6 +5,9 @@
 
 #include "UILayer.hpp"
 
+#include "event/EditorActions.hpp"
+#include "event/EditorEvents.hpp"
+
 namespace editor {
     void UILayer::on_attach(SystemContext& context) {
         ImguiLayer::on_attach(context);
@@ -41,19 +44,53 @@ namespace editor {
         for (auto* component : ui_components_) {
             component->save_config();
         }
-
         ImguiLayer::on_detach(context);
     }
 
     void UILayer::on_update(SystemContext& context, float delta_time) {
         ImguiLayer::on_update(context, delta_time);
+        debug_panel_.on_update(context, delta_time);
     }
 
     void UILayer::on_event(SystemContext& context, Event& event) {
         ImguiLayer::on_event(context, event);
+
+        if (event.handled) return;
+
+        EventDispatcher dispatcher(event);
+        dispatcher.dispatch<EditorActionEvent>([this](const EditorActionEvent& action) {
+            switch (action.action()) {
+                case EditorAction::ToggleDebug :
+                    debug_panel_.toggle_visible();
+                    return true;
+                case EditorAction::ToggleConsole :
+                    console_panel_.toggle_visible();
+                    return true;
+                case EditorAction::ToggleInspector :
+                    inspector_.toggle_visible();
+                    return true;
+                case EditorAction::ToggleHierarchy :
+                    hierarchy_.toggle_visible();
+                    return true;
+                case EditorAction::OpenSettings :
+                    settings_.toggle_visible();
+                    break;
+                default : break;
+            }
+            return false;
+        });
     }
 
     void UILayer::on_imgui_render(SystemContext& context, float delta_time) {
+        debug_panel_.on_render_ui(context);
+        settings_.on_render_ui(context);
+
+        layout_.on_render_ui(context);
+        menubar_.on_render_ui(context);
+        toolbar_.on_render_ui(context);
+        asset_browser_.on_render_ui(context);
         console_panel_.on_render_ui(context);
+        inspector_.on_render_ui(context);
+        hierarchy_.on_render_ui(context);
     }
 }

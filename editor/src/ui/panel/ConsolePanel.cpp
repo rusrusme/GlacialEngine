@@ -5,6 +5,7 @@
 
 #include "ConsolePanel.hpp"
 
+#include "Config.hpp"
 #include "core/Log.hpp"
 
 namespace editor {
@@ -13,8 +14,9 @@ namespace editor {
     }
 
     void ConsolePanel::on_render_ui(SystemContext& context) {
-        ImGui::Begin("Console");
+        if (!visible_) return;
 
+        ImGui::Begin("Console");
         if (ImGui::Button("Clear")) {
             Log::clear();
         }
@@ -84,10 +86,10 @@ namespace editor {
     }
 
     void ConsolePanel::load_config() {
-        UIComponent::load_config();
+        visible_ = config::get_value("ConsolePanel_visible", visible_);
     }
 
     void ConsolePanel::save_config() {
-        UIComponent::save_config();
+        config::set_value("ConsolePanel_visible", visible_);
     }
 }

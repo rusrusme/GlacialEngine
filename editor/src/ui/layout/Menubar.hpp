@@ -10,7 +10,7 @@
 namespace editor {
     class Menubar : public UIComponent {
     public:
-        Menubar() = default;
+        Menubar() : UIComponent("Menubar") {}
         ~Menubar() override = default;
 
         void on_init(SystemContext& context) override;

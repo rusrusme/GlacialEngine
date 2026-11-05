@@ -5,6 +5,8 @@
 
 #include "AssetBrowser.hpp"
 
+#include "Config.hpp"
+
 namespace editor {
     void AssetBrowser::on_init(SystemContext& context) {
         UIComponent::on_init(context);
@@ -14,10 +16,10 @@ namespace editor {
     }
 
     void AssetBrowser::load_config() {
-        UIComponent::load_config();
+        visible_ = config::get_value("AssetBrowser_visible", visible_);
     }
 
     void AssetBrowser::save_config() {
-        UIComponent::save_config();
+        config::set_value("AssetBrowser_visible", visible_);
     }
 }
