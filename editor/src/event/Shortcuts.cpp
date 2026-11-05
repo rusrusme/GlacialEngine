@@ -3,12 +3,12 @@
 // All rights reserved.
 //
 
-#include "ShortcutManager.hpp"
+#include "Shortcuts.hpp"
 
 #include "core/Log.hpp"
 
 namespace editor {
-    void ShortcutManager::bind(EditorAction action,
+    void Shortcuts::bind(Action action,
                                std::string_view name,
                                KeyCode key,
                                KeyModifier modifiers,
@@ -37,7 +37,7 @@ namespace editor {
         });
     }
 
-    std::optional<EditorAction> ShortcutManager::find_action(KeyCode key,
+    std::optional<Action> Shortcuts::find_action(KeyCode key,
                                                              KeyModifier active_modifier,
                                                              ShortcutContext current_context) {
         const KeyBinding* global_candidate = nullptr;
@@ -59,7 +59,7 @@ namespace editor {
         return std::nullopt;
     }
 
-    std::string_view ShortcutManager::shortcut_text(EditorAction action) {
+    std::string_view Shortcuts::text(Action action) {
         for (const auto& binding : s_bindings) {
             if (binding.action == action) {
                 return binding.name;

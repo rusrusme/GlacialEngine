@@ -6,7 +6,7 @@
 #pragma once
 
 namespace editor {
-    enum class EditorAction {
+    enum class Action {
         // File Actions
         NewScene, OpenScene, SaveScene, SaveSceneAs,
         NewProject, OpenProject, SaveProject, SaveProjectAs,

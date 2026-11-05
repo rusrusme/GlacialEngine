@@ -8,7 +8,7 @@
 #include <string_view>
 
 #include "core/SystemContext.hpp"
-#include "event/ShortcutManager.hpp"
+#include "event/Shortcuts.hpp"
 
 namespace editor {
     using namespace engine;

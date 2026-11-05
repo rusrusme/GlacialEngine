@@ -42,28 +42,28 @@ namespace editor {
     }
 
     struct KeyBinding {
-        EditorAction action;
+        Action action;
         std::string_view name;
         KeyCode key;
         KeyModifier modifiers = None; // Ctrl, Shift, Alt, Super
         ShortcutContext context = ShortcutContext::Global;
     };
 
-    class ShortcutManager {
+    class Shortcuts {
     public:
-        ShortcutManager() = delete;
-        ~ShortcutManager() = delete;
+        Shortcuts() = delete;
+        ~Shortcuts() = delete;
 
-        static void bind(EditorAction action,
+        static void bind(Action action,
                          std::string_view name,
                          KeyCode key,
                          KeyModifier modifiers = None,
                          ShortcutContext context = ShortcutContext::Global);
-        static std::optional<EditorAction> find_action(KeyCode key,
+        static std::optional<Action> find_action(KeyCode key,
                                                        KeyModifier active_modifier = None,
                                                        ShortcutContext current_context = ShortcutContext::Global);
 
-        static std::string_view shortcut_text(EditorAction action);
+        static std::string_view text(Action action);
 
         static void set_active_context(ShortcutContext context) { s_active_context = context; }
         [[nodiscard]] static ShortcutContext active_context() { return s_active_context; }

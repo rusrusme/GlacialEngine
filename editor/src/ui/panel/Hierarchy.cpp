@@ -7,7 +7,7 @@
 
 #include "Config.hpp"
 #include "asset/AssetManager.hpp"
-#include "event/ShortcutManager.hpp"
+#include "event/Shortcuts.hpp"
 #include "project/scene/SceneManager.hpp"
 
 namespace editor {
@@ -37,7 +37,7 @@ namespace editor {
         ImGui::Begin("Hierarchy");
 
         if (ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows)) {
-            ShortcutManager::set_active_context(shortcut_context());
+            Shortcuts::set_active_context(shortcut_context());
         }
 
         render_header_bar();
@@ -319,13 +319,13 @@ namespace editor {
 
     void Hierarchy::render_entity_context_menu(Entity entity) {
         if (ImGui::BeginPopupContextItem()) {
-            if (ImGui::MenuItem("Rename", ShortcutManager::shortcut_text(EditorAction::RenameEntity).data())) {
+            if (ImGui::MenuItem("Rename", Shortcuts::text(Action::RenameEntity).data())) {
                 rename_entity(entity);
             }
-            if (ImGui::MenuItem("Duplicate", ShortcutManager::shortcut_text(EditorAction::DuplicateEntity).data())) {
+            if (ImGui::MenuItem("Duplicate", Shortcuts::text(Action::DuplicateEntity).data())) {
                 entity_to_duplicate_ = entity;
             }
-            if (ImGui::MenuItem("Delete", ShortcutManager::shortcut_text(EditorAction::DeleteEntity).data())) {
+            if (ImGui::MenuItem("Delete", Shortcuts::text(Action::DeleteEntity).data())) {
                 entity_to_destroy_ = entity;
             }
             ImGui::EndPopup();

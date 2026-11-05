@@ -5,6 +5,7 @@
 
 #include "UILayer.hpp"
 
+#include "core/Application.hpp"
 #include "event/EditorActions.hpp"
 #include "event/EditorEvents.hpp"
 
@@ -62,32 +63,35 @@ namespace editor {
         EventDispatcher dispatcher(event);
         dispatcher.dispatch<EditorActionEvent>([this](const EditorActionEvent& action) {
             switch (action.action()) {
-                case EditorAction::ToggleDebug :
+                case Action::ToggleDebug :
                     debug_panel_.toggle_visible();
                     return true;
-                case EditorAction::ToggleConsole :
+                case Action::ToggleConsole :
                     console_panel_.toggle_visible();
                     return true;
-                case EditorAction::ToggleInspector :
+                case Action::ToggleInspector :
                     inspector_.toggle_visible();
                     return true;
-                case EditorAction::ToggleHierarchy :
+                case Action::ToggleHierarchy :
                     hierarchy_.toggle_visible();
                     return true;
-                case EditorAction::OpenSettings :
+                case Action::OpenSettings :
                     settings_.toggle_visible();
                     return true;
-                case EditorAction::DeleteEntity :
+                case Action::DeleteEntity :
                     hierarchy_.delete_entity();
                     return true;
-                case EditorAction::RenameEntity :
+                case Action::RenameEntity :
                     hierarchy_.rename_entity();
                     return true;
-                case EditorAction::DeselectEntity :
+                case Action::DeselectEntity :
                     hierarchy_.deselect_entity();
                     return true;
-                case EditorAction::DuplicateEntity :
+                case Action::DuplicateEntity :
                     hierarchy_.duplicate_entity();
+                    return true;
+                case Action::Exit :
+                    Application::get().close();
                     return true;
                 default : break;
             }
@@ -97,7 +101,7 @@ namespace editor {
 
     void UILayer::on_imgui_render(SystemContext& context, float delta_time) {
         if (!ImGui::IsWindowFocused(ImGuiFocusedFlags_AnyWindow)) {
-            ShortcutManager::set_active_context(ShortcutContext::Global);
+            Shortcuts::set_active_context(ShortcutContext::Global);
         }
 
         debug_panel_.on_render_ui(context);

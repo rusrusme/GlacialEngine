@@ -34,8 +34,8 @@ add_executable(Editor
                src/ui/window/SettingsWindow.hpp
                src/ui/layout/DockspaceLayout.cpp
                src/ui/layout/DockspaceLayout.hpp
-               src/event/ShortcutManager.cpp
-               src/event/ShortcutManager.hpp
+               src/event/Shortcuts.cpp
+               src/event/Shortcuts.hpp
                src/event/EditorActions.hpp
                src/event/EventType.hpp
                src/event/EditorEvents.hpp

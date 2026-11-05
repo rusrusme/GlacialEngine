@@ -11,7 +11,7 @@
 #include "event/EditorEvents.hpp"
 #include "event/EventQueue.hpp"
 #include "event/KeyEvents.hpp"
-#include "event/ShortcutManager.hpp"
+#include "event/Shortcuts.hpp"
 #include "input/Input.hpp"
 #include "input/KeyCodes.hpp"
 #include "input/MouseCodes.hpp"
@@ -42,44 +42,44 @@ namespace editor {
         // TODO Add support for JSON binding: {"bindings": [{"action": "SaveScene", "key": "Ctrl+S", "context": "global"}, ...]}
         /////////////////////////////////////////////////////////////////////////////
         // Keybindings
-        ShortcutManager::bind(EditorAction::NewScene, "Ctrl+N", Key::N, Ctrl);
-        ShortcutManager::bind(EditorAction::OpenScene, "Ctrl+O", Key::O, Ctrl);
-        ShortcutManager::bind(EditorAction::SaveScene, "Ctrl+S", Key::S, Ctrl);
-        ShortcutManager::bind(EditorAction::SaveSceneAs,
+        Shortcuts::bind(Action::NewScene, "Ctrl+N", Key::N, Ctrl);
+        Shortcuts::bind(Action::OpenScene, "Ctrl+O", Key::O, Ctrl);
+        Shortcuts::bind(Action::SaveScene, "Ctrl+S", Key::S, Ctrl);
+        Shortcuts::bind(Action::SaveSceneAs,
                               "Ctrl+Shift+S",
                               Key::S, Ctrl | Shift);
 
-        ShortcutManager::bind(EditorAction::Undo, "Ctrl+Z", Key::Z, Ctrl);
-        ShortcutManager::bind(EditorAction::Redo, "Ctrl+Y", Key::Y, Ctrl);
-        ShortcutManager::bind(EditorAction::Copy, "Ctrl+C", Key::C, Ctrl);
-        ShortcutManager::bind(EditorAction::Paste, "Ctrl+V", Key::V, Ctrl);
+        Shortcuts::bind(Action::Undo, "Ctrl+Z", Key::Z, Ctrl);
+        Shortcuts::bind(Action::Redo, "Ctrl+Y", Key::Y, Ctrl);
+        Shortcuts::bind(Action::Copy, "Ctrl+C", Key::C, Ctrl);
+        Shortcuts::bind(Action::Paste, "Ctrl+V", Key::V, Ctrl);
 
-        ShortcutManager::bind(EditorAction::DuplicateEntity, "Ctrl+D",
+        Shortcuts::bind(Action::DuplicateEntity, "Ctrl+D",
                               Key::D, Ctrl, ShortcutContext::Hierarchy);
 
-        ShortcutManager::bind(EditorAction::DeleteEntity, "Delete",
+        Shortcuts::bind(Action::DeleteEntity, "Delete",
                               Key::DELETE, None, ShortcutContext::Hierarchy);
 
-        ShortcutManager::bind(EditorAction::RenameEntity, "F2",
+        Shortcuts::bind(Action::RenameEntity, "F2",
                               Key::F2, None, ShortcutContext::Hierarchy);
 
-        ShortcutManager::bind(EditorAction::DeselectEntity, "Escape",
+        Shortcuts::bind(Action::DeselectEntity, "Escape",
                               Key::ESCAPE, None, ShortcutContext::Hierarchy);
 
-        ShortcutManager::bind(EditorAction::TogglePlay, "Space", Key::SPACE);
-        ShortcutManager::bind(EditorAction::StopPlay, "Shift+Space", Key::SPACE, Shift);
+        Shortcuts::bind(Action::TogglePlay, "Space", Key::SPACE);
+        Shortcuts::bind(Action::StopPlay, "Shift+Space", Key::SPACE, Shift);
 
-        ShortcutManager::bind(EditorAction::GizmoSelect, "Q", Key::Q, None, ShortcutContext::Viewport);
-        ShortcutManager::bind(EditorAction::GizmoTranslate, "W", Key::W, None, ShortcutContext::Viewport);
-        ShortcutManager::bind(EditorAction::GizmoRotate, "E", Key::E, None, ShortcutContext::Viewport);
-        ShortcutManager::bind(EditorAction::GizmoScale, "R", Key::R, None, ShortcutContext::Viewport);
+        Shortcuts::bind(Action::GizmoSelect, "Q", Key::Q, None, ShortcutContext::Viewport);
+        Shortcuts::bind(Action::GizmoTranslate, "W", Key::W, None, ShortcutContext::Viewport);
+        Shortcuts::bind(Action::GizmoRotate, "E", Key::E, None, ShortcutContext::Viewport);
+        Shortcuts::bind(Action::GizmoScale, "R", Key::R, None, ShortcutContext::Viewport);
 
-        ShortcutManager::bind(EditorAction::ToggleConsole,
+        Shortcuts::bind(Action::ToggleConsole,
                               "Ctrl+Shift+`",
                               Key::GRAVE_ACCENT, Ctrl | Shift);
-        ShortcutManager::bind(EditorAction::ToggleConsole, "Alt+F12", Key::F12, Alt);
-        ShortcutManager::bind(EditorAction::OpenSettings, "Ctrl+,", Key::COMMA, Ctrl);
-        ShortcutManager::bind(EditorAction::ToggleDebug, "F3", Key::F3);
+        Shortcuts::bind(Action::ToggleConsole, "Alt+F12", Key::F12, Alt);
+        Shortcuts::bind(Action::OpenSettings, "Ctrl+,", Key::COMMA, Ctrl);
+        Shortcuts::bind(Action::ToggleDebug, "F3", Key::F3);
     }
 
     void CoreLayer::on_detach(SystemContext& context) {
@@ -149,9 +149,9 @@ namespace editor {
 
                 ShortcutContext current_context = viewport_hovered_ || viewport_focused_
                                                     ? ShortcutContext::Viewport
-                                                    : ShortcutManager::active_context();
+                                                    : Shortcuts::active_context();
 
-                auto action = ShortcutManager::find_action(e.key_code(), active_modifier, current_context);
+                auto action = Shortcuts::find_action(e.key_code(), active_modifier, current_context);
                 if (action.has_value()) {
                     EventQueue::submit<EditorActionEvent>(action.value());
                     return true;
@@ -162,37 +162,37 @@ namespace editor {
 
         dispatcher.dispatch<EditorActionEvent>([&context](const EditorActionEvent& action) {
             switch (action.action()) {
-                case EditorAction::NewScene :
+                case Action::NewScene :
                     break;
-                case EditorAction::OpenScene :
+                case Action::OpenScene :
                     break;
-                case EditorAction::SaveScene :
+                case Action::SaveScene :
                     break;
-                case EditorAction::SaveSceneAs :
+                case Action::SaveSceneAs :
                     break;
-                case EditorAction::NewProject :
+                case Action::NewProject :
                     break;
-                case EditorAction::OpenProject :
+                case Action::OpenProject :
                     break;
-                case EditorAction::SaveProject :
+                case Action::SaveProject :
                     break;
-                case EditorAction::SaveProjectAs :
+                case Action::SaveProjectAs :
                     break;
-                case EditorAction::Exit :
+                case Action::Exit :
                     break;
-                case EditorAction::Undo :
+                case Action::Undo :
                     break;
-                case EditorAction::Redo :
+                case Action::Redo :
                     break;
-                case EditorAction::Copy :
+                case Action::Copy :
                     break;
-                case EditorAction::Paste :
+                case Action::Paste :
                     break;
-                case EditorAction::DuplicateEntity :
+                case Action::DuplicateEntity :
                     break;
-                case EditorAction::DeleteEntity :
+                case Action::DeleteEntity :
                     break;
-                case EditorAction::TogglePlay :
+                case Action::TogglePlay :
                     if (context.scenes.scene_state() == SceneState::Edit) {
                         context.scenes.on_play();
                     }
@@ -203,18 +203,18 @@ namespace editor {
                         context.scenes.on_play();
                     }
                     return true;
-                case EditorAction::StopPlay :
+                case Action::StopPlay :
                     if (context.scenes.scene_state() != SceneState::Edit) {
                         context.scenes.on_stop();
                     }
                     return true;
-                case EditorAction::GizmoSelect :
+                case Action::GizmoSelect :
                     break;
-                case EditorAction::GizmoTranslate :
+                case Action::GizmoTranslate :
                     break;
-                case EditorAction::GizmoRotate :
+                case Action::GizmoRotate :
                     break;
-                case EditorAction::GizmoScale :
+                case Action::GizmoScale :
                     break;
                 default : break;
             }

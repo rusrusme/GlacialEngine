@@ -15,5 +15,11 @@ namespace editor {
 
         void on_init(SystemContext& context) override;
         void on_render_ui(SystemContext& context) override;
+
+    private:
+        void file_menu(SystemContext& context);
+        void edit_menu(SystemContext& context);
+        void window_menu(SystemContext& context);
+        void help_menu(SystemContext& context);
     };
 }

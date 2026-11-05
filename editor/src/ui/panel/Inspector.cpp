@@ -16,7 +16,7 @@ namespace editor {
         ImGui::Begin("Inspector");
 
         if (ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows)) {
-            ShortcutManager::set_active_context(shortcut_context());
+            Shortcuts::set_active_context(shortcut_context());
         }
 
         // TODO: Inspector Widgets...

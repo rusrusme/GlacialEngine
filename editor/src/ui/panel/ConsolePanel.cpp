@@ -19,7 +19,7 @@ namespace editor {
         ImGui::Begin("Console");
 
         if (ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows)) {
-            ShortcutManager::set_active_context(shortcut_context());
+            Shortcuts::set_active_context(shortcut_context());
         }
 
         if (ImGui::Button("Clear")) {

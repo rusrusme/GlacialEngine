@@ -17,7 +17,7 @@ namespace editor {
         ImGui::Begin("Asset Browser");
 
         if (ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows)) {
-            ShortcutManager::set_active_context(shortcut_context());
+            Shortcuts::set_active_context(shortcut_context());
         }
 
         // TODO: Asset Browser Content...
