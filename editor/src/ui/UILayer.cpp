@@ -50,6 +50,7 @@ namespace editor {
     void UILayer::on_update(SystemContext& context, float delta_time) {
         ImguiLayer::on_update(context, delta_time);
         debug_panel_.on_update(context, delta_time);
+        hierarchy_.on_update(context, delta_time);
     }
 
     void UILayer::on_event(SystemContext& context, Event& event) {
@@ -74,7 +75,19 @@ namespace editor {
                     return true;
                 case EditorAction::OpenSettings :
                     settings_.toggle_visible();
-                    break;
+                    return true;
+                case EditorAction::DeleteEntity :
+                    hierarchy_.delete_entity();
+                    return true;
+                case EditorAction::RenameEntity :
+                    hierarchy_.rename_entity();
+                    return true;
+                case EditorAction::DeselectEntity :
+                    hierarchy_.deselect_entity();
+                    return true;
+                case EditorAction::DuplicateEntity :
+                    hierarchy_.duplicate_entity();
+                    return true;
                 default : break;
             }
             return false;
@@ -82,6 +95,10 @@ namespace editor {
     }
 
     void UILayer::on_imgui_render(SystemContext& context, float delta_time) {
+        if (!ImGui::IsWindowFocused(ImGuiFocusedFlags_AnyWindow)) {
+            ShortcutManager::set_active_context(ShortcutContext::Global);
+        }
+        
         debug_panel_.on_render_ui(context);
         settings_.on_render_ui(context);
 

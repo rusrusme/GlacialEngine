@@ -8,13 +8,14 @@
 #include <string_view>
 
 #include "core/SystemContext.hpp"
+#include "event/ShortcutManager.hpp"
 
 namespace editor {
     using namespace engine;
 
     class UIComponent {
     public:
-        UIComponent(std::string_view name) : name_(name) {}
+        UIComponent(std::string_view name = "") : name_(name) {}
         virtual ~UIComponent() = default;
 
         virtual void on_init(SystemContext& context) {}
@@ -26,6 +27,7 @@ namespace editor {
         virtual void save_config() {}
 
         [[nodiscard]] std::string_view name() const { return name_; }
+        [[nodiscard]] virtual ShortcutContext shortcut_context() const { return ShortcutContext::Global; }
 
     private:
         std::string_view name_;

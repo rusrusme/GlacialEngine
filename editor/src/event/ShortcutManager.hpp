@@ -51,21 +51,25 @@ namespace editor {
 
     class ShortcutManager {
     public:
-        ShortcutManager() = default;
-        ~ShortcutManager() = default;
+        ShortcutManager() = delete;
+        ~ShortcutManager() = delete;
 
-        void bind(EditorAction action,
-                  std::string_view name,
-                  KeyCode key,
-                  KeyModifier modifiers = None,
-                  ShortcutContext context = ShortcutContext::Global);
-        [[nodiscard]] std::optional<EditorAction> find_action(KeyCode key,
-                                                              KeyModifier active_modifier = None,
-                                                              ShortcutContext current_context = ShortcutContext::Global) const;
+        static void bind(EditorAction action,
+                         std::string_view name,
+                         KeyCode key,
+                         KeyModifier modifiers = None,
+                         ShortcutContext context = ShortcutContext::Global);
+        static std::optional<EditorAction> find_action(KeyCode key,
+                                                       KeyModifier active_modifier = None,
+                                                       ShortcutContext current_context = ShortcutContext::Global);
 
-        [[nodiscard]] std::string_view shortcut_text(EditorAction action) const;
+        static std::string_view shortcut_text(EditorAction action);
+
+        static void set_active_context(ShortcutContext context) { s_active_context = context; }
+        [[nodiscard]] static ShortcutContext active_context() { return s_active_context; }
 
     private:
-        std::vector<KeyBinding> bindings_;
+        inline static auto s_active_context = ShortcutContext::Global;
+        inline static std::vector<KeyBinding> s_bindings;
     };
 }

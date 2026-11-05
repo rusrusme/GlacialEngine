@@ -5,7 +5,6 @@
 
 #pragma once
 
-#include "event/ShortcutManager.hpp"
 #include "core/Layer.hpp"
 #include "render/camera/Camera.hpp"
 #include "render/camera/CameraController.hpp"
@@ -33,7 +32,5 @@ namespace editor {
 
         bool viewport_hovered_ = false;
         bool viewport_focused_ = false;
-
-        ShortcutManager shortcut_manager_;
     };
 }

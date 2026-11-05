@@ -7,6 +7,7 @@
 
 #include <cstdint>
 
+#include "event/EditorActions.hpp"
 #include "event/Event.hpp"
 #include "event/EventType.hpp"
 

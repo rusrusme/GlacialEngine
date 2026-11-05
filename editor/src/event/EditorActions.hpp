@@ -13,7 +13,10 @@ namespace editor {
         Exit,
 
         // Edit
-        Undo, Redo, Copy, Paste, Duplicate, Delete,
+        Undo, Redo, Copy, Paste,
+
+        // Hierarchy
+        DuplicateEntity, DeleteEntity, RenameEntity, DeselectEntity,
 
         // Runtime
         TogglePlay, // Play, Pause

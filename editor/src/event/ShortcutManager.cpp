@@ -13,7 +13,7 @@ namespace editor {
                                KeyCode key,
                                KeyModifier modifiers,
                                ShortcutContext context) {
-        for (const auto& existing : bindings_) {
+        for (const auto& existing : s_bindings) {
             if (existing.key == key && existing.modifiers == modifiers) {
                 if (existing.context == context) {
                     CLIENT_WARN("Shortcut conflict: '{0}' cannot be bound to key {1}. "
@@ -28,7 +28,7 @@ namespace editor {
                 }
             }
         }
-        bindings_.push_back({
+        s_bindings.push_back({
             .action    = action,
             .name      = name,
             .key       = key,
@@ -39,10 +39,10 @@ namespace editor {
 
     std::optional<EditorAction> ShortcutManager::find_action(KeyCode key,
                                                              KeyModifier active_modifier,
-                                                             ShortcutContext current_context) const {
+                                                             ShortcutContext current_context) {
         const KeyBinding* global_candidate = nullptr;
 
-        for (const auto& binding : bindings_) {
+        for (const auto& binding : s_bindings) {
             if (binding.key != key || binding.modifiers != active_modifier) {
                 continue;
             }
@@ -59,8 +59,8 @@ namespace editor {
         return std::nullopt;
     }
 
-    std::string_view ShortcutManager::shortcut_text(EditorAction action) const {
-        for (const auto& binding : bindings_) {
+    std::string_view ShortcutManager::shortcut_text(EditorAction action) {
+        for (const auto& binding : s_bindings) {
             if (binding.action == action) {
                 return binding.name;
             }

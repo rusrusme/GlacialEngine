@@ -11,6 +11,7 @@
 #include "event/EditorEvents.hpp"
 #include "event/EventQueue.hpp"
 #include "event/KeyEvents.hpp"
+#include "event/ShortcutManager.hpp"
 #include "input/Input.hpp"
 #include "input/KeyCodes.hpp"
 #include "input/MouseCodes.hpp"
@@ -41,32 +42,44 @@ namespace editor {
         // TODO Add support for JSON binding: {"bindings": [{"action": "SaveScene", "key": "Ctrl+S", "context": "global"}, ...]}
         /////////////////////////////////////////////////////////////////////////////
         // Keybindings
-        shortcut_manager_.bind(EditorAction::NewScene, "Ctrl+N", Key::N, Ctrl);
-        shortcut_manager_.bind(EditorAction::OpenScene, "Ctrl+O", Key::O, Ctrl);
-        shortcut_manager_.bind(EditorAction::SaveScene, "Ctrl+S", Key::S, Ctrl);
-        shortcut_manager_.bind(EditorAction::SaveSceneAs,
-                               "Ctrl+Shift+S",
-                               Key::S, Ctrl | Shift);
+        ShortcutManager::bind(EditorAction::NewScene, "Ctrl+N", Key::N, Ctrl);
+        ShortcutManager::bind(EditorAction::OpenScene, "Ctrl+O", Key::O, Ctrl);
+        ShortcutManager::bind(EditorAction::SaveScene, "Ctrl+S", Key::S, Ctrl);
+        ShortcutManager::bind(EditorAction::SaveSceneAs,
+                              "Ctrl+Shift+S",
+                              Key::S, Ctrl | Shift);
 
-        shortcut_manager_.bind(EditorAction::Undo, "Ctrl+Z", Key::Z, Ctrl);
-        shortcut_manager_.bind(EditorAction::Redo, "Ctrl+Y", Key::Y, Ctrl);
-        shortcut_manager_.bind(EditorAction::Duplicate, "Ctrl+D", Key::D, Ctrl);
-        shortcut_manager_.bind(EditorAction::Delete, "Delete", Key::DELETE);
+        ShortcutManager::bind(EditorAction::Undo, "Ctrl+Z", Key::Z, Ctrl);
+        ShortcutManager::bind(EditorAction::Redo, "Ctrl+Y", Key::Y, Ctrl);
+        ShortcutManager::bind(EditorAction::Copy, "Ctrl+C", Key::C, Ctrl);
+        ShortcutManager::bind(EditorAction::Paste, "Ctrl+V", Key::V, Ctrl);
 
-        shortcut_manager_.bind(EditorAction::TogglePlay, "Space", Key::SPACE);
-        shortcut_manager_.bind(EditorAction::StopPlay, "Shift+Space", Key::SPACE, Shift);
+        ShortcutManager::bind(EditorAction::DuplicateEntity, "Ctrl+D",
+                              Key::D, Ctrl, ShortcutContext::Hierarchy);
 
-        shortcut_manager_.bind(EditorAction::GizmoSelect, "Q", Key::Q, None, ShortcutContext::Viewport);
-        shortcut_manager_.bind(EditorAction::GizmoTranslate, "W", Key::W, None, ShortcutContext::Viewport);
-        shortcut_manager_.bind(EditorAction::GizmoRotate, "E", Key::E, None, ShortcutContext::Viewport);
-        shortcut_manager_.bind(EditorAction::GizmoScale, "R", Key::R, None, ShortcutContext::Viewport);
+        ShortcutManager::bind(EditorAction::DeleteEntity, "Delete",
+                              Key::DELETE, None, ShortcutContext::Hierarchy);
 
-        shortcut_manager_.bind(EditorAction::ToggleConsole,
-                               "Ctrl+Shift+`",
-                               Key::GRAVE_ACCENT, Ctrl | Shift);
-        shortcut_manager_.bind(EditorAction::ToggleConsole, "Alt+F12", Key::F12, Alt);
-        shortcut_manager_.bind(EditorAction::OpenSettings, "Ctrl+,", Key::COMMA, Ctrl);
-        shortcut_manager_.bind(EditorAction::ToggleDebug, "F3", Key::F3);
+        ShortcutManager::bind(EditorAction::RenameEntity, "F2",
+                              Key::F2, None, ShortcutContext::Hierarchy);
+
+        ShortcutManager::bind(EditorAction::DeselectEntity, "Escape",
+                              Key::ESCAPE, None, ShortcutContext::Hierarchy);
+
+        ShortcutManager::bind(EditorAction::TogglePlay, "Space", Key::SPACE);
+        ShortcutManager::bind(EditorAction::StopPlay, "Shift+Space", Key::SPACE, Shift);
+
+        ShortcutManager::bind(EditorAction::GizmoSelect, "Q", Key::Q, None, ShortcutContext::Viewport);
+        ShortcutManager::bind(EditorAction::GizmoTranslate, "W", Key::W, None, ShortcutContext::Viewport);
+        ShortcutManager::bind(EditorAction::GizmoRotate, "E", Key::E, None, ShortcutContext::Viewport);
+        ShortcutManager::bind(EditorAction::GizmoScale, "R", Key::R, None, ShortcutContext::Viewport);
+
+        ShortcutManager::bind(EditorAction::ToggleConsole,
+                              "Ctrl+Shift+`",
+                              Key::GRAVE_ACCENT, Ctrl | Shift);
+        ShortcutManager::bind(EditorAction::ToggleConsole, "Alt+F12", Key::F12, Alt);
+        ShortcutManager::bind(EditorAction::OpenSettings, "Ctrl+,", Key::COMMA, Ctrl);
+        ShortcutManager::bind(EditorAction::ToggleDebug, "F3", Key::F3);
     }
 
     void CoreLayer::on_detach(SystemContext& context) {
@@ -134,20 +147,17 @@ namespace editor {
                     active_modifier |= Alt;
                 }
 
-                auto current_scope = ShortcutContext::Global;
-                if (viewport_hovered_ || viewport_focused_) {
-                    current_scope = ShortcutContext::Viewport;
-                }
-                // TODO Hierarchy, Inspector, AssetBrowser, Console, ... hovered/focused
+                ShortcutContext current_context = viewport_hovered_ || viewport_focused_
+                                                    ? ShortcutContext::Viewport
+                                                    : ShortcutManager::active_context();
 
-                auto action = shortcut_manager_.find_action(e.key_code(), active_modifier, current_scope);
+                auto action = ShortcutManager::find_action(e.key_code(), active_modifier, current_context);
                 if (action.has_value()) {
                     EventQueue::submit<EditorActionEvent>(action.value());
                     return true;
                 }
                 return false;
             }
-
         );
 
         dispatcher.dispatch<EditorActionEvent>([&context](const EditorActionEvent& action) {
@@ -178,9 +188,9 @@ namespace editor {
                     break;
                 case EditorAction::Paste :
                     break;
-                case EditorAction::Duplicate :
+                case EditorAction::DuplicateEntity :
                     break;
-                case EditorAction::Delete :
+                case EditorAction::DeleteEntity :
                     break;
                 case EditorAction::TogglePlay :
                     if (context.scenes.scene_state() == SceneState::Edit) {

@@ -13,6 +13,15 @@ namespace editor {
     }
 
     void Inspector::on_render_ui(SystemContext& context) {
+        ImGui::Begin("Inspector");
+
+        if (ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows)) {
+            ShortcutManager::set_active_context(shortcut_context());
+        }
+
+        // TODO: Inspector Widgets...
+
+        ImGui::End();
     }
 
     void Inspector::load_config() {

@@ -9,10 +9,20 @@
 
 namespace editor {
     void AssetBrowser::on_init(SystemContext& context) {
-        UIComponent::on_init(context);
     }
 
     void AssetBrowser::on_render_ui(SystemContext& context) {
+        if (!visible_) return;
+
+        ImGui::Begin("Asset Browser");
+
+        if (ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows)) {
+            ShortcutManager::set_active_context(shortcut_context());
+        }
+
+        // TODO: Asset Browser Content...
+
+        ImGui::End();
     }
 
     void AssetBrowser::load_config() {
