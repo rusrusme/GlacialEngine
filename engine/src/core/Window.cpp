@@ -59,6 +59,26 @@ namespace engine {
         data_.event_callback = callback;
     }
 
+    void Window::minimize() {
+        if (window_handle_) window::minimize(window_handle_);
+    }
+
+    void Window::maximize() {
+        if (window_handle_) window::maximize(window_handle_);
+    }
+
+    void Window::restore() {
+        if (window_handle_) window::restore(window_handle_);
+    }
+
+    bool Window::maximized() const {
+        return window_handle_ ? window::maximized(window_handle_) : false;
+    }
+
+    bool Window::minimized() const {
+        return window_handle_ ? window::minimized(window_handle_) : false;
+    }
+
     void Window::set_vsync(const bool enabled) {
         config::video::IS_VSYNC = enabled;
         window::set_vsync(enabled);

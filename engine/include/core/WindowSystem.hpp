@@ -28,6 +28,7 @@ namespace engine {
         int width = 0;
         int height = 0;
         EventCallbackFunc event_callback = nullptr;
+        bool titlebar_hovered = false;
     };
 
     namespace window {
@@ -49,8 +50,11 @@ namespace engine {
         void position(void* window_handle, int* x, int* y);
         void size(void* window_handle, int* width, int* height);
         void framebuffer_size(void* window_handle, int* width, int* height);
+
         void maximize(void* window_handle);
         bool maximized(void* window_handle);
+        void restore(void* window_handle);
+        void minimize(void* window_handle);
         bool minimized(void* window_handle);
 
         void set_title(void* window_handle, const char* title);

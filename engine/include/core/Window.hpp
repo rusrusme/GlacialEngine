@@ -24,7 +24,17 @@ namespace engine {
         Window& operator=(const Window&) = delete;
 
         void set_title(const std::string& title);
+        [[nodiscard]] const std::string& title() const { return data_.title; }
         void set_event_callback(const EventCallbackFunc& callback);
+
+        void minimize();
+        void maximize();
+        void restore();
+        [[nodiscard]] bool maximized() const;
+        [[nodiscard]] bool minimized() const;
+
+        void set_titlebar_hovered(bool hovered) { data_.titlebar_hovered = hovered; }
+        [[nodiscard]] bool titlebar_hovered() const { return data_.titlebar_hovered; }
 
         void set_vsync(bool enabled);
         [[nodiscard]] bool vsync() const { return config::video::IS_VSYNC; }

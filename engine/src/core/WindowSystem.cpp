@@ -12,6 +12,127 @@
 #include "event/MouseEvents.hpp"
 #include "event/WindowEvents.hpp"
 
+////////////////////////////////////////////////////////////////////////
+
+#if defined(_WIN32)
+#define GLFW_EXPOSE_NATIVE_WIN32
+#include <Windows.h>
+#include <windowsx.h>
+#include <dwmapi.h>
+#include <commctrl.h>
+#include <GLFW/glfw3native.h>
+#pragma comment(lib, "dwmapi.lib")
+#pragma comment(lib, "comctl32.lib")
+#endif
+
+namespace engine::window {
+    #if defined(_WIN32)
+    static constexpr UINT_PTR TITLEBAR_SUBCLASS_ID = 1001;
+
+    static LRESULT CALLBACK custom_titlebar_subclass_proc(
+        HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam,
+        UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
+    {
+        auto* data = reinterpret_cast<WindowNativeData*>(dwRefData);
+
+        switch (msg) {
+            case WM_NCCALCSIZE: {
+                if (wparam == TRUE) {
+                    auto* params = reinterpret_cast<NCCALCSIZE_PARAMS*>(lparam);
+                    if (IsZoomed(hwnd)) {
+                        HMONITOR monitor = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
+                        MONITORINFO monitor_info{};
+                        monitor_info.cbSize = sizeof(MONITORINFO);
+                        if (GetMonitorInfoW(monitor, &monitor_info)) {
+                            params->rgrc[0] = monitor_info.rcWork;
+                        }
+                    }
+                    return 0; // Strip standard OS titlebar while preserving Aero Snap
+                }
+                return 0;
+            }
+
+            case WM_NCHITTEST: {
+                LRESULT hit = DefSubclassProc(hwnd, msg, wparam, lparam);
+                if (hit == HTCLIENT) {
+                    POINT pt = {.x = GET_X_LPARAM(lparam), .y = GET_Y_LPARAM(lparam)};
+                    ScreenToClient(hwnd, &pt);
+
+                    RECT rc{};
+                    GetClientRect(hwnd, &rc);
+
+                    // Native 8-way resize borders when windowed
+                    if (!IsZoomed(hwnd)) {
+                        const int border = GetSystemMetrics(SM_CXFRAME) + GetSystemMetrics(SM_CXPADDEDBORDER);
+                        constexpr int top_border = 4;
+
+                        const bool left   = pt.x < border;
+                        const bool right  = pt.x >= rc.right - border;
+                        const bool top    = pt.y < top_border;
+                        const bool bottom = pt.y >= rc.bottom - border;
+
+                        if (top && left)     return HTTOPLEFT;
+                        if (top && right)    return HTTOPRIGHT;
+                        if (bottom && left)  return HTBOTTOMLEFT;
+                        if (bottom && right) return HTBOTTOMRIGHT;
+                        if (left)            return HTLEFT;
+                        if (right)           return HTRIGHT;
+                        if (top)             return HTTOP;
+                        if (bottom)          return HTBOTTOM;
+                    }
+
+                    // Treat empty ImGui Menubar space as native OS titlebar
+                    if (data && data->titlebar_hovered) {
+                        return HTCAPTION;
+                    }
+                }
+                return hit;
+            }
+
+            case WM_NCMOUSEMOVE: {
+                POINT pt = { GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam) };
+                ScreenToClient(hwnd, &pt);
+                DefSubclassProc(hwnd, WM_MOUSEMOVE, 0, MAKELPARAM(pt.x, pt.y));
+                break;
+            }
+
+            case WM_NCDESTROY: {
+                RemoveWindowSubclass(hwnd, custom_titlebar_subclass_proc, uIdSubclass);
+                break;
+            }
+            default: break;
+        }
+
+        return DefSubclassProc(hwnd, msg, wparam, lparam);
+    }
+
+    static void setup_win32_seamless_titlebar(GLFWwindow* window, WindowNativeData* window_data) {
+        HWND hwnd = glfwGetWin32Window(window);
+        if (!hwnd) return;
+
+        // SetWindowSubclass eliminates wndproc race conditions and property leaks
+        SetWindowSubclass(hwnd, custom_titlebar_subclass_proc, TITLEBAR_SUBCLASS_ID,
+                          reinterpret_cast<DWORD_PTR>(window_data));
+
+        BOOL dark_mode = TRUE;
+        DwmSetWindowAttribute(hwnd, 20 /* DWMWA_USE_IMMERSIVE_DARK_MODE */, &dark_mode, sizeof(dark_mode));
+
+        constexpr MARGINS margins = {
+            .cxLeftWidth    = 1,
+            .cxRightWidth   = 1,
+            .cyTopHeight    = 1,
+            .cyBottomHeight = 1
+        };
+        DwmExtendFrameIntoClientArea(hwnd, &margins);
+
+        SetWindowPos(hwnd, nullptr, 0, 0, 0, 0,
+                     SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOOWNERZORDER);
+    }
+    #endif
+}
+
+////////////////////////////////////////////////////////////////////////
+
 namespace engine::window {
     static bool initialized = false;
 
@@ -35,6 +156,11 @@ namespace engine::window {
         ACTIVE_FRAMEWORK = framework;
         switch (ACTIVE_FRAMEWORK) {
             case GraphicsFramework::GLFW :
+                #if defined(_WIN32)
+                // Tell Windows DWM not to scale down the window during drag
+                SetProcessDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE_V2);
+                #endif
+
                 if (!glfwInit()) {
                     CORE_CRITICAL("Failed to initialize GLFW");
                     return false;
@@ -111,6 +237,9 @@ namespace engine::window {
             GLFWwindow* window = glfwCreateWindow(width, height, title, nullptr, nullptr);
             if (window && window_data) {
                 setup_callbacks(window, window_data);
+                #if defined(_WIN32)
+                setup_win32_seamless_titlebar(window, window_data);
+                #endif
             }
             return window;
         }
@@ -302,6 +431,28 @@ namespace engine::window {
             CORE_ERROR("Invalid window handle in engine::window::is_maximized: {0}", window_handle);
         }
         return false;
+    }
+
+    void restore(void* window_handle) {
+        if (window_handle) {
+            if (ACTIVE_FRAMEWORK == GraphicsFramework::GLFW) {
+                glfwRestoreWindow(static_cast<GLFWwindow*>(window_handle));
+            }
+        }
+        else {
+            CORE_ERROR("Invalid window handle in engine::window::restore: {0}", window_handle);
+        }
+    }
+
+    void minimize(void* window_handle) {
+        if (window_handle) {
+            if (ACTIVE_FRAMEWORK == GraphicsFramework::GLFW) {
+                glfwIconifyWindow(static_cast<GLFWwindow*>(window_handle));
+            }
+        }
+        else {
+            CORE_ERROR("Invalid window handle in engine::window::minimize: {0}", window_handle);
+        }
     }
 
     bool minimized(void* window_handle) {
