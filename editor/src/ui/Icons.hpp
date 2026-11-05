@@ -212,54 +212,58 @@ namespace editor {
     }
 
     static void draw_minimize_icon(ImDrawList* draw_list, const ImVec2 pos, const ImU32 col) {
-        // 16px wide line, 1.8px stroke
+        // 10px wide line, 1.8px stroke (centered in 14x14 box)
         const float y = std::floor(pos.y + 10.0f);
-        draw_list->AddLine(ImVec2(pos.x + 2.0f, y), ImVec2(pos.x + 18.0f, y), col, 1.8f);
+        draw_list->AddLine(ImVec2(pos.x + 2.0f, y), ImVec2(pos.x + 12.0f, y), col, 1.8f);
     }
 
     static void draw_maximize_icon(ImDrawList* draw_list, const ImVec2 pos, const ImU32 col) {
-        // 16x16px square, 1.6px stroke
+        // 10x10px square, 1.6px stroke (centered in 14x14 box)
         draw_list->AddRect(
             ImVec2(pos.x + 2.0f, pos.y + 2.0f),
-            ImVec2(pos.x + 18.0f, pos.y + 18.0f),
+            ImVec2(pos.x + 12.0f, pos.y + 12.0f),
             col, 0.0f, 0, 1.6f
         );
     }
 
     static void draw_restore_icon(ImDrawList* draw_list, const ImVec2 pos, const ImU32 col) {
         // Back square
-        draw_list->AddLine(ImVec2(pos.x + 6.0f, pos.y + 2.0f), ImVec2(pos.x + 18.0f, pos.y + 2.0f), col, 1.5f);
-        draw_list->AddLine(ImVec2(pos.x + 18.0f, pos.y + 2.0f), ImVec2(pos.x + 18.0f, pos.y + 14.0f), col, 1.5f);
-        draw_list->AddLine(ImVec2(pos.x + 14.0f, pos.y + 14.0f), ImVec2(pos.x + 18.0f, pos.y + 14.0f), col, 1.5f);
-        draw_list->AddLine(ImVec2(pos.x + 6.0f, pos.y + 2.0f), ImVec2(pos.x + 6.0f, pos.y + 6.0f), col, 1.5f);
+        draw_list->AddLine(ImVec2(pos.x + 4.0f, pos.y + 2.0f), ImVec2(pos.x + 12.0f, pos.y + 2.0f), col, 1.5f);
+        draw_list->AddLine(ImVec2(pos.x + 12.0f, pos.y + 2.0f), ImVec2(pos.x + 12.0f, pos.y + 10.0f), col, 1.5f);
+        draw_list->AddLine(ImVec2(pos.x + 10.0f, pos.y + 10.0f), ImVec2(pos.x + 12.0f, pos.y + 10.0f), col, 1.5f);
+        draw_list->AddLine(ImVec2(pos.x + 4.0f, pos.y + 2.0f), ImVec2(pos.x + 4.0f, pos.y + 4.0f), col, 1.5f);
         // Front square
         draw_list->AddRect(
-            ImVec2(pos.x + 2.0f, pos.y + 6.0f),
-            ImVec2(pos.x + 14.0f, pos.y + 18.0f),
+            ImVec2(pos.x + 2.0f, pos.y + 4.0f),
+            ImVec2(pos.x + 10.0f, pos.y + 12.0f),
             col, 0.0f, 0, 1.5f
         );
     }
 
     static void draw_close_icon(ImDrawList* draw_list, const ImVec2 pos, const ImU32 col) {
-        // 15x15px diagonal cross, 1.8px stroke
-        draw_list->AddLine(ImVec2(pos.x + 3.0f, pos.y + 3.0f), ImVec2(pos.x + 17.0f, pos.y + 17.0f), col, 1.8f);
-        draw_list->AddLine(ImVec2(pos.x + 17.0f, pos.y + 3.0f), ImVec2(pos.x + 3.0f, pos.y + 17.0f), col, 1.8f);
+        // 10x10px diagonal cross, 1.8px stroke (centered in 14x14 box)
+        draw_list->AddLine(ImVec2(pos.x + 2.0f, pos.y + 2.0f), ImVec2(pos.x + 12.0f, pos.y + 12.0f), col, 1.8f);
+        draw_list->AddLine(ImVec2(pos.x + 12.0f, pos.y + 2.0f), ImVec2(pos.x + 2.0f, pos.y + 12.0f), col, 1.8f);
     }
 
-    static bool draw_icon_button(const char* str_id, void (*draw_icon)(ImDrawList*, ImVec2, ImU32), const ImVec2& size = ImVec2(32, 32)) {
+    // Helper to render an ImGui button with a centered vector icon inside it
+    static bool draw_icon_button(const char* str_id, void (*draw_icon)(ImDrawList*, ImVec2, ImU32), const ImVec2& size = ImVec2(32, 24)) {
         const bool clicked = ImGui::Button(str_id, size);
+
         ImDrawList* draw_list = ImGui::GetWindowDrawList();
         const ImVec2 btn_min = ImGui::GetItemRectMin();
         const ImVec2 btn_size = ImGui::GetItemRectSize();
 
-        constexpr float icon_size = 20.0f;
+        constexpr float icon_size = 14.0f;
         const auto icon_pos = ImVec2(
-            std::floor(btn_min.x + (btn_size.x - icon_size) * 0.5f),
-            std::floor(btn_min.y + (btn_size.y - icon_size) * 0.5f)
+            btn_min.x + (btn_size.x - icon_size) * 0.5f,
+            btn_min.y + (btn_size.y - icon_size) * 0.5f
         );
 
+        // Brighten color on hover
         const ImU32 col = ImGui::IsItemHovered() ? IM_COL32(255, 255, 255, 255) : IM_COL32(200, 205, 215, 230);
         draw_icon(draw_list, icon_pos, col);
+
         return clicked;
     }
 }

@@ -20,7 +20,7 @@ namespace editor {
         auto& window = Application::get().window();
         window.set_titlebar_hovered(false);
 
-        constexpr float target_bar_height = 38.0f;
+        constexpr float target_bar_height = 48.0f;
         const float font_size = ImGui::GetFontSize();
         const float pad_y = std::floor(std::max(0.0f, (target_bar_height - font_size) * 0.5f));
 
@@ -42,6 +42,7 @@ namespace editor {
             ImGui::SetCursorPosX((bar_width - title_width) * 0.5f);
             ImGui::TextDisabled("%s", title.c_str());
 
+            // Buttons match full titlebar height
             constexpr float btn_width = 48.0f;
             const ImVec2 btn_size(btn_width, bar_height);
 
@@ -50,11 +51,13 @@ namespace editor {
             ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(1.0f, 1.0f, 1.0f, 0.1f));
             ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(1.0f, 1.0f, 1.0f, 0.2f));
 
+            // Minimize
             ImGui::SetCursorPos(ImVec2(bar_width - btn_width * 3.0f, 0.0f));
             if (draw_icon_button("##MinBtn", draw_minimize_icon, btn_size)) {
                 window.minimize();
             }
 
+            // Maximize / Restore
             ImGui::SetCursorPos(ImVec2(bar_width - btn_width * 2.0f, 0.0f));
             const bool is_max = window.maximized();
             if (draw_icon_button("##MaxBtn", is_max ? draw_restore_icon : draw_maximize_icon, btn_size)) {
@@ -63,6 +66,7 @@ namespace editor {
 
             ImGui::PopStyleColor(2);
 
+            // Close
             ImGui::PushStyleColor(ImGuiCol_ButtonHovered, ImVec4(0.88f, 0.18f, 0.18f, 1.0f));
             ImGui::PushStyleColor(ImGuiCol_ButtonActive, ImVec4(0.70f, 0.12f, 0.12f, 1.0f));
             ImGui::SetCursorPos(ImVec2(bar_width - btn_width, 0.0f));
