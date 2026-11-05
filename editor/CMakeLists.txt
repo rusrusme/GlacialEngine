@@ -39,6 +39,8 @@ add_executable(Editor
                src/event/EditorActions.hpp
                src/event/EventType.hpp
                src/event/EditorEvents.hpp
+               src/ui/panel/ViewportPanel.cpp
+               src/ui/panel/ViewportPanel.hpp
 )
 # ----------------------------------------------------------------------------
 target_include_directories(Editor PRIVATE ${CMAKE_SOURCE_DIR}/editor/src)

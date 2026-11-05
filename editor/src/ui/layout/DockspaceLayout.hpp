@@ -18,5 +18,10 @@ namespace editor {
 
         void load_config() override;
         void save_config() override;
+
+        void reset_layout() { reset_layout_ = true; }
+
+    private:
+        bool reset_layout_ = false;
     };
 }

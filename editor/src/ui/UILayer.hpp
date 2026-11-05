@@ -17,6 +17,7 @@
 #include "panel/Inspector.hpp"
 #include "ui/layout/DockspaceLayout.hpp"
 #include "ui/panel/DebugPanel.hpp"
+#include "ui/panel/ViewportPanel.hpp"
 #include "window/SettingsWindow.hpp"
 
 namespace editor {
@@ -36,7 +37,7 @@ namespace editor {
         void on_imgui_render(SystemContext& context, float delta_time) override;
 
     private:
-        std::array<UIComponent*, 9> ui_components_{};
+        std::array<UIComponent*, 10> ui_components_{};
 
         DockspaceLayout layout_;
         Menubar menubar_;
@@ -47,5 +48,6 @@ namespace editor {
         AssetBrowser asset_browser_;
         ConsolePanel console_panel_;
         DebugPanel debug_panel_;
+        ViewportPanel viewport_panel_;
     };
 }

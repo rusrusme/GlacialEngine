@@ -31,7 +31,8 @@ namespace editor {
             &hierarchy_,
             &asset_browser_,
             &console_panel_,
-            &debug_panel_
+            &debug_panel_,
+            &viewport_panel_
         };
 
         for (auto* component : ui_components_) {
@@ -98,7 +99,7 @@ namespace editor {
         if (!ImGui::IsWindowFocused(ImGuiFocusedFlags_AnyWindow)) {
             ShortcutManager::set_active_context(ShortcutContext::Global);
         }
-        
+
         debug_panel_.on_render_ui(context);
         settings_.on_render_ui(context);
 
@@ -109,5 +110,6 @@ namespace editor {
         console_panel_.on_render_ui(context);
         inspector_.on_render_ui(context);
         hierarchy_.on_render_ui(context);
+        viewport_panel_.on_render_ui(context);
     }
 }
