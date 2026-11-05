@@ -5,19 +5,166 @@
 
 #include "Toolbar.hpp"
 
+#include "core/SystemContext.hpp"
+#include "project/scene/SceneManager.hpp"
+#include "project/scene/SceneState.hpp"
+#include "ui/Icons.hpp"
+
 namespace editor {
     void Toolbar::on_init(SystemContext& context) {
-        UIComponent::on_init(context);
+        toolbar_slots_.clear();
+        toolbar_slots_.resize(4);
+
+        for (size_t i = 0; i < toolbar_slots_.size(); ++i) {
+            toolbar_slots_[i].id = "slot_" + std::to_string(i);
+        }
+
+        toolbar_slots_[0].item = ToolbarItem{
+            .id          = "play_stop", .label = "Play / Stop", .width = 36.0f,
+            .render_func = [context](ImVec2 size) {
+                const bool is_play = context.scenes.scene_state() == SceneState::Play;
+                const bool is_pause = context.scenes.scene_state() == SceneState::Pause;
+
+                if (is_play || is_pause) {
+                    if (draw_icon_button("##StopBtn", draw_stop_icon, size)) context.scenes.on_stop();
+                }
+                else {
+                    if (draw_icon_button("##PlayBtn", draw_play_icon, size)) context.scenes.on_play();
+                }
+            }
+        };
+
+        toolbar_slots_[1].item = ToolbarItem{
+            .id          = "pause_resume", .label = "Pause / Resume", .width = 36.0f,
+            .render_func = [context](ImVec2 size) {
+                const bool is_play = context.scenes.scene_state() == SceneState::Play;
+                const bool is_pause = context.scenes.scene_state() == SceneState::Pause;
+
+                if (draw_icon_button("##PauseBtn", is_pause ? draw_play_icon : draw_pause_icon, size)) {
+                    if (is_play) context.scenes.on_pause();
+                    else if (is_pause) context.scenes.on_play();
+                }
+            }
+        };
     }
 
     void Toolbar::on_render_ui(SystemContext& context) {
+        constexpr float slot_width = 36.0f;
+        constexpr float slot_height = 24.0f;
+        const ImGuiStyle& style = ImGui::GetStyle();
+        const float spacing_x = style.ItemSpacing.x;
+
+        size_t min_required_slots = 0;
+        for (size_t i = 0; i < toolbar_slots_.size(); ++i) {
+            if (toolbar_slots_[i].item.has_value()) {
+                min_required_slots = i + 1;
+            }
+        }
+        min_required_slots = std::max<size_t>(1, min_required_slots);
+
+        const float window_padding_x = style.FramePadding.x * 2.0f;
+        const float min_window_width
+            = static_cast<float>(min_required_slots) * slot_width
+            + static_cast<float>(min_required_slots - 1) * spacing_x
+            + window_padding_x + 16.0f;
+
+        constexpr float window_padding_y = 8.0f;
+        constexpr float fixed_window_height = slot_height + window_padding_y;
+
+        ImGui::SetNextWindowSizeConstraints(
+            ImVec2(min_window_width, fixed_window_height),
+            ImVec2(FLT_MAX, fixed_window_height)
+        );
+
+        ImGuiWindowClass window_class;
+        window_class.DockNodeFlagsOverrideSet = ImGuiDockNodeFlags_NoResize
+            | ImGuiDockNodeFlags_NoSplit
+            | ImGuiDockNodeFlags_NoTabBar;
+        ImGui::SetNextWindowClass(&window_class);
+
+        ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(style.FramePadding.x, 4.0f));
+        ImGuiWindowFlags flags = ImGuiWindowFlags_NoScrollbar
+            | ImGuiWindowFlags_NoScrollWithMouse
+            | ImGuiWindowFlags_NoTitleBar;
+
+        if (ImGui::Begin("Toolbar", nullptr, flags)) {
+            const ImVec2 avail = ImGui::GetContentRegionAvail();
+
+            auto target_slot_count = static_cast<size_t>(
+                std::floor((avail.x + spacing_x) / (slot_width + spacing_x))
+            );
+            target_slot_count = std::max(target_slot_count, min_required_slots);
+
+            if (target_slot_count != toolbar_slots_.size()) {
+                toolbar_slots_.resize(target_slot_count);
+                for (size_t i = 0; i < toolbar_slots_.size(); ++i) {
+                    if (toolbar_slots_[i].id.empty()) {
+                        toolbar_slots_[i].id = "slot_" + std::to_string(i);
+                    }
+                }
+            }
+
+            const float center_y = ImGui::GetCursorPosY() + std::max(0.0f, (avail.y - slot_height) * 0.5f);
+            ImGui::SetCursorPosY(center_y);
+
+            ImDrawList* draw_list = ImGui::GetWindowDrawList();
+
+            for (size_t i = 0; i < toolbar_slots_.size(); ++i) {
+                if (i > 0) ImGui::SameLine();
+
+                auto& [id, item] = toolbar_slots_[i];
+                ImGui::PushID(id.c_str());
+
+                ImVec2 cursor_pos = ImGui::GetCursorScreenPos();
+                ImVec2 slot_max = {cursor_pos.x + slot_width, cursor_pos.y + slot_height};
+
+                if (item.has_value()) {
+                    item->render_func(ImVec2(slot_width, slot_height));
+
+                    if (ImGui::BeginDragDropSource(ImGuiDragDropFlags_SourceAllowNullID)) {
+                        ImGui::SetDragDropPayload("TOOLBAR_SLOT_SWAP", &i, sizeof(size_t));
+                        ImGui::Text("Move: %s", item->label.c_str());
+                        ImGui::EndDragDropSource();
+                    }
+                }
+                else {
+                    ImGui::Dummy(ImVec2(slot_width, slot_height));
+                }
+
+                if (ImGui::BeginDragDropTarget()) {
+                    if (!item.has_value()) {
+                        draw_list->AddRect(cursor_pos, slot_max, IM_COL32(255, 200, 50, 230), 3.0f, 0, 1.5f);
+                    }
+
+                    if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("TOOLBAR_SLOT_SWAP", ImGuiDragDropFlags_AcceptNoDrawDefaultRect)) {
+                        if (size_t source_idx = *static_cast<const size_t*>(payload->Data); source_idx != i) {
+                            std::swap(toolbar_slots_[source_idx].item, toolbar_slots_[i].item);
+                        }
+                    }
+                    ImGui::EndDragDropTarget();
+                }
+                ImGui::PopID();
+            }
+
+            if (ImGui::IsWindowHovered() && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
+                if (!ImGui::IsAnyItemActive()) {
+                    ImGuiWindow* window = ImGui::GetCurrentWindow();
+                    if (ImGui::IsWindowDocked()) {
+                        ImGuiContext* g = ImGui::GetCurrentContext();
+                        ImGui::DockContextProcessUndockWindow(g, window);
+                    }
+                    ImGui::StartMouseMovingWindow(window);
+                }
+            }
+        }
+        ImGui::End();
+        ImGui::PopStyleVar();
     }
 
+    // TODO save / load button positions
     void Toolbar::load_config() {
-        UIComponent::load_config();
     }
 
     void Toolbar::save_config() {
-        UIComponent::save_config();
     }
 }

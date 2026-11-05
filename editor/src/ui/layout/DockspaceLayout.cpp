@@ -10,6 +10,7 @@ namespace editor {
         UIComponent::on_init(context);
     }
 
+    // TODO default toolbar position
     void DockspaceLayout::on_render_ui(SystemContext& context) {
         constexpr ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_PassthruCentralNode;
         const ImGuiID dockspace_id = ImGui::DockSpaceOverViewport(0, ImGui::GetMainViewport(), dockspace_flags);
@@ -49,6 +50,7 @@ namespace editor {
         }
     }
 
+    // TODO save / load layout
     void DockspaceLayout::load_config() {
         UIComponent::load_config();
     }
