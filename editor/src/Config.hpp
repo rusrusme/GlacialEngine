@@ -14,7 +14,7 @@
 #include "core/Log.hpp"
 
 namespace editor::config {
-    constexpr auto CONFIG_PATH = "editor.ini";
+    constexpr auto CONFIG_PATH = "editor.config";
     inline std::unordered_map<std::string, std::string> s_config_cache;
     inline bool s_is_loaded = false;
 
