@@ -46,7 +46,7 @@ namespace engine {
                     float metallic = 0.0f,
                     float roughness = 0.5f);
 
-        void render_scene(const Shared<Scene>& scene, const SystemContext& context, float delta_time, const Camera* override_camera = nullptr);
+        void render_scene(const Shared<Scene>& scene, SystemContext& context, float delta_time, const Camera* override_camera = nullptr);
 
     private:
         MainOpaquePass opaque_pass_{};

@@ -52,15 +52,15 @@ namespace editor {
 
     private:
         void render_header_bar();
-        void render_add_entity_popup(const SystemContext& context);
+        void render_add_entity_popup(SystemContext& context);
         void render_entity_list(const std::shared_ptr<Scene>& active_scene);
 
-        void render_primitives_submenus(const SystemContext& context);
+        void render_primitives_submenus(SystemContext& context);
         void render_lighting_submenu(const std::shared_ptr<Scene>& active_scene);
-        void render_imported_models_submenu(const SystemContext& context);
+        void render_imported_models_submenu(SystemContext& context);
 
         bool menu_item_with_icon(const char* label, EntityType type);
-        void create_primitive_entity(const char* label, const char* path, EntityType type, const SystemContext& context);
+        void create_primitive_entity(const char* label, const char* path, EntityType type, SystemContext& context);
 
         void render_entity_node(Entity entity);
         bool render_eye_toggle_button(bool is_active);

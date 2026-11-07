@@ -66,7 +66,7 @@ namespace engine {
         });
     }
 
-    void SceneRenderer::render_scene(const Shared<Scene>& scene, const SystemContext& context, float delta_time, const Camera* override_camera) {
+    void SceneRenderer::render_scene(const Shared<Scene>& scene, SystemContext& context, float delta_time, const Camera* override_camera) {
         PROFILE_FUNCTION();
         if (!scene) return;
 

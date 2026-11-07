@@ -28,17 +28,17 @@ namespace engine {
         }
     }
 
-    void SceneManager::save(const std::string& filepath, const SystemContext& context) {
+    void SceneManager::save(const std::string& filepath, SystemContext& context) {
         const auto scene = context.scenes.active_scene();
         if (!scene) return;
-        SceneSerializer serializer{scene};
-        serializer.serialize(filepath, context.assets);
+        SceneSerializer serializer;
+        serializer.serialize(filepath, context);
     }
 
-    bool SceneManager::load(const std::string& filepath, const SystemContext& context) {
+    bool SceneManager::load(const std::string& filepath, SystemContext& context) {
         const auto scene = context.scenes.active_scene();
         if (!scene) return false;
-        SceneSerializer serializer{scene};
+        SceneSerializer serializer;
         if (!serializer.deserialize(filepath, context)) {
             return false;
         }

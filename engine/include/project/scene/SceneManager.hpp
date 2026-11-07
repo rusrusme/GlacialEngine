@@ -18,8 +18,8 @@ namespace engine {
         void shutdown();
 
         // --- Scene Management ---
-        void save(const std::string& filepath, const SystemContext& context);
-        bool load(const std::string& filepath, const SystemContext& context);
+        void save(const std::string& filepath, SystemContext& context);
+        bool load(const std::string& filepath, SystemContext& context);
 
         std::shared_ptr<Scene> create(const std::string& name = DEFAULT_SCENE);
 

@@ -106,7 +106,7 @@ namespace editor {
         }
     }
 
-    void Hierarchy::render_add_entity_popup(const SystemContext& context) {
+    void Hierarchy::render_add_entity_popup(SystemContext& context) {
         const auto scene = context.scenes.active_scene();
         if (!scene) return;
         if (menu_item_with_icon("Entity", EntityType::Transform)) {
@@ -153,7 +153,7 @@ namespace editor {
         ImGui::PopStyleVar();
     }
 
-    void Hierarchy::render_primitives_submenus(const SystemContext& context) {
+    void Hierarchy::render_primitives_submenus(SystemContext& context) {
         create_primitive_entity("Plane", "primitive://plane", EntityType::Mesh2D, context);
         create_primitive_entity("Circle", "primitive://circle", EntityType::Mesh2D, context);
         ImGui::Separator();
@@ -182,7 +182,7 @@ namespace editor {
         }
     }
 
-    void Hierarchy::render_imported_models_submenu(const SystemContext& context) {
+    void Hierarchy::render_imported_models_submenu(SystemContext& context) {
         const auto scene = context.scenes.active_scene();
         if (!scene) return;
         if (!ImGui::BeginMenu("Imported Models")) return;
@@ -222,7 +222,7 @@ namespace editor {
         return clicked;
     }
 
-    void Hierarchy::create_primitive_entity(const char* label, const char* path, EntityType type, const SystemContext& context) {
+    void Hierarchy::create_primitive_entity(const char* label, const char* path, EntityType type, SystemContext& context) {
         const auto scene = context.scenes.active_scene();
         if (!scene) return;
         if (menu_item_with_icon(label, type)) {

@@ -5,22 +5,31 @@
 
 #pragma once
 
-#include <memory>
-#include <utility>
-
 #include "asset/AssetManager.hpp"
 #include "project/scene/Scene.hpp"
 
 namespace engine {
+    struct SystemContext;
+
     class SceneSerializer {
     public:
-        explicit SceneSerializer(std::shared_ptr<Scene> scene) : scene_(std::move(scene)) {}
+        SceneSerializer() = default;
+        ~SceneSerializer() = default;
 
         // Disk file
-        void serialize(const std::string& filepath, AssetManager& asset_manager);
-        bool deserialize(const std::string& filepath, const SystemContext& context);
+        void serialize(const std::string& filepath, SystemContext& context);
+        bool deserialize(const std::string& filepath, SystemContext& context);
 
-    private:
-        std::shared_ptr<Scene> scene_;
+        // In-memory Entity serialization API
+        static nlohmann::json serialize_entity(Entity entity, SystemContext& context);
+        static Entity deserialize_entity(const nlohmann::json& entity_json, SystemContext& context);
+
+        // Math serialization helpers
+        static nlohmann::json serialize_vec3(const glm::vec3& v);
+        static nlohmann::json serialize_vec4(const glm::vec4& v);
+
+        static glm::vec3 deserialize_vec3(const nlohmann::json& j);
+
+        static glm::vec4 deserialize_vec4(const nlohmann::json& j);
     };
 }
