@@ -120,6 +120,7 @@ namespace engine {
 
     void GLCommandBuffer::end_render_pass() {
         // Unbind / Framebuffer Sync
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
     }
 
     void GLCommandBuffer::bind_pipeline(const GLPipelineState& pipeline) {

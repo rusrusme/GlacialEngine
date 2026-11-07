@@ -5,7 +5,6 @@
 
 #include "UILayer.hpp"
 
-#include "command/Transaction.hpp"
 #include "core/Application.hpp"
 #include "event/EditorActions.hpp"
 #include "event/EditorEvents.hpp"
@@ -59,6 +58,15 @@ namespace editor {
 
     void UILayer::on_event(SystemContext& context, Event& event) {
         ImguiLayer::on_event(context, event);
+
+        const auto& viewport = context.get<SceneViewport>();
+        if (viewport.hovered) {
+            if (event.get_event_type() == engine::EventType::MouseScrolled ||
+                event.get_event_type() == engine::EventType::MouseButtonPressed ||
+                event.get_event_type() == engine::EventType::MouseButtonReleased) {
+                event.handled = false;
+            }
+        }
 
         if (event.handled) return;
 

@@ -5,9 +5,12 @@
 
 #pragma once
 
+#include <memory>
+
 #include "core/Layer.hpp"
 #include "render/camera/Camera.hpp"
 #include "render/camera/CameraController.hpp"
+#include "render/rhi/Framebuffer.hpp"
 
 namespace editor {
     using namespace engine;
@@ -22,15 +25,13 @@ namespace editor {
         void on_event(SystemContext& context, Event& event) override;
 
         [[nodiscard]] Camera& camera() { return cam_; }
-
-        void set_viewport_hovered(const bool hovered) { viewport_hovered_ = hovered; }
-        void set_viewport_focused(const bool focused) { viewport_focused_ = focused; }
+        [[nodiscard]] Framebuffer* framebuffer() const { return framebuffer_.get(); }
 
     private:
         Camera cam_;
         CameraController cam_controller_;
+        bool controlling_cam_ = false;
 
-        bool viewport_hovered_ = false;
-        bool viewport_focused_ = false;
+        std::unique_ptr<Framebuffer> framebuffer_{nullptr};
     };
 }

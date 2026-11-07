@@ -19,6 +19,8 @@ namespace engine {
     public:
         void on_update(Camera& camera);
         void on_event(Camera& camera, Event& event);
+        
+        void reset() { is_first_frame_ = true; }
 
     private:
         friend CameraSystem;

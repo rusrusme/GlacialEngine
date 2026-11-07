@@ -66,15 +66,21 @@ namespace engine {
         });
     }
 
-    void SceneRenderer::render_scene(const Shared<Scene>& scene, SystemContext& context, float delta_time, const Camera* override_camera) {
+    void SceneRenderer::render_scene(const Shared<Scene>& scene,
+                                     SystemContext& context,
+                                     float delta_time,
+                                     const Camera* override_camera,
+                                     Framebuffer* target_framebuffer) {
         PROFILE_FUNCTION();
         if (!scene) return;
 
-        const auto& swapchain = context.render_context.swapchain();
-        if (swapchain.width() == 0 || swapchain.height() == 0) return;
+        Framebuffer& framebuffer = target_framebuffer ? *target_framebuffer : context.render_context.swapchain().backbuffer();
+        const uint32_t fb_width = framebuffer.specification().width;
+        const uint32_t fb_height = framebuffer.specification().height;
+        if (fb_width == 0 || fb_height == 0) return;
 
         FrameUniformData frame_data{};
-        frame_data.viewport_size = {static_cast<float>(swapchain.width()), static_cast<float>(swapchain.height())};
+        frame_data.viewport_size = {static_cast<float>(fb_width), static_cast<float>(fb_height)};
 
         total_time_ += delta_time;
         frame_data.time = total_time_;
@@ -88,13 +94,14 @@ namespace engine {
         }
         else {
             bool found_camera = false;
-            const float aspect_ratio = static_cast<float>(swapchain.width()) / static_cast<float>(swapchain.height());
+            const float aspect_ratio = static_cast<float>(fb_width) / static_cast<float>(fb_height);
 
             auto camera_view = scene->view<TransformComponent, CameraComponent>(exclude<DisabledComponent>);
             for (const auto& [entity_handle, transform, camera_comp] : camera_view.each()) {
                 if (!camera_comp.is_primary) continue;
 
                 camera_comp.set_aspect_ratio(aspect_ratio);
+                camera_comp.update_matrices(transform);
 
                 frame_data.view_projection = camera_comp.view_projection();
                 frame_data.view = camera_comp.view();
@@ -167,7 +174,7 @@ namespace engine {
 
         end_scene(
             context.render_context.active_command_buffer(),
-            context.render_context.swapchain().backbuffer()
+            framebuffer
         );
     }
 }

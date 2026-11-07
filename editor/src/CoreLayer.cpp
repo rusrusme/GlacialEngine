@@ -22,6 +22,7 @@
 #include "render/SceneRenderer.hpp"
 #include "render/rhi/RenderContext.hpp"
 #include "script/ScriptEngine.hpp"
+#include "ui/panel/ViewportPanel.hpp"
 #include "util/Instrumentor.hpp"
 
 namespace editor {
@@ -38,8 +39,21 @@ namespace editor {
         context.scenes.active_scene()->create_cube("A CUBE");
         config::load();
 
-        const auto& swapchain = context.render_context.swapchain();
-        cam_.set_viewport_size(swapchain.width(), swapchain.height());
+        FramebufferSpecification fb_spec{};
+        fb_spec.width = 1280;
+        fb_spec.height = 720;
+        fb_spec.swapchain_target = false;
+        fb_spec.attachments = {
+            TextureFormat::RGBA8,
+            TextureFormat::Depth24Stencil8
+        };
+        framebuffer_ = context.render_context.device().create_framebuffer(fb_spec);
+
+        auto& viewport = context.get<SceneViewport>();
+        viewport.framebuffer = framebuffer_.get();
+        viewport.size = {1280.0f, 720.0f};
+
+        cam_.set_viewport_size(1280, 720);
 
         // TODO Add support for JSON binding: {"bindings": [{"action": "SaveScene", "key": "Ctrl+S", "context": "global"}, ...]}
         /////////////////////////////////////////////////////////////////////////////
@@ -91,43 +105,80 @@ namespace editor {
 
     void CoreLayer::on_detach(SystemContext& context) {
         config::save();
+        framebuffer_.reset();
     }
 
     void CoreLayer::on_update(SystemContext& context, float delta_time) {
         PROFILE_FUNCTION();
 
-        const bool can_control_cam = viewport_hovered_ || viewport_focused_
-            || Input::mouse_button_pressed(Mouse::MOUSE_BUTTON_MIDDLE);
+        const auto& viewport = context.get<SceneViewport>();
 
-        if (can_control_cam) {
+        const bool rmb = Input::mouse_button_pressed(Mouse::MOUSE_BUTTON_RIGHT);
+        const bool mmb = Input::mouse_button_pressed(Mouse::MOUSE_BUTTON_MIDDLE);
+        const bool is_nav_button_down = rmb || mmb;
+
+        // Continue active drag until button is released
+        if (controlling_cam_) {
+            if (!is_nav_button_down) {
+                controlling_cam_ = false;
+                cam_controller_.reset();
+            }
+        }
+        // Only start a drag if the click began inside the viewport
+        else {
+            if (is_nav_button_down && viewport.hovered) {
+                controlling_cam_ = true;
+                cam_controller_.reset();
+            }
+        }
+
+        if (controlling_cam_) {
             cam_controller_.on_update(cam_);
+        }
+        else {
+            cam_controller_.reset();
         }
 
         auto scene = context.scenes.active_scene();
         if (!scene) return;
 
         context.scenes.on_update(delta_time);
-        cam_controller_.on_update(cam_);
     }
 
     void CoreLayer::on_render(SystemContext& context, float delta_time) {
         PROFILE_FUNCTION();
 
-        const auto& swapchain = context.render_context.swapchain();
-        if (swapchain.width() == 0 || swapchain.height() == 0) return;
-
         auto active_scene = context.scenes.active_scene();
-        if (!active_scene) return;
+        if (!active_scene || !framebuffer_) return;
 
-        cam_.set_viewport_size(swapchain.width(), swapchain.height());
+        auto& viewport = context.get<SceneViewport>();
 
-        context.renderer.render_scene(active_scene, context, delta_time, &cam_);
+        if (viewport.size.x > 0.0f && viewport.size.y > 0.0f) {
+            const auto& spec = framebuffer_->specification();
+            const auto target_w = static_cast<uint32_t>(viewport.size.x);
+            const auto target_h = static_cast<uint32_t>(viewport.size.y);
+
+            if (spec.width != target_w || spec.height != target_h) {
+                framebuffer_->resize(target_w, target_h);
+                cam_.set_viewport_size(target_w, target_h);
+            }
+        }
+
+        context.renderer.render_scene(active_scene, context, delta_time, &cam_, framebuffer_.get());
     }
 
     void CoreLayer::on_event(SystemContext& context, Event& event) {
         PROFILE_FUNCTION();
 
-        cam_controller_.on_event(cam_, event);
+        const auto& viewport = context.get<SceneViewport>();
+        if (event.get_event_type() == engine::EventType::MouseScrolled) {
+            if (viewport.hovered) {
+                cam_controller_.on_event(cam_, event);
+            }
+            event.handled = true;
+            return;
+        }
+
         if (!event.handled) {
             context.scenes.on_event(event);
         }
@@ -142,7 +193,7 @@ namespace editor {
             return false;
         });
 
-        dispatcher.dispatch<KeyPressedEvent>([this](const KeyPressedEvent& e) {
+        dispatcher.dispatch<KeyPressedEvent>([this, &context](const KeyPressedEvent& e) {
                 KeyModifier active_modifier = None;
                 if (Input::key_pressed(Key::LEFT_CONTROL) || Input::key_pressed(Key::RIGHT_CONTROL)) {
                     active_modifier |= Ctrl;
@@ -154,7 +205,8 @@ namespace editor {
                     active_modifier |= Alt;
                 }
 
-                ShortcutContext current_context = viewport_hovered_ || viewport_focused_
+                const auto& viewport = context.get<SceneViewport>();
+                ShortcutContext current_context = (viewport.hovered || viewport.focused)
                                                       ? ShortcutContext::Viewport
                                                       : Shortcuts::active_context();
 

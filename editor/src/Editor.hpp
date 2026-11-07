@@ -24,6 +24,7 @@ namespace editor {
 
     protected:
         void init(SystemContext& context) override {
+            context.emplace<SceneViewport>();
             context.emplace<CommandHistory>();
         }
     };

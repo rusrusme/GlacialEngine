@@ -7,6 +7,8 @@
 
 #include "core/Window.hpp"
 #include "debug/ImguiSystem.hpp"
+#include "glm/vec4.hpp"
+#include "render/rhi/RenderContext.hpp"
 
 namespace engine {
     class Event;
@@ -26,6 +28,10 @@ namespace engine {
         void on_update(SystemContext& context, float delta_time) override {}
 
         void on_render(SystemContext& context, float delta_time) override {
+            auto& cb = context.render_context.active_command_buffer();
+            cb.begin_render_pass(context.render_context.swapchain().backbuffer(), clear_color_);
+            cb.end_render_pass();
+
             ImguiSystem::begin_frame();
             on_imgui_render(context, delta_time);
             ImguiSystem::end_frame();
@@ -35,8 +41,14 @@ namespace engine {
             ImguiSystem::on_event(context, event);
         }
 
+        void set_clear_color(const glm::vec4& color) { clear_color_ = color; }
+        [[nodiscard]] const glm::vec4& clear_color() const noexcept { return clear_color_; }
+
     protected:
         /// Override this function to render Imgui
         virtual void on_imgui_render(SystemContext& context, float delta_time) {}
+
+    private:
+        glm::vec4 clear_color_{0.10f, 0.10f, 0.11f, 1.0f};
     };
 }
