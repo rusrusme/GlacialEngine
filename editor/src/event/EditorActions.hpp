@@ -24,8 +24,9 @@ namespace editor {
 
         // Gizmo
         GizmoSelect, GizmoTranslate, GizmoRotate, GizmoScale,
-        
+
         // UI
-        ToggleConsole, ToggleInspector, ToggleHierarchy, OpenSettings, ToggleDebug, ToggleHistory,
+        ToggleConsole, ToggleInspector, ToggleHierarchy, ToggleSettings,
+        ToggleDebug, ToggleHistory, ToggleAssetBrowser, ToggleViewport
     };
 }

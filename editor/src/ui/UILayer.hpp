@@ -43,10 +43,10 @@ namespace editor {
         DockspaceLayout layout_;
         Menubar menubar_;
         Toolbar toolbar_;
-        SettingsWindow settings_;
-        Inspector inspector_;
-        Hierarchy hierarchy_;
-        AssetBrowser asset_browser_;
+        SettingsWindow settings_window_;
+        Inspector inspector_panel_;
+        Hierarchy hierarchy_panel_;
+        AssetBrowser asset_browser_panel_;
         ConsolePanel console_panel_;
         DebugPanel debug_panel_;
         ViewportPanel viewport_panel_;

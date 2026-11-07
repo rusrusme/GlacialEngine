@@ -28,10 +28,10 @@ namespace editor {
             &layout_,
             &menubar_,
             &toolbar_,
-            &settings_,
-            &inspector_,
-            &hierarchy_,
-            &asset_browser_,
+            &settings_window_,
+            &inspector_panel_,
+            &hierarchy_panel_,
+            &asset_browser_panel_,
             &console_panel_,
             &debug_panel_,
             &viewport_panel_,
@@ -54,7 +54,7 @@ namespace editor {
     void UILayer::on_update(SystemContext& context, float delta_time) {
         ImguiLayer::on_update(context, delta_time);
         debug_panel_.on_update(context, delta_time);
-        hierarchy_.on_update(context, delta_time);
+        hierarchy_panel_.on_update(context, delta_time);
     }
 
     void UILayer::on_event(SystemContext& context, Event& event) {
@@ -64,7 +64,6 @@ namespace editor {
 
         EventDispatcher dispatcher(event);
         dispatcher.dispatch<EditorActionEvent>([this, &context](const EditorActionEvent& action) {
-            auto& history = context.get<CommandHistory>();
             switch (action.action()) {
                 case Action::ToggleDebug :
                     debug_panel_.toggle_visible();
@@ -73,36 +72,42 @@ namespace editor {
                     console_panel_.toggle_visible();
                     return true;
                 case Action::ToggleInspector :
-                    inspector_.toggle_visible();
+                    inspector_panel_.toggle_visible();
                     return true;
                 case Action::ToggleHierarchy :
-                    hierarchy_.toggle_visible();
+                    hierarchy_panel_.toggle_visible();
+                    return true;
+                case Action::ToggleViewport :
+                    viewport_panel_.toggle_visible();
+                    return true;
+                case Action::ToggleAssetBrowser :
+                    asset_browser_panel_.toggle_visible();
                     return true;
                 case Action::ToggleHistory :
                     history_panel_.toggle_visible();
                     return true;
-                case Action::OpenSettings :
-                    settings_.toggle_visible();
+                case Action::ToggleSettings :
+                    settings_window_.toggle_visible();
                     return true;
 
                 case Action::CreateEntity : {
-                    hierarchy_.create_entity();
+                    hierarchy_panel_.create_entity();
                     return true;
                 }
                 case Action::DeleteEntity : {
-                    hierarchy_.delete_entity();
+                    hierarchy_panel_.delete_entity();
                     return true;
                 }
                 case Action::RenameEntity : {
-                    hierarchy_.rename_entity();
+                    hierarchy_panel_.rename_entity();
                     return true;
                 }
                 case Action::DuplicateEntity : {
-                    hierarchy_.duplicate_entity();
+                    hierarchy_panel_.duplicate_entity();
                     return true;
                 }
                 case Action::DeselectEntity :
-                    hierarchy_.deselect_entity();
+                    hierarchy_panel_.deselect_entity();
                     return true;
 
                 case Action::Exit :
@@ -120,15 +125,15 @@ namespace editor {
         }
 
         debug_panel_.on_render_ui(context);
-        settings_.on_render_ui(context);
+        settings_window_.on_render_ui(context);
 
         layout_.on_render_ui(context);
         menubar_.on_render_ui(context);
         toolbar_.on_render_ui(context);
-        asset_browser_.on_render_ui(context);
+        asset_browser_panel_.on_render_ui(context);
         console_panel_.on_render_ui(context);
-        inspector_.on_render_ui(context);
-        hierarchy_.on_render_ui(context);
+        inspector_panel_.on_render_ui(context);
+        hierarchy_panel_.on_render_ui(context);
         viewport_panel_.on_render_ui(context);
         history_panel_.on_render_ui(context);
     }

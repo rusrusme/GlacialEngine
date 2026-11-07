@@ -89,34 +89,41 @@ namespace editor {
 
     void Menubar::file_menu(SystemContext& context) {
         const auto scene = context.scenes.active_scene();
-        auto& assets = context.assets;
         const bool has_project = context.current_project != nullptr;
 
         if (ImGui::BeginMenu("File")) {
             if (ImGui::MenuItem("New Project...", Shortcuts::text(Action::NewProject).data())) {
+                EventQueue::submit<EditorActionEvent>(Action::NewProject);
             }
             if (ImGui::MenuItem("Open Project...", Shortcuts::text(Action::OpenProject).data())) {
+                EventQueue::submit<EditorActionEvent>(Action::OpenProject);
             }
             if (ImGui::MenuItem("Save Project", Shortcuts::text(Action::SaveProject).data(), false, has_project)) {
+                EventQueue::submit<EditorActionEvent>(Action::SaveProject);
             }
             if (ImGui::MenuItem("Save Project As...", Shortcuts::text(Action::SaveProjectAs).data(), false, has_project)) {
+                EventQueue::submit<EditorActionEvent>(Action::SaveProjectAs);
             }
 
             ImGui::Separator();
 
             if (ImGui::MenuItem("New Scene", Shortcuts::text(Action::NewScene).data())) {
+                EventQueue::submit<EditorActionEvent>(Action::NewScene);
             }
             if (ImGui::MenuItem("Open Scene...", Shortcuts::text(Action::OpenScene).data())) {
+                EventQueue::submit<EditorActionEvent>(Action::OpenScene);
             }
             if (ImGui::MenuItem("Save Scene", Shortcuts::text(Action::SaveScene).data())) {
+                EventQueue::submit<EditorActionEvent>(Action::SaveScene);
             }
             if (ImGui::MenuItem("Save Scene As...", Shortcuts::text(Action::SaveSceneAs).data())) {
+                EventQueue::submit<EditorActionEvent>(Action::SaveSceneAs);
             }
 
             ImGui::Separator();
 
-            if (ImGui::MenuItem("Settings...", Shortcuts::text(Action::OpenSettings).data())) {
-                EventQueue::submit<EditorActionEvent>(Action::OpenSettings);
+            if (ImGui::MenuItem("Settings...", Shortcuts::text(Action::ToggleSettings).data())) {
+                EventQueue::submit<EditorActionEvent>(Action::ToggleSettings);
             }
 
             ImGui::Separator();
@@ -131,18 +138,21 @@ namespace editor {
 
     void Menubar::edit_menu(SystemContext& context) {
         const auto scene = context.scenes.active_scene();
-        auto& assets = context.assets;
 
         // Todo: Edit
         if (ImGui::BeginMenu("Edit")) {
             if (ImGui::MenuItem("Undo", Shortcuts::text(Action::Undo).data())) {
+                EventQueue::submit<EditorActionEvent>(Action::Undo);
             }
             if (ImGui::MenuItem("Redo", Shortcuts::text(Action::Redo).data())) {
+                EventQueue::submit<EditorActionEvent>(Action::Redo);
             }
             ImGui::Separator();
             if (ImGui::MenuItem("Copy", Shortcuts::text(Action::Copy).data())) {
+                EventQueue::submit<EditorActionEvent>(Action::Copy);
             }
             if (ImGui::MenuItem("Paste", Shortcuts::text(Action::Paste).data())) {
+                EventQueue::submit<EditorActionEvent>(Action::Paste);
             }
             ImGui::EndMenu();
         }
@@ -150,6 +160,27 @@ namespace editor {
 
     void Menubar::window_menu(SystemContext& context) {
         if (ImGui::BeginMenu("Window")) {
+            if (ImGui::BeginMenu("Panel")) {
+                if (ImGui::MenuItem("Hierarchy", Shortcuts::text(Action::ToggleHierarchy).data())) {
+                    EventQueue::submit<EditorActionEvent>(Action::ToggleHierarchy);
+                }
+                if (ImGui::MenuItem("Inspector", Shortcuts::text(Action::ToggleInspector).data())) {
+                    EventQueue::submit<EditorActionEvent>(Action::ToggleInspector);
+                }
+                if (ImGui::MenuItem("Viewport", Shortcuts::text(Action::ToggleViewport).data())) {
+                    EventQueue::submit<EditorActionEvent>(Action::ToggleViewport);
+                }
+                if (ImGui::MenuItem("Asset Browser", Shortcuts::text(Action::ToggleAssetBrowser).data())) {
+                    EventQueue::submit<EditorActionEvent>(Action::ToggleAssetBrowser);
+                }
+                if (ImGui::MenuItem("Console", Shortcuts::text(Action::ToggleConsole).data())) {
+                    EventQueue::submit<EditorActionEvent>(Action::ToggleConsole);
+                }
+                if (ImGui::MenuItem("History", Shortcuts::text(Action::ToggleHistory).data())) {
+                    EventQueue::submit<EditorActionEvent>(Action::ToggleHistory);
+                }
+                ImGui::EndMenu();
+            }
             ImGui::EndMenu();
         }
     }
@@ -158,6 +189,10 @@ namespace editor {
         if (ImGui::BeginMenu("Help")) {
             if (ImGui::MenuItem("Documentation")) {
                 platform::ShellAPI::open_url("https://github.com/rusrusme/BasisEngine/wiki");
+            }
+            ImGui::Separator();
+            if (ImGui::MenuItem("About")) {
+                // TODO add about window
             }
             ImGui::EndMenu();
         }

@@ -7,6 +7,8 @@
 
 namespace editor {
     void ViewportPanel::on_render_ui(SystemContext& context) {
+        if (!visible_) return;
+
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{0.0f, 0.0f});
         ImGui::Begin("Scene");
 

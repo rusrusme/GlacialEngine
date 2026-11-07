@@ -76,11 +76,16 @@ namespace editor {
         Shortcuts::bind(Action::GizmoRotate, "E", Key::E, None, ShortcutContext::Viewport);
         Shortcuts::bind(Action::GizmoScale, "R", Key::R, None, ShortcutContext::Viewport);
 
-        Shortcuts::bind(Action::ToggleConsole,
+        Shortcuts::bind(Action::ToggleHierarchy, "Alt+1", Key::NUM_1, Alt);
+        Shortcuts::bind(Action::ToggleInspector, "Alt+2", Key::NUM_2, Alt);
+        Shortcuts::bind(Action::ToggleViewport, "Alt+3", Key::NUM_3, Alt);
+        Shortcuts::bind(Action::ToggleAssetBrowser, "Alt+4", Key::NUM_4, Alt);
+        Shortcuts::bind(Action::ToggleConsole, "Alt+5", Key::NUM_5, Alt);
+        Shortcuts::bind(Action::ToggleHistory, "Alt+6", Key::NUM_6, Alt);
+        Shortcuts::bind(Action::ToggleConsole, // Alternative binding
                         "Ctrl+Shift+`",
                         Key::GRAVE_ACCENT, Ctrl | Shift);
-        Shortcuts::bind(Action::ToggleConsole, "Alt+F12", Key::F12, Alt);
-        Shortcuts::bind(Action::OpenSettings, "Ctrl+,", Key::COMMA, Ctrl);
+        Shortcuts::bind(Action::ToggleSettings, "Ctrl+,", Key::COMMA, Ctrl);
         Shortcuts::bind(Action::ToggleDebug, "F3", Key::F3);
     }
 

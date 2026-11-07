@@ -13,6 +13,8 @@ namespace editor {
     }
 
     void Inspector::on_render_ui(SystemContext& context) {
+        if (!visible_) return;
+
         ImGui::Begin("Inspector");
 
         if (ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows)) {
