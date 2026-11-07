@@ -40,8 +40,10 @@ namespace editor {
             return false;
         }
 
-        for (const auto& cmd : other->commands_) {
-            commands_.push_back(cmd->clone());
+        // Only merge single-command batches if their underlying commands allow it.
+        // Compound transactions (size > 1) represent distinct macro-actions and must not merge.
+        if (commands_.size() == 1 && other->commands_.size() == 1) {
+            return commands_.front()->merge(*other->commands_.front());
         }
         return true;
     }
