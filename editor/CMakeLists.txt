@@ -41,6 +41,10 @@ add_executable(Editor
                src/event/EditorEvents.hpp
                src/ui/panel/ViewportPanel.cpp
                src/ui/panel/ViewportPanel.hpp
+               src/command/CommandBatch.cpp
+               src/command/CommandBatch.hpp
+               src/command/Transaction.hpp
+               src/command/EditorCommands.hpp
 )
 # ----------------------------------------------------------------------------
 target_include_directories(Editor PRIVATE ${CMAKE_SOURCE_DIR}/editor/src)

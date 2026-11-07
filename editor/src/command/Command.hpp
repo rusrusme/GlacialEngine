@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <memory>
 #include <string_view>
 
 namespace editor {
@@ -17,6 +18,7 @@ namespace editor {
         virtual void undo() = 0;
 
         virtual bool merge(const Command& next) { return false; }
+        [[nodiscard]] virtual std::unique_ptr<Command> clone() const = 0;
 
         [[nodiscard]] virtual std::string_view name() const = 0;
     };

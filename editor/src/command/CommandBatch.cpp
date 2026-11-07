@@ -1,0 +1,52 @@
+//
+// Copyright (c) 2026 rusrusme 
+// All rights reserved.
+//
+
+#include "CommandBatch.hpp"
+
+namespace editor {
+    CommandBatch::CommandBatch(const CommandBatch& other) : name_(other.name_) {
+        commands_.reserve(other.commands_.size());
+        for (const auto& cmd : other.commands_) {
+            commands_.push_back(cmd->clone());
+        }
+    }
+
+    void CommandBatch::add(std::unique_ptr<Command> cmd) {
+        if (!cmd) return;
+
+        if (!commands_.empty() && commands_.back()->merge(*cmd)) {
+            return;
+        }
+        commands_.push_back(std::move(cmd));
+    }
+
+    void CommandBatch::execute() {
+        for (auto& cmd : commands_) {
+            cmd->execute();
+        }
+    }
+
+    void CommandBatch::undo() {
+        for (auto it = commands_.rbegin(); it != commands_.rend(); ++it) {
+            (*it)->undo();
+        }
+    }
+
+    bool CommandBatch::merge(const Command& next) {
+        auto* other = dynamic_cast<const CommandBatch*>(&next);
+        if (!other || other->name() != name_) {
+            return false;
+        }
+
+        for (const auto& cmd : other->commands_) {
+            commands_.push_back(cmd->clone());
+        }
+        return true;
+    }
+
+    std::unique_ptr<Command> CommandBatch::clone() const {
+        return std::make_unique<CommandBatch>(*this);
+    }
+}
