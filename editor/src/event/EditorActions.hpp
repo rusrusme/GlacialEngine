@@ -16,7 +16,7 @@ namespace editor {
         Undo, Redo, Copy, Paste,
 
         // Hierarchy
-        DuplicateEntity, DeleteEntity, RenameEntity, DeselectEntity,
+        DuplicateEntity, DeleteEntity, RenameEntity, DeselectEntity, CreateEntity,
 
         // Runtime
         TogglePlay, // Play, Pause
@@ -26,6 +26,6 @@ namespace editor {
         GizmoSelect, GizmoTranslate, GizmoRotate, GizmoScale,
         
         // UI
-        ToggleConsole, ToggleInspector, ToggleHierarchy, OpenSettings, ToggleDebug, ToggleHistory
+        ToggleConsole, ToggleInspector, ToggleHierarchy, OpenSettings, ToggleDebug, ToggleHistory,
     };
 }

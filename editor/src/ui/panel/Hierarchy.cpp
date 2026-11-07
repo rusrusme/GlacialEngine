@@ -78,6 +78,10 @@ namespace editor {
         }
     }
 
+    void Hierarchy::create_entity() {
+        create_entity_requested_ = true;
+    }
+
     void Hierarchy::delete_entity() {
         if (selected_entity_) {
             entity_to_destroy_ = selected_entity_;
@@ -110,7 +114,8 @@ namespace editor {
         const auto scene = context.scenes.active_scene();
         if (!scene) return;
         if (menu_item_with_icon("Entity", EntityType::Transform)) {
-            scene->create_entity("Entity");
+            auto entity = scene->create_entity("Entity");
+            record_entity_creation(entity, context);
         }
         ImGui::Separator();
         render_primitives_submenus(context);
@@ -119,9 +124,10 @@ namespace editor {
         if (menu_item_with_icon("Camera", EntityType::Camera)) {
             auto entity = scene->create_entity("Camera");
             entity.add_component<CameraComponent>();
+            record_entity_creation(entity, context);
         }
         ImGui::Separator();
-        render_lighting_submenu(scene);
+        render_lighting_submenu(context);
 
         ImGui::Separator();
         render_imported_models_submenu(context);
@@ -163,7 +169,8 @@ namespace editor {
         create_primitive_entity("Pyramid", "primitive://pyramid", EntityType::Mesh3D, context);
     }
 
-    void Hierarchy::render_lighting_submenu(const std::shared_ptr<Scene>& active_scene) {
+    void Hierarchy::render_lighting_submenu(SystemContext& context) {
+        const auto active_scene = context.scenes.active_scene();
         if (!active_scene) return;
         if (menu_item_with_icon("Directional Light", EntityType::Light)) {
             auto entity = active_scene->create_entity("Sun");
@@ -171,6 +178,7 @@ namespace editor {
             transform.rotation = glm::vec3(-90.0f, 135.0f, -45.0f);
             transform.position = glm::vec3(10.0f, 10.0f, 0.0f);
             entity.add_component<DirectionalLightComponent>(glm::vec3(1.0f, 0.95f, 0.8f), 1.2f);
+            record_entity_creation(entity, context);
         }
 
         if (menu_item_with_icon("Point Light", EntityType::Light)) {
@@ -179,6 +187,7 @@ namespace editor {
             transform.rotation = glm::vec3(0.0f);
             transform.position = glm::vec3(0.0f);
             entity.add_component<PointLightComponent>(glm::vec3(1.0f, 0.95f, 0.8f), 1.2f);
+            record_entity_creation(entity, context);
         }
     }
 
@@ -200,6 +209,7 @@ namespace editor {
                     auto entity = scene->create_entity(meta.filepath.stem().string());
                     entity.add_component<MeshComponent>(handle);
                     entity.add_component<MaterialComponent>(glm::vec4{1.0f, 1.0f, 1.0f, 1.0f});
+                    record_entity_creation(entity, context);
                 }
             }
         }
@@ -232,6 +242,7 @@ namespace editor {
             entity.add_component<MeshComponent>(handle);
             entity.add_component<MaterialComponent>(glm::vec4{1.0f, 0.5f, 0.2f, 1.0f});
             entity.add_component<BoxColliderComponent>();
+            record_entity_creation(entity, context);
         }
     }
 
@@ -339,6 +350,14 @@ namespace editor {
 
         auto& history = context.get<CommandHistory>();
 
+        // Create Entity
+        if (create_entity_requested_) {
+            auto entity = active_scene->create_entity();
+            record_entity_creation(entity, context);
+
+            create_entity_requested_ = false;
+        }
+
         // Delete Entity
         if (entity_to_destroy_) {
             if (selected_entity_ == entity_to_destroy_) {
@@ -395,5 +414,15 @@ namespace editor {
         std::strncpy(rename_buffer_, label.tag.c_str(), sizeof(rename_buffer_) - 1);
         rename_buffer_[sizeof(rename_buffer_) - 1] = '\0';
         renaming_ = true;
+    }
+
+    void Hierarchy::record_entity_creation(Entity entity, SystemContext& context) {
+        if (!entity) return;
+
+        auto& history = context.get<CommandHistory>();
+        Transaction tx("Create Entity", history);
+        history.record(std::make_unique<CreateEntityCommand>(entity, context), context);
+
+        set_selected_entity(entity);
     }
 }

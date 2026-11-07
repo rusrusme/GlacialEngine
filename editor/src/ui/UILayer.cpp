@@ -85,6 +85,10 @@ namespace editor {
                     settings_.toggle_visible();
                     return true;
 
+                case Action::CreateEntity : {
+                    hierarchy_.create_entity();
+                    return true;
+                }
                 case Action::DeleteEntity : {
                     hierarchy_.delete_entity();
                     return true;

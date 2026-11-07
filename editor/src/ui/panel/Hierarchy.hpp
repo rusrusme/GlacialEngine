@@ -30,6 +30,7 @@ namespace editor {
         [[nodiscard]] Entity selected_entity() const { return selected_entity_; }
         void set_selected_entity(Entity new_entity);
 
+        void create_entity();
         void delete_entity();
         void duplicate_entity();
         void rename_entity();
@@ -45,6 +46,7 @@ namespace editor {
         char rename_buffer_[128] = "";
         bool renaming_ = false;
 
+        bool create_entity_requested_{false};
         Entity entity_to_destroy_{};
         Entity entity_to_duplicate_{};
         Entity entity_to_rename_{};
@@ -56,7 +58,7 @@ namespace editor {
         void render_entity_list(const std::shared_ptr<Scene>& active_scene);
 
         void render_primitives_submenus(SystemContext& context);
-        void render_lighting_submenu(const std::shared_ptr<Scene>& active_scene);
+        void render_lighting_submenu(SystemContext& context);
         void render_imported_models_submenu(SystemContext& context);
 
         bool menu_item_with_icon(const char* label, EntityType type);
@@ -69,5 +71,6 @@ namespace editor {
         void process_deferred_actions(SystemContext& context);
         void process_deselection_inputs();
         void start_renaming(Entity entity);
+        void record_entity_creation(Entity entity, SystemContext& context);
     };
 }

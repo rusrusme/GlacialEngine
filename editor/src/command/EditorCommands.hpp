@@ -30,6 +30,46 @@ namespace editor {
         return {};
     }
 
+    // --- CREATING ENTITY COMMAND ---
+    class CreateEntityCommand : public Command {
+    public:
+        CreateEntityCommand(Entity entity, SystemContext& context)
+            : entity_uuid_(entity.uuid()),
+              snapshot_(EntitySnapshot::serialize(entity, context)) {}
+
+        explicit CreateEntityCommand(nlohmann::json snapshot)
+            : entity_uuid_(snapshot.value("id", static_cast<uint64_t>(0))),
+              snapshot_(std::move(snapshot)) {}
+
+        void execute(SystemContext& context) override {
+            auto scene = context.scenes.active_scene();
+            if (!scene) return;
+            // Prevent duplicate instantiation if already present in scene
+            if (find_entity_by_uuid(scene, entity_uuid_)) {
+                return;
+            }
+            EntitySnapshot::deserialize(snapshot_, context);
+        }
+
+        void undo(SystemContext& context) override {
+            auto scene = context.scenes.active_scene();
+            if (Entity entity = find_entity_by_uuid(scene, entity_uuid_)) {
+                scene->destroy_entity(entity);
+            }
+        }
+
+        [[nodiscard]] UUID entity_uuid() const noexcept { return entity_uuid_; }
+        [[nodiscard]] std::string_view name() const override { return "Create Entity"; }
+
+        [[nodiscard]] std::unique_ptr<Command> clone() const override {
+            return std::make_unique<CreateEntityCommand>(*this);
+        }
+
+    private:
+        UUID entity_uuid_;
+        nlohmann::json snapshot_;
+    };
+
     // --- DELETE ENTITY COMMAND ---
     class DeleteEntityCommand : public Command {
     public:
