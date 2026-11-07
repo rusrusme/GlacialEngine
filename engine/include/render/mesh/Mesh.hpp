@@ -66,6 +66,11 @@ namespace engine {
 
         /** @brief For debug purposes */
         [[nodiscard]] static Shared<Mesh> create_cube(const RHIDevice& device);
+        [[nodiscard]] static Shared<Mesh> create_plane(const RHIDevice& device);
+        [[nodiscard]] static Shared<Mesh> create_circle(const RHIDevice& device, uint32_t segments = 32);
+        [[nodiscard]] static Shared<Mesh> create_sphere(const RHIDevice& device, uint32_t latitude_segments = 32, uint32_t longitude_segments = 32);
+        [[nodiscard]] static Shared<Mesh> create_cylinder(const RHIDevice& device, uint32_t segments = 32);
+        [[nodiscard]] static Shared<Mesh> create_pyramid(const RHIDevice& device);
 
         [[nodiscard]] const VertexBuffer& vertex_buffer() const noexcept { return *vertex_buffer_; }
         [[nodiscard]] const IndexBuffer& index_buffer() const noexcept { return *index_buffer_; }
