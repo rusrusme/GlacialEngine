@@ -61,9 +61,6 @@ namespace engine {
         template<typename... Components>
         auto clear_component() { return registry_.clear<Components...>(); }
 
-        Entity create_cube(const std::string& name, const glm::vec4& color = glm::vec4(1.0f));
-        Entity create_point_light(const std::string& name, const glm::vec3& position, const glm::vec3& color = glm::vec3(1.0f), float intensity = 1.0f, float radius = 10.0f);
-
         [[nodiscard]] SystemDispatcher& systems() { return systems_; }
 
         [[nodiscard]] const std::string& name() const { return name_; }

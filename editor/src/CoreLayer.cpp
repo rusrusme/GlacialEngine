@@ -36,7 +36,6 @@ namespace editor {
         #endif
 
         context.scenes.create();
-        context.scenes.active_scene()->create_cube("A CUBE");
         config::load();
 
         FramebufferSpecification fb_spec{};
