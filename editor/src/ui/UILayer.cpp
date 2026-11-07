@@ -5,6 +5,7 @@
 
 #include "UILayer.hpp"
 
+#include "command/Transaction.hpp"
 #include "core/Application.hpp"
 #include "event/EditorActions.hpp"
 #include "event/EditorEvents.hpp"
@@ -61,7 +62,8 @@ namespace editor {
         if (event.handled) return;
 
         EventDispatcher dispatcher(event);
-        dispatcher.dispatch<EditorActionEvent>([this](const EditorActionEvent& action) {
+        dispatcher.dispatch<EditorActionEvent>([this, &context](const EditorActionEvent& action) {
+            auto& history = context.get<CommandHistory>();
             switch (action.action()) {
                 case Action::ToggleDebug :
                     debug_panel_.toggle_visible();
@@ -78,18 +80,26 @@ namespace editor {
                 case Action::OpenSettings :
                     settings_.toggle_visible();
                     return true;
-                case Action::DeleteEntity :
+
+                case Action::DeleteEntity : {
+                    Transaction transaction("Delete Entity", history);
                     hierarchy_.delete_entity();
                     return true;
-                case Action::RenameEntity :
+                }
+                case Action::RenameEntity : {
+                    Transaction transaction("Rename Entity", history);
                     hierarchy_.rename_entity();
                     return true;
+                }
+                case Action::DuplicateEntity : {
+                    Transaction transaction("Duplicate Entity", history);
+                    hierarchy_.duplicate_entity();
+                    return true;
+                }
                 case Action::DeselectEntity :
                     hierarchy_.deselect_entity();
                     return true;
-                case Action::DuplicateEntity :
-                    hierarchy_.duplicate_entity();
-                    return true;
+
                 case Action::Exit :
                     Application::get().close();
                     return true;

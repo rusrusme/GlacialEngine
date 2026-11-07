@@ -6,6 +6,8 @@
 #include "CoreLayer.hpp"
 
 #include "Config.hpp"
+#include "command/CommandHistory.hpp"
+#include "command/Transaction.hpp"
 #include "core/Application.hpp"
 #include "core/SystemContext.hpp"
 #include "event/EditorEvents.hpp"
@@ -46,8 +48,8 @@ namespace editor {
         Shortcuts::bind(Action::OpenScene, "Ctrl+O", Key::O, Ctrl);
         Shortcuts::bind(Action::SaveScene, "Ctrl+S", Key::S, Ctrl);
         Shortcuts::bind(Action::SaveSceneAs,
-                              "Ctrl+Shift+S",
-                              Key::S, Ctrl | Shift);
+                        "Ctrl+Shift+S",
+                        Key::S, Ctrl | Shift);
 
         Shortcuts::bind(Action::Undo, "Ctrl+Z", Key::Z, Ctrl);
         Shortcuts::bind(Action::Redo, "Ctrl+Y", Key::Y, Ctrl);
@@ -55,16 +57,16 @@ namespace editor {
         Shortcuts::bind(Action::Paste, "Ctrl+V", Key::V, Ctrl);
 
         Shortcuts::bind(Action::DuplicateEntity, "Ctrl+D",
-                              Key::D, Ctrl, ShortcutContext::Hierarchy);
+                        Key::D, Ctrl, ShortcutContext::Hierarchy);
 
         Shortcuts::bind(Action::DeleteEntity, "Delete",
-                              Key::DELETE, None, ShortcutContext::Hierarchy);
+                        Key::DELETE, None, ShortcutContext::Hierarchy);
 
         Shortcuts::bind(Action::RenameEntity, "F2",
-                              Key::F2, None, ShortcutContext::Hierarchy);
+                        Key::F2, None, ShortcutContext::Hierarchy);
 
         Shortcuts::bind(Action::DeselectEntity, "Escape",
-                              Key::ESCAPE, None, ShortcutContext::Hierarchy);
+                        Key::ESCAPE, None, ShortcutContext::Hierarchy);
 
         Shortcuts::bind(Action::TogglePlay, "Space", Key::SPACE);
         Shortcuts::bind(Action::StopPlay, "Shift+Space", Key::SPACE, Shift);
@@ -75,8 +77,8 @@ namespace editor {
         Shortcuts::bind(Action::GizmoScale, "R", Key::R, None, ShortcutContext::Viewport);
 
         Shortcuts::bind(Action::ToggleConsole,
-                              "Ctrl+Shift+`",
-                              Key::GRAVE_ACCENT, Ctrl | Shift);
+                        "Ctrl+Shift+`",
+                        Key::GRAVE_ACCENT, Ctrl | Shift);
         Shortcuts::bind(Action::ToggleConsole, "Alt+F12", Key::F12, Alt);
         Shortcuts::bind(Action::OpenSettings, "Ctrl+,", Key::COMMA, Ctrl);
         Shortcuts::bind(Action::ToggleDebug, "F3", Key::F3);
@@ -148,8 +150,8 @@ namespace editor {
                 }
 
                 ShortcutContext current_context = viewport_hovered_ || viewport_focused_
-                                                    ? ShortcutContext::Viewport
-                                                    : Shortcuts::active_context();
+                                                      ? ShortcutContext::Viewport
+                                                      : Shortcuts::active_context();
 
                 auto action = Shortcuts::find_action(e.key_code(), active_modifier, current_context);
                 if (action.has_value()) {
@@ -161,37 +163,48 @@ namespace editor {
         );
 
         dispatcher.dispatch<EditorActionEvent>([&context](const EditorActionEvent& action) {
+            auto& history = context.get<CommandHistory>();
+
             switch (action.action()) {
                 case Action::NewScene :
-                    break;
+                    return true;
                 case Action::OpenScene :
-                    break;
+                    return true;
                 case Action::SaveScene :
-                    break;
+                    return true;
                 case Action::SaveSceneAs :
-                    break;
+                    return true;
                 case Action::NewProject :
-                    break;
+                    return true;
                 case Action::OpenProject :
-                    break;
+                    return true;
                 case Action::SaveProject :
-                    break;
+                    return true;
                 case Action::SaveProjectAs :
-                    break;
-                case Action::Exit :
-                    break;
+                    return true;
+
+                case Action::Copy : {
+                    Transaction transaction("Copy Selection", history);
+                    // TODO Copy logic
+                    return true;
+                }
+                case Action::Paste : {
+                    Transaction transaction("Paste Selection", history);
+                    // TODO Paste logic
+                    return true;
+                }
+
                 case Action::Undo :
-                    break;
+                    if (history.can_undo()) {
+                        history.undo();
+                    }
+                    return true;
                 case Action::Redo :
-                    break;
-                case Action::Copy :
-                    break;
-                case Action::Paste :
-                    break;
-                case Action::DuplicateEntity :
-                    break;
-                case Action::DeleteEntity :
-                    break;
+                    if (history.can_redo()) {
+                        history.redo();
+                    }
+                    return true;
+
                 case Action::TogglePlay :
                     if (context.scenes.scene_state() == SceneState::Edit) {
                         context.scenes.on_play();
@@ -208,14 +221,6 @@ namespace editor {
                         context.scenes.on_stop();
                     }
                     return true;
-                case Action::GizmoSelect :
-                    break;
-                case Action::GizmoTranslate :
-                    break;
-                case Action::GizmoRotate :
-                    break;
-                case Action::GizmoScale :
-                    break;
                 default : break;
             }
             return false;

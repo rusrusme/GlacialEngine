@@ -44,7 +44,8 @@ add_executable(Editor
                src/command/CommandBatch.cpp
                src/command/CommandBatch.hpp
                src/command/Transaction.hpp
-               src/command/EditorCommands.hpp
+               src/ui/panel/HistoryPanel.cpp
+               src/ui/panel/HistoryPanel.hpp
 )
 # ----------------------------------------------------------------------------
 target_include_directories(Editor PRIVATE ${CMAKE_SOURCE_DIR}/editor/src)
