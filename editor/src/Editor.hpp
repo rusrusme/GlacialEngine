@@ -6,6 +6,7 @@
 #pragma once
 
 #include "CoreLayer.hpp"
+#include "command/CommandHistory.hpp"
 #include "core/Application.hpp"
 #include "ui/UILayer.hpp"
 
@@ -20,5 +21,10 @@ namespace editor {
         }
 
         ~Editor() override = default;
+
+    protected:
+        void init(SystemContext& context) override {
+            context.emplace<CommandHistory>();
+        }
     };
 }

@@ -65,6 +65,9 @@ namespace engine {
         );
         ///////////////////////////////////////////////////////
 
+        // Hook for derived applications
+        init(*context_);
+
         PROFILE_START("Application::run - Scan Assets");
         asset_manager_.scan_directory("assets");
         PROFILE_END();
@@ -115,7 +118,7 @@ namespace engine {
         }
         // In reverse
         CORE_INFO("Detaching application layers");
-        for (auto & layer : std::views::reverse(layers_)) {
+        for (auto& layer : std::views::reverse(layers_)) {
             layer->on_detach(*context_);
         }
 
@@ -138,7 +141,7 @@ namespace engine {
         });
 
         // From top to bottom
-        for (auto & layer : std::views::reverse(layers_)) {
+        for (auto& layer : std::views::reverse(layers_)) {
             if (event.handled) {
                 break; // Event consumed
             }

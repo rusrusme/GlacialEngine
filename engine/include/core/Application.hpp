@@ -31,6 +31,8 @@ namespace engine {
         [[nodiscard]] SystemContext& context() const { return *context_; }
 
     protected:
+        virtual void init(SystemContext& context) {}
+
         void push_layer(std::unique_ptr<Layer> layer);
         void push_overlay(std::unique_ptr<Layer> overlay);
 
