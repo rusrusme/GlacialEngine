@@ -228,7 +228,7 @@ namespace engine {
         constexpr float radius = 0.5f;
         constexpr float half_height = 0.5f;
 
-        // Barrel Body
+        // Barrel Body (CCW facing outwards)
         const auto side_start_index = static_cast<uint32_t>(vertices.size());
         for (uint32_t i = 0; i <= segments; ++i) {
             const float u = static_cast<float>(i) / static_cast<float>(segments);
@@ -271,7 +271,7 @@ namespace engine {
             indices.push_back(bottom_left);
         }
 
-        // Top Cap (+Y)
+        // Top Cap (+Y) -> CCW viewed from +Y
         const auto top_center_index = static_cast<uint32_t>(vertices.size());
         vertices.push_back(Vertex{
             .position = {0.0f, half_height, 0.0f},
@@ -296,11 +296,11 @@ namespace engine {
 
         for (uint32_t i = 0; i < segments; ++i) {
             indices.push_back(top_center_index);
-            indices.push_back(top_ring_start + i + 1);
             indices.push_back(top_ring_start + i);
+            indices.push_back(top_ring_start + i + 1);
         }
 
-        // Bottom Cap (-Y)
+        // Bottom Cap (-Y) -> CCW viewed from -Y
         const auto bottom_center_index = static_cast<uint32_t>(vertices.size());
         vertices.push_back(Vertex{
             .position = {0.0f, -half_height, 0.0f},
@@ -325,8 +325,8 @@ namespace engine {
 
         for (uint32_t i = 0; i < segments; ++i) {
             indices.push_back(bottom_center_index);
-            indices.push_back(bottom_ring_start + i);
             indices.push_back(bottom_ring_start + i + 1);
+            indices.push_back(bottom_ring_start + i);
         }
 
         return std::make_shared<Mesh>(device, vertices, indices);
