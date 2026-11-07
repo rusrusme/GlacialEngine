@@ -196,12 +196,12 @@ namespace editor {
 
                 case Action::Undo :
                     if (history.can_undo()) {
-                        history.undo();
+                        history.undo(context);
                     }
                     return true;
                 case Action::Redo :
                     if (history.can_redo()) {
-                        history.redo();
+                        history.redo(context);
                     }
                     return true;
 

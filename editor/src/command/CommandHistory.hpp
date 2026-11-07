@@ -25,14 +25,14 @@ namespace editor {
         CommandHistory& operator=(CommandHistory&&) noexcept = default;
 
         void begin_transaction(std::string_view name);
-        void record(std::unique_ptr<Command> cmd);
+        void record(std::unique_ptr<Command> cmd, SystemContext& context);
         void end_transaction();
-        void cancel_transaction();
+        void cancel_transaction(SystemContext& context);
 
         [[nodiscard]] bool can_undo() const noexcept;
         [[nodiscard]] bool can_redo() const noexcept;
-        void undo();
-        void redo();
+        void undo(SystemContext& context);
+        void redo(SystemContext& context);
 
         void set_clean() noexcept;
         [[nodiscard]] bool dirty() const noexcept;
@@ -44,6 +44,13 @@ namespace editor {
 
     private:
         void commit(std::unique_ptr<CommandBatch> transaction);
+
+        friend class HistoryPanel;
+
+        [[nodiscard]] size_t nesting_level() const noexcept { return nesting_level_; }
+        [[nodiscard]] std::optional<size_t> clean_index() const noexcept { return clean_index_; }
+        [[nodiscard]] const std::deque<std::unique_ptr<CommandBatch>>& history() const noexcept { return history_; }
+        void jump_to(size_t target_index, SystemContext& context);
 
         std::deque<std::unique_ptr<CommandBatch>> history_;
         std::unique_ptr<CommandBatch> active_transaction_{nullptr};

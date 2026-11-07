@@ -25,9 +25,9 @@ namespace editor {
             }
         }
 
-        void cancel() {
+        void cancel(SystemContext& context) {
             if (!dismissed_) {
-                history_.cancel_transaction();
+                history_.cancel_transaction(context);
                 dismissed_ = true;
             }
         }

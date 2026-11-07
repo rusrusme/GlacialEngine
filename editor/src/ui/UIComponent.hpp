@@ -7,8 +7,11 @@
 
 #include <string_view>
 
-#include "core/SystemContext.hpp"
 #include "event/Shortcuts.hpp"
+
+namespace engine {
+    struct SystemContext;
+}
 
 namespace editor {
     using namespace engine;

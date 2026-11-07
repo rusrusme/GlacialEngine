@@ -31,9 +31,9 @@ namespace editor {
         void set_selected_entity(Entity new_entity);
 
         void delete_entity();
-        void deselect_entity();
         void duplicate_entity();
         void rename_entity();
+        void deselect_entity();
 
     private:
         bool visible_ = true;
@@ -43,10 +43,12 @@ namespace editor {
 
         Entity renaming_entity_;
         char rename_buffer_[128] = "";
-        bool renaming = false;
+        bool renaming_ = false;
 
         Entity entity_to_destroy_{};
         Entity entity_to_duplicate_{};
+        Entity entity_to_rename_{};
+        std::string new_entity_name_{};
 
     private:
         void render_header_bar();
@@ -64,8 +66,8 @@ namespace editor {
         bool render_eye_toggle_button(bool is_active);
         void render_entity_context_menu(Entity entity);
 
-        void process_deferred_actions(const std::shared_ptr<Scene>& active_scene);
+        void process_deferred_actions(SystemContext& context);
         void process_deselection_inputs();
-        void rename_entity(Entity entity);
+        void start_renaming(Entity entity);
     };
 }

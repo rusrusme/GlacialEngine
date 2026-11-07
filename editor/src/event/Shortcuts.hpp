@@ -22,6 +22,7 @@ namespace editor {
         Inspector,
         AssetBrowser,
         Console,
+        History,
     };
 
     enum KeyModifier : uint8_t {

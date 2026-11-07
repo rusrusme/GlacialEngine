@@ -24,8 +24,8 @@ namespace editor {
 
         void add(std::unique_ptr<Command> cmd);
 
-        void execute() override;
-        void undo() override;
+        void execute(SystemContext& context) override;
+        void undo(SystemContext& context) override;
 
         bool merge(const Command& next) override;
         [[nodiscard]] std::unique_ptr<Command> clone() const override;

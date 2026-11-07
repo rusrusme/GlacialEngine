@@ -15,10 +15,10 @@ namespace editor {
         ++nesting_level_;
     }
 
-    void CommandHistory::record(std::unique_ptr<Command> cmd) {
+    void CommandHistory::record(std::unique_ptr<Command> cmd, SystemContext& context) {
         if (!cmd) return;
 
-        cmd->execute();
+        cmd->execute(context);
 
         if (nesting_level_ > 0) {
             active_transaction_->add(std::move(cmd));
@@ -44,13 +44,13 @@ namespace editor {
         commit(std::move(active_transaction_));
     }
 
-    void CommandHistory::cancel_transaction() {
+    void CommandHistory::cancel_transaction(SystemContext& context) {
         if (nesting_level_ == 0 || !active_transaction_) {
             return;
         }
 
         // Roll back any sub-commands executed within the unfinished transaction
-        active_transaction_->undo();
+        active_transaction_->undo(context);
         active_transaction_.reset();
         nesting_level_ = 0;
     }
@@ -63,17 +63,17 @@ namespace editor {
         return current_index_ < history_.size() && nesting_level_ == 0;
     }
 
-    void CommandHistory::undo() {
+    void CommandHistory::undo(SystemContext& context) {
         if (!can_undo()) return;
 
         --current_index_;
-        history_[current_index_]->undo();
+        history_[current_index_]->undo(context);
     }
 
-    void CommandHistory::redo() {
+    void CommandHistory::redo(SystemContext& context) {
         if (!can_redo()) return;
 
-        history_[current_index_]->execute();
+        history_[current_index_]->execute(context);
         ++current_index_;
     }
 
@@ -119,5 +119,16 @@ namespace editor {
 
         history_.push_back(std::move(transaction));
         current_index_ = history_.size();
+    }
+
+    void CommandHistory::jump_to(size_t target_index, SystemContext& context) {
+        if (nesting_level_ > 0 || target_index > history_.size()) return;
+
+        while (current_index_ > target_index) {
+            undo(context);
+        }
+        while (current_index_ < target_index) {
+            redo(context);
+        }
     }
 }

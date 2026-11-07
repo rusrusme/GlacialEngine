@@ -22,15 +22,15 @@ namespace editor {
         commands_.push_back(std::move(cmd));
     }
 
-    void CommandBatch::execute() {
+    void CommandBatch::execute(SystemContext& context) {
         for (auto& cmd : commands_) {
-            cmd->execute();
+            cmd->execute(context);
         }
     }
 
-    void CommandBatch::undo() {
+    void CommandBatch::undo(SystemContext& context) {
         for (auto it = commands_.rbegin(); it != commands_.rend(); ++it) {
-            (*it)->undo();
+            (*it)->undo(context);
         }
     }
 

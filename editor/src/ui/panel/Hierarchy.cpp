@@ -7,6 +7,10 @@
 
 #include "Config.hpp"
 #include "asset/AssetManager.hpp"
+#include "command/CommandHistory.hpp"
+#include "command/EditorCommands.hpp"
+#include "command/Transaction.hpp"
+#include "core/SystemContext.hpp"
 #include "event/Shortcuts.hpp"
 #include "project/scene/SceneManager.hpp"
 
@@ -50,8 +54,7 @@ namespace editor {
 
         render_entity_list(scene);
 
-        // process_shortcuts(entity_to_destroy, entity_to_duplicate);
-        process_deferred_actions(scene);
+        process_deferred_actions(context);
         process_deselection_inputs();
 
         ImGui::End();
@@ -81,10 +84,6 @@ namespace editor {
         }
     }
 
-    void Hierarchy::deselect_entity() {
-        set_selected_entity({});
-    }
-
     void Hierarchy::duplicate_entity() {
         if (selected_entity_) {
             entity_to_duplicate_ = selected_entity_;
@@ -93,8 +92,12 @@ namespace editor {
 
     void Hierarchy::rename_entity() {
         if (selected_entity_) {
-            rename_entity(selected_entity_);
+            start_renaming(selected_entity_);
         }
+    }
+
+    void Hierarchy::deselect_entity() {
+        set_selected_entity({});
     }
 
     void Hierarchy::render_header_bar() {
@@ -247,23 +250,21 @@ namespace editor {
         }
 
         if (renaming_entity_ == entity) {
-            if (renaming) {
+            if (renaming_) {
                 ImGui::SetKeyboardFocusHere();
-                renaming = false;
+                renaming_ = false;
             }
 
             ImGui::SetNextItemWidth(-1.0f);
-            if (ImGui::InputText("##RenameInput", rename_buffer_, sizeof(rename_buffer_),
-                                 ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll)) {
-                if (rename_buffer_[0] != '\0') {
-                    label.tag = rename_buffer_;
-                }
-                renaming_entity_ = {};
-            }
+            const bool enter_pressed = ImGui::InputText(
+                "##RenameInput", rename_buffer_, sizeof(rename_buffer_),
+                ImGuiInputTextFlags_EnterReturnsTrue | ImGuiInputTextFlags_AutoSelectAll
+            );
 
-            if (ImGui::IsItemDeactivated() && !ImGui::IsKeyPressed(ImGuiKey_Escape)) {
-                if (rename_buffer_[0] != '\0') {
-                    label.tag = rename_buffer_;
+            if (enter_pressed || (ImGui::IsItemDeactivated() && !ImGui::IsKeyPressed(ImGuiKey_Escape))) {
+                if (rename_buffer_[0] != '\0' && label.tag != rename_buffer_) {
+                    entity_to_rename_ = renaming_entity_;
+                    new_entity_name_ = rename_buffer_;
                 }
                 renaming_entity_ = {};
             }
@@ -320,7 +321,7 @@ namespace editor {
     void Hierarchy::render_entity_context_menu(Entity entity) {
         if (ImGui::BeginPopupContextItem()) {
             if (ImGui::MenuItem("Rename", Shortcuts::text(Action::RenameEntity).data())) {
-                rename_entity(entity);
+                start_renaming(entity);
             }
             if (ImGui::MenuItem("Duplicate", Shortcuts::text(Action::DuplicateEntity).data())) {
                 entity_to_duplicate_ = entity;
@@ -332,14 +333,13 @@ namespace editor {
         }
     }
 
-    void Hierarchy::process_deferred_actions(const std::shared_ptr<Scene>& active_scene) {
+    void Hierarchy::process_deferred_actions(SystemContext& context) {
+        auto active_scene = context.scenes.active_scene();
         if (!active_scene) return;
 
-        if (entity_to_duplicate_) {
-            set_selected_entity(active_scene->duplicate_entity(entity_to_duplicate_));
-            entity_to_duplicate_ = {};
-        }
+        auto& history = context.get<CommandHistory>();
 
+        // Delete Entity
         if (entity_to_destroy_) {
             if (selected_entity_ == entity_to_destroy_) {
                 set_selected_entity({});
@@ -347,8 +347,37 @@ namespace editor {
             if (renaming_entity_ == entity_to_destroy_) {
                 renaming_entity_ = {};
             }
-            active_scene->destroy_entity(entity_to_destroy_);
+
+            Transaction tx("Delete Entity", history);
+            history.record(std::make_unique<DeleteEntityCommand>(entity_to_destroy_, context), context);
+
             entity_to_destroy_ = {};
+        }
+
+        // Duplicate Entity
+        if (entity_to_duplicate_) {
+            auto cmd = std::make_unique<DuplicateEntityCommand>(entity_to_duplicate_, context);
+            const UUID new_uuid = cmd->duplicate_uuid();
+
+            Transaction tx("Duplicate Entity", history);
+            history.record(std::move(cmd), context);
+
+            // Select the newly spawned duplicate
+            selected_uuid_ = new_uuid;
+            entity_to_duplicate_ = {};
+        }
+
+        // Rename Entity
+        if (entity_to_rename_) {
+            const auto& label = entity_to_rename_.get_component<LabelComponent>();
+            if (label.tag != new_entity_name_ && !new_entity_name_.empty()) {
+                Transaction tx("Rename Entity", history);
+                history.record(std::make_unique<RenameEntityCommand>(
+                                   entity_to_rename_.uuid(), label.tag, new_entity_name_
+                               ), context);
+            }
+            entity_to_rename_ = {};
+            new_entity_name_.clear();
         }
     }
 
@@ -358,13 +387,13 @@ namespace editor {
         }
     }
 
-    void Hierarchy::rename_entity(Entity entity) {
+    void Hierarchy::start_renaming(Entity entity) {
         if (!entity || !entity.has_component<LabelComponent>()) return;
 
         renaming_entity_ = entity;
         const auto& label = entity.get_component<LabelComponent>();
         std::strncpy(rename_buffer_, label.tag.c_str(), sizeof(rename_buffer_) - 1);
         rename_buffer_[sizeof(rename_buffer_) - 1] = '\0';
-        renaming = true;
+        renaming_ = true;
     }
 }

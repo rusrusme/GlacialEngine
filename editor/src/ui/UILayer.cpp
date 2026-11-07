@@ -34,7 +34,8 @@ namespace editor {
             &asset_browser_,
             &console_panel_,
             &debug_panel_,
-            &viewport_panel_
+            &viewport_panel_,
+            &history_panel_
         };
 
         for (auto* component : ui_components_) {
@@ -77,22 +78,22 @@ namespace editor {
                 case Action::ToggleHierarchy :
                     hierarchy_.toggle_visible();
                     return true;
+                case Action::ToggleHistory :
+                    history_panel_.toggle_visible();
+                    return true;
                 case Action::OpenSettings :
                     settings_.toggle_visible();
                     return true;
 
                 case Action::DeleteEntity : {
-                    Transaction transaction("Delete Entity", history);
                     hierarchy_.delete_entity();
                     return true;
                 }
                 case Action::RenameEntity : {
-                    Transaction transaction("Rename Entity", history);
                     hierarchy_.rename_entity();
                     return true;
                 }
                 case Action::DuplicateEntity : {
-                    Transaction transaction("Duplicate Entity", history);
                     hierarchy_.duplicate_entity();
                     return true;
                 }
@@ -125,5 +126,6 @@ namespace editor {
         inspector_.on_render_ui(context);
         hierarchy_.on_render_ui(context);
         viewport_panel_.on_render_ui(context);
+        history_panel_.on_render_ui(context);
     }
 }
