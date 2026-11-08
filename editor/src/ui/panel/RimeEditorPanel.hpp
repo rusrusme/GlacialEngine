@@ -29,8 +29,8 @@ namespace editor {
         [[nodiscard]] ShortcutContext shortcut_context() const override { return ShortcutContext::Rime; }
 
     private:
-        void render_empty_state();
-        void render_editor_view(SystemContext& context, TextDocument& doc, const ImVec2& avail);
-        void render_status_bar(const TextDocument& doc);
+        static void render_empty_state();
+        static void render_editor_view(SystemContext& context, TextDocument& doc, const ImVec2& avail);
+        static void render_status_bar(SystemContext& context, const TextDocument& doc, const ImVec2& start_pos, float width, float bar_height, float editor_height);
     };
 }
