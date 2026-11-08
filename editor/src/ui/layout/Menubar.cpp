@@ -20,7 +20,7 @@ namespace editor {
         auto& window = Application::get().window();
         window.set_titlebar_hovered(false);
 
-        constexpr float target_bar_height = 48.0f;
+        constexpr float target_bar_height = 32.0f;
         const float font_size = ImGui::GetFontSize();
         const float pad_y = std::floor(std::max(0.0f, (target_bar_height - font_size) * 0.5f));
 
