@@ -8,16 +8,18 @@
 
 namespace engine {
     bool Input::mouse_captured() {
-        #ifdef ENABLE_IMGUI
-        return ImGui::GetIO().WantCaptureMouse;
-        #endif
+        // TODO
+        // #ifdef ENABLE_IMGUI
+        // return ImGui::GetIO().WantCaptureMouse;
+        // #endif
         return false;
     }
 
     bool Input::keyboard_captured() {
-        #ifdef ENABLE_IMGUI
-        return ImGui::GetIO().WantTextInput;
-        #endif
+        // TODO
+        // #ifdef ENABLE_IMGUI
+        // return ImGui::GetIO().WantTextInput;
+        // #endif
         return false;
     }
 

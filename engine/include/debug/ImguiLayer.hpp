@@ -29,9 +29,13 @@ namespace engine {
         void on_update(SystemContext& context, float delta_time) override {}
 
         void on_render(SystemContext& context, float delta_time) override {
-            auto& cb = context.render_context.active_command_buffer();
-            cb.begin_render_pass(context.render_context.swapchain().backbuffer(), clear_color_);
-            cb.end_render_pass();
+            // Only clear if explicitly requested (e.g. Editor UI root)
+            // Overlays sitting on top of a 3D scene must not clear the backbuffer
+            if (clear_depth_and_color_) {
+                auto& cb = context.render_context.active_command_buffer();
+                cb.begin_render_pass(context.render_context.swapchain().backbuffer(), clear_color_);
+                cb.end_render_pass();
+            }
 
             ImguiSystem::begin_frame();
             on_imgui_render(context, delta_time);
@@ -42,6 +46,7 @@ namespace engine {
             ImguiSystem::on_event(context, event);
         }
 
+        void set_clear_backbuffer(bool enable) { clear_depth_and_color_ = enable; }
         void set_clear_color(const glm::vec4& color) { clear_color_ = color; }
         [[nodiscard]] const glm::vec4& clear_color() const noexcept { return clear_color_; }
 
@@ -52,6 +57,7 @@ namespace engine {
         [[nodiscard]] static ImFont* font() noexcept { return s_font; }
 
     private:
+        bool clear_depth_and_color_{false}; // Default to false for overlays
         glm::vec4 clear_color_{0.10f, 0.10f, 0.11f, 1.0f};
         inline static ImFont* s_font = nullptr;
     };

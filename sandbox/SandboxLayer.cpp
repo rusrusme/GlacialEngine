@@ -13,7 +13,6 @@
 #include "script/ScriptEngine.hpp"
 
 // TODO Add ScriptComponent in Component.hpp
-
 void SandboxLayer::on_attach(SystemContext& context) {
     #if defined(_WIN32)
     ScriptEngine::load_library("assets/scripts/Scripts.dll");
@@ -21,7 +20,24 @@ void SandboxLayer::on_attach(SystemContext& context) {
     ScriptEngine::load_library("assets/scripts/Scripts.so");
     #endif
 
-    camera_.set_far_clip(10);
+    auto scene = context.scenes.create("Sandbox Scene");
+
+    {
+        const auto car_asset = context.assets.asset_handle_from_path("assets/models/red_car.glb");
+
+        auto car = scene->create_entity("Vehicle");
+
+        auto& transform = car.get_component<TransformComponent>();
+        transform.position = {1.0f, 0.0f, 1.0f};
+        car.add_component<MeshComponent>(car_asset);
+        auto& material = car.add_component<MaterialComponent>();
+        material.color = glm::vec4(1.0f);
+        material.metallic = 0.0f;
+        material.roughness = 1.0f;
+        car.add_component<RigidBodyComponent>();
+    }
+
+    camera_.set_far_clip(1000);
     camera_.set_near_clip(0.1f);
     camera_.set_fov(60);
     camera_.set_distance(4);
@@ -37,8 +53,10 @@ void SandboxLayer::on_update(SystemContext& context, float delta_time) {
     auto scene = context.scenes.active_scene();
     if (!scene) return;
 
-    context.scenes.on_update(delta_time);
-    camera_controller_.on_update(camera_);
+    if (Input::key_pressed_once(Key::F5)) {
+        ScriptEngine::request_reload();
+    }
+    ScriptEngine::on_update(scene.get());
 
     if (Input::key_pressed_once(Key::SPACE)) {
         if (context.scenes.scene_state() == SceneState::Edit) {
@@ -49,18 +67,16 @@ void SandboxLayer::on_update(SystemContext& context, float delta_time) {
         }
     }
 
-    if (Input::key_pressed_once(Key::F5)) {
-        ScriptEngine::request_reload();
-    }
-    ScriptEngine::on_update(context.scenes.active_scene().get());
+    camera_controller_.on_update(camera_);
+    context.scenes.on_update(delta_time);
 }
 
 void SandboxLayer::on_render(SystemContext& context, float delta_time) {
-    const auto& swapchain = context.render_context.swapchain();
-    if (swapchain.width() == 0 || swapchain.height() == 0) return;
-
     auto active_scene = context.scenes.active_scene();
     if (!active_scene) return;
+
+    const auto& swapchain = context.render_context.swapchain();
+    if (swapchain.width() == 0 || swapchain.height() == 0) return;
 
     camera_.set_viewport_size(swapchain.width(), swapchain.height());
 

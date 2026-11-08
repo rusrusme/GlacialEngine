@@ -17,6 +17,7 @@
 namespace editor {
     void UILayer::on_attach(SystemContext& context) {
         ImguiLayer::on_attach(context);
+        set_clear_backbuffer(true);
 
         ImGuiIO& io = ImGui::GetIO();
         ImFontConfig config;
