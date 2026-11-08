@@ -31,12 +31,11 @@ namespace engine::window {
 
     static LRESULT CALLBACK custom_titlebar_subclass_proc(
         HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam,
-        UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
-    {
+        UINT_PTR uIdSubclass, DWORD_PTR dwRefData) {
         auto* data = reinterpret_cast<WindowNativeData*>(dwRefData);
 
         switch (msg) {
-            case WM_NCCALCSIZE: {
+            case WM_NCCALCSIZE : {
                 if (wparam == TRUE) {
                     auto* params = reinterpret_cast<NCCALCSIZE_PARAMS*>(lparam);
                     if (IsZoomed(hwnd)) {
@@ -52,7 +51,7 @@ namespace engine::window {
                 return 0;
             }
 
-            case WM_NCHITTEST: {
+            case WM_NCHITTEST : {
                 LRESULT hit = DefSubclassProc(hwnd, msg, wparam, lparam);
                 if (hit == HTCLIENT) {
                     POINT pt = {.x = GET_X_LPARAM(lparam), .y = GET_Y_LPARAM(lparam)};
@@ -66,19 +65,19 @@ namespace engine::window {
                         const int border = GetSystemMetrics(SM_CXFRAME) + GetSystemMetrics(SM_CXPADDEDBORDER);
                         constexpr int top_border = 4;
 
-                        const bool left   = pt.x < border;
-                        const bool right  = pt.x >= rc.right - border;
-                        const bool top    = pt.y < top_border;
+                        const bool left = pt.x < border;
+                        const bool right = pt.x >= rc.right - border;
+                        const bool top = pt.y < top_border;
                         const bool bottom = pt.y >= rc.bottom - border;
 
-                        if (top && left)     return HTTOPLEFT;
-                        if (top && right)    return HTTOPRIGHT;
-                        if (bottom && left)  return HTBOTTOMLEFT;
+                        if (top && left) return HTTOPLEFT;
+                        if (top && right) return HTTOPRIGHT;
+                        if (bottom && left) return HTBOTTOMLEFT;
                         if (bottom && right) return HTBOTTOMRIGHT;
-                        if (left)            return HTLEFT;
-                        if (right)           return HTRIGHT;
-                        if (top)             return HTTOP;
-                        if (bottom)          return HTBOTTOM;
+                        if (left) return HTLEFT;
+                        if (right) return HTRIGHT;
+                        if (top) return HTTOP;
+                        if (bottom) return HTBOTTOM;
                     }
 
                     // Treat empty ImGui Menubar space as native OS titlebar
@@ -89,18 +88,18 @@ namespace engine::window {
                 return hit;
             }
 
-            case WM_NCMOUSEMOVE: {
-                POINT pt = { GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam) };
+            case WM_NCMOUSEMOVE : {
+                POINT pt = {GET_X_LPARAM(lparam), GET_Y_LPARAM(lparam)};
                 ScreenToClient(hwnd, &pt);
                 DefSubclassProc(hwnd, WM_MOUSEMOVE, 0, MAKELPARAM(pt.x, pt.y));
                 break;
             }
 
-            case WM_NCDESTROY: {
+            case WM_NCDESTROY : {
                 RemoveWindowSubclass(hwnd, custom_titlebar_subclass_proc, uIdSubclass);
                 break;
             }
-            default: break;
+            default : break;
         }
 
         return DefSubclassProc(hwnd, msg, wparam, lparam);
@@ -234,12 +233,15 @@ namespace engine::window {
             glfwWindowHint(GLFW_OPENGL_DEBUG_CONTEXT, GLFW_TRUE);
             #endif
 
+            glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE); // Hide window initially to prevent frame flicker
             GLFWwindow* window = glfwCreateWindow(width, height, title, nullptr, nullptr);
             if (window && window_data) {
                 setup_callbacks(window, window_data);
-                #if defined(_WIN32)
-                setup_win32_seamless_titlebar(window, window_data);
-                #endif
+                if (window_data->custom_titlebar) {
+                    #if defined(_WIN32)
+                    setup_win32_seamless_titlebar(window, window_data);
+                    #endif
+                }
             }
             return window;
         }
@@ -257,6 +259,17 @@ namespace engine::window {
         }
         else {
             CORE_ERROR("Invalid window handle in engine::window::destroy_window: {0}", window_handle);
+        }
+    }
+
+    void show(void* window_handle) {
+        if (window_handle) {
+            if (ACTIVE_FRAMEWORK == GraphicsFramework::GLFW) {
+                glfwShowWindow(static_cast<GLFWwindow*>(window_handle));
+            }
+        }
+        else {
+            CORE_ERROR("Invalid window handle in engine::window::show: {0}", window_handle);
         }
     }
 

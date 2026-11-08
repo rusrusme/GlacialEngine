@@ -16,6 +16,11 @@
 #include "render/shader/ShaderLibrary.hpp"
 
 namespace engine {
+    struct AppSpecs {
+        bool custom_titlebar{false};
+        bool headless{false};
+    };
+
     class Application {
     public:
         explicit Application(std::string title = config::ENGINE_TITLE);
@@ -31,6 +36,7 @@ namespace engine {
         [[nodiscard]] SystemContext& context() const { return *context_; }
 
     protected:
+        AppSpecs& specs() { return specs_; }
         virtual void init(SystemContext& context) {}
 
         void push_layer(std::unique_ptr<Layer> layer);
@@ -38,11 +44,13 @@ namespace engine {
 
     private:
         void shutdown();
+        int run_headless();
 
         std::string title_;
         std::unique_ptr<Window> window_;
 
         LayerStack layers_;
+        AppSpecs specs_;
 
         // Core Subsystems
         AudioSystem audio_system_;

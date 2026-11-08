@@ -33,18 +33,23 @@ namespace engine {
         CORE_INFO("Starting application");
         config::load();
 
+        if (specs_.headless) {
+            return run_headless();
+        }
+
         if (!window::init(GraphicsFramework::GLFW)) {
             CORE_CRITICAL("Application initialization failed: Could not initialize window");
             return 1;
         }
 
-        window_ = std::make_unique<Window>(title_);
+        window_ = std::make_unique<Window>(title_, specs_);
         if (!window_->valid()) {
             CORE_CRITICAL("Application initialization failed: Could not create window");
             window::shutdown();
             return 1;
         }
         window_->set_event_callback([this](Event& event) { on_event(event); });
+        bool window_shown = false;
 
         ///////////////////////////////////////////////////////
         // Initialize core systems
@@ -106,7 +111,10 @@ namespace engine {
             }
             render_context_.end_frame();
 
-            // window::swap_buffers(window_->native()); -> Swapchain does that now
+            if (!window_shown) {
+                window::show(window_->native());
+                window_shown = true;
+            }
             window::poll_events();
 
             EventQueue::dispatch_all();
@@ -178,6 +186,41 @@ namespace engine {
         window::shutdown();
 
         CORE_INFO("Engine shutdown complete");
+    }
+
+    // TODO
+    int Application::run_headless() {
+        PROFILE_FUNCTION();
+
+        CORE_INFO("Application set to HEADLESS mode");
+
+        // (z. B. Dummy- oder Null-Renderer übergeben)
+        // asset_manager_.init();
+
+        // context_ = std::make_unique<SystemContext>(
+            // Spezifischer Kontext ohne Fenster-/Render-Referenz
+        // );
+
+        init(*context_);
+
+        CORE_INFO("Attaching server layers");
+        for (const auto& layer : layers_) {
+            layer->on_attach(*context_);
+        }
+
+        Clock clock;
+        while (running_) {
+            const float delta_time = clock.update();
+
+            for (const auto& layer : layers_) {
+                layer->on_update(*context_, delta_time);
+            }
+
+            EventQueue::dispatch_all();
+        }
+
+        shutdown();
+        return 0;
     }
 
     Application* Application::instance_ = nullptr;

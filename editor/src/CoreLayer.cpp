@@ -116,6 +116,12 @@ namespace editor {
     void CoreLayer::on_update(SystemContext& context, float delta_time) {
         PROFILE_FUNCTION();
 
+        // TODO temporary
+        if (Input::key_pressed_once(Key::F5)) {
+            ScriptEngine::request_reload();
+        }
+        ScriptEngine::on_update(context.scenes.active_scene().get());
+
         const auto& viewport = context.get<SceneViewport>();
 
         const bool rmb = Input::mouse_button_pressed(Mouse::MOUSE_BUTTON_RIGHT);

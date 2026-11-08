@@ -21,44 +21,6 @@ void SandboxLayer::on_attach(SystemContext& context) {
     ScriptEngine::load_library("assets/scripts/Scripts.so");
     #endif
 
-    std::shared_ptr<Scene> scene = context.scenes.create("Sandbox Scene");
-
-    const auto cube_mesh_handle = context.assets.asset_handle_from_path("primitive://cube");
-
-    {
-        const AssetHandle albedo_handle = context.assets.asset_handle_from_path("assets/textures/brick/rock_wall_13_diff_1k.jpg");
-        const AssetHandle normal_handle = context.assets.asset_handle_from_path("assets/textures/brick/rock_wall_13_nor_gl_1k.jpg");
-        const AssetHandle rough_handle = context.assets.asset_handle_from_path("assets/textures/brick/rock_wall_13_rough_1k.jpg");
-
-        auto cube = scene->create_entity("Vehicle");
-
-        auto& transform = cube.get_component<TransformComponent>();
-        transform.position = {-1.2f, 0.0f, 0.0f};
-
-        cube.add_component<MeshComponent>(cube_mesh_handle);
-        auto& material = cube.add_component<MaterialComponent>();
-        material.color = glm::vec4(1.0f);
-        material.texture_handle = albedo_handle;
-        material.normal_texture_handle = normal_handle;
-        material.metallic_roughness_texture_handle = rough_handle;
-        material.metallic = 0.0f;
-        material.roughness = 1.0f;
-
-        cube.add_component<RigidBodyComponent>();
-    }
-
-    {
-        auto cube = scene->create_entity("Rotating Gold Metal Cube");
-        auto& transform = cube.get_component<TransformComponent>();
-        transform.position = {1.4f, 0.0f, 0.0f};
-
-        cube.add_component<MeshComponent>(cube_mesh_handle);
-        auto& material = cube.add_component<MaterialComponent>();
-        material.color = glm::vec4(1.00f, 0.76f, 0.33f, 1.0f);
-        material.metallic = 1.0f;
-        material.roughness = 0.15f;
-    }
-
     camera_.set_far_clip(10);
     camera_.set_near_clip(0.1f);
     camera_.set_fov(60);
@@ -81,23 +43,16 @@ void SandboxLayer::on_update(SystemContext& context, float delta_time) {
     if (Input::key_pressed_once(Key::SPACE)) {
         if (context.scenes.scene_state() == SceneState::Edit) {
             context.scenes.on_play();
-        } else {
+        }
+        else {
             context.scenes.on_stop();
         }
     }
 
     if (Input::key_pressed_once(Key::F5)) {
-        ScriptEngine::reload(scene.get());
+        ScriptEngine::request_reload();
     }
-
-    if (context.scenes.scene_state() == SceneState::Play) {
-        const auto view = scene->view<LabelComponent, TransformComponent>(exclude<DisabledComponent>);
-        for (const auto& [entity, label, transform] : view.each()) {
-            if (label.tag == "Rotating Gold Metal Cube") {
-                transform.rotation.y += delta_time * 45.0f;
-            }
-        }
-    }
+    ScriptEngine::on_update(context.scenes.active_scene().get());
 }
 
 void SandboxLayer::on_render(SystemContext& context, float delta_time) {

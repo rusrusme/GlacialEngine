@@ -29,6 +29,7 @@ namespace engine {
         int height = 0;
         EventCallbackFunc event_callback = nullptr;
         bool titlebar_hovered = false;
+        bool custom_titlebar = false;
     };
 
     namespace window {
@@ -42,6 +43,8 @@ namespace engine {
 
         void* create(int width, int height, const char* title, WindowNativeData* window_data);
         void destroy(void* window_handle);
+
+        void show(void* window_handle);
 
         void make_context_current(void* window_handle);
         void* current_context();

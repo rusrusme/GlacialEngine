@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include <nlohmann/json.hpp>
+
 #include "asset/AssetManager.hpp"
 #include "project/scene/Scene.hpp"
 

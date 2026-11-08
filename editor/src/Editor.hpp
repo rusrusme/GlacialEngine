@@ -18,6 +18,8 @@ namespace editor {
     class Editor : public Application {
     public:
         Editor() : Application("Glacial Engine") {
+            specs().custom_titlebar = true;
+
             push_layer(std::make_unique<CoreLayer>());
             push_layer(std::make_unique<RimeEditor>());
             push_overlay(std::make_unique<UILayer>());

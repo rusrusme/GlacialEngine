@@ -13,11 +13,13 @@
 #include "event/WindowEvents.hpp"
 
 namespace engine {
+    struct AppSpecs;
+
     class Window {
     public:
         using EventCallbackFunc = std::function<void(Event&)>;
 
-        explicit Window(std::string title);
+        explicit Window(std::string title, const AppSpecs& specs);
         ~Window();
 
         Window(const Window&) = delete;
