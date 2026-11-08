@@ -10,7 +10,7 @@ system TrafficSystem {
 
         for (entity e, TransformComponent t, RigidBodyComponent b, LabelComponent l) exclude DisabledComponent {
             if (e.name == "Vehicle") {
-                b.velocity.z -= (delta_time * 6.7)
+#                b.velocity.z -= (delta_time * 6.7)
                 #                b.velocity.x += (delta_time * 0.2)
                 t.position -= b.velocity * delta_time
             }

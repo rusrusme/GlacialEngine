@@ -25,4 +25,7 @@ public:
 private:
     Camera camera_;
     CameraController camera_controller_;
+
+    glm::vec3 camera_target_{0.0f};
+    float current_speed_{0.0f};
 };
