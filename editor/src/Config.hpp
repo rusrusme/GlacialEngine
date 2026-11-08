@@ -5,11 +5,13 @@
 
 #pragma once
 
+#include <format>
 #include <fstream>
 #include <sstream>
 #include <string>
 #include <type_traits>
 #include <unordered_map>
+#include <glm/vec4.hpp>
 
 #include "core/Log.hpp"
 
@@ -28,9 +30,13 @@ namespace editor::config {
             if (line.empty() || line[0] == '#' || line[0] == ';') continue;
 
             std::istringstream iss(line);
-            std::string key, value;
-            if (iss >> key >> value) {
-                s_config_cache[key] = value;
+            std::string key;
+            if (iss >> key) {
+                std::string value;
+                std::getline(iss >> std::ws, value);
+                if (!value.empty()) {
+                    s_config_cache[key] = value;
+                }
             }
         }
         s_is_loaded = true;
@@ -59,9 +65,34 @@ namespace editor::config {
             else if constexpr (std::is_same_v<T, std::string>) {
                 return it->second;
             }
+            else if constexpr (std::is_same_v<T, glm::vec4>) {
+                const char* ptr = it->second.c_str();
+                char* end = nullptr;
+                float components[4];
+                int count = 0;
+
+                while (count < 4 && *ptr != '\0') {
+                    // Skip separators: spaces, commas, semicolons, tabs
+                    while (*ptr == ' ' || *ptr == '\t' || *ptr == ',' || *ptr == ';') {
+                        ++ptr;
+                    }
+                    if (*ptr == '\0') break;
+
+                    components[count] = std::strtof(ptr, &end);
+                    if (ptr == end) break; // Conversion stopped without consuming characters
+
+                    ptr = end;
+                    ++count;
+                }
+
+                if (count == 4) {
+                    return glm::vec4(components[0], components[1], components[2], components[3]);
+                }
+                return default_value;
+            }
         }
         catch (...) {
-            return default_value; // Fallback if string conversion fails
+            return default_value;
         }
 
         return default_value;
@@ -75,6 +106,9 @@ namespace editor::config {
         else if constexpr (std::is_same_v<T, bool>) {
             s_config_cache[key] = value ? "true" : "false";
         }
+        else if constexpr (std::is_same_v<T, glm::vec4>) {
+            s_config_cache[key] = std::format("{},{},{},{}", value.x, value.y, value.z, value.w);
+        }
         else {
             s_config_cache[key] = std::to_string(value);
         }
@@ -84,7 +118,7 @@ namespace editor::config {
         std::ofstream file(CONFIG_PATH);
         if (!file.is_open()) {
             CLIENT_ERROR("Failed to save '{0}'", CONFIG_PATH);
-            return; 
+            return;
         }
         for (const auto& [key, value] : s_config_cache) {
             file << key << " " << value << "\n";

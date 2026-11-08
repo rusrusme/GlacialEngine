@@ -17,9 +17,14 @@ namespace editor {
         if (ImGui::Button("Reset Font Scale")) {
             font_scale = 1.0f;
         }
+
         ImGui::Separator();
         ImGui::Checkbox("Show Right Margin Guide", &show_column_guide);
         ImGui::SliderInt("Column Limit", &column_guide, 40, 200);
+
+        ImGui::Separator();
+        ImGui::Text("Editor Theme");
+        ImGui::ColorEdit4("Canvas Background", &theme.canvas_bg.x);
     }
 
     void RimeSettings::load() {
@@ -27,6 +32,7 @@ namespace editor {
         font_scale = config::get_value("Rime_font_scale", font_scale);
         show_column_guide = config::get_value("Rime_show_column_guide", show_column_guide);
         column_guide = config::get_value("Rime_column_guide", column_guide);
+        theme.canvas_bg = config::get_value("Rime_canvas_bg", theme.canvas_bg);
     }
 
     void RimeSettings::save() {
@@ -34,6 +40,7 @@ namespace editor {
         config::set_value("Rime_font_scale", font_scale);
         config::set_value("Rime_show_column_guide", show_column_guide);
         config::set_value("Rime_column_guide", column_guide);
+        config::set_value("Rime_canvas_bg", theme.canvas_bg);
     }
 
     void RimeSettings::scale_font(float delta_y) {

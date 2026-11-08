@@ -9,7 +9,6 @@
 #include "ui/UIComponent.hpp"
 
 namespace editor {
-
     using namespace engine;
 
     struct RimeEditorCallbackData {
@@ -33,5 +32,4 @@ namespace editor {
         int last_cursor_pos_ = -1;
         double cursor_blink_time_ = 0.0;
     };
-
-} // namespace editor
+}

@@ -10,6 +10,7 @@
 
 #include "EditorSettings.hpp"
 #include "core/Layer.hpp"
+#include "rime/RimeTheme.hpp"
 #include "rime/highlight/RimeHighlighter.hpp"
 
 namespace editor {
@@ -23,6 +24,8 @@ namespace editor {
         float font_scale{1.0f};
         bool show_column_guide{true};
         int column_guide{120};
+
+        RimeTheme theme{};
 
         [[nodiscard]] std::string_view name() const override { return "Rime"; }
 
