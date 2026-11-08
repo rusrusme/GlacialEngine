@@ -372,5 +372,172 @@ namespace editor {
     }
 
     std::vector<HighlightedLine> RimeHighlighter::tokenize_json(std::string_view source) {
+        std::vector<HighlightedLine> lines;
+        lines.push_back(HighlightedLine{.line_start_offset = 0, .line_length = 0, .spans = {}});
+
+        uint32_t current_line = 0;
+        uint32_t line_start = 0;
+        size_t cur = 0;
+
+        while (cur < source.size()) {
+            const char c = source[cur];
+
+            if (c == '\n') {
+                lines[current_line].line_length = static_cast<uint32_t>(cur) - line_start;
+                cur++;
+                current_line++;
+                line_start = static_cast<uint32_t>(cur);
+                lines.push_back(HighlightedLine{.line_start_offset = line_start, .line_length = 0, .spans = {}});
+                continue;
+            }
+
+            if (c == ' ' || c == '\t' || c == '\r') {
+                cur++;
+                continue;
+            }
+
+            const auto token_start = static_cast<uint32_t>(cur);
+            const uint32_t col_offset = token_start - line_start;
+
+            if (c == '#' || (c == '/' && cur + 1 < source.size() && source[cur + 1] == '/')) {
+                while (cur < source.size() && source[cur] != '\n' && source[cur] != '\r') {
+                    cur++;
+                }
+                const uint32_t len = static_cast<uint32_t>(cur) - token_start;
+                lines[current_line].spans.push_back(HighlightSpan{
+                    .column_offset = col_offset,
+                    .length        = len,
+                    .kind          = HighlightKind::Comment
+                });
+                continue;
+            }
+
+            if (c == '/' && cur + 1 < source.size() && source[cur + 1] == '*') {
+                cur += 2;
+                while (cur + 1 < source.size() && !(source[cur] == '*' && source[cur + 1] == '/')) {
+                    if (source[cur] == '\n') {
+                        const uint32_t len = static_cast<uint32_t>(cur) - (line_start + col_offset);
+                        if (len > 0) {
+                            lines[current_line].spans.push_back(HighlightSpan{col_offset, len, HighlightKind::Comment});
+                        }
+                        lines[current_line].line_length = static_cast<uint32_t>(cur) - line_start;
+                        cur++;
+                        current_line++;
+                        line_start = static_cast<uint32_t>(cur);
+                        lines.push_back(HighlightedLine{.line_start_offset = line_start, .line_length = 0, .spans = {}});
+                        continue;
+                    }
+                    cur++;
+                }
+                if (cur + 1 < source.size()) {
+                    cur += 2;
+                }
+                const uint32_t len = static_cast<uint32_t>(cur) - (line_start + col_offset);
+                if (len > 0) {
+                    lines[current_line].spans.push_back(HighlightSpan{col_offset, len, HighlightKind::Comment});
+                }
+                continue;
+            }
+
+            if (c == '"') {
+                cur++;
+                while (cur < source.size() && source[cur] != '\n' && source[cur] != '\r') {
+                    if (source[cur] == '\\' && cur + 1 < source.size() && source[cur + 1] != '\n') {
+                        cur += 2;
+                        continue;
+                    }
+                    if (source[cur] == '"') {
+                        cur++;
+                        break;
+                    }
+                    cur++;
+                }
+                const uint32_t len = static_cast<uint32_t>(cur) - token_start;
+
+                size_t lookahead = cur;
+                while (lookahead < source.size() && (source[lookahead] == ' ' || source[lookahead] == '\t' ||
+                    source[lookahead] == '\r' || source[lookahead] == '\n')) {
+                    lookahead++;
+                }
+                const bool is_key = (lookahead < source.size() && source[lookahead] == ':');
+
+                lines[current_line].spans.push_back(HighlightSpan{
+                    .column_offset = col_offset,
+                    .length        = len,
+                    .kind          = is_key ? HighlightKind::Type : HighlightKind::String
+                });
+                continue;
+            }
+
+            if (c == '-' || (c >= '0' && c <= '9')) {
+                if (c == '-' && (cur + 1 >= source.size() || source[cur + 1] < '0' || source[cur + 1] > '9')) {
+                    cur++;
+                    lines[current_line].spans.push_back(HighlightSpan{col_offset, 1, HighlightKind::Operator});
+                    continue;
+                }
+
+                if (c == '-') cur++;
+                while (cur < source.size() && source[cur] >= '0' && source[cur] <= '9') {
+                    cur++;
+                }
+                if (cur + 1 < source.size() && source[cur] == '.' && source[cur + 1] >= '0' && source[cur + 1] <= '9') {
+                    cur++;
+                    while (cur < source.size() && source[cur] >= '0' && source[cur] <= '9') {
+                        cur++;
+                    }
+                }
+                if (cur < source.size() && (source[cur] == 'e' || source[cur] == 'E')) {
+                    cur++;
+                    if (cur < source.size() && (source[cur] == '+' || source[cur] == '-')) {
+                        cur++;
+                    }
+                    while (cur < source.size() && source[cur] >= '0' && source[cur] <= '9') {
+                        cur++;
+                    }
+                }
+
+                const uint32_t len = static_cast<uint32_t>(cur) - token_start;
+                lines[current_line].spans.push_back(HighlightSpan{
+                    .column_offset = col_offset,
+                    .length        = len,
+                    .kind          = HighlightKind::Number
+                });
+                continue;
+            }
+
+            if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_') {
+                while (cur < source.size() && ((source[cur] >= 'a' && source[cur] <= 'z') ||
+                    (source[cur] >= 'A' && source[cur] <= 'Z') ||
+                    (source[cur] >= '0' && source[cur] <= '9') ||
+                    source[cur] == '_')) {
+                    cur++;
+                }
+                const uint32_t len = static_cast<uint32_t>(cur) - token_start;
+                const std::string_view word = source.substr(token_start, len);
+
+                HighlightKind kind = HighlightKind::Default;
+                if (word == "true" || word == "false" || word == "null") {
+                    kind = HighlightKind::Keyword;
+                }
+
+                lines[current_line].spans.push_back(HighlightSpan{
+                    .column_offset = col_offset,
+                    .length        = len,
+                    .kind          = kind
+                });
+                continue;
+            }
+
+            cur++;
+            const HighlightKind sym_kind = (c == ':') ? HighlightKind::Operator : HighlightKind::Punctuation;
+            lines[current_line].spans.push_back(HighlightSpan{
+                .column_offset = col_offset,
+                .length        = 1,
+                .kind          = sym_kind
+            });
+        }
+
+        lines[current_line].line_length = static_cast<uint32_t>(source.size()) - line_start;
+        return lines;
     }
 }

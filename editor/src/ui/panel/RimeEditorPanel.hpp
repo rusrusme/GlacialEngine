@@ -17,6 +17,7 @@ namespace editor {
     struct RimeEditorCallbackData {
         std::string* buffer = nullptr;
         int* cursor_pos = nullptr;
+        bool insert_spaces = false;
     };
 
     class RimeEditorPanel : public UIComponent {
@@ -29,8 +30,8 @@ namespace editor {
         [[nodiscard]] ShortcutContext shortcut_context() const override { return ShortcutContext::Rime; }
 
     private:
-        static void render_empty_state();
-        static void render_editor_view(SystemContext& context, TextDocument& doc, const ImVec2& avail);
-        static void render_status_bar(SystemContext& context, const TextDocument& doc, const ImVec2& start_pos, float width, float bar_height, float editor_height);
+        void render_empty_state();
+        void render_editor_view(SystemContext& context, TextDocument& doc, const ImVec2& avail);
+        void render_status_bar(SystemContext& context, const TextDocument& doc, const ImVec2& start_pos, float width, float bar_height, float editor_height);
     };
 }

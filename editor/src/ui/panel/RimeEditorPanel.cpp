@@ -27,10 +27,18 @@ namespace editor {
             if (user_data->cursor_pos) {
                 *user_data->cursor_pos = data->CursorPos;
             }
+
+            if (user_data->insert_spaces) {
+                if (data->HasSelection()) {
+                    data->DeleteChars(data->SelectionStart, data->SelectionEnd - data->SelectionStart);
+                }
+                data->InsertChars(data->CursorPos, "    ");
+                user_data->insert_spaces = false;
+            }
         }
         else if (data->EventFlag == ImGuiInputTextFlags_CallbackCharFilter) {
             if (data->EventChar == '\t') {
-                data->InsertChars(data->CursorPos, "    ");
+                user_data->insert_spaces = true;
                 return 1;
             }
         }
@@ -42,7 +50,6 @@ namespace editor {
 
         auto& rime = context.get<RimeContext>();
 
-        // Falls eine Datei aus dem AssetBrowser geöffnet wurde: Panel sichtbar schalten und fokussieren
         if (rime.request_focus_panel) {
             visible_ = true;
             ImGui::SetNextWindowFocus();
@@ -135,12 +142,15 @@ namespace editor {
             doc.buffer.reserve(256);
         }
 
-        auto update_tokens = [&doc]() {
-            if (doc.filepath.extension() == ".gscript") {
+        auto update_tokens = [&doc] {
+            const auto ext = doc.filepath.extension();
+            if (ext == ".gscript") {
                 doc.highlighted_lines = RimeHighlighter::tokenize(doc.buffer);
             }
+            else if (ext == ".json") {
+                doc.highlighted_lines = RimeHighlighter::tokenize_json(doc.buffer);
+            }
             else {
-                // TODO add tokenize json
                 doc.highlighted_lines = RimeHighlighter::tokenize_plain(doc.buffer);
             }
             doc.highlight_dirty = false;
@@ -182,8 +192,9 @@ namespace editor {
         ImGui::SetCursorScreenPos(editor_pos);
 
         RimeEditorCallbackData cb_data{
-            .buffer     = &doc.buffer,
-            .cursor_pos = &doc.cursor_pos
+            .buffer        = &doc.buffer,
+            .cursor_pos    = &doc.cursor_pos,
+            .insert_spaces = false
         };
 
         constexpr ImGuiInputTextFlags input_flags = ImGuiInputTextFlags_AllowTabInput
@@ -197,7 +208,6 @@ namespace editor {
         ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
         ImGui::PushStyleColor(ImGuiCol_FrameBg, bg_color_vec);
 
-        // Jeder Tab erhält eine eigene ImGui-ID, damit ImGui Scroll-Zustände nativ getrennt verwaltet
         const std::string canvas_id = "##RimeEditorCanvas_" + std::to_string(rime.active_document_index);
         const bool text_changed = ImGui::InputTextMultiline(
             canvas_id.c_str(),
@@ -213,11 +223,9 @@ namespace editor {
 
         if (text_changed) {
             doc.dirty = true;
-            doc.highlighted_lines = RimeHighlighter::tokenize(doc.buffer);
-            doc.highlight_dirty = false;
+            update_tokens();
         }
 
-        // Finde das generierte ChildWindow für Clipping und Scroll-Synchronisation
         ImGuiWindow* parent_window = ImGui::GetCurrentWindow();
         ImGuiWindow* child_window = nullptr;
         for (auto* child : parent_window->DC.ChildWindows) {
@@ -268,13 +276,11 @@ namespace editor {
         ImDrawList* text_draw_list = child_window ? child_window->DrawList : window_draw_list;
         const float font_size = ImGui::GetFontSize();
 
-        // 1. Syntax-Highlighting & Cursor auf Child-Window DrawList
         const ImVec2 clip_min = child_window ? child_window->InnerClipRect.Min : editor_pos;
         const ImVec2 clip_max = child_window ? child_window->InnerClipRect.Max : ImVec2(editor_pos.x + editor_size.x, editor_pos.y + editor_size.y);
 
         text_draw_list->PushClipRect(clip_min, clip_max, true);
 
-        // Column Guide
         const int guide_col = rime_settings.column_guide > 0 ? rime_settings.column_guide : 120;
         if (rime_settings.show_column_guide) {
             const float guide_x = std::floor(
@@ -290,7 +296,6 @@ namespace editor {
             }
         }
 
-        // Text & Caret
         const char* buf_begin = doc.buffer.data();
         const auto buf_size = static_cast<uint32_t>(doc.buffer.size());
 
@@ -320,7 +325,6 @@ namespace editor {
                 );
             }
 
-            // Blinkender Cursor
             const auto u_cursor = static_cast<uint32_t>(std::clamp(doc.cursor_pos, 0, static_cast<int>(buf_size)));
             const uint32_t line_end_offset = h_line.line_start_offset + h_line.line_length;
             if (editor_active && u_cursor >= h_line.line_start_offset && u_cursor <= line_end_offset) {
@@ -341,7 +345,6 @@ namespace editor {
 
         text_draw_list->PopClipRect();
 
-        // 2. Gutter (Zeilennummern)
         window_draw_list->AddRectFilled(
             canvas_pos,
             ImVec2(canvas_pos.x + gutter_width, canvas_pos.y + avail.y),
