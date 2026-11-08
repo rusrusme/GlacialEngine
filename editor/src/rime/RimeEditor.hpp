@@ -8,9 +8,9 @@
 #include <filesystem>
 #include <string>
 
-#include "Config.hpp"
 #include "EditorSettings.hpp"
 #include "core/Layer.hpp"
+#include "rime/highlight/RimeHighlighter.hpp"
 
 namespace editor {
     using namespace engine;
@@ -21,41 +21,26 @@ namespace editor {
 
         bool change_size_on_scroll{true};
         float font_scale{1.0f};
+        bool show_column_guide{true};
+        int column_guide{120};
 
         [[nodiscard]] std::string_view name() const override { return "Rime"; }
 
-        void on_render_ui(SystemContext& context) override {
-            ImGui::Spacing();
-            ImGui::Checkbox("Change font size with Ctrl+Scrollwheel", &change_size_on_scroll);
+        void on_render_ui(SystemContext& context) override;
 
-            if (ImGui::SliderFloat("Font Scale", &font_scale, 0.5f, 3.0f, "%.2f")) {
-                font_scale = std::clamp(font_scale, 0.5f, 3.0f);
-            }
-            if (ImGui::Button("Reset Font Scale")) {
-                font_scale = 1.0f;
-            }
-        }
+        void load() override;
+        void save() override;
 
-        void load() override {
-            change_size_on_scroll = config::get_value("Rime_change_font_on_scroll", change_size_on_scroll);
-            font_scale = config::get_value("Rime_font_scale", font_scale);
-        }
-
-        void save() override {
-            config::set_value("Rime_change_font_on_scroll", change_size_on_scroll);
-            config::set_value("Rime_font_scale", font_scale);
-        }
-
-        void scale_font(float delta_y) {
-            font_scale += delta_y * 0.1f;
-            font_scale = std::clamp(font_scale, 0.8f, 4.0f);
-        }
+        void scale_font(float delta_y);
     };
 
     struct TextDocument {
         std::filesystem::path filepath;
         std::string buffer;
         bool dirty = false;
+
+        std::vector<HighlightedLine> highlighted_lines;
+        bool highlight_dirty = true;
     };
 
     struct RimeContext {

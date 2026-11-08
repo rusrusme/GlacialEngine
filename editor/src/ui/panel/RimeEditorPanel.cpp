@@ -5,18 +5,26 @@
 
 #include "RimeEditorPanel.hpp"
 
-#include "Config.hpp"
+#include <cfloat>
+#include <cmath>
+#include <string_view>
+
 #include "core/SystemContext.hpp"
-#include "debug/ImguiSystem.hpp"
 #include "rime/RimeEditor.hpp"
+#include "rime/highlight/RimeHighlighter.hpp"
 #include "ui/UILayer.hpp"
 
 namespace editor {
-    static int string_resize_callback(ImGuiInputTextCallbackData* data) {
+    static int rime_editor_callback(ImGuiInputTextCallbackData* data) {
+        auto* user_data = static_cast<RimeEditorCallbackData*>(data->UserData);
+        if (!user_data) return 0;
+
         if (data->EventFlag == ImGuiInputTextFlags_CallbackResize) {
-            auto* str = static_cast<std::string*>(data->UserData);
-            str->resize(data->BufTextLen);
-            data->Buf = str->data();
+            user_data->buffer->resize(static_cast<size_t>(data->BufTextLen));
+            data->Buf = user_data->buffer->data();
+        }
+        else if (data->EventFlag == ImGuiInputTextFlags_CallbackAlways) {
+            user_data->cursor_pos = data->CursorPos;
         }
         return 0;
     }
@@ -29,18 +37,22 @@ namespace editor {
         auto& doc = rime.active_document;
 
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
+
         if (ImGui::Begin("Rime")) {
             if (ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows)) {
                 Shortcuts::set_active_context(shortcut_context());
             }
 
             const ImVec2 avail = ImGui::GetContentRegionAvail();
+
             if (doc.buffer.capacity() == 0) {
                 doc.buffer.reserve(256);
             }
 
-            constexpr ImGuiInputTextFlags input_flags = ImGuiInputTextFlags_AllowTabInput
-                | ImGuiInputTextFlags_CallbackResize;
+            if (doc.highlight_dirty || doc.highlighted_lines.empty()) {
+                doc.highlighted_lines = RimeHighlighter::tokenize(doc.buffer);
+                doc.highlight_dirty = false;
+            }
 
             ImFont* font = UILayer::rime_font();
             if (!font) {
@@ -51,21 +63,236 @@ namespace editor {
             font->Scale = rime_settings.font_scale;
             ImGui::PushFont(font);
 
-            if (ImGui::InputTextMultiline(
+            const auto line_count = static_cast<int64_t>(doc.highlighted_lines.size());
+            int64_t temp = line_count;
+            int digits = 1;
+            while (temp >= 10) {
+                temp /= 10;
+                digits++;
+            }
+            digits = std::max(digits, 3);
+
+            const float char_width = ImGui::CalcTextSize("0").x;
+            constexpr float pad_left = 12.0f;
+            constexpr float pad_right = 10.0f;
+            const float gutter_width = static_cast<float>(digits) * char_width + pad_left + pad_right;
+
+            const ImVec2 canvas_pos = ImGui::GetCursorScreenPos();
+            const ImVec2 editor_pos(canvas_pos.x + gutter_width, canvas_pos.y);
+            const ImVec2 editor_size(std::max(0.0f, avail.x - gutter_width), avail.y);
+
+            const auto line_h = static_cast<double>(ImGui::GetTextLineHeight());
+            const auto pad_x = static_cast<double>(ImGui::GetStyle().FramePadding.x);
+            const auto pad_y = static_cast<double>(ImGui::GetStyle().FramePadding.y);
+
+            ImGui::SetCursorScreenPos(editor_pos);
+
+            RimeEditorCallbackData cb_data{
+                .buffer     = &doc.buffer,
+                .cursor_pos = cursor_pos_
+            };
+
+            constexpr ImGuiInputTextFlags input_flags = ImGuiInputTextFlags_AllowTabInput
+                | ImGuiInputTextFlags_CallbackResize
+                | ImGuiInputTextFlags_CallbackAlways;
+
+            // Unified background color (#1a1b1e)
+            constexpr auto bg_color_vec = ImVec4(0.10f, 0.105f, 0.115f, 1.0f);
+            const ImU32 bg_color_u32 = ImGui::ColorConvertFloat4ToU32(bg_color_vec);
+
+            ImGui::PushStyleColor(ImGuiCol_Text, ImVec4(0.0f, 0.0f, 0.0f, 0.0f));
+            ImGui::PushStyleColor(ImGuiCol_FrameBg, bg_color_vec);
+            const bool text_changed = ImGui::InputTextMultiline(
                 "##RimeEditorCanvas",
                 doc.buffer.data(),
                 doc.buffer.capacity() + 1,
-                avail,
+                editor_size,
                 input_flags,
-                string_resize_callback,
-                &doc.buffer)) {
+                rime_editor_callback,
+                &cb_data
+            );
+            const bool editor_active = ImGui::IsItemActive();
+            ImGui::PopStyleColor(2);
+
+            if (text_changed) {
                 doc.dirty = true;
+                doc.highlighted_lines = RimeHighlighter::tokenize(doc.buffer);
+                doc.highlight_dirty = false;
             }
+
+            // Locate the child window created by InputTextMultiline
+            ImGuiWindow* parent_window = ImGui::GetCurrentWindow();
+            ImGuiWindow* child_window = nullptr;
+            for (auto* child : parent_window->DC.ChildWindows) {
+                if (child && std::string_view(child->Name).find("##RimeEditorCanvas") != std::string_view::npos) {
+                    child_window = child;
+                    break;
+                }
+            }
+            if (!child_window && !parent_window->DC.ChildWindows.empty()) {
+                child_window = parent_window->DC.ChildWindows.back();
+            }
+
+            // Sync scroll and forward gutter mouse-wheel scroll directly into the child window
+            const ImVec2 mouse_pos = ImGui::GetMousePos();
+            const bool gutter_hovered = (mouse_pos.x >= canvas_pos.x &&
+                mouse_pos.x <= canvas_pos.x + gutter_width &&
+                mouse_pos.y >= canvas_pos.y &&
+                mouse_pos.y <= canvas_pos.y + avail.y);
+
+            if (child_window) {
+                if (gutter_hovered && ImGui::GetIO().MouseWheel != 0.0f) {
+                    child_window->Scroll.y = std::clamp(
+                        child_window->Scroll.y - ImGui::GetIO().MouseWheel * static_cast<float>(line_h) * 4.0f,
+                        0.0f,
+                        child_window->ScrollMax.y
+                    );
+                }
+                scroll_x_ = child_window->Scroll.x;
+                scroll_y_ = child_window->Scroll.y;
+            }
+
+            if (editor_active) {
+                cursor_pos_ = cb_data.cursor_pos;
+                if (cursor_pos_ != last_cursor_pos_ || text_changed) {
+                    last_cursor_pos_ = cursor_pos_;
+                    cursor_blink_time_ = ImGui::GetTime();
+                }
+            }
+
+            const auto cur_scroll_x = static_cast<double>(scroll_x_);
+            const auto cur_scroll_y = static_cast<double>(scroll_y_);
+
+            const int64_t first_line = std::max<int64_t>(0, static_cast<int64_t>((cur_scroll_y - pad_y) / line_h));
+            const int64_t last_line = std::min<int64_t>(
+                static_cast<int64_t>(doc.highlighted_lines.size()),
+                static_cast<int64_t>((cur_scroll_y + static_cast<double>(avail.y) - pad_y) / line_h) + 1
+            );
+
+            ImDrawList* window_draw_list = ImGui::GetWindowDrawList();
+            ImDrawList* text_draw_list = child_window ? child_window->DrawList : window_draw_list;
+            const float font_size = ImGui::GetFontSize();
+
+            // ================================================================
+            // 1. Render Syntax Highlighting & Caret on the Child Window DrawList
+            // ================================================================
+            const ImVec2 clip_min = child_window ? child_window->InnerClipRect.Min : editor_pos;
+            const ImVec2 clip_max = child_window ? child_window->InnerClipRect.Max : ImVec2(editor_pos.x + editor_size.x, editor_pos.y + editor_size.y);
+
+            text_draw_list->PushClipRect(clip_min, clip_max, true);
+
+            // ----------------------------------------------------------------
+            // Column Guide (Right Margin / Hard Wrap Line)
+            // ----------------------------------------------------------------
+            const int guide_col = rime_settings.column_guide > 0 ? rime_settings.column_guide : 120;
+            if (rime_settings.show_column_guide) {
+                // Use char_width from line 67 (measured from "0") for exact monospace pitch
+                const float guide_x = std::floor(
+                    editor_pos.x + static_cast<float>(pad_x - cur_scroll_x) + (static_cast<float>(guide_col) * char_width)
+                );
+
+                // Only draw when within the visible horizontal editor bounds
+                if (guide_x >= clip_min.x && guide_x + 1.0f <= clip_max.x) {
+                    // Crisp 1px solid line without ImGui line antialiasing blur (CLion Darcula guide color)
+                    constexpr ImU32 guide_color = IM_COL32(75, 78, 86, 255);
+                    text_draw_list->AddRectFilled(
+                        ImVec2(guide_x, clip_min.y),
+                        ImVec2(guide_x + 1.0f, clip_max.y),
+                        guide_color
+                    );
+                }
+            }
+
+            // ----------------------------------------------------------------
+            // Text & Caret Rendering Loop
+            // ----------------------------------------------------------------
+            const char* buf_begin = doc.buffer.data();
+            const auto buf_size = static_cast<uint32_t>(doc.buffer.size());
+
+            for (int64_t i = first_line; i < last_line; ++i) {
+                const auto& h_line = doc.highlighted_lines[static_cast<size_t>(i)];
+                const double relative_y = (static_cast<double>(i) * line_h) - cur_scroll_y + pad_y;
+                const float text_y = editor_pos.y + static_cast<float>(relative_y);
+                const char* line_ptr = buf_begin + h_line.line_start_offset;
+
+                for (const auto& span : h_line.spans) {
+                    if (h_line.line_start_offset + span.column_offset + span.length > buf_size) {
+                        continue;
+                    }
+                    const char* tok_begin = line_ptr + span.column_offset;
+                    const char* tok_end = tok_begin + span.length;
+
+                    const float offset_x = font->CalcTextSizeA(font_size, FLT_MAX, 0.0f, line_ptr, tok_begin).x;
+                    const float text_x = editor_pos.x + static_cast<float>(pad_x - cur_scroll_x) + offset_x;
+
+                    text_draw_list->AddText(
+                        font,
+                        font_size,
+                        ImVec2(text_x, text_y),
+                        RimeHighlighter::color_for(span.kind),
+                        tok_begin,
+                        tok_end
+                    );
+                }
+
+                // Render blinking caret only when Rime is active
+                const auto u_cursor = static_cast<uint32_t>(std::clamp(cursor_pos_, 0, static_cast<int>(buf_size)));
+                const uint32_t line_end_offset = h_line.line_start_offset + h_line.line_length;
+                if (editor_active && u_cursor >= h_line.line_start_offset && u_cursor <= line_end_offset) {
+                    const double elapsed = ImGui::GetTime() - cursor_blink_time_;
+                    if (std::fmod(elapsed, 1.0) < 0.55) {
+                        const char* caret_ptr = buf_begin + u_cursor;
+                        const float caret_offset_x = font->CalcTextSizeA(font_size, FLT_MAX, 0.0f, line_ptr, caret_ptr).x;
+                        const float caret_x = std::floor(editor_pos.x + static_cast<float>(pad_x - cur_scroll_x) + caret_offset_x);
+                        text_draw_list->AddLine(
+                            ImVec2(caret_x, text_y),
+                            ImVec2(caret_x, text_y + static_cast<float>(line_h)),
+                            IM_COL32(230, 235, 245, 255),
+                            1.5f
+                        );
+                    }
+                }
+            }
+
+            text_draw_list->PopClipRect();
+
+            // ================================================================
+            // 2. Render Line Number Gutter on the Parent Window DrawList
+            // ================================================================
+            window_draw_list->AddRectFilled(
+                canvas_pos,
+                ImVec2(canvas_pos.x + gutter_width, canvas_pos.y + avail.y),
+                bg_color_u32
+            );
+
+            window_draw_list->PushClipRect(
+                canvas_pos,
+                ImVec2(canvas_pos.x + gutter_width, canvas_pos.y + avail.y),
+                true
+            );
+
+            constexpr ImU32 text_col = IM_COL32(100, 105, 115, 255);
+            for (int64_t i = first_line; i < last_line; ++i) {
+                const int64_t line_num = i + 1;
+                char num_str[32];
+                std::snprintf(num_str, sizeof(num_str), "%lld", static_cast<long long>(line_num));
+
+                const float text_w = ImGui::CalcTextSize(num_str).x;
+                const float text_x = canvas_pos.x + gutter_width - pad_right - text_w;
+
+                const double relative_y = (static_cast<double>(i) * line_h) - cur_scroll_y + pad_y;
+                const float text_y = canvas_pos.y + static_cast<float>(relative_y);
+
+                window_draw_list->AddText(font, font_size, ImVec2(text_x, text_y), text_col, num_str);
+            }
+
+            window_draw_list->PopClipRect();
 
             ImGui::PopFont();
             font->Scale = old_scale;
         }
+
         ImGui::End();
         ImGui::PopStyleVar();
     }
-}
+} // namespace editor
