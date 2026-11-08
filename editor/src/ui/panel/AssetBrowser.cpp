@@ -13,6 +13,11 @@
 #include "ui/Icons.hpp"
 
 namespace editor {
+    static bool is_editable_text_file(const std::filesystem::path& path) {
+        const auto ext = path.extension().string();
+        return ext == ".gscript" || ext == ".txt" || ext == ".json";
+    }
+
     static void draw_item_icon(ImDrawList* draw_list, const ImVec2 p0, const ImVec2 p1, const bool is_directory) {
         const auto center = ImVec2((p0.x + p1.x) * 0.5f, (p0.y + p1.y) * 0.5f);
         const float w = p1.x - p0.x;
@@ -423,13 +428,13 @@ namespace editor {
 
             // GSCRIPT
             if (is_hovered && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
-                if (path.extension() == ".gscript" || path.extension() == ".GSCRIPT") {
+                if (is_editable_text_file(path)) {
                     context.get<RimeContext>().open_document(path);
                 }
             }
 
             if (ImGui::BeginPopupContextItem()) {
-                if (path.extension() == ".gscript" && ImGui::MenuItem("Edit in Rime")) {
+                if (is_editable_text_file(path) && ImGui::MenuItem("Open in Rime")) {
                     context.get<RimeContext>().open_document(path);
                 }
                 ImGui::EndPopup();
@@ -494,13 +499,13 @@ namespace editor {
         if (!is_directory) {
             // GSCRIPT
             if (is_row_hovered && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
-                if (path.extension() == ".gscript") {
+                if (is_editable_text_file(path)) {
                     context.get<RimeContext>().open_document(path);
                 }
             }
 
             if (ImGui::BeginPopupContextItem()) {
-                if (path.extension() == ".gscript" && ImGui::MenuItem("Edit in Rime")) {
+                if (is_editable_text_file(path) && ImGui::MenuItem("Open in Rime")) {
                     context.get<RimeContext>().open_document(path);
                 }
                 ImGui::EndPopup();

@@ -321,4 +321,53 @@ namespace editor {
 
         return lines;
     }
+
+    std::vector<HighlightedLine> RimeHighlighter::tokenize_plain(std::string_view source) {
+        std::vector<HighlightedLine> lines;
+        lines.push_back(HighlightedLine{.line_start_offset = 0, .line_length = 0, .spans = {}});
+
+        uint32_t current_line = 0;
+        uint32_t line_start = 0;
+
+        for (size_t cur = 0; cur < source.size(); ++cur) {
+            if (source[cur] == '\n') {
+                const uint32_t total_len = static_cast<uint32_t>(cur) - line_start;
+                lines[current_line].line_length = total_len;
+
+                uint32_t text_len = total_len;
+                if (text_len > 0 && source[line_start + text_len - 1] == '\r') {
+                    --text_len;
+                }
+
+                if (text_len > 0) {
+                    lines[current_line].spans.push_back(HighlightSpan{
+                        .column_offset = 0,
+                        .length        = text_len,
+                        .kind          = HighlightKind::Default
+                    });
+                }
+
+                current_line++;
+                line_start = static_cast<uint32_t>(cur + 1);
+                lines.push_back(HighlightedLine{.line_start_offset = line_start, .line_length = 0, .spans = {}});
+            }
+        }
+
+        const uint32_t total_len = static_cast<uint32_t>(source.size()) - line_start;
+        lines[current_line].line_length = total_len;
+        uint32_t text_len = total_len;
+        if (text_len > 0 && source[line_start + text_len - 1] == '\r') {
+            --text_len;
+        }
+
+        if (text_len > 0) {
+            lines[current_line].spans.push_back(HighlightSpan{
+                .column_offset = 0,
+                .length        = text_len,
+                .kind          = HighlightKind::Default
+            });
+        }
+
+        return lines;
+    }
 }

@@ -103,15 +103,21 @@ namespace editor {
                 case Action::SaveRime : {
                     auto& rime = context.get<RimeContext>();
                     auto* active_doc = rime.active_document();
-                    std::ofstream out(active_doc->filepath);
-                    out << active_doc->buffer;
-                    active_doc->dirty = false;
+                    if (!active_doc) return true;
 
-                    if (auto scene = context.scenes.active_scene()) {
-                        ScriptEngine::reload(scene.get());
+                    std::ofstream out(active_doc->filepath);
+                    if (out.is_open()) {
+                        out << active_doc->buffer;
+                        active_doc->dirty = false;
                     }
-                    else {
-                        CORE_ERROR("Failed to reload scripts: No valid scene found");
+
+                    if (active_doc->filepath.extension() == ".gscript") {
+                        if (auto scene = context.scenes.active_scene()) {
+                            ScriptEngine::reload();
+                        }
+                        else {
+                            CORE_ERROR("Failed to reload scripts: No valid scene found");
+                        }
                     }
 
                     return true;

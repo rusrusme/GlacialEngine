@@ -130,9 +130,19 @@ namespace editor {
             doc.buffer.reserve(256);
         }
 
-        if (doc.highlight_dirty || doc.highlighted_lines.empty()) {
-            doc.highlighted_lines = RimeHighlighter::tokenize(doc.buffer);
+        auto update_tokens = [&doc]() {
+            if (doc.filepath.extension() == ".gscript") {
+                doc.highlighted_lines = RimeHighlighter::tokenize(doc.buffer);
+            }
+            else {
+                // TODO add tokenize json
+                doc.highlighted_lines = RimeHighlighter::tokenize_plain(doc.buffer);
+            }
             doc.highlight_dirty = false;
+        };
+
+        if (doc.highlight_dirty || doc.highlighted_lines.empty()) {
+            update_tokens();
         }
 
         ImFont* font = UILayer::rime_font();
@@ -388,9 +398,16 @@ namespace editor {
         const float text_y = bar_y + std::floor((bar_height - text_h) * 0.5f);
         ImGui::SetCursorScreenPos(ImVec2(bar_min.x + 8.0f, text_y));
 
-        ImGui::TextDisabled("Ln %lld, Col %lld  |  GlazeScript  |  UTF-8",
+        std::string_view file_type = "Plain Text";
+        const auto ext = doc.filepath.extension();
+        if (ext == ".gscript") file_type = "GlazeScript";
+        else if (ext == ".json") file_type = "JSON";
+        else if (ext == ".txt") file_type = "Text";
+
+        ImGui::TextDisabled("Ln %lld, Col %lld  |  %.*s  |  UTF-8",
                             static_cast<long long>(current_line + 1),
-                            static_cast<long long>(current_col + 1));
+                            static_cast<long long>(current_col + 1),
+                            static_cast<int>(file_type.size()), file_type.data());
 
         if (doc.dirty) {
             ImGui::SameLine();
