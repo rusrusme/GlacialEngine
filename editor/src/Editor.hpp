@@ -6,8 +6,10 @@
 #pragma once
 
 #include "CoreLayer.hpp"
+#include "EditorSettings.hpp"
 #include "command/CommandHistory.hpp"
 #include "core/Application.hpp"
+#include "rime/RimeEditor.hpp"
 #include "ui/UILayer.hpp"
 
 namespace editor {
@@ -17,6 +19,7 @@ namespace editor {
     public:
         Editor() : Application("Glacial Engine") {
             push_layer(std::make_unique<CoreLayer>());
+            push_layer(std::make_unique<RimeEditor>());
             push_overlay(std::make_unique<UILayer>());
         }
 
@@ -24,6 +27,10 @@ namespace editor {
 
     protected:
         void init(SystemContext& context) override {
+            auto& settings = context.emplace<EditorSettings>();
+            settings.register_category<RimeSettings>();
+
+            context.emplace<RimeContext>();
             context.emplace<SceneViewport>();
             context.emplace<CommandHistory>();
         }

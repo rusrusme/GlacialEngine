@@ -32,6 +32,13 @@ namespace editor {
         [[nodiscard]] std::string_view name() const { return name_; }
         [[nodiscard]] virtual ShortcutContext shortcut_context() const { return ShortcutContext::Global; }
 
+        void toggle_visible() { visible_ = !visible_; }
+        [[nodiscard]] bool visible() const { return visible_; }
+        void set_visible(bool b) { visible_ = b; }
+
+    protected:
+        bool visible_ = true;
+
     private:
         std::string_view name_;
     };

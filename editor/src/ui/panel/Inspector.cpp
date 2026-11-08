@@ -27,10 +27,10 @@ namespace editor {
     }
 
     void Inspector::load_config() {
-        visible_ = config::get_value("Inspector_visible", visible_);
+        visible_ = config::get_value("InspectorPanel_visible", visible_);
     }
 
     void Inspector::save_config() {
-        config::set_value("Inspector_visible", visible_);
+        config::set_value("InspectorPanel_visible", visible_);
     }
 }

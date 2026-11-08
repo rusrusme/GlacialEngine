@@ -22,12 +22,5 @@ namespace editor {
         void save_config() override;
 
         [[nodiscard]] ShortcutContext shortcut_context() const override { return ShortcutContext::AssetBrowser; }
-
-        void toggle_visible() { visible_ = !visible_; }
-        [[nodiscard]] bool visible() const { return visible_; }
-        void set_visible(bool b) { visible_ = b; }
-
-    private:
-        bool visible_ = true;
     };
 }

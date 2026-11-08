@@ -18,6 +18,7 @@
 #include "ui/layout/DockspaceLayout.hpp"
 #include "ui/panel/DebugPanel.hpp"
 #include "ui/panel/HistoryPanel.hpp"
+#include "ui/panel/RimeEditorPanel.hpp"
 #include "ui/panel/ViewportPanel.hpp"
 #include "window/SettingsWindow.hpp"
 
@@ -38,7 +39,7 @@ namespace editor {
         void on_imgui_render(SystemContext& context, float delta_time) override;
 
     private:
-        std::array<UIComponent*, 11> ui_components_{};
+        std::array<UIComponent*, 12> ui_components_{};
 
         DockspaceLayout layout_;
         Menubar menubar_;
@@ -51,5 +52,6 @@ namespace editor {
         DebugPanel debug_panel_;
         ViewportPanel viewport_panel_;
         HistoryPanel history_panel_;
+        RimeEditorPanel rime_panel;
     };
 }

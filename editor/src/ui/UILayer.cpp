@@ -1,13 +1,17 @@
 //
-// Copyright (c) 2026 rusrusme 
+// Copyright (c) 2026 rusrusme
 // All rights reserved.
 //
 
 #include "UILayer.hpp"
 
+#include "EditorSettings.hpp"
 #include "core/Application.hpp"
 #include "event/EditorActions.hpp"
 #include "event/EditorEvents.hpp"
+#include "event/MouseEvents.hpp"
+#include "input/Input.hpp"
+#include "rime/RimeEditor.hpp"
 
 namespace editor {
     void UILayer::on_attach(SystemContext& context) {
@@ -34,7 +38,8 @@ namespace editor {
             &console_panel_,
             &debug_panel_,
             &viewport_panel_,
-            &history_panel_
+            &history_panel_,
+            &rime_panel
         };
 
         for (auto* component : ui_components_) {
@@ -71,6 +76,19 @@ namespace editor {
         if (event.handled) return;
 
         EventDispatcher dispatcher(event);
+        dispatcher.dispatch<MouseScrolledEvent>([&context](const MouseScrolledEvent& e) {
+            auto& rime_settings = context.get<EditorSettings>().get<RimeSettings>();
+            bool ctrl = Input::key_pressed(Key::LEFT_CONTROL) || Input::key_pressed(Key::RIGHT_CONTROL);
+
+            if (Shortcuts::active_context() == ShortcutContext::Rime && ctrl) {
+                if (!rime_settings.change_size_on_scroll) return false;
+
+                rime_settings.scale_font(e.y_offset());
+                return true;
+            }
+            return false;
+        });
+
         dispatcher.dispatch<EditorActionEvent>([this, &context](const EditorActionEvent& action) {
             switch (action.action()) {
                 case Action::ToggleDebug :
@@ -96,6 +114,9 @@ namespace editor {
                     return true;
                 case Action::ToggleSettings :
                     settings_window_.toggle_visible();
+                    return true;
+                case Action::ToggleRime :
+                    rime_panel.toggle_visible();
                     return true;
 
                 case Action::CreateEntity : {
@@ -144,5 +165,6 @@ namespace editor {
         hierarchy_panel_.on_render_ui(context);
         viewport_panel_.on_render_ui(context);
         history_panel_.on_render_ui(context);
+        rime_panel.on_render_ui(context);
     }
 }

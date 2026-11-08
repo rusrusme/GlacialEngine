@@ -6,6 +6,7 @@
 #include "CoreLayer.hpp"
 
 #include "Config.hpp"
+#include "EditorSettings.hpp"
 #include "command/CommandHistory.hpp"
 #include "command/Transaction.hpp"
 #include "core/Application.hpp"
@@ -37,6 +38,7 @@ namespace editor {
 
         context.scenes.create();
         config::load();
+        context.get<EditorSettings>().load_all();
 
         FramebufferSpecification fb_spec{};
         fb_spec.width = 1280;
@@ -93,8 +95,9 @@ namespace editor {
         Shortcuts::bind(Action::ToggleInspector, "Alt+2", Key::NUM_2, Alt);
         Shortcuts::bind(Action::ToggleViewport, "Alt+3", Key::NUM_3, Alt);
         Shortcuts::bind(Action::ToggleAssetBrowser, "Alt+4", Key::NUM_4, Alt);
-        Shortcuts::bind(Action::ToggleConsole, "Alt+5", Key::NUM_5, Alt);
-        Shortcuts::bind(Action::ToggleHistory, "Alt+6", Key::NUM_6, Alt);
+        Shortcuts::bind(Action::ToggleRime, "Alt+5", Key::NUM_5, Alt);
+        Shortcuts::bind(Action::ToggleConsole, "Alt+6", Key::NUM_6, Alt);
+        Shortcuts::bind(Action::ToggleHistory, "Alt+7", Key::NUM_7, Alt);
         Shortcuts::bind(Action::ToggleConsole, // Alternative binding
                         "Ctrl+Shift+`",
                         Key::GRAVE_ACCENT, Ctrl | Shift);
@@ -103,6 +106,7 @@ namespace editor {
     }
 
     void CoreLayer::on_detach(SystemContext& context) {
+        context.get<EditorSettings>().save_all();
         config::save();
         framebuffer_.reset();
     }
@@ -192,31 +196,30 @@ namespace editor {
             return false;
         });
 
-        dispatcher.dispatch<KeyPressedEvent>([this, &context](const KeyPressedEvent& e) {
-                KeyModifier active_modifier = None;
-                if (Input::key_pressed(Key::LEFT_CONTROL) || Input::key_pressed(Key::RIGHT_CONTROL)) {
-                    active_modifier |= Ctrl;
-                }
-                if (Input::key_pressed(Key::LEFT_SHIFT) || Input::key_pressed(Key::RIGHT_SHIFT)) {
-                    active_modifier |= Shift;
-                }
-                if (Input::key_pressed(Key::LEFT_ALT) || Input::key_pressed(Key::RIGHT_ALT)) {
-                    active_modifier |= Alt;
-                }
-
-                const auto& viewport = context.get<SceneViewport>();
-                ShortcutContext current_context = (viewport.hovered || viewport.focused)
-                                                      ? ShortcutContext::Viewport
-                                                      : Shortcuts::active_context();
-
-                auto action = Shortcuts::find_action(e.key_code(), active_modifier, current_context);
-                if (action.has_value()) {
-                    EventQueue::submit<EditorActionEvent>(action.value());
-                    return true;
-                }
-                return false;
+        dispatcher.dispatch<KeyPressedEvent>([&context](const KeyPressedEvent& e) {
+            KeyModifier active_modifier = None;
+            if (Input::key_pressed(Key::LEFT_CONTROL) || Input::key_pressed(Key::RIGHT_CONTROL)) {
+                active_modifier |= Ctrl;
             }
-        );
+            if (Input::key_pressed(Key::LEFT_SHIFT) || Input::key_pressed(Key::RIGHT_SHIFT)) {
+                active_modifier |= Shift;
+            }
+            if (Input::key_pressed(Key::LEFT_ALT) || Input::key_pressed(Key::RIGHT_ALT)) {
+                active_modifier |= Alt;
+            }
+
+            const auto& viewport = context.get<SceneViewport>();
+            ShortcutContext current_context = (viewport.hovered || viewport.focused)
+                                                  ? ShortcutContext::Viewport
+                                                  : Shortcuts::active_context();
+
+            auto action = Shortcuts::find_action(e.key_code(), active_modifier, current_context);
+            if (action.has_value()) {
+                EventQueue::submit<EditorActionEvent>(action.value());
+                return true;
+            }
+            return false;
+        });
 
         dispatcher.dispatch<EditorActionEvent>([&context](const EditorActionEvent& action) {
             auto& history = context.get<CommandHistory>();

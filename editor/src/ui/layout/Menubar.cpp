@@ -173,6 +173,9 @@ namespace editor {
                 if (ImGui::MenuItem("Asset Browser", Shortcuts::text(Action::ToggleAssetBrowser).data())) {
                     EventQueue::submit<EditorActionEvent>(Action::ToggleAssetBrowser);
                 }
+                if (ImGui::MenuItem("Rime", Shortcuts::text(Action::ToggleRime).data())) {
+                    EventQueue::submit<EditorActionEvent>(Action::ToggleRime);
+                }
                 if (ImGui::MenuItem("Console", Shortcuts::text(Action::ToggleConsole).data())) {
                     EventQueue::submit<EditorActionEvent>(Action::ToggleConsole);
                 }

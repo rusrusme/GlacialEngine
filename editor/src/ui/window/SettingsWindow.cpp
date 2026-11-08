@@ -5,10 +5,11 @@
 
 #include "SettingsWindow.hpp"
 
-namespace editor {
-    void SettingsWindow::on_init(SystemContext& context) {
-    }
+#include "Config.hpp"
+#include "EditorSettings.hpp"
+#include "core/SystemContext.hpp"
 
+namespace editor {
     void SettingsWindow::on_render_ui(SystemContext& context) {
         if (!visible_) return;
 
@@ -23,23 +24,13 @@ namespace editor {
 
         if (ImGui::Begin("Settings", &visible_, ImGuiWindowFlags_NoDocking)) {
             if (ImGui::BeginTabBar("SettingsTabs")) {
-                if (ImGui::BeginTabItem("General")) {
-                    ImGui::Spacing();
-                    ImGui::TextDisabled("General Editor Settings");
-                    ImGui::EndTabItem();
+                auto& settings = context.get<EditorSettings>();
+                for (const auto& category : settings.categories()) {
+                    if (ImGui::BeginTabItem(category->name().data())) {
+                        category->on_render_ui(context);
+                        ImGui::EndTabItem();
+                    }
                 }
-
-                if (ImGui::BeginTabItem("Graphics")) {
-                    ImGui::Spacing();
-                    ImGui::TextDisabled("Viewport");
-                    ImGui::EndTabItem();
-                }
-
-                if (ImGui::BeginTabItem("Keybindings")) {
-                    ImGui::Spacing();
-                    ImGui::EndTabItem();
-                }
-
                 ImGui::EndTabBar();
             }
         }
@@ -47,8 +38,10 @@ namespace editor {
     }
 
     void SettingsWindow::load_config() {
+        visible_ = false;
     }
 
     void SettingsWindow::save_config() {
+        visible_ = false;
     }
 }

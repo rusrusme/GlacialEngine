@@ -23,10 +23,6 @@ namespace editor {
 
         [[nodiscard]] ShortcutContext shortcut_context() const override { return ShortcutContext::Hierarchy; }
 
-        void toggle_visible() { visible_ = !visible_; }
-        [[nodiscard]] bool visible() const { return visible_; }
-        void set_visible(bool b) { visible_ = b; }
-
         [[nodiscard]] Entity selected_entity() const { return selected_entity_; }
         void set_selected_entity(Entity new_entity);
 
@@ -37,8 +33,6 @@ namespace editor {
         void deselect_entity();
 
     private:
-        bool visible_ = true;
-
         Entity selected_entity_;
         UUID selected_uuid_;
 

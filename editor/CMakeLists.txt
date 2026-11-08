@@ -48,6 +48,11 @@ add_executable(Editor
                src/ui/panel/HistoryPanel.hpp
                src/command/EditorCommands.hpp
                src/command/EntitySnapshot.hpp
+               src/rime/RimeEditor.cpp
+               src/rime/RimeEditor.hpp
+               src/ui/panel/RimeEditorPanel.cpp
+               src/ui/panel/RimeEditorPanel.hpp
+               src/EditorSettings.hpp
 )
 # ----------------------------------------------------------------------------
 target_include_directories(Editor PRIVATE ${CMAKE_SOURCE_DIR}/editor/src)

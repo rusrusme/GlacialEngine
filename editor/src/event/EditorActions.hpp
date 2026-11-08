@@ -27,6 +27,6 @@ namespace editor {
 
         // UI
         ToggleConsole, ToggleInspector, ToggleHierarchy, ToggleSettings,
-        ToggleDebug, ToggleHistory, ToggleAssetBrowser, ToggleViewport
+        ToggleDebug, ToggleHistory, ToggleAssetBrowser, ToggleViewport, ToggleRime
     };
 }

@@ -6,6 +6,9 @@
 #ifdef ENABLE_IMGUI
 #include "debug/ImguiSystem.hpp"
 
+#include "input/Input.hpp"
+#include "input/KeyCodes.hpp"
+
 #if defined(WINDOW_BACKEND_GLFW)
 #include <imgui_impl_glfw.h>
 #elif defined(WINDOW_BACKEND_SDL)
@@ -221,10 +224,18 @@ namespace engine {
         });
 
         dispatcher.dispatch<MouseScrolledEvent>([&io](const MouseScrolledEvent&) {
-            return io.WantCaptureMouse;
+            // return io.WantCaptureMouse;
+            return false;
         });
 
         dispatcher.dispatch<KeyPressedEvent>([&io](const KeyPressedEvent&) {
+            const bool has_modifier = Input::key_pressed(Key::LEFT_CONTROL) || Input::key_pressed(Key::RIGHT_CONTROL) ||
+                Input::key_pressed(Key::LEFT_ALT) || Input::key_pressed(Key::RIGHT_ALT);
+
+            if (has_modifier) {
+                return false;
+            }
+
             return io.WantTextInput;
         });
 

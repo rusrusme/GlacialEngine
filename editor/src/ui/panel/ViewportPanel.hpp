@@ -28,12 +28,5 @@ namespace editor {
         void save_config() override;
 
         [[nodiscard]] ShortcutContext shortcut_context() const override { return ShortcutContext::Viewport; }
-
-        void toggle_visible() { visible_ = !visible_; }
-        [[nodiscard]] bool visible() const noexcept { return visible_; }
-        void set_visible(bool b) noexcept { visible_ = b; }
-
-    private:
-        bool visible_ = true;
     };
 }
