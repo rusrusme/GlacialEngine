@@ -6,7 +6,9 @@
 #pragma once
 
 #include <filesystem>
+#include <fstream>
 #include <string>
+#include <vector>
 
 #include "EditorSettings.hpp"
 #include "core/Layer.hpp"
@@ -39,15 +41,80 @@ namespace editor {
 
     struct TextDocument {
         std::filesystem::path filepath;
+        std::string title;
         std::string buffer;
         bool dirty = false;
-
         std::vector<HighlightedLine> highlighted_lines;
         bool highlight_dirty = true;
+
+        // Zustand pro Tab
+        int cursor_pos = 0;
+        int last_cursor_pos = -1;
+        double cursor_blink_time = 0.0;
+        float scroll_x = 0.0f;
+        float scroll_y = 0.0f;
     };
 
     struct RimeContext {
-        TextDocument active_document;
+        std::vector<TextDocument> documents;
+        int active_document_index = -1;
+        bool request_focus_panel = false;
+
+        [[nodiscard]] TextDocument* active_document() {
+            if (active_document_index >= 0 && active_document_index < static_cast<int>(documents.size())) {
+                return &documents[static_cast<size_t>(active_document_index)];
+            }
+            return nullptr;
+        }
+
+        [[nodiscard]] const TextDocument* active_document() const {
+            if (active_document_index >= 0 && active_document_index < static_cast<int>(documents.size())) {
+                return &documents[static_cast<size_t>(active_document_index)];
+            }
+            return nullptr;
+        }
+
+        int open_document(const std::filesystem::path& path) {
+            std::error_code ec;
+            auto canonical = std::filesystem::weakly_canonical(path, ec);
+            if (ec) canonical = path;
+
+            for (size_t i = 0; i < documents.size(); ++i) {
+                if (std::filesystem::equivalent(documents[i].filepath, canonical, ec)) {
+                    active_document_index = static_cast<int>(i);
+                    request_focus_panel = true;
+                    return active_document_index;
+                }
+            }
+
+            std::ifstream file(canonical);
+            if (!file.is_open()) return -1;
+
+            std::string content((std::istreambuf_iterator<char>(file)),
+                                std::istreambuf_iterator<char>());
+
+            auto& doc = documents.emplace_back();
+            doc.filepath = canonical;
+            doc.title = canonical.filename().string();
+            doc.buffer = std::move(content);
+            doc.dirty = false;
+            doc.highlight_dirty = true;
+
+            active_document_index = static_cast<int>(documents.size() - 1);
+            request_focus_panel = true;
+            return active_document_index;
+        }
+
+        void close_document(int index) {
+            if (index < 0 || index >= static_cast<int>(documents.size())) return;
+            documents.erase(documents.begin() + index);
+            if (documents.empty()) {
+                active_document_index = -1;
+            }
+            else if (active_document_index >= static_cast<int>(documents.size())) {
+                active_document_index = static_cast<int>(documents.size()) - 1;
+            }
+        }
     };
 
     class RimeEditor : public Layer {

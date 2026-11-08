@@ -65,9 +65,9 @@ namespace editor {
     }
 
     void UILayer::on_update(SystemContext& context, float delta_time) {
-        ImguiLayer::on_update(context, delta_time);
-        debug_panel_.on_update(context, delta_time);
-        hierarchy_panel_.on_update(context, delta_time);
+        for (auto* component : ui_components_) {
+            component->on_update(context, delta_time);
+        }
     }
 
     void UILayer::on_event(SystemContext& context, Event& event) {
@@ -102,10 +102,10 @@ namespace editor {
             switch (action.action()) {
                 case Action::SaveRime : {
                     auto& rime = context.get<RimeContext>();
-                    auto& active_doc = rime.active_document;
-                    std::ofstream out(active_doc.filepath);
-                    out << active_doc.buffer;
-                    active_doc.dirty = false;
+                    auto* active_doc = rime.active_document();
+                    std::ofstream out(active_doc->filepath);
+                    out << active_doc->buffer;
+                    active_doc->dirty = false;
 
                     if (auto scene = context.scenes.active_scene()) {
                         ScriptEngine::reload(scene.get());

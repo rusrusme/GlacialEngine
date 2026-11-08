@@ -6,14 +6,17 @@
 #pragma once
 
 #include <string>
+
 #include "ui/UIComponent.hpp"
 
 namespace editor {
     using namespace engine;
 
+    struct TextDocument;
+
     struct RimeEditorCallbackData {
         std::string* buffer = nullptr;
-        int cursor_pos = 0;
+        int* cursor_pos = nullptr;
     };
 
     class RimeEditorPanel : public UIComponent {
@@ -26,10 +29,8 @@ namespace editor {
         [[nodiscard]] ShortcutContext shortcut_context() const override { return ShortcutContext::Rime; }
 
     private:
-        float scroll_x_ = 0.0f;
-        float scroll_y_ = 0.0f;
-        int cursor_pos_ = 0;
-        int last_cursor_pos_ = -1;
-        double cursor_blink_time_ = 0.0;
+        void render_empty_state();
+        void render_editor_view(SystemContext& context, TextDocument& doc, const ImVec2& avail);
+        void render_status_bar(const TextDocument& doc);
     };
 }

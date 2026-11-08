@@ -9,6 +9,7 @@
 #include "asset/AssetManager.hpp"
 #include "asset/AssetType.hpp"
 #include "core/SystemContext.hpp"
+#include "rime/RimeEditor.hpp"
 #include "ui/Icons.hpp"
 
 namespace editor {
@@ -418,6 +419,24 @@ namespace editor {
         }
 
         if (!is_directory) {
+            const bool is_hovered = ImGui::IsItemHovered();
+
+            // GSCRIPT
+            if (is_hovered && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
+                if (path.extension() == ".gscript" || path.extension() == ".GSCRIPT") {
+                    context.get<RimeContext>().open_document(path);
+                }
+            }
+
+            if (ImGui::BeginPopupContextItem()) {
+                if (path.extension() == ".gscript" && ImGui::MenuItem("Edit in Rime")) {
+                    context.get<RimeContext>().open_document(path);
+                }
+                ImGui::EndPopup();
+            }
+
+            // TODO add support for .gscene etc
+
             AssetHandle handle = context.assets.asset_handle_from_path(path);
             if (handle != 0 && ImGui::BeginDragDropSource()) {
                 ImGui::SetDragDropPayload("ASSET_BROWSER_ITEM", &handle, sizeof(AssetHandle));
@@ -473,6 +492,22 @@ namespace editor {
         }
 
         if (!is_directory) {
+            // GSCRIPT
+            if (is_row_hovered && ImGui::IsMouseDoubleClicked(ImGuiMouseButton_Left)) {
+                if (path.extension() == ".gscript") {
+                    context.get<RimeContext>().open_document(path);
+                }
+            }
+
+            if (ImGui::BeginPopupContextItem()) {
+                if (path.extension() == ".gscript" && ImGui::MenuItem("Edit in Rime")) {
+                    context.get<RimeContext>().open_document(path);
+                }
+                ImGui::EndPopup();
+            }
+
+            // TODO add support for .gscene etc
+
             AssetHandle handle = context.assets.asset_handle_from_path(path);
             if (handle != 0 && is_row_hovered && ImGui::BeginDragDropSource()) {
                 ImGui::SetDragDropPayload("ASSET_BROWSER_ITEM", &handle, sizeof(AssetHandle));
