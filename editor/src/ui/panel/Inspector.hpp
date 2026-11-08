@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include "project/scene/ecs/Entity.hpp"
 #include "ui/UIComponent.hpp"
 
 namespace editor {
@@ -20,5 +21,22 @@ namespace editor {
         void save_config() override;
 
         [[nodiscard]] ShortcutContext shortcut_context() const override { return ShortcutContext::Inspector; }
+
+        void set_selected_entity(const Entity entity) { selected_entity_ = entity; }
+
+    private:
+        void draw_component(Entity entity, SystemContext& context) const;
+
+        void draw_header_section(Entity entity) const;
+        void draw_transform_component(Entity entity) const;
+        void draw_mesh_component(Entity entity, SystemContext& context) const;
+        void draw_material_component(Entity entity, SystemContext& context) const;
+        // void draw_lod_component(Entity entity, const SystemContext& context) const;
+        // void draw_lighting_components(Entity entity) const;
+        // void draw_box_collider_component(Entity entity, SystemContext& context) const;
+        // void draw_audio_source_component(Entity entity, SystemContext& context) const;
+        void draw_add_component_button(Entity entity, SystemContext& context) const;
+        
+        Entity selected_entity_{};
     };
 }

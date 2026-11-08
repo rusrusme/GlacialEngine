@@ -1,8 +1,8 @@
 # TODO Would be nice QoL if components from Component.hpp would have code completion with their struct member accesses
 
 # TODO Add on_init which is called in Scene::on_init
-fn void on_init() {
-}
+#fn void on_init() {
+#}
 
 system TrafficSystem {
     on_update(float delta_time) {
@@ -10,8 +10,12 @@ system TrafficSystem {
 
         for (entity e, TransformComponent t, RigidBodyComponent b, LabelComponent l) exclude DisabledComponent {
             if (e.name == "Vehicle") {
-                b.velocity.x -= (delta_time * 2.7)
-                # b.velocity.x += (delta_time * 0.2)
+                b.velocity.z -= (delta_time * 6.7)
+                #                b.velocity.x += (delta_time * 0.2)
+                t.position -= b.velocity * delta_time
+            }
+            if (e.name == "Cylinder") {
+                b.velocity.x += (delta_time * 12.3)
                 t.position -= b.velocity * delta_time
             }
 
