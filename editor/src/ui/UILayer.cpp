@@ -12,6 +12,7 @@
 #include "event/MouseEvents.hpp"
 #include "input/Input.hpp"
 #include "rime/RimeEditor.hpp"
+#include "script/ScriptEngine.hpp"
 
 namespace editor {
     void UILayer::on_attach(SystemContext& context) {
@@ -99,6 +100,23 @@ namespace editor {
 
         dispatcher.dispatch<EditorActionEvent>([this, &context](const EditorActionEvent& action) {
             switch (action.action()) {
+                case Action::SaveRime : {
+                    auto& rime = context.get<RimeContext>();
+                    auto& active_doc = rime.active_document;
+                    std::ofstream out(active_doc.filepath);
+                    out << active_doc.buffer;
+                    active_doc.dirty = false;
+
+                    if (auto scene = context.scenes.active_scene()) {
+                        ScriptEngine::reload(scene.get());
+                    }
+                    else {
+                        CORE_ERROR("Failed to reload scripts: No valid scene found");
+                    }
+
+                    return true;
+                }
+
                 case Action::ToggleDebug :
                     debug_panel_.toggle_visible();
                     return true;

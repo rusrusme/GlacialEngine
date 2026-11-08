@@ -26,6 +26,12 @@ namespace editor {
         else if (data->EventFlag == ImGuiInputTextFlags_CallbackAlways) {
             user_data->cursor_pos = data->CursorPos;
         }
+        else if (data->EventFlag == ImGuiInputTextFlags_CallbackCharFilter) {
+            if (data->EventChar == '\t') {
+                data->InsertChars(data->CursorPos, "    ");
+                return 1;
+            }
+        }
         return 0;
     }
 
@@ -283,6 +289,15 @@ namespace editor {
 
             ImGui::PopFont();
             font->Scale = old_scale;
+        }
+
+        ImGui::Separator();
+        ImGui::TextDisabled("Ln %lld, Col %d  |  GlazeScript  |  UTF-8",
+            static_cast<long long>(current_line_index + 1),
+            current_col_index + 1);
+        if (doc.dirty) {
+            ImGui::SameLine();
+            ImGui::TextColored(ImVec4(0.9f, 0.7f, 0.2f, 1.0f), "[Modified]");
         }
 
         ImGui::End();

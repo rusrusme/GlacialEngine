@@ -103,6 +103,8 @@ namespace editor {
                         Key::GRAVE_ACCENT, Ctrl | Shift);
         Shortcuts::bind(Action::ToggleSettings, "Ctrl+,", Key::COMMA, Ctrl);
         Shortcuts::bind(Action::ToggleDebug, "F3", Key::F3);
+
+        Shortcuts::bind(Action::SaveRime, "Ctrl+S", Key::S, Ctrl, ShortcutContext::Rime);
     }
 
     void CoreLayer::on_detach(SystemContext& context) {
