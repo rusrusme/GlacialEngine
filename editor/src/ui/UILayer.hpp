@@ -35,6 +35,8 @@ namespace editor {
         void on_update(SystemContext& context, float delta_time) override;
         void on_event(SystemContext& context, Event& event) override;
 
+        static ImFont* rime_font() { return s_code_font; }
+
     protected:
         void on_imgui_render(SystemContext& context, float delta_time) override;
 
@@ -53,5 +55,7 @@ namespace editor {
         ViewportPanel viewport_panel_;
         HistoryPanel history_panel_;
         RimeEditorPanel rime_panel;
+
+        inline static ImFont* s_code_font = nullptr;
     };
 }

@@ -7,7 +7,9 @@
 
 #include "Config.hpp"
 #include "core/SystemContext.hpp"
+#include "debug/ImguiSystem.hpp"
 #include "rime/RimeEditor.hpp"
+#include "ui/UILayer.hpp"
 
 namespace editor {
     static int string_resize_callback(ImGuiInputTextCallbackData* data) {
@@ -40,7 +42,11 @@ namespace editor {
             constexpr ImGuiInputTextFlags input_flags = ImGuiInputTextFlags_AllowTabInput
                 | ImGuiInputTextFlags_CallbackResize;
 
-            ImFont* font = ImGui::GetFont();
+            ImFont* font = UILayer::rime_font();
+            if (!font) {
+                font = ImGui::GetFont();
+            }
+
             const float old_scale = font->Scale;
             font->Scale = rime_settings.font_scale;
             ImGui::PushFont(font);

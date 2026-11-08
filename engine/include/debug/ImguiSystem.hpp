@@ -18,5 +18,10 @@ namespace engine {
         static void end_frame();
 
         static void on_event(SystemContext& context, Event& event);
+
+    private:
+        friend class ImguiLayer;
+
+        inline static ImFont* s_font = nullptr;
     };
 }

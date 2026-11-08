@@ -18,8 +18,16 @@ namespace editor {
         ImguiLayer::on_attach(context);
 
         ImGuiIO& io = ImGui::GetIO();
+        ImFontConfig config;
         io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
         io.FontGlobalScale = 1.0f;
+        const float dpiScale = Application::get().window().monitor_dpi_scale();
+
+        s_code_font = io.Fonts->AddFontFromFileTTF(
+            "assets/fonts/JetBrainsMono-VariableFont.ttf",
+            16.0f * dpiScale,
+            &config
+        );
 
         ImGuizmo::Style& style = ImGuizmo::GetStyle();
         style.TranslationLineThickness = 3.0f;

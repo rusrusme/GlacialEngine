@@ -47,8 +47,8 @@ namespace editor {
         }
 
         void scale_font(float delta_y) {
-            font_scale += delta_y * 0.05f;
-            font_scale = std::clamp(font_scale, 0.5f, 3.0f);
+            font_scale += delta_y * 0.1f;
+            font_scale = std::clamp(font_scale, 0.8f, 4.0f);
         }
     };
 

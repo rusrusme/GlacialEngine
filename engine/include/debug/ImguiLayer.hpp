@@ -22,6 +22,7 @@ namespace engine {
 
         void on_attach(SystemContext& context) override {
             ImguiSystem::on_attach(context.window.native());
+            s_font = ImguiSystem::s_font;
         }
 
         void on_detach(SystemContext& context) override { ImguiSystem::on_detach(); }
@@ -48,7 +49,10 @@ namespace engine {
         /// Override this function to render Imgui
         virtual void on_imgui_render(SystemContext& context, float delta_time) {}
 
+        [[nodiscard]] static ImFont* font() noexcept { return s_font; }
+
     private:
         glm::vec4 clear_color_{0.10f, 0.10f, 0.11f, 1.0f};
+        inline static ImFont* s_font = nullptr;
     };
 }

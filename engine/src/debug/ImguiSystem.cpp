@@ -42,7 +42,7 @@ namespace engine {
 
         const float dpiScale = Application::get().window().monitor_dpi_scale();
 
-        io.Fonts->AddFontFromFileTTF(
+        s_font = io.Fonts->AddFontFromFileTTF(
             "assets/fonts/Inter-VariableFont.ttf",
             16.0f * dpiScale,
             &config
