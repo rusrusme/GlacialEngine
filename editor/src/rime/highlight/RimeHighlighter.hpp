@@ -39,6 +39,7 @@ namespace editor {
     public:
         [[nodiscard]] static std::vector<HighlightedLine> tokenize(std::string_view source);
         [[nodiscard]] static std::vector<HighlightedLine> tokenize_plain(std::string_view source);
+        [[nodiscard]] static std::vector<HighlightedLine> tokenize_json(std::string_view source);
         [[nodiscard]] static ImU32 color_for(HighlightKind kind) noexcept;
     };
 }

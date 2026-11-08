@@ -58,6 +58,7 @@ namespace editor {
     struct RimeContext {
         std::vector<TextDocument> documents;
         int active_document_index = -1;
+        int request_select_tab_index = -1;
         bool request_focus_panel = false;
 
         [[nodiscard]] TextDocument* active_document() {
@@ -82,6 +83,7 @@ namespace editor {
             for (size_t i = 0; i < documents.size(); ++i) {
                 if (std::filesystem::equivalent(documents[i].filepath, canonical, ec)) {
                     active_document_index = static_cast<int>(i);
+                    request_select_tab_index = static_cast<int>(i);
                     request_focus_panel = true;
                     return active_document_index;
                 }
@@ -101,6 +103,7 @@ namespace editor {
             doc.highlight_dirty = true;
 
             active_document_index = static_cast<int>(documents.size() - 1);
+            request_select_tab_index = active_document_index;
             request_focus_panel = true;
             return active_document_index;
         }
@@ -110,9 +113,11 @@ namespace editor {
             documents.erase(documents.begin() + index);
             if (documents.empty()) {
                 active_document_index = -1;
+                request_select_tab_index = -1;
             }
-            else if (active_document_index >= static_cast<int>(documents.size())) {
-                active_document_index = static_cast<int>(documents.size()) - 1;
+            else {
+                active_document_index = std::clamp(active_document_index, 0, static_cast<int>(documents.size() - 1));
+                request_select_tab_index = active_document_index;
             }
         }
     };

@@ -58,7 +58,6 @@ namespace editor {
 
             int doc_to_close = -1;
 
-            // Tab-Leiste für alle geöffneten Skripte
             if (ImGui::BeginTabBar("##RimeTabs", ImGuiTabBarFlags_Reorderable | ImGuiTabBarFlags_AutoSelectNewTabs)) {
                 for (int i = 0; i < static_cast<int>(rime.documents.size()); ++i) {
                     auto& doc = rime.documents[static_cast<size_t>(i)];
@@ -68,8 +67,12 @@ namespace editor {
                         flags |= ImGuiTabItemFlags_UnsavedDocument;
                     }
 
+                    if (rime.request_select_tab_index == i) {
+                        flags |= ImGuiTabItemFlags_SetSelected;
+                    }
+
                     bool tab_open = true;
-                    const std::string tab_label = doc.title + "###doc_tab_" + std::to_string(i);
+                    const std::string tab_label = doc.title + "###doc_" + doc.filepath.string();
 
                     if (ImGui::BeginTabItem(tab_label.c_str(), &tab_open, flags)) {
                         rime.active_document_index = i;
@@ -81,6 +84,8 @@ namespace editor {
                     }
                 }
                 ImGui::EndTabBar();
+
+                rime.request_select_tab_index = -1;
             }
 
             if (doc_to_close != -1) {

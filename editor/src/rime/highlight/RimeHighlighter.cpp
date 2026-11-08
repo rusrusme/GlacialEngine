@@ -370,4 +370,7 @@ namespace editor {
 
         return lines;
     }
+
+    std::vector<HighlightedLine> RimeHighlighter::tokenize_json(std::string_view source) {
+    }
 }
