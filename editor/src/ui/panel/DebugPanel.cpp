@@ -28,15 +28,14 @@ namespace editor {
         ImGui::SetNextWindowSize(ImVec2(400, 500), ImGuiCond_FirstUseEver);
         ImGui::Begin("Debug Panel");
         ImGui::Text("Performance");
-        ImGui::Text("  FPS: %.1f", s_fps_display);
-        ImGui::Text("  Frame Time: %.2f ms", 1000.0f / (s_fps_display > 0.0f ? s_fps_display : 1.0f));
-
+        ImGui::Separator();
+        ImGui::Text("FPS: %.1f", s_fps_display);
+        ImGui::Text("Frame Time: %.2f ms", 1000.0f / (s_fps_display > 0.0f ? s_fps_display : 1.0f));
         ImGui::Separator();
         ImGui::Text("Rendering");
         // const auto& [draw_calls, instance_count] = renderer.get_stats();
         // ImGui::Text("Draw Calls: %u", draw_calls);
         // ImGui::Text("Instances Rendered: %u", instance_count);
-
         ImGui::Separator();
         ImGui::Text("Video");
         bool vsync_enabled = Application::get().window().vsync();
@@ -52,16 +51,13 @@ namespace editor {
                          engine::config::video::target_fps_str().c_str());
         ImGui::Separator();
         ImGui::Text("Editor");
-
         auto& viewport = context.get<SceneViewport>();
         ImGui::Checkbox("Grid", &viewport.show_grid);
-
         ImGui::End();
     }
 
     void DebugPanel::load_config() {
-        bool visible = config::get_value("DebugPanel_visible", visible_);
-        visible_ = visible;
+        visible_ = config::get_value("DebugPanel_visible", visible_);
     }
 
     void DebugPanel::save_config() {

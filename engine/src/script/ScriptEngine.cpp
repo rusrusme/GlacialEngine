@@ -124,7 +124,7 @@ namespace engine {
         }
 
         s_compiling.store(true);
-        CORE_INFO("[ScriptEngine] Reloading scripts (background build started)...");
+        CORE_INFO("[ScriptEngine] Reloading scripts...");
 
         s_build_task = std::async(std::launch::async, [] {
             return build_scripts();
