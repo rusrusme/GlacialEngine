@@ -93,12 +93,16 @@ void main() {
 
     gl_FragDepth = (ndcDepth * 0.5) + 0.5;
 
-    // --- Uniform Global Camera LOD ---
+    // --- Angle-Invariant Zoom LOD ---
     const float kSubdivision = 5.0;
     float baseScale = max(u_GridScale, 1e-4);
 
-    float camDist = max(abs(u_CameraPosition.y), 1.0);
-    float logScale = log(camDist * 0.25 / baseScale) / log(kSubdivision);
+    // True camera distance to orbit focus (stored in u_CameraPosition.w)
+    // Fallback to Euclidean origin distance if camera.distance() is 0
+    float camDist = u_CameraPosition.w > 0.001 ? u_CameraPosition.w : length(u_CameraPosition.xyz);
+
+    // Constant across the entire screen: Pitch, yaw, and view angles have zero effect
+    float logScale = log(camDist * 0.35 / baseScale) / log(kSubdivision);
     float lod = floor(logScale);
     float fade = fract(logScale);
 
@@ -109,6 +113,7 @@ void main() {
     float gMinor = drawGrid(fragPos3D.xz, minorCell, 1.25);
     float gMajor = drawGrid(fragPos3D.xz, majorCell, 1.85);
 
+    // Smooth transition during zoom operations
     float minorAlpha = 0.28 * (1.0 - smoothstep(0.0, 1.0, fade));
     float majorAlpha = 0.55;
 
@@ -137,12 +142,12 @@ void main() {
     vec3 viewVec = fragPos3D - u_CameraPosition.xyz;
     float viewDist = length(viewVec);
 
-    // 1. Distance fogging: full brightness in front, dissolving gently into the horizon
+    // Distance fogging: full brightness in front, dissolving gently into the horizon
     float fadeStart = u_FadeDistance * 0.40;
     float fadeEnd   = u_FadeDistance * 0.95;
     float distanceFade = 1.0 - smoothstep(fadeStart, fadeEnd, viewDist);
 
-    // 2. Horizon angle fade: gently tapers off as the view vector flattens against the ground plane
+    // Horizon angle fade: gently tapers off as the view vector flattens against the ground plane
     float sinViewAngle = abs(viewVec.y) / max(viewDist, 1e-4);
     float angleFade = smoothstep(0.01, 0.12, sinViewAngle);
 

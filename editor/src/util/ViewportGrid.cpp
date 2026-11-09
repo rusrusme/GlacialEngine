@@ -52,7 +52,7 @@ namespace editor {
         ubo_data.projection = camera.projection();
         ubo_data.inv_view = glm::inverse(camera.view());
         ubo_data.inv_projection = glm::inverse(camera.projection());
-        ubo_data.camera_position = glm::vec4(camera.position(), 1.0f);
+        ubo_data.camera_position = glm::vec4(camera.position(), camera.distance());
         ubo_data.near_clip = 0.1f;
         ubo_data.far_clip = 1000.0f;
         ubo_data.grid_scale = scale_;
