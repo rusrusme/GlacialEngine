@@ -7,6 +7,7 @@
 
 #include "Config.hpp"
 #include "asset/AssetManager.hpp"
+#include "audio/AudioSystem.hpp"
 #include "core/SystemContext.hpp"
 #include "glm/gtc/type_ptr.hpp"
 #include "render/mesh/Mesh.hpp"
@@ -188,7 +189,7 @@ namespace editor {
         // draw_lod_component(entity, context);
         // draw_lighting_components(entity);
         // draw_box_collider_component(entity, context);
-        // draw_audio_source_component(entity, context);
+        draw_audio_source_component(entity, context);
 
         ImGui::Spacing();
         ImGui::Separator();
@@ -320,6 +321,69 @@ namespace editor {
         });
     }
 
+    void Inspector::draw_audio_source_component(Entity entity, SystemContext& context) const {
+        draw_component_header<AudioSourceComponent>("Audio Source", entity, [&](auto& audio) {
+            draw_property_label("Audio Asset");
+            const auto& current_meta = context.assets.metadata(audio.sound_handle);
+            std::string audio_label = current_meta.valid() ? current_meta.filepath.filename().string() : "None / Select Audio";
+
+            if (ImGui::BeginCombo("##AudioCombo", audio_label.c_str())) {
+                if (ImGui::Selectable("None", audio.sound_handle == 0)) {
+                    audio.sound_handle = {0};
+                    audio.filepath = "";
+                }
+                for (const auto& [handle, meta] : context.assets.registry()) {
+                    if (meta.type != AssetType::AUDIO) continue;
+                    const bool is_selected = (audio.sound_handle == handle);
+                    if (ImGui::Selectable(meta.filepath.filename().string().c_str(), is_selected)) {
+                        audio.sound_handle = handle;
+                        audio.filepath = meta.filepath.string();
+                    }
+                    if (is_selected) ImGui::SetItemDefaultFocus();
+                }
+                ImGui::EndCombo();
+            }
+
+            draw_property_label("Playback");
+            {
+                const bool has_audio = (audio.sound_handle != 0);
+                const bool is_playing = context.audio.is_source_playing(audio);
+
+                ImGui::BeginDisabled(!has_audio);
+
+                if (is_playing) {
+                    if (ImGui::Button("Pause##Audio", ImVec2(55.0f, 0.0f))) {
+                        context.audio.pause_source(audio);
+                    }
+                }
+                else {
+                    if (ImGui::Button("Play##Audio", ImVec2(55.0f, 0.0f))) {
+                        context.audio.play_source(context, audio);
+                    }
+                }
+
+                ImGui::SameLine();
+                if (ImGui::Button("Stop##Audio", ImVec2(55.0f, 0.0f))) {
+                    context.audio.stop_source(audio);
+                }
+
+                ImGui::EndDisabled();
+            }
+
+            draw_property_label("Volume");
+            ImGui::SliderFloat("##Volume", &audio.volume, 0.0f, 1.0f);
+
+            draw_property_label("Pitch");
+            ImGui::SliderFloat("##Pitch", &audio.pitch, 0.1f, 2.0f);
+
+            draw_property_label("Loop");
+            ImGui::Checkbox("##Loop", &audio.loop);
+
+            draw_property_label("Spatial (3D)");
+            ImGui::Checkbox("##Spatial", &audio.is_spatial);
+        });
+    }
+
     void Inspector::draw_add_component_button(Entity entity, SystemContext& context) const {
         ImGui::SetCursorPosX((ImGui::GetContentRegionAvail().x - 150.0f) * 0.5f);
         if (ImGui::Button("+ Add Component", ImVec2(150.0f, 30.0f))) {
@@ -352,12 +416,12 @@ namespace editor {
             //         ImGui::CloseCurrentPopup();
             //     }
             // }
-            // if (!entity.has_component<AudioSourceComponent>()) {
-            //     if (ImGui::MenuItem("Audio Source")) {
-            //         entity.add_component<AudioSourceComponent>();
-            //         ImGui::CloseCurrentPopup();
-            //     }
-            // }
+            if (!entity.has_component<AudioSourceComponent>()) {
+                if (ImGui::MenuItem("Audio Source")) {
+                    entity.add_component<AudioSourceComponent>();
+                    ImGui::CloseCurrentPopup();
+                }
+            }
             ImGui::EndPopup();
         }
     }
