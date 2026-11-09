@@ -32,7 +32,6 @@ namespace editor {
     void GizmoOverlay::cancel_drag(SystemContext& context) {
         if (was_using_gizmo_ || ImGuizmo::IsUsing()) {
             gizmo_canceled_ = true;
-            was_using_gizmo_ = false;
             ImGui::ClearActiveID();
 
             auto& selected_entity = context.get<SelectionContext>().selected_entity;
@@ -46,10 +45,12 @@ namespace editor {
         auto& viewport = context.get<SceneViewport>();
         auto& camera = context.get<Camera>();
 
+        // Disable ImGuizmo during cancellation until the mouse button is released
         if (gizmo_canceled_) {
             ImGuizmo::Enable(false);
             if (!Input::mouse_button_pressed(Mouse::MOUSE_BUTTON_LEFT)) {
                 gizmo_canceled_ = false;
+                was_using_gizmo_ = false;
             }
         }
         else {
@@ -77,9 +78,10 @@ namespace editor {
                                  ? &snap_scale_value_
                                  : snap_translation_values_;
 
-        if (ImGuizmo::IsUsing() && !was_using_gizmo_) {
+        // Capture initial transform ONLY on the first frame of a new drag
+        if (ImGuizmo::IsUsing() && !was_using_gizmo_ && !gizmo_canceled_) {
             initial_transform_ = tc;
-            gizmo_canceled_ = false;
+            was_using_gizmo_ = true;
         }
 
         ImGuizmo::Manipulate(
@@ -92,25 +94,26 @@ namespace editor {
             snap ? snap_values : nullptr
         );
 
-        if (ImGuizmo::IsUsing()) {
-            if (!gizmo_canceled_) {
-                glm::vec3 position, rotation, scale;
+        if (ImGuizmo::IsUsing() && !gizmo_canceled_) {
+            glm::vec3 position, rotation, scale;
 
-                ImGuizmo::DecomposeMatrixToComponents(
-                    glm::value_ptr(transform),
-                    glm::value_ptr(position),
-                    glm::value_ptr(rotation),
-                    glm::value_ptr(scale)
-                );
+            ImGuizmo::DecomposeMatrixToComponents(
+                glm::value_ptr(transform),
+                glm::value_ptr(position),
+                glm::value_ptr(rotation),
+                glm::value_ptr(scale)
+            );
 
-                glm::vec3 delta_rotation = rotation - tc.rotation;
-                tc.position = position;
-                tc.rotation += delta_rotation;
-                tc.scale = scale;
-                tc.set_dirty();
-            }
+            glm::vec3 delta_rotation = rotation - tc.rotation;
+            tc.position = position;
+            tc.rotation += delta_rotation;
+            tc.scale = scale;
+            tc.set_dirty();
         }
 
-        was_using_gizmo_ = ImGuizmo::IsUsing();
+        // Reset drag tracking when mouse left button is fully released
+        if (!ImGuizmo::IsUsing() && !Input::mouse_button_pressed(Mouse::MOUSE_BUTTON_LEFT)) {
+            was_using_gizmo_ = false;
+        }
     }
 }
