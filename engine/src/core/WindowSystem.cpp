@@ -38,7 +38,15 @@ namespace engine::window {
             case WM_NCCALCSIZE : {
                 if (wparam == TRUE) {
                     auto* params = reinterpret_cast<NCCALCSIZE_PARAMS*>(lparam);
-                    if (IsZoomed(hwnd)) {
+
+                    // When restoring from minimized, IsZoomed() can be false during NCCALCSIZE.
+                    // Inspect window placement to verify if target state is maximized.
+                    WINDOWPLACEMENT wp{};
+                    wp.length = sizeof(WINDOWPLACEMENT);
+                    GetWindowPlacement(hwnd, &wp);
+                    const bool is_zoomed = IsZoomed(hwnd) || (wp.showCmd == SW_SHOWMAXIMIZED);
+
+                    if (is_zoomed) {
                         HMONITOR monitor = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST);
                         MONITORINFO monitor_info{};
                         monitor_info.cbSize = sizeof(MONITORINFO);
@@ -48,6 +56,17 @@ namespace engine::window {
                     }
                     return 0; // Strip standard OS titlebar while preserving Aero Snap
                 }
+                return 0;
+            }
+
+            case WM_NCACTIVATE : {
+                // Prevent DefWindowProc from painting the default Windows titlebar upon restore/activation.
+                // Passing -1 as lParam tells Windows not to repaint the non-client caption.
+                return DefSubclassProc(hwnd, WM_NCACTIVATE, wparam, -1);
+            }
+
+            case WM_NCPAINT : {
+                // Block standard non-client frame painting
                 return 0;
             }
 
@@ -80,12 +99,40 @@ namespace engine::window {
                         if (bottom) return HTBOTTOM;
                     }
 
-                    // Treat empty ImGui Menubar space as native OS titlebar
-                    if (data && data->titlebar_hovered) {
+                    // Guard: only allow HTCAPTION within the top titlebar/menubar strip (e.g. top 40px).
+                    // This prevents titlebar_hovered from locking the entire window if stuck after restore.
+                    constexpr int max_titlebar_height = 40;
+                    if (data && data->titlebar_hovered && pt.y >= 0 && pt.y < max_titlebar_height) {
                         return HTCAPTION;
                     }
                 }
                 return hit;
+            }
+
+            case WM_SIZE : {
+                if (data) {
+                    if (wparam == SIZE_MINIMIZED) {
+                        data->titlebar_hovered = false;
+                    }
+                    else if (wparam == SIZE_RESTORED || wparam == SIZE_MAXIMIZED) {
+                        data->titlebar_hovered = false;
+
+                        // Re-extend DWM frame and force non-client recalculation after restore
+                        constexpr MARGINS margins = {1, 1, 1, 1};
+                        DwmExtendFrameIntoClientArea(hwnd, &margins);
+                        SetWindowPos(hwnd, nullptr, 0, 0, 0, 0,
+                                     SWP_FRAMECHANGED | SWP_NOMOVE | SWP_NOSIZE | SWP_NOZORDER | SWP_NOOWNERZORDER);
+                    }
+                }
+                break;
+            }
+
+            case WM_KILLFOCUS :
+            case WM_ACTIVATE : {
+                if (LOWORD(wparam) == WA_INACTIVE && data) {
+                    data->titlebar_hovered = false;
+                }
+                break;
             }
 
             case WM_NCMOUSEMOVE : {
