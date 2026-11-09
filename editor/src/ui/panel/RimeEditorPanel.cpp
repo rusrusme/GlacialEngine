@@ -58,7 +58,7 @@ namespace editor {
 
         ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
 
-        if (ImGui::Begin("Rime", &visible_)) {
+        if (ImGui::Begin("Rime")) {
             if (ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows)) {
                 Shortcuts::set_active_context(shortcut_context());
             }

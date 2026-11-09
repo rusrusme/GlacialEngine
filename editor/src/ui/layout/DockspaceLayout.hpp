@@ -22,6 +22,9 @@ namespace editor {
         void reset_layout() { reset_layout_ = true; }
 
     private:
-        bool reset_layout_ = false;
+        bool reset_layout_{false};
+        ImGuiID dockspace_id_{0};
+
+        void build_default_layout(ImGuiID dockspace_id);
     };
 }

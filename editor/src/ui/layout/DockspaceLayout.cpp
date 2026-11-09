@@ -7,49 +7,57 @@
 
 namespace editor {
     void DockspaceLayout::on_init(SystemContext& context) {
-        UIComponent::on_init(context);
     }
 
     void DockspaceLayout::on_render_ui(SystemContext& context) {
+        const ImGuiID dockspace_id = ImGui::GetID("EditorMainDockspace");
+
         constexpr ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_PassthruCentralNode;
-        const ImGuiID dockspace_id = ImGui::DockSpaceOverViewport(0, ImGui::GetMainViewport(), dockspace_flags);
+        ImGui::DockSpaceOverViewport(dockspace_id, ImGui::GetMainViewport(), dockspace_flags);
 
         const ImGuiDockNode* node = ImGui::DockBuilderGetNode(dockspace_id);
-        if (node == nullptr || node->ChildNodes[0] == nullptr || reset_layout_) {
+        if (node == nullptr || !node->IsSplitNode() || reset_layout_) {
             reset_layout_ = false;
-
-            ImGui::DockBuilderRemoveNode(dockspace_id);
-            ImGui::DockBuilderAddNode(dockspace_id, dockspace_flags | ImGuiDockNodeFlags_DockSpace);
-            ImGui::DockBuilderSetNodeSize(dockspace_id, ImGui::GetMainViewport()->WorkSize);
-
-            ImGuiID dock_main_id = dockspace_id;
-            ImGuiID dock_left_bottom_id;
-
-            ImGuiID dock_bottom_id = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Down, 0.25f, nullptr, &dock_main_id);
-            ImGuiID dock_right_id = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Right, 0.22f, nullptr, &dock_main_id);
-            ImGuiID dock_left_id = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Left, 0.18f, nullptr, &dock_main_id);
-            ImGuiID dock_left_top_id = ImGui::DockBuilderSplitNode(dock_left_id, ImGuiDir_Up, 0.40f, nullptr, &dock_left_bottom_id);
-
-            ImGuiID dock_toolbar_id = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Up, 0.05f, nullptr, &dock_main_id);
-
-            ImGui::DockBuilderDockWindow("Toolbar", dock_toolbar_id);
-            ImGui::DockBuilderDockWindow("Asset Browser", dock_left_top_id);
-            ImGui::DockBuilderDockWindow("Hierarchy", dock_left_bottom_id);
-            ImGui::DockBuilderDockWindow("Inspector", dock_right_id);
-            ImGui::DockBuilderDockWindow("Console", dock_bottom_id);
-
-            ImGui::DockBuilderDockWindow("Rime", dock_main_id);
-            ImGui::DockBuilderDockWindow("Scene", dock_main_id);
-
-            ImGuiID float_node_id = ImGui::DockBuilderAddNode();
-            ImGuiViewport* viewport = ImGui::GetMainViewport();
-            ImGui::DockBuilderSetNodePos(float_node_id, ImVec2(viewport->Pos.x + 100.0f, viewport->Pos.y + 100.0f));
-            ImGui::DockBuilderSetNodeSize(float_node_id, ImVec2(400.0f, 500.0f));
-            ImGui::DockBuilderDockWindow("Debug", float_node_id);
-
-            ImGui::DockBuilderFinish(float_node_id);
-            ImGui::DockBuilderFinish(dockspace_id);
+            build_default_layout(dockspace_id);
         }
+    }
+
+    void DockspaceLayout::build_default_layout(ImGuiID dockspace_id) {
+        constexpr ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_PassthruCentralNode;
+
+        ImGui::DockBuilderRemoveNode(dockspace_id);
+        ImGui::DockBuilderAddNode(dockspace_id, dockspace_flags | ImGuiDockNodeFlags_DockSpace);
+        ImGui::DockBuilderSetNodeSize(dockspace_id, ImGui::GetMainViewport()->WorkSize);
+
+        ImGuiID dock_main_id = dockspace_id;
+        ImGuiID dock_left_bottom_id;
+
+        ImGuiID dock_bottom_id = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Down, 0.25f, nullptr, &dock_main_id);
+        ImGuiID dock_right_id = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Right, 0.22f, nullptr, &dock_main_id);
+        ImGuiID dock_left_id = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Left, 0.18f, nullptr, &dock_main_id);
+        ImGuiID dock_left_top_id = ImGui::DockBuilderSplitNode(dock_left_id, ImGuiDir_Up, 0.40f, nullptr, &dock_left_bottom_id);
+
+        ImGuiID dock_toolbar_id = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Up, 0.05f, nullptr, &dock_main_id);
+
+        // Pre-dock panel target windows
+        ImGui::DockBuilderDockWindow("Toolbar", dock_toolbar_id);
+        ImGui::DockBuilderDockWindow("Asset Browser", dock_left_top_id);
+        ImGui::DockBuilderDockWindow("Hierarchy", dock_left_bottom_id);
+        ImGui::DockBuilderDockWindow("Inspector", dock_right_id);
+        ImGui::DockBuilderDockWindow("Console", dock_bottom_id);
+
+        ImGui::DockBuilderDockWindow("Rime", dock_main_id);
+        ImGui::DockBuilderDockWindow("Scene", dock_main_id);
+
+        // Floating Debug window setup
+        ImGuiID float_node_id = ImGui::DockBuilderAddNode();
+        ImGuiViewport* viewport = ImGui::GetMainViewport();
+        ImGui::DockBuilderSetNodePos(float_node_id, ImVec2(viewport->Pos.x + 100.0f, viewport->Pos.y + 100.0f));
+        ImGui::DockBuilderSetNodeSize(float_node_id, ImVec2(400.0f, 500.0f));
+        ImGui::DockBuilderDockWindow("Debug", float_node_id);
+
+        ImGui::DockBuilderFinish(float_node_id);
+        ImGui::DockBuilderFinish(dockspace_id);
     }
 
     // TODO save / load layout

@@ -228,8 +228,8 @@ namespace editor {
         hierarchy_panel_.on_render_ui(context);
         inspector_panel_.on_render_ui(context);
 
-        viewport_panel_.on_render_ui(context);
         rime_panel.on_render_ui(context);
+        viewport_panel_.on_render_ui(context);
 
         history_panel_.on_render_ui(context);
     }
