@@ -8,6 +8,9 @@
 #include "Config.hpp"
 #include "asset/AssetManager.hpp"
 #include "audio/AudioSystem.hpp"
+#include "command/CommandHistory.hpp"
+#include "command/EditorCommands.hpp"
+#include "command/Transaction.hpp"
 #include "core/SystemContext.hpp"
 #include "glm/gtc/type_ptr.hpp"
 #include "render/mesh/Mesh.hpp"
@@ -50,7 +53,13 @@ namespace {
         ImGui::PopStyleVar(2);
     }
 
-    void draw_vec3_control(const std::string& label, glm::vec3& values, float reset_value = 0.0f, float speed = 0.1f) {
+    struct Vec3ControlState {
+        bool activated = false;
+        bool deactivated = false;
+    };
+
+    Vec3ControlState draw_vec3_control(const std::string& label, glm::vec3& values, float reset_value = 0.0f, float speed = 0.1f) {
+        Vec3ControlState state{};
         ImGui::PushID(label.c_str());
 
         draw_property_label(label.c_str());
@@ -63,41 +72,41 @@ namespace {
 
         const ImGuiIO& io = ImGui::GetIO();
 
-        // --- X AXIS (RED BORDER) ---
-        ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.85f, 0.25f, 0.25f, 0.85f));
-        ImGui::SetNextItemWidth(item_width);
-        // ImGuiSliderFlags_NoInput prevents Ctrl+Click from opening manual text box input
-        ImGui::DragFloat("##X", &values.x, speed, 0.0f, 0.0f, "X: %.2f", ImGuiSliderFlags_NoInput);
+        auto draw_axis = [&](const char* id, float& val, const char* format, const ImVec4& border_color) {
+            ImGui::PushStyleColor(ImGuiCol_Border, border_color);
+            ImGui::SetNextItemWidth(item_width);
+            ImGui::DragFloat(id, &val, speed, 0.0f, 0.0f, format, ImGuiSliderFlags_NoInput);
 
-        if (ImGui::IsItemHovered() && io.KeyCtrl && ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
-            values.x = reset_value;
-        }
-        ImGui::PopStyleColor();
+            if (ImGui::IsItemActivated()) {
+                state.activated = true;
+            }
+            if (ImGui::IsItemDeactivatedAfterEdit()) {
+                state.deactivated = true;
+            }
+
+            if (ImGui::IsItemHovered() && io.KeyCtrl && ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
+                val = reset_value;
+                state.activated = true;
+                state.deactivated = true;
+            }
+            ImGui::PopStyleColor();
+        };
+
+        // --- X AXIS (RED BORDER) ---
+        draw_axis("##X", values.x, "X: %.2f", ImVec4(0.85f, 0.25f, 0.25f, 0.85f));
         ImGui::SameLine();
 
         // --- Y AXIS (GREEN BORDER) ---
-        ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.25f, 0.75f, 0.35f, 0.85f));
-        ImGui::SetNextItemWidth(item_width);
-        ImGui::DragFloat("##Y", &values.y, speed, 0.0f, 0.0f, "Y: %.2f", ImGuiSliderFlags_NoInput);
-
-        if (ImGui::IsItemHovered() && io.KeyCtrl && ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
-            values.y = reset_value;
-        }
-        ImGui::PopStyleColor();
+        draw_axis("##Y", values.y, "Y: %.2f", ImVec4(0.25f, 0.75f, 0.35f, 0.85f));
         ImGui::SameLine();
 
         // --- Z AXIS (BLUE BORDER) ---
-        ImGui::PushStyleColor(ImGuiCol_Border, ImVec4(0.30f, 0.50f, 0.90f, 0.85f));
-        ImGui::SetNextItemWidth(item_width);
-        ImGui::DragFloat("##Z", &values.z, speed, 0.0f, 0.0f, "Z: %.2f", ImGuiSliderFlags_NoInput);
-
-        if (ImGui::IsItemHovered() && io.KeyCtrl && ImGui::IsMouseClicked(ImGuiMouseButton_Left)) {
-            values.z = reset_value;
-        }
-        ImGui::PopStyleColor();
+        draw_axis("##Z", values.z, "Z: %.2f", ImVec4(0.30f, 0.50f, 0.90f, 0.85f));
 
         ImGui::PopStyleVar(2);
         ImGui::PopID();
+
+        return state;
     }
 
     // Unified Component Header
@@ -185,7 +194,7 @@ namespace editor {
 
     void Inspector::draw_component(Entity entity, SystemContext& context) const {
         draw_header_section(entity);
-        draw_transform_component(entity);
+        draw_transform_component(entity, context);
         draw_mesh_component(entity, context);
         draw_material_component(entity, context);
         // draw_lod_component(entity, context);
@@ -224,9 +233,13 @@ namespace editor {
         ImGui::Spacing();
     }
 
-    void Inspector::draw_transform_component(Entity entity) const {
-        draw_component_header<TransformComponent>("Transform", entity, [](auto& transform) {
-            draw_vec3_control("Position", transform.position, 0.0f, 0.1f);
+    void Inspector::draw_transform_component(Entity entity, SystemContext& context) const {
+        static UUID s_editing_uuid = 0;
+        static TransformComponent s_initial_transform{};
+        static bool s_is_editing = false;
+
+        draw_component_header<TransformComponent>("Transform", entity, [&](auto& transform) {
+            Vec3ControlState pos_state = draw_vec3_control("Position", transform.position, 0.0f, 0.1f);
 
             auto wrap_angle_360 = [](float angle) {
                 angle = std::fmod(angle, 360.0f);
@@ -234,14 +247,35 @@ namespace editor {
             };
 
             glm::vec3 prev_rotation = transform.rotation;
-            draw_vec3_control("Rotation", transform.rotation, 0.0f, 1.0f);
+            Vec3ControlState rot_state = draw_vec3_control("Rotation", transform.rotation, 0.0f, 1.0f);
             if (prev_rotation != transform.rotation) {
                 transform.rotation.x = wrap_angle_360(transform.rotation.x);
                 transform.rotation.y = wrap_angle_360(transform.rotation.y);
                 transform.rotation.z = wrap_angle_360(transform.rotation.z);
             }
 
-            draw_vec3_control("Scale", transform.scale, 1.0f, 0.05f);
+            Vec3ControlState scale_state = draw_vec3_control("Scale", transform.scale, 1.0f, 0.05f);
+
+            bool any_activated = pos_state.activated || rot_state.activated || scale_state.activated;
+            bool any_deactivated = pos_state.deactivated || rot_state.deactivated || scale_state.deactivated;
+
+            if (any_activated && !s_is_editing) {
+                s_is_editing = true;
+                s_editing_uuid = entity.uuid();
+                s_initial_transform = transform;
+            }
+
+            if (any_deactivated && s_is_editing && s_editing_uuid == entity.uuid()) {
+                if (s_initial_transform.position != transform.position ||
+                    s_initial_transform.rotation != transform.rotation ||
+                    s_initial_transform.scale != transform.scale) {
+                    auto& history = context.get<CommandHistory>();
+                    Transaction tx("Transform Entity", history);
+                    history.record(std::make_unique<ChangeTransformCommand>(entity.uuid(), s_initial_transform, transform), context);
+                }
+                s_is_editing = false;
+                s_editing_uuid = 0;
+            }
         }, false);
     }
 

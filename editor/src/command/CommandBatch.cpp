@@ -45,7 +45,7 @@ namespace editor {
         if (commands_.size() == 1 && other->commands_.size() == 1) {
             return commands_.front()->merge(*other->commands_.front());
         }
-        return true;
+        return false;
     }
 
     std::unique_ptr<Command> CommandBatch::clone() const {

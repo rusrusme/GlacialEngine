@@ -26,7 +26,7 @@ namespace editor {
         void draw_component(Entity entity, SystemContext& context) const;
 
         void draw_header_section(Entity entity) const;
-        void draw_transform_component(Entity entity) const;
+        void draw_transform_component(Entity entity, SystemContext& context) const;
         void draw_mesh_component(Entity entity, SystemContext& context) const;
         void draw_material_component(Entity entity, SystemContext& context) const;
         // void draw_lod_component(Entity entity, const SystemContext& context) const;
