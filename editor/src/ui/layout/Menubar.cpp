@@ -184,6 +184,9 @@ namespace editor {
                 }
                 ImGui::EndMenu();
             }
+            if (ImGui::MenuItem("Reset Layout")) {
+                EventQueue::submit<EditorActionEvent>(Action::ResetLayout);
+            }
             ImGui::EndMenu();
         }
     }

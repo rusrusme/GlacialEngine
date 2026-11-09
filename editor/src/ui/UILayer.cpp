@@ -118,6 +118,10 @@ namespace editor {
                     viewport.show_grid = !viewport.show_grid;
                     return true;
                 }
+                case Action::ResetLayout : {
+                    layout_.reset_layout();
+                    return true;
+                }
 
                 case Action::SaveRime : {
                     auto& rime = context.get<RimeContext>();
@@ -221,12 +225,12 @@ namespace editor {
         toolbar_.on_render_ui(context);
         asset_browser_panel_.on_render_ui(context);
         console_panel_.on_render_ui(context);
-
         hierarchy_panel_.on_render_ui(context);
         inspector_panel_.on_render_ui(context);
+
         viewport_panel_.on_render_ui(context);
+        rime_panel.on_render_ui(context);
 
         history_panel_.on_render_ui(context);
-        rime_panel.on_render_ui(context);
     }
 }

@@ -28,11 +28,12 @@ namespace editor {
         // UI
         ToggleConsole, ToggleInspector, ToggleHierarchy, ToggleSettings,
         ToggleDebug, ToggleHistory, ToggleAssetBrowser, ToggleViewport, ToggleRime,
+        ResetLayout,
 
         // Rime
         SaveRime,
 
         // Debug
-        ToggleGrid
+        ToggleGrid,
     };
 }
