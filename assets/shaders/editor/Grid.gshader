@@ -57,18 +57,23 @@ layout(std140, binding = 0) uniform GridUniformData {
     float u_FadeDistance;
 };
 
-// Analytical anti-aliased grid with grazing-angle compensation
-float drawGrid(vec2 coord, float spacing) {
+// Analytical anti-aliasing with automatic high-frequency (Moiré) suppression
+float drawGrid(vec2 coord, float spacing, float thicknessPixels) {
     vec2 gridCoord = coord / spacing;
     vec2 dudv = max(fwidth(gridCoord), vec2(1e-4));
 
-    // Antialiased box-filter across line width
-    vec2 lineWeight = clamp(0.5 - abs(fract(gridCoord - 0.5) - 0.5) / dudv, 0.0, 1.0);
+    // Distance to nearest line center
+    vec2 dist = abs(fract(gridCoord - 0.5) - 0.5);
 
-    // Suppress lines when cell size in screen pixels becomes smaller than 2-3 pixels (prevents moiré fog)
-    float lodFalloff = clamp(1.0 - max(dudv.x, dudv.y) * 0.5, 0.0, 1.0);
+    // Box-filter coverage in screen pixels
+    vec2 lineWeight = clamp((dudv * (thicknessPixels * 0.5) - dist) / dudv + 0.5, 0.0, 1.0);
+    float coverage = max(lineWeight.x, lineWeight.y);
 
-    return max(lineWeight.x, lineWeight.y) * lodFalloff;
+    // Smoothly dissolve lines when their density exceeds screen resolution (eliminates Moiré noise)
+    float maxDeriv = max(dudv.x, dudv.y);
+    float nyquistFade = clamp(2.0 - maxDeriv * 2.0, 0.0, 1.0);
+
+    return coverage * nyquistFade;
 }
 
 void main() {
@@ -88,57 +93,60 @@ void main() {
 
     gl_FragDepth = (ndcDepth * 0.5) + 0.5;
 
-    // --- Dynamic Zoom Scaling ---
+    // --- Uniform Global Camera LOD ---
     const float kSubdivision = 5.0;
-    const float minPixelsPerCell = 60.0;
-
-    vec2 coord = fragPos3D.xz;
-    vec2 dxy = fwidth(coord);
-    float pixelSize = max(dxy.x, dxy.y);
-
     float baseScale = max(u_GridScale, 1e-4);
 
-    float logScale = log(pixelSize * minPixelsPerCell / baseScale) / log(kSubdivision);
+    float camDist = max(abs(u_CameraPosition.y), 1.0);
+    float logScale = log(camDist * 0.25 / baseScale) / log(kSubdivision);
     float lod = floor(logScale);
     float fade = fract(logScale);
 
     float minorCell = pow(kSubdivision, lod) * baseScale;
     float majorCell = minorCell * kSubdivision;
 
-    float gMinor = drawGrid(coord, minorCell);
-    float gMajor = drawGrid(coord, majorCell);
+    // Draw both grid layers
+    float gMinor = drawGrid(fragPos3D.xz, minorCell, 1.25);
+    float gMajor = drawGrid(fragPos3D.xz, majorCell, 1.85);
 
-    float minorAlpha = 0.22 * (1.0 - smoothstep(0.0, 1.0, fade));
-    float majorAlpha = 0.45;
+    float minorAlpha = 0.28 * (1.0 - smoothstep(0.0, 1.0, fade));
+    float majorAlpha = 0.55;
 
     float finalAlpha = max(gMajor * majorAlpha, gMinor * minorAlpha);
-    vec4 color = vec4(0.45, 0.45, 0.48, finalAlpha);
+    vec4 color = vec4(0.48, 0.48, 0.52, finalAlpha);
 
     // --- Coordinate Axes (Red = X, Blue = Z) ---
-    // Antialiased 1px axis lines
     vec2 axisDeriv = max(fwidth(fragPos3D.xz), vec2(1e-4));
+    const float axisThicknessPixels = 2.0;
 
     // X-axis (Z = 0)
-    float zDist = abs(fragPos3D.z) / axisDeriv.y;
-    if (zDist < 1.0) {
-        color = mix(color, vec4(0.90, 0.25, 0.25, 0.95), clamp(1.0 - zDist, 0.0, 1.0));
+    float zDist = abs(fragPos3D.z);
+    float zAlpha = clamp((axisDeriv.y * (axisThicknessPixels * 0.5) - zDist) / axisDeriv.y + 0.5, 0.0, 1.0);
+    if (zAlpha > 0.0) {
+        color = mix(color, vec4(0.92, 0.25, 0.25, 0.95), zAlpha);
     }
 
     // Z-axis (X = 0)
-    float xDist = abs(fragPos3D.x) / axisDeriv.x;
-    if (xDist < 1.0) {
-        color = mix(color, vec4(0.25, 0.50, 0.95, 0.95), clamp(1.0 - xDist, 0.0, 1.0));
+    float xDist = abs(fragPos3D.x);
+    float xAlpha = clamp((axisDeriv.x * (axisThicknessPixels * 0.5) - xDist) / axisDeriv.x + 0.5, 0.0, 1.0);
+    if (xAlpha > 0.0) {
+        color = mix(color, vec4(0.25, 0.52, 0.95, 0.95), xAlpha);
     }
 
-    // --- Natural View Distance Falloff ---
-    // Use true Euclidean distance in 3D to eliminate elliptical/cylindrical warping
-    float viewDist = length(fragPos3D - u_CameraPosition.xyz);
+    // --- Distance & Grazing Horizon Falloff ---
+    vec3 viewVec = fragPos3D - u_CameraPosition.xyz;
+    float viewDist = length(viewVec);
 
-    // Smooth quadratic ease-out to the fade distance
-    float distanceFade = clamp(1.0 - (viewDist / u_FadeDistance), 0.0, 1.0);
-    distanceFade = distanceFade * distanceFade * (3.0 - 2.0 * distanceFade); // smoothstep curve
+    // 1. Distance fogging: full brightness in front, dissolving gently into the horizon
+    float fadeStart = u_FadeDistance * 0.40;
+    float fadeEnd   = u_FadeDistance * 0.95;
+    float distanceFade = 1.0 - smoothstep(fadeStart, fadeEnd, viewDist);
 
-    color.a *= distanceFade;
+    // 2. Horizon angle fade: gently tapers off as the view vector flattens against the ground plane
+    float sinViewAngle = abs(viewVec.y) / max(viewDist, 1e-4);
+    float angleFade = smoothstep(0.01, 0.12, sinViewAngle);
+
+    color.a *= (distanceFade * angleFade);
 
     if (color.a <= 0.002) discard;
 
