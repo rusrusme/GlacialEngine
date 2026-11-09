@@ -12,9 +12,13 @@
 *.ini
 *.rml
 *.glb
-*.scene
+
+*.gscene
 *.meta
-*.wav
+
 *.jpg
 *.jpeg
 *.png
+
+*.mp3
+*.wav

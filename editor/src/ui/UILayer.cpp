@@ -74,7 +74,7 @@ namespace editor {
     void UILayer::on_event(SystemContext& context, Event& event) {
         ImguiLayer::on_event(context, event);
 
-        const auto& viewport = context.get<SceneViewport>();
+        auto& viewport = context.get<SceneViewport>();
         if (viewport.hovered) {
             if (event.get_event_type() == engine::EventType::MouseScrolled ||
                 event.get_event_type() == engine::EventType::MouseButtonPressed ||
@@ -99,10 +99,9 @@ namespace editor {
             return false;
         });
 
-        dispatcher.dispatch<EditorActionEvent>([this, &context](const EditorActionEvent& action) {
+        dispatcher.dispatch<EditorActionEvent>([this, &context, &viewport](const EditorActionEvent& action) {
             switch (action.action()) {
                 case Action::ToggleGrid : {
-                    auto& viewport = context.get<SceneViewport>();
                     viewport.show_grid = !viewport.show_grid;
                     return true;
                 }
