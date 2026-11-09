@@ -57,72 +57,90 @@ layout(std140, binding = 0) uniform GridUniformData {
     float u_FadeDistance;
 };
 
-vec4 calculateGrid(vec3 fragPos3D, float scale, bool drawAxes) {
-    vec2 coord = fragPos3D.xz * scale;
-    vec2 derivative = fwidth(coord);
-    vec2 grid = abs(fract(coord - 0.5) - 0.5) / max(derivative, vec2(1e-5));
-    float line = min(grid.x, grid.y);
-    float alpha = 1.0 - min(line, 1.0);
+// Analytical anti-aliased grid with grazing-angle compensation
+float drawGrid(vec2 coord, float spacing) {
+    vec2 gridCoord = coord / spacing;
+    vec2 dudv = max(fwidth(gridCoord), vec2(1e-4));
 
-    // Fine grid: subtle gray lines; Coarse grid: more visible lines
-    vec4 color = drawAxes ? vec4(0.45, 0.45, 0.48, alpha * 0.75)
-    : vec4(0.30, 0.30, 0.33, alpha * 0.35);
+    // Antialiased box-filter across line width
+    vec2 lineWeight = clamp(0.5 - abs(fract(gridCoord - 0.5) - 0.5) / dudv, 0.0, 1.0);
 
-    if (drawAxes) {
-        // X-axis (Z = 0) -> Red
-        float zDist = abs(fragPos3D.z) / max(fwidth(fragPos3D.z), 1e-5);
-        if (zDist < 1.0) {
-            color = mix(color, vec4(0.90, 0.25, 0.25, 0.95), 1.0 - zDist);
-        }
-        // Z-axis (X = 0) -> Blue
-        float xDist = abs(fragPos3D.x) / max(fwidth(fragPos3D.x), 1e-5);
-        if (xDist < 1.0) {
-            color = mix(color, vec4(0.25, 0.50, 0.95, 0.95), 1.0 - xDist);
-        }
-    }
-    return color;
+    // Suppress lines when cell size in screen pixels becomes smaller than 2-3 pixels (prevents moiré fog)
+    float lodFalloff = clamp(1.0 - max(dudv.x, dudv.y) * 0.5, 0.0, 1.0);
+
+    return max(lineWeight.x, lineWeight.y) * lodFalloff;
 }
 
 void main() {
     float dy = v_FarPoint.y - v_NearPoint.y;
-    if (abs(dy) < 1e-6) {
-        discard;
-    }
+    if (abs(dy) < 1e-6) discard;
 
     float t = -v_NearPoint.y / dy;
-    if (t <= 0.0) {
-        discard;
-    }
+    if (t <= 0.0) discard;
 
     vec3 fragPos3D = v_NearPoint + t * (v_FarPoint - v_NearPoint);
 
     vec4 clipSpace = u_Projection * u_View * vec4(fragPos3D, 1.0);
-    if (clipSpace.w <= 0.0) {
-        discard;
-    }
+    if (clipSpace.w <= 0.0) discard;
 
     float ndcDepth = clipSpace.z / clipSpace.w;
-    if (ndcDepth < -1.0 || ndcDepth > 1.0) {
-        discard;
-    }
+    if (ndcDepth < -1.0 || ndcDepth > 1.0) discard;
 
-    // Write depth for correct occlusion with 3D scene objects
     gl_FragDepth = (ndcDepth * 0.5) + 0.5;
 
-    // Dual-scale grid
-    vec4 fineGrid   = calculateGrid(fragPos3D, u_GridScale, false);
-    vec4 coarseGrid = calculateGrid(fragPos3D, u_GridScale * 0.1, true);
+    // --- Dynamic Zoom Scaling ---
+    const float kSubdivision = 5.0;
+    const float minPixelsPerCell = 60.0;
 
-    vec4 finalColor = max(fineGrid, coarseGrid);
+    vec2 coord = fragPos3D.xz;
+    vec2 dxy = fwidth(coord);
+    float pixelSize = max(dxy.x, dxy.y);
 
-    // Fade with distance from camera
-    float dist = length(fragPos3D.xz - u_CameraPosition.xz);
-    float fade = clamp(1.0 - (dist / u_FadeDistance), 0.0, 1.0);
-    finalColor.a *= (fade * fade);
+    float baseScale = max(u_GridScale, 1e-4);
 
-    if (finalColor.a <= 0.01) {
-        discard;
+    float logScale = log(pixelSize * minPixelsPerCell / baseScale) / log(kSubdivision);
+    float lod = floor(logScale);
+    float fade = fract(logScale);
+
+    float minorCell = pow(kSubdivision, lod) * baseScale;
+    float majorCell = minorCell * kSubdivision;
+
+    float gMinor = drawGrid(coord, minorCell);
+    float gMajor = drawGrid(coord, majorCell);
+
+    float minorAlpha = 0.22 * (1.0 - smoothstep(0.0, 1.0, fade));
+    float majorAlpha = 0.45;
+
+    float finalAlpha = max(gMajor * majorAlpha, gMinor * minorAlpha);
+    vec4 color = vec4(0.45, 0.45, 0.48, finalAlpha);
+
+    // --- Coordinate Axes (Red = X, Blue = Z) ---
+    // Antialiased 1px axis lines
+    vec2 axisDeriv = max(fwidth(fragPos3D.xz), vec2(1e-4));
+
+    // X-axis (Z = 0)
+    float zDist = abs(fragPos3D.z) / axisDeriv.y;
+    if (zDist < 1.0) {
+        color = mix(color, vec4(0.90, 0.25, 0.25, 0.95), clamp(1.0 - zDist, 0.0, 1.0));
     }
 
-    o_Color = finalColor;
+    // Z-axis (X = 0)
+    float xDist = abs(fragPos3D.x) / axisDeriv.x;
+    if (xDist < 1.0) {
+        color = mix(color, vec4(0.25, 0.50, 0.95, 0.95), clamp(1.0 - xDist, 0.0, 1.0));
+    }
+
+    // --- Natural View Distance Falloff ---
+    // Use true Euclidean distance in 3D to eliminate elliptical/cylindrical warping
+    float viewDist = length(fragPos3D - u_CameraPosition.xyz);
+
+    // Smooth quadratic ease-out to the fade distance
+    float distanceFade = clamp(1.0 - (viewDist / u_FadeDistance), 0.0, 1.0);
+    distanceFade = distanceFade * distanceFade * (3.0 - 2.0 * distanceFade); // smoothstep curve
+
+    color.a *= distanceFade;
+
+    if (color.a <= 0.002) discard;
+
+    o_Color = color;
 }
