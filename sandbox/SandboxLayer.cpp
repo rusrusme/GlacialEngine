@@ -64,7 +64,7 @@ void SandboxLayer::on_update(SystemContext& context, float delta_time) {
     if (!scene) return;
 
     if (Input::key_pressed_once(Key::F5)) {
-        ScriptEngine::request_reload();
+        ScriptEngine::reload();
     }
     ScriptEngine::on_update(scene.get());
 

@@ -118,7 +118,7 @@ namespace editor {
 
         // TODO temporary
         if (Input::key_pressed_once(Key::F5)) {
-            ScriptEngine::request_reload();
+            ScriptEngine::reload();
         }
         ScriptEngine::on_update(context.scenes.active_scene().get());
 

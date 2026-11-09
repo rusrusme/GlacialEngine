@@ -17,27 +17,17 @@
 #endif
 
 namespace engine {
-    void ScriptEngine::request_reload() {
-        if (s_compiling.load()) {
-            CORE_WARN("[ScriptEngine] Compilation is already in progress!");
-            return;
-        }
-
-        s_compiling.store(true);
-        CORE_INFO("[ScriptEngine] Reloading scripts (background build started)...");
-
-        // Startet das Build-Skript in einem separaten Worker-Thread
-        s_build_task = std::async(std::launch::async, []() {
-            return build_scripts();
-        });
-    }
-
     void ScriptEngine::on_update(Scene* active_scene) {
         if (!s_compiling.load()) {
             return;
         }
 
-        // Nicht-blockierende Prüfung: Ist der Hintergrund-Task fertig?
+        if (!s_build_task.valid()) {
+            s_compiling.store(false);
+            return;
+        }
+
+        // Non-blocking check
         if (s_build_task.wait_for(std::chrono::milliseconds(0)) == std::future_status::ready) {
             int result = s_build_task.get();
             s_compiling.store(false);
@@ -46,8 +36,6 @@ namespace engine {
                 CORE_ERROR("[ScriptEngine] Compilation failed (exit code: {})", result);
                 return;
             }
-
-            // Sicher auf dem Hauptthread DLL austauschen
             swap_library(active_scene);
         }
     }
@@ -129,28 +117,27 @@ namespace engine {
         CORE_INFO("[ScriptEngine] Unloaded script library");
     }
 
-    bool ScriptEngine::reload(Scene* active_scene) {
-        PROFILE_FUNCTION();
-
-        CORE_INFO("[ScriptEngine] Reloading scripts (synchronous)...");
-
-        if (int result = build_scripts(); result != 0) {
-            CORE_ERROR("[ScriptEngine] Compilation failed");
-            return false;
+    void ScriptEngine::reload() {
+        if (s_compiling.load()) {
+            CORE_WARN("[ScriptEngine] Compilation is already in progress!");
+            return;
         }
 
-        swap_library(active_scene);
-        return is_loaded();
+        s_compiling.store(true);
+        CORE_INFO("[ScriptEngine] Reloading scripts (background build started)...");
+
+        s_build_task = std::async(std::launch::async, [] {
+            return build_scripts();
+        });
     }
 
-    // TODO the cmd calls vcvars64.bat which could be called at the beginning of script ONCE and kept open until shutdown instead every time reload is triggered
     int ScriptEngine::build_scripts() {
         PROFILE_FUNCTION();
 
         #if defined(_WIN32)
         return std::system("BuildScripts.cmd");
-        #else // linux
-        return std::system("cmake --build .. --target Scripts");
+        #else
+        return std::system("./BuildScripts.sh");
         #endif
     }
 

@@ -19,6 +19,7 @@
 #include "render/rhi/RenderContext.hpp"
 #include "script/ScriptEngine.hpp"
 #include "util/Instrumentor.hpp"
+#include "util/PlatformEnvironment.hpp"
 
 namespace engine {
     Application::Application(std::string title) : title_(std::move(title)) {
@@ -32,6 +33,8 @@ namespace engine {
         Log::init();
         CORE_INFO("Starting application");
         config::load();
+
+        platform::init_build_environment();
 
         if (specs_.headless) {
             return run_headless();

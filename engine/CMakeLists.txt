@@ -81,13 +81,6 @@ target_precompile_headers(Engine PRIVATE src/core/core_pch.hpp)
 # ----------------------------------------------------------------------------
 include(PackageDistribution.cmake)
 # ----------------------------------------------------------------------------
-# Generate cmd file
-configure_file(
-        "${CMAKE_SOURCE_DIR}/BuildScripts.cmd.in"
-        "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/BuildScripts.cmd"
-        @ONLY
-)
-# ----------------------------------------------------------------------------
 set(RUNTIME_ASSETS "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/assets")
 set(SOURCE_ASSETS "${CMAKE_SOURCE_DIR}/assets")
 add_custom_target(SyncAssets ALL
@@ -116,6 +109,35 @@ foreach(SHADER_REL IN LISTS SHADER_SOURCES)
     list(APPEND COMPILED_SHADERS "${SHADER_OUT}")
 endforeach()
 add_custom_target(CompileShaders ALL DEPENDS ${COMPILED_SHADERS})
+# ----------------------------------------------------------------------------
+# Generate cmd file template
+if (WIN32)
+    set(SCRIPT_NAME "BuildScripts.cmd")
+    set(SCRIPT_PERMS "")
+else ()
+    set(SCRIPT_NAME "BuildScripts.sh")
+    set(SCRIPT_PERMS
+        FILE_PERMISSIONS
+        OWNER_READ OWNER_WRITE OWNER_EXECUTE
+        GROUP_READ GROUP_EXECUTE
+        WORLD_READ WORLD_EXECUTE
+    )
+endif ()
+
+configure_file(
+        "${CMAKE_SOURCE_DIR}/${SCRIPT_NAME}.in"
+        "${CMAKE_CURRENT_BINARY_DIR}/${SCRIPT_NAME}"
+        @ONLY
+        ${SCRIPT_PERMS}
+)
+
+add_custom_target(SetupBuildScripts ALL
+                  COMMAND ${CMAKE_COMMAND} -E copy_if_different
+                  "${CMAKE_CURRENT_BINARY_DIR}/${SCRIPT_NAME}"
+                  "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${SCRIPT_NAME}"
+                  COMMENT "Syncing ${SCRIPT_NAME} to runtime directory"
+                  VERBATIM
+)
 # ----------------------------------------------------------------------------
 set(SCRIPT_OUT_DIR "${RUNTIME_ASSETS}/scripts/compiled")
 set(SCRIPT_BUNDLE_CPP "${SCRIPT_OUT_DIR}/GlazeScriptsBundle.cpp")
@@ -168,5 +190,6 @@ endif()
 # ----------------------------------------------------------------------------
 add_dependencies(Engine SyncAssets)
 add_dependencies(Engine CompileShaders)
-set_target_properties(SyncAssets CompileShaders PROPERTIES FOLDER "GlacialEngine")
+add_dependencies(Engine SetupBuildScripts)
+set_target_properties(SyncAssets CompileShaders SetupBuildScripts PROPERTIES FOLDER "GlacialEngine")
 # ----------------------------------------------------------------------------

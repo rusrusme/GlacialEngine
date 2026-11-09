@@ -1,18 +1,24 @@
 @echo off
-setlocal
 
-if defined VSCMD_VER goto :build
+if defined VSCMD_VER (
+    echo [BuildScripts] VSCMD environment active.
+    goto :build
+)
+
+echo [BuildScripts] VSCMD not found. Resolving Visual Studio via vswhere...
 
 for /f "usebackq tokens=*" %%i in (`"%ProgramFiles(x86)%\Microsoft Visual Studio\Installer\vswhere.exe" -latest -products * -requires Microsoft.VisualStudio.Component.VC.Tools.x86.x64 -property installationPath`) do (
     set "VS_PATH=%%i"
 )
 
 if defined VS_PATH (
+    echo [BuildScripts] Initializing VC environment from: %VS_PATH%
     call "%VS_PATH%\VC\Auxiliary\Build\vcvars64.bat" >nul 2>&1
+    goto :build
 ) else (
-    echo Error: C++ build tools not found on this system.
+    echo [BuildScripts] Error: Visual Studio C++ toolchain not found.
     exit /b 1
 )
 
 :build
-cmake --build "@CMAKE_BINARY_DIR@" --target Scripts
+cmake --build "@CMAKE_BINARY_DIR@" --target Scripts %*

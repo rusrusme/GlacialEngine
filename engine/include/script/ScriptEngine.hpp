@@ -17,13 +17,12 @@ namespace engine {
 
     class ScriptEngine {
     public:
-        static void request_reload();
         static void on_update(Scene* active_scene);
         static bool compiling() { return s_compiling.load(); }
 
         static bool load_library(const std::filesystem::path& dll_path);
         static void unload_library();
-        static bool reload(Scene* active_scene = nullptr);
+        static void reload();
 
         [[nodiscard]] static bool is_loaded() noexcept { return s_library_handle != nullptr; }
 
