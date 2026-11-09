@@ -7,6 +7,8 @@
 
 #include <glm/gtc/type_ptr.hpp>
 
+#include "command/EditorCommands.hpp"
+#include "command/Transaction.hpp"
 #include "input/Input.hpp"
 #include "input/KeyCodes.hpp"
 #include "input/MouseCodes.hpp"
@@ -113,6 +115,15 @@ namespace editor {
 
         // Reset drag tracking when mouse left button is fully released
         if (!ImGuizmo::IsUsing() && !Input::mouse_button_pressed(Mouse::MOUSE_BUTTON_LEFT)) {
+            if (was_using_gizmo_ && !gizmo_canceled_) {
+                if (initial_transform_.position != tc.position ||
+                    initial_transform_.rotation != tc.rotation ||
+                    initial_transform_.scale != tc.scale) {
+                    auto& history = context.get<CommandHistory>();
+                    Transaction tx("Transform Entity", history);
+                    history.record(std::make_unique<ChangeTransformCommand>(entity.uuid(), initial_transform_, tc), context);
+                    }
+            }
             was_using_gizmo_ = false;
         }
     }

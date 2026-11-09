@@ -174,4 +174,102 @@ namespace editor {
         std::string old_name_;
         std::string new_name_;
     };
+
+    // --- CHANGE TRANSFORM COMMAND ---
+    class ChangeTransformCommand : public Command {
+    public:
+        ChangeTransformCommand(UUID uuid, TransformComponent old_transform, TransformComponent new_transform, bool mergeable = false)
+            : entity_uuid_(uuid),
+              old_transform_(old_transform),
+              new_transform_(new_transform),
+              mergeable_(mergeable) {}
+
+        void execute(SystemContext& context) override {
+            auto scene = context.scenes.active_scene();
+            if (Entity entity = find_entity_by_uuid(scene, entity_uuid_)) {
+                if (entity.has_component<TransformComponent>()) {
+                    entity.get_component<TransformComponent>() = new_transform_;
+                }
+            }
+        }
+
+        void undo(SystemContext& context) override {
+            auto scene = context.scenes.active_scene();
+            if (Entity entity = find_entity_by_uuid(scene, entity_uuid_)) {
+                if (entity.has_component<TransformComponent>()) {
+                    entity.get_component<TransformComponent>() = old_transform_;
+                }
+            }
+        }
+
+        bool merge(const Command& next) override {
+            if (!mergeable_) {
+                return false;
+            }
+
+            auto* other = dynamic_cast<const ChangeTransformCommand*>(&next);
+            if (!other || !other->mergeable_ || other->entity_uuid_ != entity_uuid_) {
+                return false;
+            }
+            new_transform_ = other->new_transform_;
+            return true;
+        }
+
+        [[nodiscard]] std::string_view name() const override { return "Transform Entity"; }
+
+        [[nodiscard]] std::unique_ptr<Command> clone() const override {
+            return std::make_unique<ChangeTransformCommand>(*this);
+        }
+
+    private:
+        UUID entity_uuid_;
+        TransformComponent old_transform_;
+        TransformComponent new_transform_;
+        bool mergeable_{false};
+    };
+
+    // --- UPDATE ENTITY COMMAND ---
+    class UpdateEntityCommand : public Command {
+    public:
+        UpdateEntityCommand(UUID uuid, nlohmann::json old_snapshot, nlohmann::json new_snapshot, std::string name = "Update Entity")
+            : entity_uuid_(uuid),
+              old_snapshot_(std::move(old_snapshot)),
+              new_snapshot_(std::move(new_snapshot)),
+              name_(std::move(name)) {}
+
+        void execute(SystemContext& context) override {
+            auto scene = context.scenes.active_scene();
+            if (find_entity_by_uuid(scene, entity_uuid_)) {
+                EntitySnapshot::deserialize(new_snapshot_, context);
+            }
+        }
+
+        void undo(SystemContext& context) override {
+            auto scene = context.scenes.active_scene();
+            if (find_entity_by_uuid(scene, entity_uuid_)) {
+                EntitySnapshot::deserialize(old_snapshot_, context);
+            }
+        }
+
+        bool merge(const Command& next) override {
+            auto* other = dynamic_cast<const UpdateEntityCommand*>(&next);
+            if (!other || other->entity_uuid_ != entity_uuid_ || other->name_ != name_) {
+                return false;
+            }
+            new_snapshot_ = other->new_snapshot_;
+            return true;
+        }
+
+        [[nodiscard]] std::string_view name() const override { return name_; }
+
+        [[nodiscard]] std::unique_ptr<Command> clone() const override {
+            return std::make_unique<UpdateEntityCommand>(*this);
+        }
+
+    private:
+        UUID entity_uuid_;
+        nlohmann::json old_snapshot_;
+        nlohmann::json new_snapshot_;
+        std::string name_;
+    };
 }

@@ -94,7 +94,7 @@ namespace editor {
     }
 
     void CommandHistory::commit(std::unique_ptr<CommandBatch> transaction) {
-        if (current_index_ > 0 && history_[current_index_ - 1]->merge(*transaction)) {
+        if (!transaction) {
             return;
         }
 
@@ -105,16 +105,23 @@ namespace editor {
             }
         }
 
+        if (current_index_ > 0 && history_[current_index_ - 1]->merge(*transaction)) {
+            if (clean_index_ && *clean_index_ == current_index_) {
+                clean_index_ = std::nullopt;
+            }
+            return;
+        }
+
         if (history_.size() >= capacity_) {
             history_.pop_front();
             if (clean_index_) {
                 if (*clean_index_ == 0) {
-                    clean_index_ = std::nullopt; // Saved checkpoint evicted from memory
-                } else {
+                    clean_index_ = std::nullopt;
+                }
+                else {
                     --*clean_index_;
                 }
             }
-            --current_index_;
         }
 
         history_.push_back(std::move(transaction));
