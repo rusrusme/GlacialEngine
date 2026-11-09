@@ -22,8 +22,6 @@ namespace editor {
 
         [[nodiscard]] ShortcutContext shortcut_context() const override { return ShortcutContext::Inspector; }
 
-        void set_selected_entity(const Entity entity) { selected_entity_ = entity; }
-
     private:
         void draw_component(Entity entity, SystemContext& context) const;
 

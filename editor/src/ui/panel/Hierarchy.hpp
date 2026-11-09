@@ -10,6 +10,25 @@
 #include "ui/UIComponent.hpp"
 
 namespace editor {
+    struct SelectionContext {
+        Entity selected_entity{};
+        UUID selected_uuid{0};
+
+        void set_selected(Entity entity) {
+            selected_entity = entity;
+            if (selected_entity && selected_entity.has_component<IDComponent>()) {
+                selected_uuid = selected_entity.get_component<IDComponent>().id;
+            } else {
+                selected_uuid = 0;
+            }
+        }
+
+        void clear() {
+            selected_entity = {};
+            selected_uuid = 0;
+        }
+    };
+
     class Hierarchy : public UIComponent {
     public:
         Hierarchy() : UIComponent("Hierarchy") {}
@@ -24,13 +43,13 @@ namespace editor {
         [[nodiscard]] ShortcutContext shortcut_context() const override { return ShortcutContext::Hierarchy; }
 
         [[nodiscard]] Entity selected_entity() const { return selected_entity_; }
-        void set_selected_entity(Entity new_entity);
+        void set_selected_entity(SystemContext& context, Entity new_entity);
 
         void create_entity();
-        void delete_entity();
-        void duplicate_entity();
-        void rename_entity();
-        void deselect_entity();
+        void delete_entity(SystemContext& context);
+        void duplicate_entity(SystemContext& context);
+        void rename_entity(SystemContext& context);
+        void deselect_entity(SystemContext& context);
 
     private:
         Entity selected_entity_;
@@ -49,7 +68,7 @@ namespace editor {
     private:
         void render_header_bar();
         void render_add_entity_popup(SystemContext& context);
-        void render_entity_list(const std::shared_ptr<Scene>& active_scene);
+        void render_entity_list(SystemContext& context);
 
         void render_primitives_submenus(SystemContext& context);
         void render_lighting_submenu(SystemContext& context);
@@ -58,12 +77,12 @@ namespace editor {
         bool menu_item_with_icon(const char* label, EntityType type);
         void create_primitive_entity(const char* label, const char* path, EntityType type, SystemContext& context);
 
-        void render_entity_node(Entity entity);
+        void render_entity_node(SystemContext& context, Entity entity);
         bool render_eye_toggle_button(bool is_active);
         void render_entity_context_menu(Entity entity);
 
         void process_deferred_actions(SystemContext& context);
-        void process_deselection_inputs();
+        void process_deselection_inputs(SystemContext& context);
         void start_renaming(Entity entity);
         void record_entity_creation(Entity entity, SystemContext& context);
     };

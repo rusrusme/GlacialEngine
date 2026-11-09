@@ -25,13 +25,10 @@ namespace editor {
         void on_render(SystemContext& context, float delta_time) override;
         void on_event(SystemContext& context, Event& event) override;
 
-        [[nodiscard]] Camera& camera() { return cam_; }
         [[nodiscard]] Framebuffer* framebuffer() const { return framebuffer_.get(); }
         [[nodiscard]] ViewportGrid& grid() { return grid_; }
 
     private:
-        Camera cam_;
-        CameraController cam_controller_;
         bool controlling_cam_ = false;
 
         std::unique_ptr<Framebuffer> framebuffer_{nullptr};

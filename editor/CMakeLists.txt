@@ -59,6 +59,8 @@ add_executable(Editor
                src/util/MenubarHandlers.hpp
                src/util/ViewportGrid.cpp
                src/util/ViewportGrid.hpp
+               src/ui/overlay/GizmoOverlay.cpp
+               src/ui/overlay/GizmoOverlay.hpp
 )
 # ----------------------------------------------------------------------------
 target_include_directories(Editor PRIVATE ${CMAKE_SOURCE_DIR}/editor/src)

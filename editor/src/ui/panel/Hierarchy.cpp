@@ -19,25 +19,25 @@ namespace editor {
         auto active_scene = context.scenes.active_scene();
         if (!active_scene) return;
 
-        selected_entity_ = {};
-        if (selected_uuid_ != 0) {
-            bool found = false;
+        auto& selection = context.get<SelectionContext>();
+        selection.selected_entity = {};
+
+        if (selection.selected_uuid != 0) {
             for (auto view = active_scene->view<IDComponent>(); auto entity : view) {
-                if (view.get<IDComponent>(entity).id == selected_uuid_) {
-                    selected_entity_ = {entity, active_scene.get()};
-                    found = true;
+                if (view.get<IDComponent>(entity).id == selection.selected_uuid) {
+                    selection.selected_entity = {entity, active_scene.get()};
                     break;
                 }
             }
-            if (!found) { selected_uuid_ = 0; }
+            if (!selection.selected_entity) {
+                selection.selected_uuid = 0;
+            }
         }
     }
 
     void Hierarchy::on_render_ui(SystemContext& context) {
         if (!visible_) return;
 
-        const auto scene = context.scenes.active_scene();
-        if (!scene) return;
         ImGui::Begin("Hierarchy");
 
         if (ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows)) {
@@ -52,10 +52,10 @@ namespace editor {
         }
         ImGui::Separator();
 
-        render_entity_list(scene);
+        render_entity_list(context);
 
         process_deferred_actions(context);
-        process_deselection_inputs();
+        process_deselection_inputs(context);
 
         ImGui::End();
     }
@@ -68,40 +68,37 @@ namespace editor {
         config::set_value("Hierarchy_visible", visible_);
     }
 
-    void Hierarchy::set_selected_entity(Entity new_entity) {
-        selected_entity_ = new_entity;
-        if (selected_entity_ && selected_entity_.has_component<IDComponent>()) {
-            selected_uuid_ = selected_entity_.get_component<IDComponent>().id;
-        }
-        else {
-            selected_uuid_ = 0;
-        }
+    void Hierarchy::set_selected_entity(SystemContext& context, Entity new_entity) {
+        context.get<SelectionContext>().set_selected(new_entity);
     }
 
     void Hierarchy::create_entity() {
         create_entity_requested_ = true;
     }
 
-    void Hierarchy::delete_entity() {
-        if (selected_entity_) {
-            entity_to_destroy_ = selected_entity_;
+    void Hierarchy::delete_entity(SystemContext& context) {
+        auto selected = context.get<SelectionContext>().selected_entity;
+        if (selected) {
+            entity_to_destroy_ = selected;
         }
     }
 
-    void Hierarchy::duplicate_entity() {
-        if (selected_entity_) {
-            entity_to_duplicate_ = selected_entity_;
+    void Hierarchy::duplicate_entity(SystemContext& context) {
+        auto selected = context.get<SelectionContext>().selected_entity;
+        if (selected) {
+            entity_to_duplicate_ = selected;
         }
     }
 
-    void Hierarchy::rename_entity() {
-        if (selected_entity_) {
-            start_renaming(selected_entity_);
+    void Hierarchy::rename_entity(SystemContext& context) {
+        auto selected = context.get<SelectionContext>().selected_entity;
+        if (selected) {
+            start_renaming(selected);
         }
     }
 
-    void Hierarchy::deselect_entity() {
-        set_selected_entity({});
+    void Hierarchy::deselect_entity(SystemContext& context) {
+        context.get<SelectionContext>().clear();
     }
 
     void Hierarchy::render_header_bar() {
@@ -133,7 +130,8 @@ namespace editor {
         render_imported_models_submenu(context);
     }
 
-    void Hierarchy::render_entity_list(const std::shared_ptr<Scene>& active_scene) {
+    void Hierarchy::render_entity_list(SystemContext& context) {
+        auto active_scene = context.scenes.active_scene();
         if (!active_scene) return;
 
         auto view = active_scene->view<LabelComponent>();
@@ -152,7 +150,7 @@ namespace editor {
         while (clipper.Step()) {
             for (int i = clipper.DisplayStart; i < clipper.DisplayEnd; ++i) {
                 Entity entity{entities[i], active_scene.get()};
-                render_entity_node(entity);
+                render_entity_node(context, entity);
             }
         }
 
@@ -246,7 +244,7 @@ namespace editor {
         }
     }
 
-    void Hierarchy::render_entity_node(Entity entity) {
+    void Hierarchy::render_entity_node(SystemContext& context, Entity entity) {
         auto& label = entity.get_component<LabelComponent>();
         ImGui::PushID(entity.uuid());
 
@@ -284,7 +282,9 @@ namespace editor {
             }
         }
         else {
-            const bool is_selected = (selected_entity_ == entity);
+            const auto current_selected = context.get<SelectionContext>().selected_entity;
+            const bool is_selected = current_selected == entity;
+
             const ImGuiTreeNodeFlags flags = (is_selected ? ImGuiTreeNodeFlags_Selected : 0)
                 | ImGuiTreeNodeFlags_OpenOnArrow
                 | ImGuiTreeNodeFlags_SpanAvailWidth;
@@ -292,7 +292,7 @@ namespace editor {
             const bool opened = ImGui::TreeNodeEx(label.tag.c_str(), flags);
 
             if (ImGui::IsItemClicked() && !ImGui::IsItemToggledOpen()) {
-                set_selected_entity(entity);
+                set_selected_entity(context, entity);
             }
 
             render_entity_context_menu(entity);
@@ -349,19 +349,12 @@ namespace editor {
         if (!active_scene) return;
 
         auto& history = context.get<CommandHistory>();
-
-        // Create Entity
-        if (create_entity_requested_) {
-            auto entity = active_scene->create_entity();
-            record_entity_creation(entity, context);
-
-            create_entity_requested_ = false;
-        }
+        auto& selection = context.get<SelectionContext>();
 
         // Delete Entity
         if (entity_to_destroy_) {
-            if (selected_entity_ == entity_to_destroy_) {
-                set_selected_entity({});
+            if (selection.selected_entity == entity_to_destroy_) {
+                selection.clear();
             }
             if (renaming_entity_ == entity_to_destroy_) {
                 renaming_entity_ = {};
@@ -381,8 +374,7 @@ namespace editor {
             Transaction tx("Duplicate Entity", history);
             history.record(std::move(cmd), context);
 
-            // Select the newly spawned duplicate
-            selected_uuid_ = new_uuid;
+            selection.selected_uuid = new_uuid;
             entity_to_duplicate_ = {};
         }
 
@@ -400,9 +392,9 @@ namespace editor {
         }
     }
 
-    void Hierarchy::process_deselection_inputs() {
+    void Hierarchy::process_deselection_inputs(SystemContext& context) {
         if (ImGui::IsMouseDown(ImGuiMouseButton_Left) && ImGui::IsWindowHovered() && !ImGui::IsAnyItemHovered()) {
-            set_selected_entity({});
+            set_selected_entity(context, {});
         }
     }
 
@@ -423,6 +415,6 @@ namespace editor {
         Transaction tx("Create Entity", history);
         history.record(std::make_unique<CreateEntityCommand>(entity, context), context);
 
-        set_selected_entity(entity);
+        set_selected_entity(context, entity);
     }
 }

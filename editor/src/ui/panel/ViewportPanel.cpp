@@ -9,6 +9,9 @@
 #include "core/SystemContext.hpp"
 
 namespace editor {
+    void ViewportPanel::on_update(SystemContext& context, float delta_time) {
+    }
+
     void ViewportPanel::on_render_ui(SystemContext& context) {
         auto& viewport = context.get<SceneViewport>();
 
@@ -42,8 +45,21 @@ namespace editor {
                 ImVec2(0.0f, 1.0f),
                 ImVec2(1.0f, 0.0f)
             );
+
+            const ImVec2 min = ImGui::GetItemRectMin();
+            const ImVec2 max = ImGui::GetItemRectMax();
+            viewport.bounds_min = {min.x, min.y};
+            viewport.bounds_max = {max.x, max.y};
+        }
+        else {
+            // Fallback when no framebuffer is attached
+            const ImVec2 cursor_screen_pos = ImGui::GetCursorScreenPos();
+            viewport.bounds_min = {cursor_screen_pos.x, cursor_screen_pos.y};
+            viewport.bounds_max = {cursor_screen_pos.x + avail.x, cursor_screen_pos.y + avail.y};
         }
         viewport.hovered = ImGui::IsItemHovered();
+
+        gizmo_.on_render_overlay(context);
 
         ImGui::End();
         ImGui::PopStyleVar();

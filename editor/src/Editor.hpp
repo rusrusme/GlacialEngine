@@ -11,6 +11,7 @@
 #include "core/Application.hpp"
 #include "rime/RimeEditor.hpp"
 #include "ui/UILayer.hpp"
+#include "ui/panel/Hierarchy.hpp"
 
 namespace editor {
     using namespace engine;
@@ -32,9 +33,13 @@ namespace editor {
             auto& settings = context.emplace<EditorSettings>();
             settings.register_category<RimeSettings>();
 
+            context.emplace<SelectionContext>();
             context.emplace<RimeContext>();
             context.emplace<SceneViewport>();
             context.emplace<CommandHistory>();
+
+            context.emplace<Camera>();
+            context.emplace<CameraController>();
         }
     };
 }

@@ -101,6 +101,19 @@ namespace editor {
 
         dispatcher.dispatch<EditorActionEvent>([this, &context, &viewport](const EditorActionEvent& action) {
             switch (action.action()) {
+                case Action::GizmoSelect :
+                    viewport_panel_.gizmo().set_enabled(false);
+                    return true;
+                case Action::GizmoTranslate :
+                    viewport_panel_.gizmo().set_operation(ImGuizmo::TRANSLATE);
+                    return true;
+                case Action::GizmoRotate :
+                    viewport_panel_.gizmo().set_operation(ImGuizmo::ROTATE);
+                    return true;
+                case Action::GizmoScale :
+                    viewport_panel_.gizmo().set_operation(ImGuizmo::SCALE);
+                    return true;
+
                 case Action::ToggleGrid : {
                     viewport.show_grid = !viewport.show_grid;
                     return true;
@@ -162,20 +175,26 @@ namespace editor {
                     return true;
                 }
                 case Action::DeleteEntity : {
-                    hierarchy_panel_.delete_entity();
+                    hierarchy_panel_.delete_entity(context);
                     return true;
                 }
                 case Action::RenameEntity : {
-                    hierarchy_panel_.rename_entity();
+                    hierarchy_panel_.rename_entity(context);
                     return true;
                 }
                 case Action::DuplicateEntity : {
-                    hierarchy_panel_.duplicate_entity();
+                    hierarchy_panel_.duplicate_entity(context);
                     return true;
                 }
-                case Action::DeselectEntity :
-                    hierarchy_panel_.deselect_entity();
+                case Action::DeselectEntity : {
+                    if (viewport_panel_.gizmo().is_using()) {
+                        viewport_panel_.gizmo().cancel_drag(context);
+                    }
+                    else {
+                        context.get<SelectionContext>().clear();
+                    }
                     return true;
+                }
 
                 case Action::Exit :
                     Application::get().close();
@@ -187,25 +206,26 @@ namespace editor {
     }
 
     void UILayer::on_imgui_render(SystemContext& context, float delta_time) {
+        ImGuizmo::BeginFrame();
+
         if (!ImGui::IsWindowFocused(ImGuiFocusedFlags_AnyWindow)) {
             Shortcuts::set_active_context(ShortcutContext::Global);
         }
 
+        layout_.on_render_ui(context);
+
         debug_panel_.on_render_ui(context);
         settings_window_.on_render_ui(context);
 
-        layout_.on_render_ui(context);
         menubar_.on_render_ui(context);
         toolbar_.on_render_ui(context);
         asset_browser_panel_.on_render_ui(context);
         console_panel_.on_render_ui(context);
 
         hierarchy_panel_.on_render_ui(context);
-
-        inspector_panel_.set_selected_entity(hierarchy_panel_.selected_entity());
         inspector_panel_.on_render_ui(context);
-
         viewport_panel_.on_render_ui(context);
+
         history_panel_.on_render_ui(context);
         rime_panel.on_render_ui(context);
     }

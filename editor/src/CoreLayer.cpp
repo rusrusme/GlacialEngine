@@ -19,7 +19,6 @@
 #include "input/KeyCodes.hpp"
 #include "input/MouseCodes.hpp"
 #include "project/scene/SceneManager.hpp"
-#include "project/scene/ecs/Entity.hpp"
 #include "render/SceneRenderer.hpp"
 #include "render/rhi/RenderContext.hpp"
 #include "script/ScriptEngine.hpp"
@@ -54,7 +53,8 @@ namespace editor {
         viewport.framebuffer = framebuffer_.get();
         viewport.size = {1280.0f, 720.0f};
 
-        cam_.set_viewport_size(1280, 720);
+        auto& cam = context.get<Camera>();
+        cam.set_viewport_size(1280, 720);
 
         grid_.init(context);
 
@@ -84,6 +84,8 @@ namespace editor {
 
         Shortcuts::bind(Action::DeselectEntity, "Escape",
                         Key::ESCAPE, None, ShortcutContext::Hierarchy);
+        Shortcuts::bind(Action::DeselectEntity, "Escape",
+                        Key::ESCAPE, None, ShortcutContext::Viewport);
 
         Shortcuts::bind(Action::TogglePlay, "Space", Key::SPACE);
         Shortcuts::bind(Action::StopPlay, "Shift+Space", Key::SPACE, Shift);
@@ -119,6 +121,9 @@ namespace editor {
     void CoreLayer::on_update(SystemContext& context, float delta_time) {
         PROFILE_FUNCTION();
 
+        auto& cam = context.get<Camera>();
+        auto& cam_controller = context.get<CameraController>();
+
         // TODO temporary
         if (Input::key_pressed_once(Key::F5)) {
             ScriptEngine::reload();
@@ -135,22 +140,22 @@ namespace editor {
         if (controlling_cam_) {
             if (!is_nav_button_down) {
                 controlling_cam_ = false;
-                cam_controller_.reset();
+                cam_controller.reset();
             }
         }
         // Only start a drag if the click began inside the viewport
         else {
             if (is_nav_button_down && viewport.hovered) {
                 controlling_cam_ = true;
-                cam_controller_.reset();
+                cam_controller.reset();
             }
         }
 
         if (controlling_cam_) {
-            cam_controller_.on_update(cam_);
+            cam_controller.on_update(cam);
         }
         else {
-            cam_controller_.reset();
+            cam_controller.reset();
         }
 
         auto scene = context.scenes.active_scene();
@@ -161,6 +166,8 @@ namespace editor {
 
     void CoreLayer::on_render(SystemContext& context, float delta_time) {
         PROFILE_FUNCTION();
+
+        auto& cam = context.get<Camera>();
 
         auto active_scene = context.scenes.active_scene();
         if (!active_scene || !framebuffer_) return;
@@ -174,24 +181,28 @@ namespace editor {
 
             if (spec.width != target_w || spec.height != target_h) {
                 framebuffer_->resize(target_w, target_h);
-                cam_.set_viewport_size(target_w, target_h);
+                cam.set_viewport_size(target_w, target_h);
+                cam.set_aspect_ratio(static_cast<float>(target_w) / static_cast<float>(target_h));
             }
         }
 
-        context.renderer.render_scene(active_scene, context, delta_time, &cam_, framebuffer_.get());
+        context.renderer.render_scene(active_scene, context, delta_time, &cam, framebuffer_.get());
 
         if (viewport.show_grid) {
-            grid_.render(context, cam_, framebuffer_.get());
+            grid_.render(context, cam, framebuffer_.get());
         }
     }
 
     void CoreLayer::on_event(SystemContext& context, Event& event) {
         PROFILE_FUNCTION();
 
+        auto& cam = context.get<Camera>();
+        auto& cam_controller = context.get<CameraController>();
+
         const auto& viewport = context.get<SceneViewport>();
         if (event.get_event_type() == engine::EventType::MouseScrolled) {
             if (viewport.hovered) {
-                cam_controller_.on_event(cam_, event);
+                cam_controller.on_event(cam, event);
             }
             event.handled = true;
             return;
@@ -204,9 +215,9 @@ namespace editor {
         if (event.handled) return;
 
         EventDispatcher dispatcher(event);
-        dispatcher.dispatch<WindowResizedEvent>([this](const WindowResizedEvent& e) {
+        dispatcher.dispatch<WindowResizedEvent>([&cam](const WindowResizedEvent& e) {
             if (e.height() > 0) {
-                cam_.set_aspect_ratio(static_cast<float>(e.width()) / static_cast<float>(e.height()));
+                cam.set_aspect_ratio(static_cast<float>(e.width()) / static_cast<float>(e.height()));
             }
             return false;
         });

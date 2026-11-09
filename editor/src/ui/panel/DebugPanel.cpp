@@ -26,7 +26,7 @@ namespace editor {
         if (!visible_) return;
 
         ImGui::SetNextWindowSize(ImVec2(400, 500), ImGuiCond_FirstUseEver);
-        ImGui::Begin("Debug Panel");
+        ImGui::Begin("Debug");
         ImGui::Text("Performance");
         ImGui::Separator();
         ImGui::Text("FPS: %.1f", s_fps_display);

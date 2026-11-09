@@ -16,6 +16,7 @@
 #include "panel/Hierarchy.hpp"
 #include "panel/Inspector.hpp"
 #include "ui/layout/DockspaceLayout.hpp"
+#include "ui/overlay/GizmoOverlay.hpp"
 #include "ui/panel/DebugPanel.hpp"
 #include "ui/panel/HistoryPanel.hpp"
 #include "ui/panel/RimeEditorPanel.hpp"

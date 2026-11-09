@@ -11,6 +11,7 @@
 #include "core/SystemContext.hpp"
 #include "glm/gtc/type_ptr.hpp"
 #include "render/mesh/Mesh.hpp"
+#include "ui/panel/Hierarchy.hpp"
 
 namespace {
     void begin_property_grid(const char* table_id = "PropertyGrid") {
@@ -166,8 +167,9 @@ namespace editor {
             Shortcuts::set_active_context(shortcut_context());
         }
 
-        if (selected_entity_) {
-            draw_component(selected_entity_, context);
+        auto& selected_entity = context.get<SelectionContext>().selected_entity;
+        if (selected_entity) {
+            draw_component(selected_entity, context);
         }
 
         ImGui::End();
