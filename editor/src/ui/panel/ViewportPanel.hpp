@@ -18,6 +18,7 @@ namespace editor {
         glm::vec2 size{0.0f, 0.0f};
         bool hovered = false;
         bool focused = false;
+        bool show_grid = true;
     };
 
     class ViewportPanel : public UIComponent {

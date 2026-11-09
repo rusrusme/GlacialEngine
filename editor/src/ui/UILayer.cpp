@@ -101,6 +101,12 @@ namespace editor {
 
         dispatcher.dispatch<EditorActionEvent>([this, &context](const EditorActionEvent& action) {
             switch (action.action()) {
+                case Action::ToggleGrid : {
+                    auto& viewport = context.get<SceneViewport>();
+                    viewport.show_grid = !viewport.show_grid;
+                    return true;
+                }
+
                 case Action::SaveRime : {
                     auto& rime = context.get<RimeContext>();
                     auto* active_doc = rime.active_document();

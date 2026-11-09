@@ -56,6 +56,8 @@ namespace editor {
 
         cam_.set_viewport_size(1280, 720);
 
+        grid_.init(context);
+
         // TODO Add support for JSON binding: {"bindings": [{"action": "SaveScene", "key": "Ctrl+S", "context": "global"}, ...]}
         /////////////////////////////////////////////////////////////////////////////
         // Keybindings
@@ -105,6 +107,7 @@ namespace editor {
         Shortcuts::bind(Action::ToggleDebug, "F3", Key::F3);
 
         Shortcuts::bind(Action::SaveRime, "Ctrl+S", Key::S, Ctrl, ShortcutContext::Rime);
+        Shortcuts::bind(Action::ToggleGrid, "G", Key::G, None, ShortcutContext::Viewport);
     }
 
     void CoreLayer::on_detach(SystemContext& context) {
@@ -176,6 +179,10 @@ namespace editor {
         }
 
         context.renderer.render_scene(active_scene, context, delta_time, &cam_, framebuffer_.get());
+
+        if (viewport.show_grid) {
+            grid_.render(context, cam_, framebuffer_.get());
+        }
     }
 
     void CoreLayer::on_event(SystemContext& context, Event& event) {

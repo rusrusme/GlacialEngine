@@ -116,16 +116,17 @@ namespace engine {
         }
         else {
             glDisable(GL_DEPTH_TEST);
+            glDepthMask(GL_FALSE);
         }
 
         if (desc_.blend_enable) {
             glEnable(GL_BLEND);
             switch (desc_.blend_mode) {
-                case BlendMode::Additive:
+                case BlendMode::Additive :
                     glBlendFunc(GL_SRC_ALPHA, GL_ONE);
                     break;
-                case BlendMode::Alpha:
-                default:
+                case BlendMode::Alpha :
+                default :
                     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
                     break;
             }
@@ -137,7 +138,8 @@ namespace engine {
         if (desc_.polygon_offset_enable) {
             glEnable(GL_POLYGON_OFFSET_FILL);
             glPolygonOffset(desc_.polygon_offset_factor, desc_.polygon_offset_units);
-        } else {
+        }
+        else {
             glDisable(GL_POLYGON_OFFSET_FILL);
         }
     }
@@ -163,7 +165,7 @@ namespace engine {
                 const uint32_t attribute_location = location + column;
                 const uint32_t components = element.is_matrix() ? column_count : element.component_count();
                 const size_t byte_offset = element.offset +
-                                           (element.is_matrix() ? sizeof(float) * column_count * column : 0);
+                    (element.is_matrix() ? sizeof(float) * column_count * column : 0);
 
                 glEnableVertexArrayAttrib(vao_id_, attribute_location);
 

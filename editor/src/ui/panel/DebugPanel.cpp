@@ -8,6 +8,7 @@
 #include "Config.hpp"
 #include "core/Application.hpp"
 #include "core/Config.hpp"
+#include "ui/panel/ViewportPanel.hpp"
 
 namespace editor {
     float DebugPanel::s_timer = 0.0f;
@@ -38,7 +39,7 @@ namespace editor {
 
         ImGui::Separator();
         ImGui::Text("Video");
-        bool vsync_enabled = engine::Application::get().window().vsync();
+        bool vsync_enabled = Application::get().window().vsync();
         if (ImGui::Checkbox("V-Sync", &vsync_enabled)) {
             Application::get().window().set_vsync(vsync_enabled);
         }
@@ -51,6 +52,10 @@ namespace editor {
                          engine::config::video::target_fps_str().c_str());
         ImGui::Separator();
         ImGui::Text("Editor");
+
+        auto& viewport = context.get<SceneViewport>();
+        ImGui::Checkbox("Grid", &viewport.show_grid);
+
         ImGui::End();
     }
 

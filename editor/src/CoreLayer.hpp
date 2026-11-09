@@ -11,6 +11,7 @@
 #include "render/camera/Camera.hpp"
 #include "render/camera/CameraController.hpp"
 #include "render/rhi/Framebuffer.hpp"
+#include "util/ViewportGrid.hpp"
 
 namespace editor {
     using namespace engine;
@@ -26,6 +27,7 @@ namespace editor {
 
         [[nodiscard]] Camera& camera() { return cam_; }
         [[nodiscard]] Framebuffer* framebuffer() const { return framebuffer_.get(); }
+        [[nodiscard]] ViewportGrid& grid() { return grid_; }
 
     private:
         Camera cam_;
@@ -33,5 +35,7 @@ namespace editor {
         bool controlling_cam_ = false;
 
         std::unique_ptr<Framebuffer> framebuffer_{nullptr};
+
+        ViewportGrid grid_;
     };
 }

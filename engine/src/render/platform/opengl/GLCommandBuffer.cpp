@@ -73,10 +73,23 @@ namespace engine {
         const auto& spec = begin_info.framebuffer->specification();
         glViewport(0, 0, static_cast<GLsizei>(spec.width), static_cast<GLsizei>(spec.height));
 
+        glDisable(GL_SCISSOR_TEST);
+
+        if (begin_info.clear_color_target) {
+            glColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+        }
+        if (begin_info.clear_depth_target) {
+            glDepthMask(GL_TRUE);
+        }
+        if (begin_info.clear_stencil_target) {
+            glStencilMask(0xFF);
+        }
+
         if (fbo_id == 0) {
             if (begin_info.clear_color_target) {
                 glClearColor(begin_info.clear_color.r, begin_info.clear_color.g, begin_info.clear_color.b, begin_info.clear_color.a);
             }
+
             GLbitfield clear_mask = 0;
             if (begin_info.clear_color_target) clear_mask |= GL_COLOR_BUFFER_BIT;
             if (begin_info.clear_depth_target) {
@@ -87,6 +100,7 @@ namespace engine {
                 glClearStencil(static_cast<GLint>(begin_info.clear_stencil));
                 clear_mask |= GL_STENCIL_BUFFER_BIT;
             }
+
             if (clear_mask != 0) {
                 glClear(clear_mask);
             }

@@ -30,6 +30,9 @@ namespace editor {
         ToggleDebug, ToggleHistory, ToggleAssetBrowser, ToggleViewport, ToggleRime,
 
         // Rime
-        SaveRime
+        SaveRime,
+
+        // Debug
+        ToggleGrid
     };
 }
