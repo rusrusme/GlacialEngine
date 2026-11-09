@@ -10,13 +10,11 @@ namespace editor {
         UIComponent::on_init(context);
     }
 
-    // TODO default toolbar position
     void DockspaceLayout::on_render_ui(SystemContext& context) {
         constexpr ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_PassthruCentralNode;
         const ImGuiID dockspace_id = ImGui::DockSpaceOverViewport(0, ImGui::GetMainViewport(), dockspace_flags);
 
         const ImGuiDockNode* node = ImGui::DockBuilderGetNode(dockspace_id);
-
         if (node == nullptr || node->ChildNodes[0] == nullptr || reset_layout_) {
             reset_layout_ = false;
 
@@ -25,25 +23,31 @@ namespace editor {
             ImGui::DockBuilderSetNodeSize(dockspace_id, ImGui::GetMainViewport()->WorkSize);
 
             ImGuiID dock_main_id = dockspace_id;
-
             ImGuiID dock_left_bottom_id;
+
             ImGuiID dock_bottom_id = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Down, 0.25f, nullptr, &dock_main_id);
             ImGuiID dock_right_id = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Right, 0.22f, nullptr, &dock_main_id);
             ImGuiID dock_left_id = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Left, 0.18f, nullptr, &dock_main_id);
             ImGuiID dock_left_top_id = ImGui::DockBuilderSplitNode(dock_left_id, ImGuiDir_Up, 0.40f, nullptr, &dock_left_bottom_id);
 
+            // Split off top area of the main workspace for the Toolbar
+            ImGuiID dock_toolbar_id = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Up, 0.05f, nullptr, &dock_main_id);
+
+            ImGui::DockBuilderDockWindow("Toolbar", dock_toolbar_id);
             ImGui::DockBuilderDockWindow("Asset Browser", dock_left_top_id);
             ImGui::DockBuilderDockWindow("Hierarchy", dock_left_bottom_id);
             ImGui::DockBuilderDockWindow("Inspector", dock_right_id);
             ImGui::DockBuilderDockWindow("Console", dock_bottom_id);
+
+            // Dock Scene and Rime into the same central node to create tabs
+            ImGui::DockBuilderDockWindow("Rime", dock_main_id);
             ImGui::DockBuilderDockWindow("Scene", dock_main_id);
 
             ImGuiID float_node_id = ImGui::DockBuilderAddNode();
             ImGuiViewport* viewport = ImGui::GetMainViewport();
             ImGui::DockBuilderSetNodePos(float_node_id, ImVec2(viewport->Pos.x + 100.0f, viewport->Pos.y + 100.0f));
             ImGui::DockBuilderSetNodeSize(float_node_id, ImVec2(400.0f, 500.0f));
-
-            ImGui::DockBuilderDockWindow("Debug Panel", float_node_id);
+            ImGui::DockBuilderDockWindow("Debug", float_node_id);
             ImGui::DockBuilderFinish(float_node_id);
 
             ImGui::DockBuilderFinish(dockspace_id);

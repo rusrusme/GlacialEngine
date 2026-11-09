@@ -25,7 +25,7 @@ namespace editor {
     void DebugPanel::on_render_ui(SystemContext& context) {
         if (!visible_) return;
 
-        ImGui::SetNextWindowSize(ImVec2(400, 500), ImGuiCond_FirstUseEver);
+        ImGui::SetNextWindowSize(ImVec2(320, 320), ImGuiCond_FirstUseEver);
         ImGui::Begin("Debug");
         ImGui::Text("Performance");
         ImGui::Separator();
@@ -57,7 +57,7 @@ namespace editor {
     }
 
     void DebugPanel::load_config() {
-        visible_ = config::get_value("DebugPanel_visible", visible_);
+        visible_ = config::get_value("DebugPanel_visible", false);
     }
 
     void DebugPanel::save_config() {

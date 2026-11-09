@@ -13,6 +13,7 @@ namespace editor {
     void HistoryPanel::on_render_ui(SystemContext& context) {
         if (!visible_) return;
 
+        ImGui::SetNextWindowSize(ImVec2(320.0f, 480.0f), ImGuiCond_FirstUseEver);
         ImGui::Begin("History", &visible_);
 
         auto& history = context.get<CommandHistory>();
@@ -111,7 +112,7 @@ namespace editor {
     }
 
     void HistoryPanel::load_config() {
-        visible_ = config::get_value("HistoryPanel_visible", visible_);
+        visible_ = config::get_value("HistoryPanel_visible", false);
     }
 
     void HistoryPanel::save_config() {
