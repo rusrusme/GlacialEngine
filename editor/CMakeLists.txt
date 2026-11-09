@@ -56,6 +56,7 @@ add_executable(Editor
                src/rime/highlight/RimeHighlighter.cpp
                src/rime/highlight/RimeHighlighter.hpp
                src/rime/RimeTheme.hpp
+               src/util/MenubarHandlers.hpp
 )
 # ----------------------------------------------------------------------------
 target_include_directories(Editor PRIVATE ${CMAKE_SOURCE_DIR}/editor/src)

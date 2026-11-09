@@ -17,7 +17,7 @@ namespace editor {
 
     class Editor : public Application {
     public:
-        Editor() : Application("Glacial Engine") {
+        Editor() : Application(config::ENGINE_TITLE) {
             specs().custom_titlebar = true;
 
             push_layer(std::make_unique<CoreLayer>());
