@@ -8,10 +8,10 @@
 #include "ui/UIComponent.hpp"
 
 namespace editor {
-    class Menubar : public UIComponent {
+    class Titlebar : public UIComponent {
     public:
-        Menubar() : UIComponent("Menubar") {}
-        ~Menubar() override = default;
+        Titlebar() : UIComponent("Titlebar") {}
+        ~Titlebar() override = default;
 
         void on_init(SystemContext& context) override;
         void on_render_ui(SystemContext& context) override;

@@ -39,7 +39,7 @@ namespace editor {
 
         ui_components_ = {
             &layout_,
-            &menubar_,
+            &titlebar_,
             &toolbar_,
             &settings_window_,
             &inspector_panel_,
@@ -221,7 +221,7 @@ namespace editor {
         debug_panel_.on_render_ui(context);
         settings_window_.on_render_ui(context);
 
-        menubar_.on_render_ui(context);
+        titlebar_.on_render_ui(context);
         toolbar_.on_render_ui(context);
         asset_browser_panel_.on_render_ui(context);
         console_panel_.on_render_ui(context);

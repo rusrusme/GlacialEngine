@@ -3,7 +3,7 @@
 // All rights reserved.
 //
 
-#include "Menubar.hpp"
+#include "Titlebar.hpp"
 
 #include "core/Application.hpp"
 #include "event/EditorEvents.hpp"
@@ -13,10 +13,10 @@
 #include "ui/Icons.hpp"
 
 namespace editor {
-    void Menubar::on_init(SystemContext& context) {
+    void Titlebar::on_init(SystemContext& context) {
     }
 
-    void Menubar::on_render_ui(SystemContext& context) {
+    void Titlebar::on_render_ui(SystemContext& context) {
         auto& window = Application::get().window();
         window.set_titlebar_hovered(false);
 
@@ -87,7 +87,7 @@ namespace editor {
         ImGui::PopStyleVar(3);
     }
 
-    void Menubar::file_menu(SystemContext& context) {
+    void Titlebar::file_menu(SystemContext& context) {
         const auto scene = context.scenes.active_scene();
         const bool has_project = context.current_project != nullptr;
 
@@ -136,7 +136,7 @@ namespace editor {
         }
     }
 
-    void Menubar::edit_menu(SystemContext& context) {
+    void Titlebar::edit_menu(SystemContext& context) {
         const auto scene = context.scenes.active_scene();
 
         // Todo: Edit
@@ -158,7 +158,7 @@ namespace editor {
         }
     }
 
-    void Menubar::window_menu(SystemContext& context) {
+    void Titlebar::window_menu(SystemContext& context) {
         if (ImGui::BeginMenu("Window")) {
             if (ImGui::BeginMenu("Panel")) {
                 if (ImGui::MenuItem("Hierarchy", Shortcuts::text(Action::ToggleHierarchy).data())) {
@@ -191,7 +191,7 @@ namespace editor {
         }
     }
 
-    void Menubar::help_menu(SystemContext& context) {
+    void Titlebar::help_menu(SystemContext& context) {
         if (ImGui::BeginMenu("Help")) {
             if (ImGui::MenuItem("Documentation")) {
                 platform::ShellAPI::open_url("https://github.com/rusrusme/BasisEngine/wiki");

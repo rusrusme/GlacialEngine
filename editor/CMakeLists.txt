@@ -28,8 +28,8 @@ add_executable(Editor
                src/Config.hpp
                src/ui/layout/Toolbar.cpp
                src/ui/layout/Toolbar.hpp
-               src/ui/layout/Menubar.cpp
-               src/ui/layout/Menubar.hpp
+               src/ui/layout/Titlebar.cpp
+               src/ui/layout/Titlebar.hpp
                src/ui/window/SettingsWindow.cpp
                src/ui/window/SettingsWindow.hpp
                src/ui/layout/DockspaceLayout.cpp

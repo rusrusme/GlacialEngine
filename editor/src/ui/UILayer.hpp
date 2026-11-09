@@ -9,7 +9,7 @@
 
 #include "core/Layer.hpp"
 #include "debug/ImguiLayer.hpp"
-#include "layout/Menubar.hpp"
+#include "layout/Titlebar.hpp"
 #include "layout/Toolbar.hpp"
 #include "panel/AssetBrowser.hpp"
 #include "panel/ConsolePanel.hpp"
@@ -45,7 +45,7 @@ namespace editor {
         std::array<UIComponent*, 12> ui_components_{};
 
         DockspaceLayout layout_;
-        Menubar menubar_;
+        Titlebar titlebar_;
         Toolbar toolbar_;
         SettingsWindow settings_window_;
         Inspector inspector_panel_;

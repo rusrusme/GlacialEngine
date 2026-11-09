@@ -30,7 +30,6 @@ namespace editor {
             ImGuiID dock_left_id = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Left, 0.18f, nullptr, &dock_main_id);
             ImGuiID dock_left_top_id = ImGui::DockBuilderSplitNode(dock_left_id, ImGuiDir_Up, 0.40f, nullptr, &dock_left_bottom_id);
 
-            // Split off top area of the main workspace for the Toolbar
             ImGuiID dock_toolbar_id = ImGui::DockBuilderSplitNode(dock_main_id, ImGuiDir_Up, 0.05f, nullptr, &dock_main_id);
 
             ImGui::DockBuilderDockWindow("Toolbar", dock_toolbar_id);
@@ -39,7 +38,6 @@ namespace editor {
             ImGui::DockBuilderDockWindow("Inspector", dock_right_id);
             ImGui::DockBuilderDockWindow("Console", dock_bottom_id);
 
-            // Dock Scene and Rime into the same central node to create tabs
             ImGui::DockBuilderDockWindow("Rime", dock_main_id);
             ImGui::DockBuilderDockWindow("Scene", dock_main_id);
 
@@ -48,8 +46,8 @@ namespace editor {
             ImGui::DockBuilderSetNodePos(float_node_id, ImVec2(viewport->Pos.x + 100.0f, viewport->Pos.y + 100.0f));
             ImGui::DockBuilderSetNodeSize(float_node_id, ImVec2(400.0f, 500.0f));
             ImGui::DockBuilderDockWindow("Debug", float_node_id);
-            ImGui::DockBuilderFinish(float_node_id);
 
+            ImGui::DockBuilderFinish(float_node_id);
             ImGui::DockBuilderFinish(dockspace_id);
         }
     }
