@@ -26,6 +26,32 @@
 #include "util/Instrumentor.hpp"
 
 namespace editor {
+    void CameraSettings::on_render_ui(SystemContext& context) {
+        auto& cam_controller = context.get<CameraController>();
+        ImGui::Spacing();
+        if (ImGui::SliderFloat("Orbit Speed", &orbit_speed, 0.1f, 1.0f, "%.1f")) {
+            cam_controller.set_orbit_speed(orbit_speed);
+        }
+        if (ImGui::SliderFloat("Pan Speed", &pan_speed, 0.1f, 1.0f, "%.1f")) {
+            cam_controller.set_orbit_speed(pan_speed);
+        }
+        if (ImGui::SliderFloat("Zoom Speed", &zoom_speed, 0.1f, 1.0f, "%.1f")) {
+            cam_controller.set_orbit_speed(zoom_speed);
+        }
+    }
+
+    void CameraSettings::load() {
+        orbit_speed = config::get_value("CameraController_orbit_speed", orbit_speed);
+        pan_speed = config::get_value("CameraController_orbit_speed", pan_speed);
+        zoom_speed = config::get_value("CameraController_orbit_speed", zoom_speed);
+    }
+
+    void CameraSettings::save() {
+        config::set_value("CameraController_orbit_speed", orbit_speed);
+        config::set_value("CameraController_orbit_speed", pan_speed);
+        config::set_value("CameraController_orbit_speed", zoom_speed);
+    }
+
     void CoreLayer::on_attach(SystemContext& context) {
         PROFILE_FUNCTION();
 

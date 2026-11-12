@@ -3,7 +3,7 @@
 // All rights reserved.
 //
 
-#include "ViewportGrid.hpp"
+#include "scene/ViewportGrid.hpp"
 
 #include "core/Log.hpp"
 #include "render/rhi/RenderContext.hpp"

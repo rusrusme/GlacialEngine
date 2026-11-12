@@ -30,7 +30,6 @@ namespace editor {
         RimeTheme theme{};
 
         [[nodiscard]] std::string_view name() const override { return "Rime"; }
-
         void on_render_ui(SystemContext& context) override;
 
         void load() override;

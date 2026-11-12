@@ -57,8 +57,8 @@ add_executable(Editor
                src/rime/highlight/RimeHighlighter.hpp
                src/rime/RimeTheme.hpp
                src/util/MenubarHandlers.hpp
-               src/util/ViewportGrid.cpp
-               src/util/ViewportGrid.hpp
+               src/scene/ViewportGrid.cpp
+               src/scene/ViewportGrid.hpp
                src/ui/overlay/GizmoOverlay.cpp
                src/ui/overlay/GizmoOverlay.hpp
 )

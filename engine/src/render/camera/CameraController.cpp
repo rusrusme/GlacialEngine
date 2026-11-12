@@ -52,7 +52,7 @@ namespace engine {
     }
 
     bool CameraController::on_mouse_scrolled(Camera& camera, const MouseScrolledEvent& e) {
-        camera.zoom(e.y_offset() * zoom_speed_);
+        camera.zoom(e.y_offset() * zoom_speed_ * MAX_ZOOM_SPEED);
         return false;
     }
 

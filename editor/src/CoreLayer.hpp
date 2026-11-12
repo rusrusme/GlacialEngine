@@ -7,14 +7,30 @@
 
 #include <memory>
 
+#include "EditorSettings.hpp"
 #include "core/Layer.hpp"
-#include "render/camera/Camera.hpp"
 #include "render/camera/CameraController.hpp"
 #include "render/rhi/Framebuffer.hpp"
-#include "util/ViewportGrid.hpp"
+#include "scene/ViewportGrid.hpp"
 
 namespace editor {
     using namespace engine;
+
+    class CameraSettings : public SettingsCategory {
+    public:
+        ~CameraSettings() override = default;
+
+        float orbit_speed{0.5f};
+        float pan_speed{0.5f};
+        float zoom_speed{0.5f};
+
+        [[nodiscard]] std::string_view name() const override { return "Camera"; }
+
+        void on_render_ui(SystemContext& context) override;
+
+        void load() override;
+        void save() override;
+    };
 
     class CoreLayer : public Layer {
     public:

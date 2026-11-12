@@ -34,7 +34,16 @@ namespace engine {
     }
 
     void Camera::zoom(float delta) {
-        distance_ = std::max(0.5f, distance_ - delta);
+        constexpr float zoom_factor = 0.9f;
+
+        if (delta > 0) {
+            distance_ *= std::pow(zoom_factor, delta);
+        }
+        else if (delta < 0) {
+            distance_ /= std::pow(zoom_factor, -delta);
+        }
+
+        distance_ = std::max(0.5f, distance_);
         update_camera();
     }
 
