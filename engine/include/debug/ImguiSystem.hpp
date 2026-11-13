@@ -22,6 +22,6 @@ namespace engine {
     private:
         friend class ImguiLayer;
 
-        inline static ImFont* s_font = nullptr;
+        inline static void* s_font = nullptr; // ImFont
     };
 }

@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "core/Engine.hpp"
+#include "Engine.hpp"
 
 class Sandbox : public engine::Application {
 public:

@@ -28,6 +28,7 @@
 #include "event/MouseEvents.hpp"
 
 namespace engine {
+
     void ImguiSystem::on_attach(void* window, const char* glsl_version) {
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
@@ -223,8 +224,7 @@ namespace engine {
             return io.WantCaptureMouse;
         });
 
-        dispatcher.dispatch<MouseScrolledEvent>([&io](const MouseScrolledEvent&) {
-            // return io.WantCaptureMouse;
+        dispatcher.dispatch<MouseScrolledEvent>([](const MouseScrolledEvent&) {
             return false;
         });
 

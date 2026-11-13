@@ -14,6 +14,8 @@ target_include_directories(Engine
                            PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 
+include(GenerateUmbrella.cmake)
+
 if (WIN32)
     target_compile_definitions(Engine PUBLIC NOMINMAX WIN32_LEAN_AND_MEAN)
     target_link_libraries(Engine PUBLIC comdlg32.lib)

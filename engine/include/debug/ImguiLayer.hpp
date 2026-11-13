@@ -22,7 +22,7 @@ namespace engine {
 
         void on_attach(SystemContext& context) override {
             ImguiSystem::on_attach(context.window.native());
-            s_font = ImguiSystem::s_font;
+            s_font = static_cast<ImFont*>(ImguiSystem::s_font);
         }
 
         void on_detach(SystemContext& context) override { ImguiSystem::on_detach(); }
