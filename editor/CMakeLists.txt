@@ -1,5 +1,3 @@
-# editor/CMakeLists.txt
-# ----------------------------------------------------------------------------
 add_executable(Editor
                src/Editor.cpp
                src/Editor.hpp
@@ -62,7 +60,7 @@ add_executable(Editor
                src/ui/overlay/GizmoOverlay.cpp
                src/ui/overlay/GizmoOverlay.hpp
 )
-# ----------------------------------------------------------------------------
+
 target_include_directories(Editor PRIVATE ${CMAKE_SOURCE_DIR}/editor/src)
 target_link_libraries(Editor PRIVATE Engine)
 if (ENABLE_IMGUI)
