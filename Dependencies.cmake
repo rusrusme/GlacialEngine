@@ -1,11 +1,9 @@
-# Dependencies.cmake
-# ----------------------------------------------------------------------------
 include(FetchContent)
 set(FETCHCONTENT_UPDATES_DISCONNECTED ON CACHE BOOL "" FORCE)
-# ----------------------------------------------------------------------------
+
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set(CMAKE_FOLDER "ThirdParty")
-# ----------------------------------------------------------------------------
+
 # Fetch GLFW
 set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
@@ -24,7 +22,7 @@ foreach(target glfw update_mappings)
         set_target_properties(${target} PROPERTIES FOLDER "ThirdParty")
     endif ()
 endforeach()
-# ----------------------------------------------------------------------------
+
 # Fetch SDL3
 set(SDL_TEST OFF CACHE BOOL "" FORCE)
 set(SDL_TESTS OFF CACHE BOOL "" FORCE)
@@ -35,7 +33,7 @@ FetchContent_Declare(
         GIT_SHALLOW TRUE
 )
 FetchContent_MakeAvailable(SDL3)
-# ----------------------------------------------------------------------------
+
 # Fetch GLM
 FetchContent_Declare(
         glm
@@ -45,7 +43,7 @@ FetchContent_Declare(
         GIT_SUBMODULES ""
 )
 FetchContent_MakeAvailable(glm)
-# ----------------------------------------------------------------------------
+
 # Fetch EnTT
 FetchContent_Declare(
         entt
@@ -55,7 +53,7 @@ FetchContent_Declare(
         GIT_SUBMODULES ""
 )
 FetchContent_MakeAvailable(entt)
-# ----------------------------------------------------------------------------
+
 # Fetch FreeType (Dependency of RmlUi)
 set(FT_DISABLE_ZLIB ON CACHE BOOL "" FORCE)
 set(FT_DISABLE_PNG ON CACHE BOOL "" FORCE)
@@ -73,7 +71,7 @@ FetchContent_MakeAvailable(freetype)
 if (TARGET freetype AND NOT TARGET Freetype::Freetype)
     add_library(Freetype::Freetype ALIAS freetype)
 endif ()
-# ----------------------------------------------------------------------------
+
 # Fetch RmlUi
 set(RMLUI_ENABLE_SAMPLES OFF CACHE BOOL "" FORCE)
 set(RMLUI_ENABLE_TESTS OFF CACHE BOOL "" FORCE)
@@ -85,7 +83,7 @@ FetchContent_Declare(
         GIT_SUBMODULES ""
 )
 FetchContent_MakeAvailable(rmlui)
-# ----------------------------------------------------------------------------
+
 # Fetch ImGui
 if (ENABLE_IMGUI)
     FetchContent_Declare(
@@ -115,7 +113,7 @@ if (ENABLE_IMGUI)
     endif ()
     add_library(DEPENDENCY::IMGUI ALIAS imgui)
 endif ()
-# ----------------------------------------------------------------------------
+
 # Fetch ImGuizmo
 if (ENABLE_IMGUI)
     FetchContent_Declare(
@@ -129,7 +127,7 @@ if (ENABLE_IMGUI)
     target_link_libraries(imguizmo PUBLIC imgui)
     add_library(DEPENDENCY::IMGUIZMO ALIAS imguizmo)
 endif ()
-# ----------------------------------------------------------------------------
+
 # Fetch cgltf
 FetchContent_Declare(
         cgltf
@@ -143,7 +141,7 @@ if (NOT TARGET cgltf)
     add_library(cgltf INTERFACE)
     target_include_directories(cgltf INTERFACE ${cgltf_SOURCE_DIR})
 endif ()
-# ----------------------------------------------------------------------------
+
 # Fetch json
 FetchContent_Declare(
         json
@@ -153,7 +151,7 @@ FetchContent_Declare(
         GIT_SUBMODULES ""
 )
 FetchContent_MakeAvailable(json)
-# ----------------------------------------------------------------------------
+
 # Fetch miniaudio
 set(MINIAUDIO_BUILD_SAMPLES OFF CACHE BOOL "" FORCE)
 FetchContent_Declare(
@@ -164,15 +162,15 @@ FetchContent_Declare(
         GIT_SUBMODULES ""
 )
 FetchContent_MakeAvailable(miniaudio)
-# ----------------------------------------------------------------------------
+
 add_library(glad STATIC lib/glad/src/glad.c)
 target_include_directories(glad PUBLIC lib/glad/include)
 add_library(DEPENDENCY::GLAD ALIAS glad)
-# ----------------------------------------------------------------------------
+
 add_library(stb_image INTERFACE)
 target_include_directories(stb_image INTERFACE lib/stb_image)
 add_library(DEPENDENCY::STB_IMAGE ALIAS stb_image)
-# ----------------------------------------------------------------------------
+
 add_library(DEPENDENCY::GLFW ALIAS glfw)
 add_library(DEPENDENCY::SDL ALIAS SDL3-static)
 add_library(DEPENDENCY::RMLUI ALIAS rmlui)
@@ -181,5 +179,5 @@ add_library(DEPENDENCY::ENTT ALIAS EnTT)
 add_library(DEPENDENCY::CGLTF ALIAS cgltf)
 add_library(DEPENDENCY::MINIAUDIO ALIAS miniaudio)
 add_library(DEPENDENCY::NLOHMANN ALIAS nlohmann_json)
-# ----------------------------------------------------------------------------
+
 unset(CMAKE_FOLDER)

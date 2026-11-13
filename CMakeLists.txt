@@ -1,12 +1,10 @@
-# CMakeLists.txt
-# ----------------------------------------------------------------------------
 cmake_minimum_required(VERSION 3.20)
-# ----------------------------------------------------------------------------
+
 project(GlacialEngine CXX C)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
-# ----------------------------------------------------------------------------
+
 option(ENGINE_DEBUG "Engine-only debug distribution build" OFF)
 option(ENGINE_RELEASE "Engine-only release distribution build" OFF)
 option(ENABLE_IMGUI "Include ImGui Dependency" ON)
@@ -26,13 +24,13 @@ endif ()
 if (ENABLE_IMGUI)
     add_compile_definitions(ENABLE_IMGUI)
 endif ()
-# ----------------------------------------------------------------------------
+
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-# ----------------------------------------------------------------------------
+
 include(Dependencies.cmake)
-# ----------------------------------------------------------------------------
+
 set(CMAKE_FOLDER "GlacialEngine")
 add_subdirectory(glazescript)
 add_subdirectory(gshader)
@@ -50,6 +48,6 @@ if (NOT ENGINE_DEBUG AND NOT ENGINE_RELEASE)
         add_subdirectory(sandbox)
     endif ()
 endif ()
-# ----------------------------------------------------------------------------
+
 
 

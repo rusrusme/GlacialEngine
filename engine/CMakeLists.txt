@@ -1,5 +1,3 @@
-# engine/CMakeLists.txt
-# ----------------------------------------------------------------------------
 file(GLOB_RECURSE ENGINE_SOURCES CONFIGURE_DEPENDS
      "src/*.cpp"
      "src/*.hpp"
@@ -9,31 +7,31 @@ file(GLOB_RECURSE ENGINE_SOURCES CONFIGURE_DEPENDS
      "include/*.h"
 )
 add_library(Engine STATIC ${ENGINE_SOURCES})
-# ----------------------------------------------------------------------------
+
 target_include_directories(Engine
                            PUBLIC ${CMAKE_SOURCE_DIR}/engine/include
                            PRIVATE ${CMAKE_SOURCE_DIR}/engine/src
 )
-# ----------------------------------------------------------------------------
+
 if (WIN32)
     target_compile_definitions(Engine PUBLIC NOMINMAX WIN32_LEAN_AND_MEAN)
     target_link_libraries(Engine PUBLIC comdlg32.lib)
 endif ()
-# ----------------------------------------------------------------------------
+
 set(RENDER_API "OPENGL" CACHE STRING "Selects the rendering backend")
 set_property(CACHE RENDER_API PROPERTY STRINGS "OPENGL" "VULKAN" "DX12")
-# ----------------------------------------------------------------------------
+
 if (RENDER_API STREQUAL "OPENGL")
     target_compile_definitions(Engine PUBLIC RENDER_API_OPENGL)
     set(GSHADER_BACKEND "opengl")
     find_package(OpenGL REQUIRED)
     target_link_libraries(Engine PUBLIC OpenGL::GL DEPENDENCY::GLAD)
-# ----------------------------------------------------------------------------
+
 elseif (RENDER_API STREQUAL "VULKAN")
     target_compile_definitions(Engine PUBLIC RENDER_API_VULKAN)
     set(GSHADER_BACKEND "vulkan")
     find_package(Vulkan REQUIRED)
-# ----------------------------------------------------------------------------
+
 elseif (RENDER_API STREQUAL "DX12")
     if (NOT WIN32)
         message(FATAL_ERROR "DirectX 12 is only supported on Windows platforms")
@@ -41,14 +39,14 @@ elseif (RENDER_API STREQUAL "DX12")
     target_compile_definitions(Engine PUBLIC RENDER_API_DX12)
     target_link_libraries(Engine PUBLIC d3d12.lib dxgi.lib dxguid.lib)
     set(GSHADER_BACKEND "dx12")
-# ----------------------------------------------------------------------------
+
 else ()
     message(FATAL_ERROR "Unsupported Render API: ${RENDER_API}")
 endif ()
-# ----------------------------------------------------------------------------
+
 set(WINDOW_BACKEND "GLFW" CACHE STRING "Windowing backend (GLFW or SDL)")
 set_property(CACHE WINDOW_BACKEND PROPERTY STRINGS "GLFW" "SDL")
-# ----------------------------------------------------------------------------
+
 if (WINDOW_BACKEND STREQUAL "GLFW")
     target_compile_definitions(Engine PUBLIC WINDOW_BACKEND_GLFW)
     target_compile_definitions(Engine PUBLIC GLFW_INCLUDE_NONE)
@@ -59,7 +57,7 @@ elseif (WINDOW_BACKEND STREQUAL "SDL")
 else ()
     message(FATAL_ERROR "Unsupported Window Backend: ${WINDOW_BACKEND}")
 endif ()
-# ----------------------------------------------------------------------------
+
 target_link_libraries(Engine PUBLIC
                       DEPENDENCY::RMLUI
                       DEPENDENCY::STB_IMAGE
@@ -72,13 +70,13 @@ target_link_libraries(Engine PUBLIC
                       INTERNAL::GLAZESCRIPT
                       INTERNAL::GSHADER
 )
-# ----------------------------------------------------------------------------
+
 if (ENABLE_IMGUI)
     target_link_libraries(Engine PUBLIC DEPENDENCY::IMGUI)
 endif ()
-# ----------------------------------------------------------------------------
+
 target_precompile_headers(Engine PRIVATE src/core/core_pch.hpp)
-# ----------------------------------------------------------------------------
+
 set(RUNTIME_ASSETS "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/assets")
 set(SOURCE_ASSETS "${CMAKE_SOURCE_DIR}/assets")
 add_custom_target(SyncAssets ALL
@@ -86,7 +84,7 @@ add_custom_target(SyncAssets ALL
                   COMMENT "Syncing assets to runtime output directory"
                   VERBATIM
 )
-# ----------------------------------------------------------------------------
+
 file(GLOB_RECURSE SHADER_SOURCES RELATIVE "${SOURCE_ASSETS}/shaders" CONFIGURE_DEPENDS "${SOURCE_ASSETS}/shaders/*.gshader")
 set(COMPILED_SHADERS "")
 
@@ -107,7 +105,7 @@ foreach(SHADER_REL IN LISTS SHADER_SOURCES)
     list(APPEND COMPILED_SHADERS "${SHADER_OUT}")
 endforeach()
 add_custom_target(CompileShaders ALL DEPENDS ${COMPILED_SHADERS})
-# ----------------------------------------------------------------------------
+
 # Generate cmd file template
 if (WIN32)
     set(SCRIPT_NAME "BuildScripts.cmd")
@@ -136,7 +134,7 @@ add_custom_target(SetupBuildScripts ALL
                   COMMENT "Syncing ${SCRIPT_NAME} to runtime directory"
                   VERBATIM
 )
-# ----------------------------------------------------------------------------
+
 set(SCRIPT_OUT_DIR "${RUNTIME_ASSETS}/scripts/compiled")
 set(SCRIPT_BUNDLE_CPP "${SCRIPT_OUT_DIR}/GlazeScriptsBundle.cpp")
 
@@ -185,9 +183,8 @@ if (COMPILED_SCRIPTS)
     )
     target_include_directories(Engine PUBLIC "${SCRIPT_OUT_DIR}")
 endif()
-# ----------------------------------------------------------------------------
+
 add_dependencies(Engine SyncAssets)
 add_dependencies(Engine CompileShaders)
 add_dependencies(Engine SetupBuildScripts)
 set_target_properties(SyncAssets CompileShaders SetupBuildScripts PROPERTIES FOLDER "GlacialEngine")
-# ----------------------------------------------------------------------------
