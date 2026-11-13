@@ -11,9 +11,9 @@
 #include <unordered_set>
 #include <vector>
 
-#include "glacialc/GShader.hpp"
+#include "gshader/GShader.hpp"
 
-namespace glacialc {
+namespace gshader {
     struct PreprocessedStage {
         ShaderStage stage;
         std::string source;
@@ -45,4 +45,4 @@ namespace glacialc {
 
         std::filesystem::path include_dir_;
     };
-} // glacialc
+}

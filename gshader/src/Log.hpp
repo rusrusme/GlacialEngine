@@ -8,7 +8,7 @@
 #include <format>
 #include <iostream>
 
-namespace glacialc {
+namespace gshader {
     template<typename... Args>
     void GSH_MESSAGE(std::format_string<Args...> fmt, Args&&... args) { std::cout << "glacialc: " << std::format(fmt, std::forward<Args>(args)...) << "\n"; }
 

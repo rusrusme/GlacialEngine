@@ -6,9 +6,9 @@
 
 #pragma once
 
-#include "glacialc/Compiler.hpp"
+#include "gshader/Compiler.hpp"
 
-namespace glacialc {
+namespace gshader {
     class VulkanCompiler : public Compiler {
     public:
         VulkanCompiler() = default;
@@ -16,4 +16,4 @@ namespace glacialc {
 
         CompilerOutput compile(const ParsedData& data) override;
     };
-} // glacialc
+}

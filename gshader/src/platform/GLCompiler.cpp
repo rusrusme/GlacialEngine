@@ -3,11 +3,11 @@
 // All rights reserved.
 //
 
-#include "glacialc/platform/opengl/GLCompiler.hpp"
+#include "GLCompiler.hpp"
 
 #include <shaderc/shaderc.hpp>
 
-namespace glacialc {
+namespace gshader {
     CompilerOutput GLCompiler::compile(const ParsedData& data) {
         CompilerOutput output;
         output.success = true;
@@ -74,4 +74,4 @@ namespace glacialc {
         }
         return glsl;
     }
-} // glacialc
+}

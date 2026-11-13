@@ -3,11 +3,11 @@
 // All rights reserved.
 //
 
-#include "glacialc/platform/vulkan/VulkanCompiler.hpp"
+#include "VulkanCompiler.hpp"
 
 #include <shaderc/shaderc.hpp>
 
-namespace glacialc {
+namespace gshader {
     CompilerOutput VulkanCompiler::compile(const ParsedData& data) {
         CompilerOutput output;
         output.success = true;
@@ -72,4 +72,4 @@ namespace glacialc {
         }
         return output;
     }
-} // glacialc
+}

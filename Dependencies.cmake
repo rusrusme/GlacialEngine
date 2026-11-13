@@ -165,17 +165,6 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(miniaudio)
 # ----------------------------------------------------------------------------
-# Fetch glacialc
-FetchContent_Declare(
-        glacialc
-        GIT_REPOSITORY https://github.com/rusrusme/glacialc.git
-        GIT_TAG master
-        GIT_SHALLOW TRUE
-        GIT_SUBMODULES ""
-)
-set(GLACIALC_BUILD_EXECUTABLE ON CACHE BOOL "" FORCE)
-FetchContent_MakeAvailable(glacialc)
-# ----------------------------------------------------------------------------
 add_library(glad STATIC lib/glad/src/glad.c)
 target_include_directories(glad PUBLIC lib/glad/include)
 add_library(DEPENDENCY::GLAD ALIAS glad)
@@ -192,6 +181,5 @@ add_library(DEPENDENCY::ENTT ALIAS EnTT)
 add_library(DEPENDENCY::CGLTF ALIAS cgltf)
 add_library(DEPENDENCY::MINIAUDIO ALIAS miniaudio)
 add_library(DEPENDENCY::NLOHMANN ALIAS nlohmann_json)
-add_library(DEPENDENCY::GLACIALC ALIAS glacialc_core)
 # ----------------------------------------------------------------------------
 unset(CMAKE_FOLDER)

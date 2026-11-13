@@ -3,15 +3,15 @@
 // All rights reserved.
 //
 
-#include "glacialc/Preprocessor.hpp"
+#include "Preprocessor.hpp"
 
 #include <algorithm>
 #include <fstream>
 #include <sstream>
 
-#include "glacialc/Utility.hpp"
+#include "gshader/Utility.hpp"
 
-namespace glacialc {
+namespace gshader {
     Preprocessor::Preprocessor(std::filesystem::path include_dir)
         : include_dir_(std::move(include_dir)) {}
 
@@ -189,4 +189,4 @@ namespace glacialc {
             }
         }
     }
-} // glacialc
+}

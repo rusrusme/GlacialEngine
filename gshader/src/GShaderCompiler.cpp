@@ -3,19 +3,19 @@
 // All rights reserved.
 //
 
-#include "glacialc/GShaderCompiler.hpp"
+#include "gshader/GShaderCompiler.hpp"
 
 #include <algorithm>
 #include <atomic>
 #include <execution>
 #include <fstream>
 
-#include "glacialc/BinaryPackager.hpp"
-#include "glacialc/Log.hpp"
-#include "glacialc/Preprocessor.hpp"
-#include "glacialc/Utility.hpp"
+#include "gshader/BinaryPackager.hpp"
+#include "gshader/Log.hpp"
+#include "gshader/Preprocessor.hpp"
+#include "gshader/Utility.hpp"
 
-namespace glacialc {
+namespace gshader {
     std::vector<uint8_t> GShaderCompiler::compile_source(std::string_view source, RenderBackend target_backend, const std::filesystem::path& include_dir) {
         const std::filesystem::path base_path = include_dir.empty() ? std::filesystem::current_path() : include_dir;
         Preprocessor preprocessor(base_path);

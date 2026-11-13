@@ -3,7 +3,7 @@
 // All rights reserved.
 //
 
-#include "glacialc/platform/dx12/DX12Compiler.hpp"
+#include "DX12Compiler.hpp"
 
 #include <spirv_hlsl.hpp>
 #include <shaderc/shaderc.hpp>
@@ -22,7 +22,7 @@
 using Microsoft::WRL::ComPtr;
 #endif
 
-namespace glacialc {
+namespace gshader {
     static const wchar_t* get_dxc_target_profile(const ShaderStage stage) {
         switch (stage) {
             case ShaderStage::Vertex : return L"vs_6_0";
@@ -176,4 +176,4 @@ namespace glacialc {
         }
         return output;
     }
-} // glacialc
+}

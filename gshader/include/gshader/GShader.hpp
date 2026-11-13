@@ -7,7 +7,7 @@
 
 #include <cstdint>
 
-namespace glacialc {
+namespace gshader {
     constexpr uint32_t GSH_SIGNATURE = 0x43485347;
 
     enum class RenderBackend : uint8_t {
@@ -45,4 +45,4 @@ namespace glacialc {
     // sanity check
     static_assert(sizeof(GShaderHeader) == 16, "GShaderHeader size must be 16 bytes");
     static_assert(sizeof(GShaderStageHeader) == 16, "GShaderStageHeader size must be 16 bytes");
-} // glacialc
+}

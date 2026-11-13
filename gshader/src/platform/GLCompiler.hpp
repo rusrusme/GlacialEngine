@@ -5,9 +5,9 @@
 
 #pragma once
 
-#include "glacialc/Compiler.hpp"
+#include "gshader/Compiler.hpp"
 
-namespace glacialc {
+namespace gshader {
     class GLCompiler : public Compiler {
     public:
         GLCompiler() = default;
@@ -18,4 +18,4 @@ namespace glacialc {
     private:
         static std::string process_glsl_source(std::string_view raw_source, ShaderStage stage);
     };
-} // glacialc
+}

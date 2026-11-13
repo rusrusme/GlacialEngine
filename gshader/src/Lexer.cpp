@@ -3,11 +3,11 @@
 // All rights reserved.
 //
 
-#include "glacialc/Lexer.hpp"
+#include "Lexer.hpp"
 
 #include <cctype>
 
-namespace glacialc {
+namespace gshader {
     Lexer::Lexer(const std::string_view source) : source_(source) {}
 
     std::vector<Token> Lexer::tokenize() {
@@ -184,4 +184,4 @@ namespace glacialc {
         advance(); // Consume trailing '"'
         return make_token(TokenType::STRING_LITERAL, current_ - start_);
     }
-} // glacialc
+}

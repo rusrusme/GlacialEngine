@@ -5,13 +5,14 @@
 
 #pragma once
 
+#include <cstdint>
 #include <filesystem>
 #include <string_view>
 #include <vector>
 
-#include "glacialc/Compiler.hpp"
+#include "GShader.hpp"
 
-namespace glacialc {
+namespace gshader {
     struct BatchJob {
         std::filesystem::path input;
         std::filesystem::path output;

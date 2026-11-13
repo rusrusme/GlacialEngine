@@ -5,9 +5,9 @@
 
 #pragma once
 
-#include "glacialc/Compiler.hpp"
+#include "gshader/Compiler.hpp"
 
-namespace glacialc {
+namespace gshader {
     class DX12Compiler : public Compiler {
     public:
         DX12Compiler() = default;
@@ -15,4 +15,4 @@ namespace glacialc {
 
         CompilerOutput compile(const ParsedData& data) override;
     };
-} // glacialc
+}

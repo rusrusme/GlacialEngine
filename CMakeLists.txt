@@ -32,7 +32,8 @@ set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 include(Dependencies.cmake)
 # ----------------------------------------------------------------------------
 set(CMAKE_FOLDER "GlacialEngine")
-add_subdirectory(GlazeScript)
+add_subdirectory(glazescript)
+add_subdirectory(gshader)
 unset(CMAKE_FOLDER)
 
 add_subdirectory(engine)

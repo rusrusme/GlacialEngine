@@ -3,11 +3,11 @@
 // All rights reserved.
 //
 
-#include "glacialc/BinaryPackager.hpp"
+#include "BinaryPackager.hpp"
 
 #include <fstream>
 
-namespace glacialc {
+namespace gshader {
     std::vector<uint8_t> BinaryPackager::package_binary(GShaderHeader header, const std::vector<CompiledStage>& stages) {
         header.stage_count = static_cast<uint8_t>(stages.size());
         std::vector<uint8_t> buffer;
@@ -45,4 +45,4 @@ namespace glacialc {
         file.write(reinterpret_cast<const char*>(binary_data.data()), static_cast<std::streamsize>(binary_data.size()));
         return file.good();
     }
-} // glacialc
+}

@@ -9,9 +9,9 @@
 #include <vector>
 
 #include "Preprocessor.hpp"
-#include "glacialc/Utility.hpp"
+#include "gshader/Utility.hpp"
 
-namespace glacialc {
+namespace gshader {
     struct CompiledStage {
         ShaderStage stage;
         std::vector<uint8_t> payload;

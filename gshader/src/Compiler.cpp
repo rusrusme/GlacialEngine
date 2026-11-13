@@ -3,29 +3,30 @@
 // All rights reserved.
 //
 
-#include "glacialc/Compiler.hpp"
+#include "Compiler.hpp"
 
 #include <memory>
 
-#include "glacialc/Log.hpp"
-#include "glacialc/platform/dx12/DX12Compiler.hpp"
-#include "glacialc/platform/opengl/GLCompiler.hpp"
-#include "glacialc/platform/vulkan/VulkanCompiler.hpp"
+#include "Internal.hpp"
+#include "gshader/Log.hpp"
+#include "gshader/platform/dx12/DX12Compiler.hpp"
+#include "gshader/platform/opengl/GLCompiler.hpp"
+#include "gshader/platform/vulkan/VulkanCompiler.hpp"
 
-namespace glacialc {
+namespace gshader {
     Unique<Compiler> Compiler::create(const RenderBackend& render_backend) {
         switch (render_backend) {
-                #if defined(GLACIALC_BACKEND_OPENGL)
+                #if defined(GSHADER_ENABLE_OPENGL)
             case RenderBackend::OpenGL :
                 return std::make_unique<GLCompiler>();
                 #endif
 
-                #if defined(GLACIALC_BACKEND_VULKAN)
+                #if defined(GSHADER_ENABLE_VULKAN)
             case RenderBackend::Vulkan :
                 return std::make_unique<VulkanCompiler>();
                 #endif
 
-                #if defined(GLACIALC_BACKEND_DX12)
+                #if defined(GSHADER_ENABLE_DX12)
             case RenderBackend::DX12 :
                 return std::make_unique<DX12Compiler>();
                 #endif

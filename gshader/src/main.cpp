@@ -7,16 +7,16 @@
 #include <string_view>
 #include <vector>
 
-#include "glacialc/GShader.hpp"
-#include "glacialc/GShaderCompiler.hpp"
-#include "glacialc/Log.hpp"
-#include "glacialc/Utility.hpp"
+#include "Log.hpp"
+#include "gshader/GShader.hpp"
+#include "gshader/GShaderCompiler.hpp"
+#include "gshader/Utility.hpp"
 
-using namespace glacialc;
+using namespace gshader;
 
 int main(int argc, char* argv[]) {
     if (argc < 2) {
-        GSH_MESSAGE("Usage: glacialc <shader.gshader> [shader.gshader ...] [-o <dir> | <file>] [-b <opengl|vulkan|dx12>]");
+        GSH_MESSAGE("Usage: gshaderc <shader.gshader> [shader.gshader ...] [-o <dir> | <file>] [-b <opengl|vulkan|dx12>]");
         return 0;
     }
 

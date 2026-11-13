@@ -68,9 +68,9 @@ target_link_libraries(Engine PUBLIC
                       DEPENDENCY::CGLTF
                       DEPENDENCY::MINIAUDIO
                       DEPENDENCY::NLOHMANN
-                      DEPENDENCY::GLACIALC
 
                       INTERNAL::GLAZESCRIPT
+                      INTERNAL::GSHADER
 )
 # ----------------------------------------------------------------------------
 if (ENABLE_IMGUI)
@@ -99,8 +99,8 @@ foreach(SHADER_REL IN LISTS SHADER_SOURCES)
 
     add_custom_command(
             OUTPUT "${SHADER_OUT}"
-            COMMAND $<TARGET_FILE:glacialc::glacialc> "${SHADER_IN}" -o "${SHADER_OUT}" -b ${GSHADER_BACKEND}
-            DEPENDS "${SHADER_IN}" $<TARGET_FILE:glacialc::glacialc>
+            COMMAND $<TARGET_FILE:gshaderc> "${SHADER_IN}" -o "${SHADER_OUT}" -b ${GSHADER_BACKEND}
+            DEPENDS "${SHADER_IN}" $<TARGET_FILE:gshaderc>
             COMMENT "Compiling shader: ${SHADER_REL} [${GSHADER_BACKEND}]"
             VERBATIM
     )

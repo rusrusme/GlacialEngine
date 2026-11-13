@@ -9,7 +9,7 @@
 #include <string_view>
 #include <vector>
 
-namespace glacialc {
+namespace gshader {
     enum class TokenType {
         VERT,
         FRAG,
@@ -81,4 +81,4 @@ namespace glacialc {
         size_t line_ = 1;
         size_t column_ = 1;
     };
-} // glacialc
+}
