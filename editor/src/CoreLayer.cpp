@@ -55,6 +55,7 @@ namespace editor {
     void CoreLayer::on_attach(SystemContext& context) {
         PROFILE_FUNCTION();
 
+        // TODO This feels like it shouldn't be here
         #if defined(_WIN32)
         ScriptEngine::load_library("assets/scripts/Scripts.dll");
         #else
