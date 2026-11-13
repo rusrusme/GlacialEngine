@@ -24,6 +24,7 @@ namespace editor {
 
         void load_config() override;
         void save_config() override;
+        bool sync_project_directory(SystemContext& context);
 
         [[nodiscard]] ShortcutContext shortcut_context() const override { return ShortcutContext::AssetBrowser; }
         

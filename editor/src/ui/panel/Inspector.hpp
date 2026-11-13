@@ -33,8 +33,9 @@ namespace editor {
         // void draw_lighting_components(Entity entity) const;
         // void draw_box_collider_component(Entity entity, SystemContext& context) const;
         void draw_audio_source_component(Entity entity, SystemContext& context) const;
+        void draw_rigid_body_component(Entity entity, SystemContext& context) const;
         void draw_add_component_button(Entity entity, SystemContext& context) const;
-        
+
         Entity selected_entity_{};
     };
 }

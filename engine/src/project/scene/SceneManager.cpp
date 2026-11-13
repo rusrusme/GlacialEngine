@@ -67,12 +67,12 @@ namespace engine {
     void SceneManager::on_play() {
         if (scene_state() == SceneState::Pause) {
             simulation_state_.play();
-            CORE_TRACE("Resumed scene simulation");
+            // CORE_TRACE("Resumed scene simulation");
             return;
         }
 
         simulation_state_.play();
-        CORE_TRACE("Started scene simulation");
+        // CORE_TRACE("Started scene simulation");
 
         simulation_scene_ = Scene::copy(scene_);
         if (simulation_scene_) {
@@ -83,7 +83,7 @@ namespace engine {
     void SceneManager::on_pause() {
         if (scene_state() == SceneState::Play) {
             simulation_state_.pause();
-            CORE_TRACE("Paused scene simulation");
+            // CORE_TRACE("Paused scene simulation");
         }
     }
 
@@ -95,7 +95,7 @@ namespace engine {
             simulation_scene_->on_shutdown();
             simulation_scene_.reset();
         }
-        CORE_TRACE("Stopped scene simulation");
+        // CORE_TRACE("Stopped scene simulation");
     }
 
     std::shared_ptr<Scene> SceneManager::active_scene() const {

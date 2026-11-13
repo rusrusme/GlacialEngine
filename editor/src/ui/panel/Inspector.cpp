@@ -201,6 +201,7 @@ namespace editor {
         // draw_lighting_components(entity);
         // draw_box_collider_component(entity, context);
         draw_audio_source_component(entity, context);
+        draw_rigid_body_component(entity, context);
 
         ImGui::Spacing();
         ImGui::Separator();
@@ -420,6 +421,13 @@ namespace editor {
         });
     }
 
+    void Inspector::draw_rigid_body_component(Entity entity, SystemContext& context) const {
+        draw_component_header<RigidBodyComponent>("Rigid Body", entity, [&](auto& rigid) {
+            draw_property_label("Velocity");
+            ImGui::SliderFloat3("##Velocity", &rigid.velocity.x, -10.0f, 10.0f, "%.2f");
+        });
+    }
+
     void Inspector::draw_add_component_button(Entity entity, SystemContext& context) const {
         ImGui::SetCursorPosX((ImGui::GetContentRegionAvail().x - 150.0f) * 0.5f);
         if (ImGui::Button("+ Add Component", ImVec2(150.0f, 30.0f))) {
@@ -455,6 +463,12 @@ namespace editor {
             if (!entity.has_component<AudioSourceComponent>()) {
                 if (ImGui::MenuItem("Audio Source")) {
                     entity.add_component<AudioSourceComponent>();
+                    ImGui::CloseCurrentPopup();
+                }
+            }
+            if (!entity.has_component<RigidBodyComponent>()) {
+                if (ImGui::MenuItem("Rigid Body")) {
+                    entity.add_component<RigidBodyComponent>();
                     ImGui::CloseCurrentPopup();
                 }
             }

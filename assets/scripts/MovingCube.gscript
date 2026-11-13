@@ -1,4 +1,5 @@
-# TODO Would be nice QoL if components from Component.hpp would have code completion with their struct member accesses
+# TODO Would be nice QoL if components from Component.hpp would have code completion 
+# with their struct member accesses
 
 # TODO Add on_init which is called in Scene::on_init
 #fn void on_init() {
@@ -8,10 +9,11 @@ system TrafficSystem {
     on_update(float delta_time) {
         var list<uint32> despawn_candidates
 
-        for (entity e, TransformComponent t, RigidBodyComponent b, LabelComponent l) exclude DisabledComponent {
-            if (e.name == "Vehicle") {
-#                b.velocity.z -= (delta_time * 6.7)
-                #                b.velocity.x += (delta_time * 0.2)
+        for (entity e, TransformComponent t, RigidBodyComponent b, 
+             LabelComponent l) exclude DisabledComponent {
+            if (e.name == "Cube") {
+                #b.velocity.z -= (delta_time * 10007)
+                b.velocity.x += (delta_time * 0.5)
                 t.position -= b.velocity * delta_time
             }
             if (e.name == "Cylinder") {
@@ -23,7 +25,8 @@ system TrafficSystem {
                 e.active = false
                 despawn_candidates.add(e.id)
             }
-            # TODO Improve entity built-ins functionality like e.get() to e.get<Component>() or e.add<Component>(args) with optional ()
+            # TODO Improve entity built-ins functionality like e.get() 
+            # to e.get<Component>() or e.add<Component>(args) with optional ()
         }
     }
 

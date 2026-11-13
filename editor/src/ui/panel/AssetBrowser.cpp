@@ -8,6 +8,7 @@
 #include "Config.hpp"
 #include "asset/AssetManager.hpp"
 #include "asset/AssetType.hpp"
+#include "core/Log.hpp"
 #include "core/SystemContext.hpp"
 #include "rime/RimeEditor.hpp"
 #include "ui/Icons.hpp"
@@ -56,19 +57,15 @@ namespace editor {
 
         const bool sort_order = config::get_value("asset_sort_ascending", sort_ascending_);
         sort_ascending_ = sort_order;
+
+        if (!sync_project_directory(context)) {
+            CLIENT_INFO("No assets directory found: Using default: {}", root_directory_.string());
+        }
     }
 
     void AssetBrowser::on_update(SystemContext& context, float delta_time) {
         if (context.current_project != active_project_) {
-            active_project_ = context.current_project;
-            if (active_project_) {
-                root_directory_ = active_project_->resolve_virtual_path("assets://");
-            }
-            else {
-                // Default fallback
-                root_directory_ = "assets";
-            }
-            current_directory_ = root_directory_;
+            sync_project_directory(context);
         }
     }
 
@@ -103,6 +100,18 @@ namespace editor {
         config::set_value("AssetBrowser_visible", visible_);
         config::set_value("AssetBrowser_thumbnail_size", thumbnail_size_);
         config::set_value("AssetBrowser_sort_ascending", sort_ascending_);
+    }
+
+    bool AssetBrowser::sync_project_directory(SystemContext& context) {
+        active_project_ = context.current_project;
+        if (active_project_) {
+            root_directory_ = active_project_->resolve_virtual_path("assets://");
+            current_directory_ = root_directory_;
+            return true;
+        }
+        root_directory_ = std::filesystem::path(ENGINE_DIR) / "assets";
+        current_directory_ = root_directory_;
+        return false;
     }
 
     void AssetBrowser::render_header() {
