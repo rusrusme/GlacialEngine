@@ -1,11 +1,13 @@
 include(FetchContent)
-set(FETCHCONTENT_UPDATES_DISCONNECTED ON CACHE BOOL "" FORCE)
 
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 set(CMAKE_FOLDER "ThirdParty")
 
 # Helper function
 function(fetch_dependency NAME TARGET ALIAS_NAME REPO TAG)
+    string(TOUPPER "${NAME}" NAME_UPPER)
+    set(FETCHCONTENT_UPDATES_DISCONNECTED_${NAME_UPPER} ON CACHE BOOL "" FORCE)
+
     FetchContent_Declare(
             ${NAME}
             GIT_REPOSITORY ${REPO}
