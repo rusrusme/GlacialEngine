@@ -79,8 +79,6 @@ endif ()
 # ----------------------------------------------------------------------------
 target_precompile_headers(Engine PRIVATE src/core/core_pch.hpp)
 # ----------------------------------------------------------------------------
-include(PackageDistribution.cmake)
-# ----------------------------------------------------------------------------
 set(RUNTIME_ASSETS "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/assets")
 set(SOURCE_ASSETS "${CMAKE_SOURCE_DIR}/assets")
 add_custom_target(SyncAssets ALL
