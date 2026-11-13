@@ -1,5 +1,3 @@
-cmake_minimum_required(VERSION 3.20)
-
 project(GShader
         LANGUAGES CXX
         DESCRIPTION "Multi-backend shader compiler for Glacial Engine"
@@ -8,10 +6,6 @@ project(GShader
 option(GSHADER_ENABLE_OPENGL "Enable OpenGL GLSL shader backend" ON)
 option(GSHADER_ENABLE_VULKAN "Enable Vulkan SPIR-V shader backend" ON)
 option(GSHADER_ENABLE_DX12 "Enable DirectX 12 DXIL shader backend" ${WIN32})
-
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
-set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/lib)
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
 set(RENDER_BACKEND_SOURCES)
 if (GSHADER_ENABLE_OPENGL)
