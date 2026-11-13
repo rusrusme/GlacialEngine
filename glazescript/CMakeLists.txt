@@ -2,9 +2,6 @@ project(GlazeScript
         LANGUAGES CXX
         DESCRIPTION "Scripting language and compiler for Glacial Engine")
 
-set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-
 add_library(glaze_core STATIC
             # Public headers
             include/glaze/AST.hpp
@@ -28,9 +25,11 @@ add_library(glaze_core STATIC
 )
 
 target_include_directories(glaze_core
-                           PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
-                           PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src
+                           PUBLIC include
+                           PRIVATE src
 )
+
+target_compile_features(glaze_core PUBLIC cxx_std_20)
 
 add_executable(glazec src/main.cpp)
 target_link_libraries(glazec PRIVATE glaze_core)

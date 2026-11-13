@@ -55,8 +55,8 @@ add_library(gshader_core STATIC
 )
 
 target_include_directories(gshader_core
-                           PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
-                           PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src
+                           PUBLIC include
+                           PRIVATE src
 )
 
 target_compile_features(gshader_core PUBLIC cxx_std_20)

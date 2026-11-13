@@ -4,6 +4,8 @@ cmake_minimum_required(VERSION 3.20)
 # ----------------------------------------------------------------------------
 project(GlacialEngine CXX C)
 set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
 # ----------------------------------------------------------------------------
 option(ENGINE_DEBUG "Engine-only debug distribution build" OFF)
 option(ENGINE_RELEASE "Engine-only release distribution build" OFF)
@@ -44,7 +46,7 @@ if (NOT ENGINE_DEBUG AND NOT ENGINE_RELEASE)
     add_subdirectory(test)
     unset(CMAKE_FOLDER)
 
-    if (ENABLE_SANDBOX AND NOT ENGINE_DEBUG AND NOT ENGINE_RELEASE)
+    if (ENABLE_SANDBOX)
         add_subdirectory(sandbox)
     endif ()
 endif ()
