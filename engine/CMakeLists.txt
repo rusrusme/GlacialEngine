@@ -7,10 +7,11 @@ file(GLOB_RECURSE ENGINE_SOURCES CONFIGURE_DEPENDS
      "include/*.h"
 )
 add_library(Engine STATIC ${ENGINE_SOURCES})
+add_library(Glacial::Engine ALIAS Engine)
 
 target_include_directories(Engine
-                           PUBLIC ${CMAKE_SOURCE_DIR}/engine/include
-                           PRIVATE ${CMAKE_SOURCE_DIR}/engine/src
+                           PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/include
+                           PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src
 )
 
 if (WIN32)
@@ -78,20 +79,18 @@ endif ()
 target_precompile_headers(Engine PRIVATE src/core/core_pch.hpp)
 
 set(RUNTIME_ASSETS "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/assets")
-set(SOURCE_ASSETS "${CMAKE_SOURCE_DIR}/assets")
+set(SOURCE_ASSETS "${PROJECT_SOURCE_DIR}/assets")
 add_custom_target(SyncAssets ALL
                   COMMAND ${CMAKE_COMMAND} -E copy_directory_if_different "${SOURCE_ASSETS}" "${RUNTIME_ASSETS}"
-                  COMMENT "Syncing assets to runtime output directory"
+                  COMMENT "Syncing engine assets to runtime output directory"
                   VERBATIM
 )
 
 file(GLOB_RECURSE SHADER_SOURCES RELATIVE "${SOURCE_ASSETS}/shaders" CONFIGURE_DEPENDS "${SOURCE_ASSETS}/shaders/*.gshader")
 set(COMPILED_SHADERS "")
 
-foreach(SHADER_REL IN LISTS SHADER_SOURCES)
-    # Input
+foreach (SHADER_REL IN LISTS SHADER_SOURCES)
     set(SHADER_IN "${SOURCE_ASSETS}/shaders/${SHADER_REL}")
-    # Output
     cmake_path(REPLACE_EXTENSION SHADER_REL "gsb" OUTPUT_VARIABLE SHADER_OUT_REL)
     set(SHADER_OUT "${RUNTIME_ASSETS}/shaders/compiled/${SHADER_OUT_REL}")
 
@@ -99,14 +98,13 @@ foreach(SHADER_REL IN LISTS SHADER_SOURCES)
             OUTPUT "${SHADER_OUT}"
             COMMAND $<TARGET_FILE:gshaderc> "${SHADER_IN}" -o "${SHADER_OUT}" -b ${GSHADER_BACKEND}
             DEPENDS "${SHADER_IN}" $<TARGET_FILE:gshaderc>
-            COMMENT "Compiling shader: ${SHADER_REL} [${GSHADER_BACKEND}]"
+            COMMENT "Compiling engine shader: ${SHADER_REL} [${GSHADER_BACKEND}]"
             VERBATIM
     )
     list(APPEND COMPILED_SHADERS "${SHADER_OUT}")
-endforeach()
+endforeach ()
 add_custom_target(CompileShaders ALL DEPENDS ${COMPILED_SHADERS})
 
-# Generate cmd file template
 if (WIN32)
     set(SCRIPT_NAME "BuildScripts.cmd")
     set(SCRIPT_PERMS "")
@@ -121,7 +119,7 @@ else ()
 endif ()
 
 configure_file(
-        "${CMAKE_SOURCE_DIR}/${SCRIPT_NAME}.in"
+        "${PROJECT_SOURCE_DIR}/${SCRIPT_NAME}.in"
         "${CMAKE_CURRENT_BINARY_DIR}/${SCRIPT_NAME}"
         @ONLY
         ${SCRIPT_PERMS}
@@ -141,20 +139,20 @@ set(SCRIPT_BUNDLE_CPP "${SCRIPT_OUT_DIR}/GlazeScriptsBundle.cpp")
 file(GLOB_RECURSE GSCRIPT_SOURCES RELATIVE "${SOURCE_ASSETS}/scripts" CONFIGURE_DEPENDS "${SOURCE_ASSETS}/scripts/*.gscript")
 
 set(COMPILED_SCRIPTS "")
-foreach(SCRIPT_REL IN LISTS GSCRIPT_SOURCES)
+foreach (SCRIPT_REL IN LISTS GSCRIPT_SOURCES)
     set(SCRIPT_IN "${SOURCE_ASSETS}/scripts/${SCRIPT_REL}")
     cmake_path(REPLACE_EXTENSION SCRIPT_REL "hpp" OUTPUT_VARIABLE SCRIPT_OUT_REL)
     set(SCRIPT_OUT "${SCRIPT_OUT_DIR}/${SCRIPT_OUT_REL}")
 
     add_custom_command(
             OUTPUT "${SCRIPT_OUT}"
-            COMMAND $<TARGET_FILE:glazec> "${SCRIPT_IN}" -o "${SCRIPT_OUT_DIR}" -e "${CMAKE_SOURCE_DIR}"
+            COMMAND $<TARGET_FILE:glazec> "${SCRIPT_IN}" -o "${SCRIPT_OUT_DIR}" -e "${PROJECT_SOURCE_DIR}"
             DEPENDS "${SCRIPT_IN}" $<TARGET_FILE:glazec>
             COMMENT "Transpiling GlazeScript: ${SCRIPT_REL}"
             VERBATIM
     )
     list(APPEND COMPILED_SCRIPTS "${SCRIPT_OUT}")
-endforeach()
+endforeach ()
 
 if (COMPILED_SCRIPTS)
     add_custom_command(
@@ -165,14 +163,8 @@ if (COMPILED_SCRIPTS)
     )
 
     add_library(Scripts SHARED "${SCRIPT_BUNDLE_CPP}")
-
     target_precompile_headers(Scripts REUSE_FROM Engine)
-
-    target_include_directories(Scripts PRIVATE
-                               "${SCRIPT_OUT_DIR}"
-                               "${CMAKE_SOURCE_DIR}/GlazeScript/include"
-    )
-
+    target_include_directories(Scripts PRIVATE "${SCRIPT_OUT_DIR}")
     target_link_libraries(Scripts PRIVATE Engine)
 
     set_target_properties(Scripts PROPERTIES
@@ -182,9 +174,7 @@ if (COMPILED_SCRIPTS)
                           FOLDER "GlacialEngine"
     )
     target_include_directories(Engine PUBLIC "${SCRIPT_OUT_DIR}")
-endif()
+endif ()
 
-add_dependencies(Engine SyncAssets)
-add_dependencies(Engine CompileShaders)
-add_dependencies(Engine SetupBuildScripts)
+add_dependencies(Engine SyncAssets CompileShaders SetupBuildScripts)
 set_target_properties(SyncAssets CompileShaders SetupBuildScripts PROPERTIES FOLDER "GlacialEngine")
