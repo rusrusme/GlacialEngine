@@ -11,22 +11,8 @@ else ()
     option(GLACIAL_ENGINE_ONLY "Build only the core Engine library" ON)
 endif ()
 
-option(ENGINE_DEBUG "Engine-only debug distribution build" OFF)
-option(ENGINE_RELEASE "Engine-only release distribution build" OFF)
-option(ENABLE_IMGUI "Include ImGui Dependency" ${PROJECT_IS_TOP_LEVEL})
+option(ENABLE_IMGUI "Include ImGui Dependency" ON)
 option(ENABLE_SANDBOX "Build Sandbox demo project" ${PROJECT_IS_TOP_LEVEL})
-
-if (ENGINE_DEBUG OR ENGINE_RELEASE)
-    set(GLACIAL_ENGINE_ONLY ON CACHE BOOL "" FORCE)
-    set(ENABLE_IMGUI OFF CACHE BOOL "" FORCE)
-    set(ENABLE_SANDBOX OFF CACHE BOOL "" FORCE)
-endif ()
-
-if (ENGINE_DEBUG)
-    add_compile_definitions(ENGINE_DEBUG)
-elseif (ENGINE_RELEASE)
-    add_compile_definitions(ENGINE_RELEASE)
-endif ()
 
 if (ENABLE_IMGUI)
     add_compile_definitions(ENABLE_IMGUI)
