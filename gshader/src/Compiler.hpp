@@ -8,8 +8,8 @@
 #include <string>
 #include <vector>
 
+#include "Internal.hpp"
 #include "Preprocessor.hpp"
-#include "gshader/Utility.hpp"
 
 namespace gshader {
     struct CompiledStage {

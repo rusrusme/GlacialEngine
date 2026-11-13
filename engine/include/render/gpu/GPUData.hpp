@@ -109,4 +109,4 @@ namespace engine {
 
     static_assert(sizeof(GPUMaterialData) == 64,
                   "GPUMaterialData must be exactly 64 bytes to match std430 SSBO layout.");
-} // namespace engine
+}

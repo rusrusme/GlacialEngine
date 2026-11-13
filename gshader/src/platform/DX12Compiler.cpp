@@ -9,18 +9,27 @@
 #include <shaderc/shaderc.hpp>
 
 #if defined(_WIN32)
+
 #ifndef WIN32_LEAN_AND_MEAN
 #define WIN32_LEAN_AND_MEAN
 #endif
+
 #ifndef NOMINMAX
 #define NOMINMAX
 #endif
+
 #include <windows.h>
+
 #include <unknwn.h>
 #include <dxcapi.h>
 #include <wrl/client.h>
+
 using Microsoft::WRL::ComPtr;
 #endif
+
+#include "Compiler.hpp"
+#include "Internal.hpp"
+#include "gshader/GShader.hpp"
 
 namespace gshader {
     static const wchar_t* get_dxc_target_profile(const ShaderStage stage) {
@@ -165,6 +174,7 @@ namespace gshader {
             const auto* dxil_begin = static_cast<const uint8_t*>(dxil_blob->GetBufferPointer());
             const auto* dxil_end = dxil_begin + dxil_blob->GetBufferSize();
             payload.assign(dxil_begin, dxil_end);
+
             #else
             payload.assign(hlsl_source.begin(), hlsl_source.end());
             #endif

@@ -55,6 +55,7 @@ add_library(gshader_core STATIC
             src/GShaderCompiler.cpp
 
             src/Log.hpp
+            src/Internal.hpp
 
             ${RENDER_BACKEND_SOURCES}
 )

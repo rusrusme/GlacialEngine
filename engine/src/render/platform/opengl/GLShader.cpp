@@ -121,17 +121,17 @@ namespace engine {
 
     void GLShader::load(const LoadedShaderData& shader_data) {
         if (!shader_data.valid) { return; }
-        if (shader_data.backend != glacialc::RenderBackend::OpenGL) {
+        if (shader_data.backend != gshader::RenderBackend::OpenGL) {
             CORE_ERROR("[GLShader] Cannot load shader '{0}': Target backend is not OpenGL", name_);
             return;
         }
 
-        auto to_gl_stage = [](glacialc::ShaderStage stage) -> uint32_t {
+        auto to_gl_stage = [](gshader::ShaderStage stage) -> uint32_t {
             switch (stage) {
-                case glacialc::ShaderStage::Vertex : return GL_VERTEX_SHADER;
-                case glacialc::ShaderStage::Fragment : return GL_FRAGMENT_SHADER;
-                case glacialc::ShaderStage::Geometry : return GL_GEOMETRY_SHADER;
-                case glacialc::ShaderStage::Compute : return GL_COMPUTE_SHADER;
+                case gshader::ShaderStage::Vertex : return GL_VERTEX_SHADER;
+                case gshader::ShaderStage::Fragment : return GL_FRAGMENT_SHADER;
+                case gshader::ShaderStage::Geometry : return GL_GEOMETRY_SHADER;
+                case gshader::ShaderStage::Compute : return GL_COMPUTE_SHADER;
                 default : return 0;
             }
         };
@@ -203,4 +203,4 @@ namespace engine {
         }
         renderer_id_ = program;
     }
-} // namespace engine
+}

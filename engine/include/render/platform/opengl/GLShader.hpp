@@ -45,4 +45,4 @@ namespace engine {
         std::string name_;
         std::string filepath_;
     };
-} // engine
+}

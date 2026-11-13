@@ -9,7 +9,7 @@
 #include <fstream>
 #include <sstream>
 
-#include "gshader/Utility.hpp"
+#include "Internal.hpp"
 
 namespace gshader {
     Preprocessor::Preprocessor(std::filesystem::path include_dir)

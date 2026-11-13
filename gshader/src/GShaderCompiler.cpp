@@ -10,9 +10,9 @@
 #include <execution>
 #include <fstream>
 
-#include "gshader/BinaryPackager.hpp"
-#include "gshader/Log.hpp"
-#include "gshader/Preprocessor.hpp"
+#include "BinaryPackager.hpp"
+#include "Log.hpp"
+#include "Preprocessor.hpp"
 #include "gshader/Utility.hpp"
 
 namespace gshader {

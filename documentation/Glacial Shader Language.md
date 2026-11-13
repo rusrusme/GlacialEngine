@@ -4,7 +4,7 @@
 
 ## 1. Overview & Architecture
 
-The **Glacial Shader Language (GShader)** is a unified, single-file shader language created for the **Glacial Engine**. GShader shaders are preprocessed and compiled by the **glacialc (Glacial Shader Compiler)** tool into binary shader assets (`.gsb`) targeting OpenGL, Vulkan, and DirectX 12 backends.
+The **Glacial Shader Language (GShader)** is a unified, single-file shader language created for the **Glacial Engine**. GShader shaders are preprocessed and compiled by the **gshaderc (Glacial Shader Compiler)** tool into binary shader assets (`.gsb`) targeting OpenGL, Vulkan, and DirectX 12 backends.
 
 Key features include:
 * Single-file multi-stage shader definitions (`#vert`, `#frag`, `#geom`, `#comp`).

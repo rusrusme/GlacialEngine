@@ -47,4 +47,4 @@ namespace engine {
         Vector<uint32_t> color_attachments_;
         uint32_t depth_attachment_ = 0;
     };
-} // engine
+}

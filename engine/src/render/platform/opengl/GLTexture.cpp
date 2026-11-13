@@ -187,4 +187,4 @@ namespace engine {
         glTextureParameteri(renderer_id_, GL_TEXTURE_WRAP_S, static_cast<GLint>(texture_wrap_to_gl(specification_.wrap_s)));
         glTextureParameteri(renderer_id_, GL_TEXTURE_WRAP_T, static_cast<GLint>(texture_wrap_to_gl(specification_.wrap_t)));
     }
-} // namespace engine
+}

@@ -10,11 +10,11 @@
 
 namespace gshader {
     template<typename... Args>
-    void GSH_MESSAGE(std::format_string<Args...> fmt, Args&&... args) { std::cout << "glacialc: " << std::format(fmt, std::forward<Args>(args)...) << "\n"; }
+    void GSH_MESSAGE(std::format_string<Args...> fmt, Args&&... args) { std::cout << "gshaderc: " << std::format(fmt, std::forward<Args>(args)...) << "\n"; }
 
     template<typename... Args>
-    void GSH_ERROR(std::format_string<Args...> fmt, Args&&... args) { std::cout << "glacialc error: " << std::format(fmt, std::forward<Args>(args)...) << "\n"; }
+    void GSH_ERROR(std::format_string<Args...> fmt, Args&&... args) { std::cout << "gshaderc error: " << std::format(fmt, std::forward<Args>(args)...) << "\n"; }
 
     template<typename... Args>
-    void GSH_WARNING(std::format_string<Args...> fmt, Args&&... args) { std::cout << "glacialc warning: " << std::format(fmt, std::forward<Args>(args)...) << "\n"; }
+    void GSH_WARNING(std::format_string<Args...> fmt, Args&&... args) { std::cout << "gshaderc warning: " << std::format(fmt, std::forward<Args>(args)...) << "\n"; }
 }

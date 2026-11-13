@@ -7,6 +7,9 @@
 
 #include <shaderc/shaderc.hpp>
 
+#include "Compiler.hpp"
+#include "Internal.hpp"
+
 namespace gshader {
     CompilerOutput VulkanCompiler::compile(const ParsedData& data) {
         CompilerOutput output;

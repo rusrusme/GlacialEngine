@@ -19,7 +19,7 @@ namespace gshader {
     template<typename T>
     using Unique = std::unique_ptr<T>;
 
-    static std::string_view trim(std::string_view sv) {
+    inline std::string_view trim(std::string_view sv) {
         while (!sv.empty() && std::isspace(static_cast<unsigned char>(sv.front()))) {
             sv.remove_prefix(1);
         }
@@ -29,7 +29,7 @@ namespace gshader {
         return sv;
     }
 
-    static shaderc_shader_kind to_shaderc_stage(const ShaderStage stage) {
+    inline shaderc_shader_kind to_shaderc_stage(const ShaderStage stage) {
         switch (stage) {
             case ShaderStage::Vertex : return shaderc_glsl_vertex_shader;
             case ShaderStage::Fragment : return shaderc_glsl_fragment_shader;

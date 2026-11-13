@@ -211,4 +211,4 @@ namespace engine {
             depth_attachment_ = 0;
         }
     }
-} // namespace engine
+}

@@ -8,10 +8,11 @@
 #include <memory>
 
 #include "Internal.hpp"
-#include "gshader/Log.hpp"
-#include "gshader/platform/dx12/DX12Compiler.hpp"
-#include "gshader/platform/opengl/GLCompiler.hpp"
-#include "gshader/platform/vulkan/VulkanCompiler.hpp"
+#include "Log.hpp"
+#include "gshader/Utility.hpp"
+#include "platform/DX12Compiler.hpp"
+#include "platform/GLCompiler.hpp"
+#include "platform/VulkanCompiler.hpp"
 
 namespace gshader {
     Unique<Compiler> Compiler::create(const RenderBackend& render_backend) {

@@ -77,4 +77,4 @@ namespace engine {
         size_t index_element_size_{4};
         bool is_recording_{false};
     };
-} // namespace engine
+}

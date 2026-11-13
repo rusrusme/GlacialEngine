@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include <glacialc/GShader.hpp>
+#include <gshader/GShader.hpp>
 
 #include "render/rhi/RHITypes.hpp"
 #include "render/shader/GShaderLoader.hpp"
@@ -17,6 +17,6 @@ namespace engine {
         static LoadedShaderData compile_file(const std::filesystem::path& source);
 
     private:
-        static glacialc::RenderBackend native_backend(RendererBackend backend);
+        static gshader::RenderBackend native_backend(RendererBackend backend);
     };
 }

@@ -74,4 +74,4 @@ namespace engine {
         Vector<ImageBinding> image_bindings_;
     };
 
-} // namespace engine
+}

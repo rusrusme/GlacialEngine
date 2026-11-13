@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "gshader/Compiler.hpp"
+#include "Compiler.hpp"
 
 namespace gshader {
     class GLCompiler : public Compiler {

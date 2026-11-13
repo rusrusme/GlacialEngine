@@ -51,4 +51,4 @@ namespace engine {
 
         uint32_t mip_levels_ = 1;
     };
-} // namespace engine
+}

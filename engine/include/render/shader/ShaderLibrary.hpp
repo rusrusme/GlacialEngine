@@ -51,4 +51,4 @@ namespace engine {
 
         ShaderMap shaders_;
     };
-} // engine
+}

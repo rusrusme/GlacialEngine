@@ -5,9 +5,12 @@
 
 #pragma once
 
+#include <cstdint>
+#include <filesystem>
 #include <vector>
 
 #include "Compiler.hpp"
+#include "gshader/GShader.hpp"
 
 namespace gshader {
     class BinaryPackager {
