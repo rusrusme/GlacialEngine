@@ -12,6 +12,7 @@
 #include "input/Input.hpp"
 #include "input/KeyCodes.hpp"
 #include "input/MouseCodes.hpp"
+#include "render/camera/Camera.hpp"
 #include "ui/panel/Hierarchy.hpp"
 #include "ui/panel/ViewportPanel.hpp"
 

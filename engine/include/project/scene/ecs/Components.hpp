@@ -12,11 +12,11 @@
 
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "asset/AssetType.hpp"
 #include "asset/UUID.hpp"
 #include "physics/AABB.hpp"
-#include "render/camera/Camera.hpp"
 
 namespace engine {
     // ----------------------------
