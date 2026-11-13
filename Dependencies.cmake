@@ -37,12 +37,26 @@ endforeach ()
 # Fetch SDL3
 set(SDL_TEST OFF CACHE BOOL "" FORCE)
 set(SDL_TESTS OFF CACHE BOOL "" FORCE)
+set(SDL_TEST_LIBRARY OFF CACHE BOOL "" FORCE)
+set(SDL_EXAMPLES OFF CACHE BOOL "" FORCE)
+set(SDL_INSTALL OFF CACHE BOOL "" FORCE)
+set(SDL_AUDIO OFF CACHE BOOL "" FORCE)
+set(SDL_CAMERA OFF CACHE BOOL "" FORCE)
+set(SDL_RENDER OFF CACHE BOOL "" FORCE)
+set(SDL_GPU OFF CACHE BOOL "" FORCE)
 fetch_dependency(SDL3 SDL3-static DEPENDENCY::SDL https://github.com/libsdl-org/SDL.git release-3.4.18)
 
 # Fetch GLM
+set(GLM_BUILD_LIBRARY OFF CACHE BOOL "" FORCE)
+set(GLM_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(GLM_BUILD_INSTALL OFF CACHE BOOL "" FORCE)
 fetch_dependency(glm glm DEPENDENCY::GLM https://github.com/g-truc/glm.git 1.0.3)
 
 # Fetch EnTT
+set(ENTT_BUILD_DOCS OFF CACHE BOOL "" FORCE)
+set(ENTT_BUILD_TESTBED OFF CACHE BOOL "" FORCE)
+set(ENTT_BUILD_TESTING OFF CACHE BOOL "" FORCE)
+set(ENTT_INSTALL OFF CACHE BOOL "" FORCE)
 fetch_dependency(entt EnTT DEPENDENCY::ENTT https://github.com/skypjack/entt.git v4.0.0)
 
 # Fetch FreeType (Dependency of RmlUi)
@@ -51,11 +65,16 @@ set(FT_DISABLE_PNG ON CACHE BOOL "" FORCE)
 set(FT_DISABLE_HARFBUZZ ON CACHE BOOL "" FORCE)
 set(FT_DISABLE_BROTLI ON CACHE BOOL "" FORCE)
 set(FT_DISABLE_BZIP2 ON CACHE BOOL "" FORCE)
+set(FT_ENABLE_ERROR_STRINGS OFF CACHE BOOL "" FORCE)
 fetch_dependency(freetype freetype Freetype::Freetype https://github.com/freetype/freetype.git VER-2-14-3)
 
 # Fetch RmlUi
-set(RMLUI_ENABLE_SAMPLES OFF CACHE BOOL "" FORCE)
-set(RMLUI_ENABLE_TESTS OFF CACHE BOOL "" FORCE)
+set(RMLUI_SAMPLES OFF CACHE BOOL "" FORCE)
+set(RMLUI_LUA_BINDINGS OFF CACHE BOOL "" FORCE)
+set(RMLUI_LOTTIE_PLUGIN OFF CACHE BOOL "" FORCE)
+set(RMLUI_SVG_PLUGIN OFF CACHE BOOL "" FORCE)
+set(RMLUI_TRACY_PROFILING OFF CACHE BOOL "" FORCE)
+set(RMLUI_INSTALL_RUNTIME_DEPENDENCIES OFF CACHE BOOL "" FORCE)
 fetch_dependency(rmlui rmlui DEPENDENCY::RMLUI https://github.com/mikke89/RmlUi.git 6.2)
 
 # Fetch ImGui
@@ -81,6 +100,7 @@ endif ()
 
 # Fetch ImGuizmo
 if (ENABLE_IMGUI)
+    set(IMGUIZMO_BUILD_EXAMPLE OFF CACHE BOOL "" FORCE)
     fetch_dependency(imguizmo imguizmo DEPENDENCY::IMGUIZMO https://github.com/CedricGuillemet/ImGuizmo.git 1.10)
     target_link_libraries(imguizmo PUBLIC imgui)
 endif ()
@@ -94,10 +114,15 @@ endif ()
 add_library(DEPENDENCY::CGLTF ALIAS cgltf)
 
 # Fetch json
+set(JSON_BuildTests OFF CACHE BOOL "" FORCE)
+set(JSON_Install OFF CACHE BOOL "" FORCE)
 fetch_dependency(json nlohmann_json DEPENDENCY::NLOHMANN https://github.com/nlohmann/json.git v3.11.3)
 
 # Fetch miniaudio
-set(MINIAUDIO_BUILD_SAMPLES OFF CACHE BOOL "" FORCE)
+set(MINIAUDIO_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+set(MINIAUDIO_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(MINIAUDIO_BUILD_TOOLS OFF CACHE BOOL "" FORCE)
+set(MINIAUDIO_INSTALL OFF CACHE BOOL "" FORCE)
 fetch_dependency(miniaudio miniaudio DEPENDENCY::MINIAUDIO https://github.com/mackron/miniaudio.git 0.11.25)
 
 add_library(glad STATIC lib/glad/src/glad.c)
