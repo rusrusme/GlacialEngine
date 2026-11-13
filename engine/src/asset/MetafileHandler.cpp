@@ -108,6 +108,9 @@ namespace engine {
         if (ext == ".gscript") {
             return AssetType::SCRIPT;
         }
+        if (ext == ".gscene") {
+            return AssetType::SCENE;
+        }
         return AssetType::NONE;
     }
 

@@ -18,6 +18,12 @@ using json = nlohmann::json;
 namespace engine {
     void SceneSerializer::serialize(const std::string& filepath, SystemContext& context) {
         // MAIN THREAD: Build JSON in memory (fast, avoids data races)
+        std::filesystem::path path(filepath);
+        if (path.extension() != ".gscene" || path.stem().empty()) {
+            CORE_ERROR("Failed to serialize: Provided file '{}' is not a valid .gscene file", filepath);
+            return;
+        }
+
         CORE_INFO("Serializing scene to '{0}'", filepath);
 
         auto scene = context.scenes.active_scene();
@@ -26,7 +32,7 @@ namespace engine {
             return;
         }
 
-        std::string scene_name = std::filesystem::path(filepath).stem().string();
+        std::string scene_name = path.stem().string();
         scene->set_name(scene_name);
         scene->set_path(filepath);
 
@@ -57,6 +63,12 @@ namespace engine {
     }
 
     bool SceneSerializer::deserialize(const std::string& filepath, SystemContext& context) {
+        std::filesystem::path path(filepath);
+        if (path.extension() != ".gscene" || path.stem().empty()) {
+            CORE_ERROR("Failed to deserialize: Provided file '{}' is not a valid .gscene file", filepath);
+            return false;
+        }
+
         CORE_INFO("Deserializing scene from '{0}'", filepath);
 
         auto scene = context.scenes.active_scene();
@@ -88,7 +100,7 @@ namespace engine {
         scene->clear();
 
         scene->set_path(filepath);
-        std::string scene_name = root.value("scene", std::filesystem::path(filepath).stem().string());
+        std::string scene_name = root.value("scene", path.stem().string());
         scene->set_name(scene_name);
 
         size_t loaded_count = 0;
