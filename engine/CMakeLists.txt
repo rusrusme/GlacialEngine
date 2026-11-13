@@ -75,6 +75,7 @@ target_link_libraries(Engine PUBLIC
 )
 
 if (ENABLE_IMGUI)
+    target_compile_definitions(Engine PUBLIC ENABLE_IMGUI)
     target_link_libraries(Engine PUBLIC DEPENDENCY::IMGUI)
 endif ()
 
