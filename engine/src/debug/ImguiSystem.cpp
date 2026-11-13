@@ -3,16 +3,21 @@
 // All rights reserved.
 //
 
-#ifdef ENABLE_IMGUI
 #include "debug/ImguiSystem.hpp"
 
 #include "input/Input.hpp"
 #include "input/KeyCodes.hpp"
 
+#ifdef ENABLE_IMGUI
+
 #if defined(WINDOW_BACKEND_GLFW)
 #include <imgui_impl_glfw.h>
+
 #elif defined(WINDOW_BACKEND_SDL)
 #include <imgui_impl_sdl3.h>
+
+#endif
+
 #endif
 
 #if defined(RENDER_API_OPENGL)
@@ -28,8 +33,9 @@
 #include "event/MouseEvents.hpp"
 
 namespace engine {
-
     void ImguiSystem::on_attach(void* window, const char* glsl_version) {
+        #ifdef ENABLE_IMGUI
+
         IMGUI_CHECKVERSION();
         ImGui::CreateContext();
 
@@ -156,9 +162,13 @@ namespace engine {
         #elif defined(RENDER_API_VULKAN)
         // ImGui_ImplVulkan_Init(...);
         #endif
+
+        #endif
     }
 
     void ImguiSystem::on_detach() {
+        #ifdef ENABLE_IMGUI
+
         #if defined(RENDER_API_OPENGL)
         ImGui_ImplOpenGL3_Shutdown();
         #elif defined(RENDER_API_VULKAN)
@@ -172,9 +182,13 @@ namespace engine {
         #endif
 
         ImGui::DestroyContext();
+
+        #endif
     }
 
     void ImguiSystem::begin_frame() {
+        #ifdef ENABLE_IMGUI
+
         #if defined(RENDER_API_OPENGL)
         ImGui_ImplOpenGL3_NewFrame();
         #elif defined(RENDER_API_VULKAN)
@@ -188,9 +202,13 @@ namespace engine {
         #endif
 
         ImGui::NewFrame();
+
+        #endif
     }
 
     void ImguiSystem::end_frame() {
+        #ifdef ENABLE_IMGUI
+
         ImGui::Render();
 
         #if defined(RENDER_API_OPENGL)
@@ -206,9 +224,13 @@ namespace engine {
             ImGui::RenderPlatformWindowsDefault();
             window::make_context_current(current_context);
         }
+
+        #endif
     }
 
     void ImguiSystem::on_event(SystemContext& context, Event& event) {
+        #ifdef ENABLE_IMGUI
+
         ImGuiIO& io = ImGui::GetIO();
         EventDispatcher dispatcher(event);
 
@@ -242,7 +264,7 @@ namespace engine {
         dispatcher.dispatch<KeyReleasedEvent>([&io](const KeyReleasedEvent&) {
             return io.WantTextInput;
         });
+
+        #endif
     }
 }
-
-#endif

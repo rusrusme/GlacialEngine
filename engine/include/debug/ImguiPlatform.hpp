@@ -5,8 +5,6 @@
 
 #pragma once
 
-#ifdef ENABLE_IMGUI
-
 namespace engine {
     enum class GraphicsFramework;
 
@@ -16,5 +14,3 @@ namespace engine {
         void new_frame_platform_backend(GraphicsFramework framework);
     }
 }
-
-#endif
