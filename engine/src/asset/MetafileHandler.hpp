@@ -7,7 +7,7 @@
 
 #include <filesystem>
 
-#include "asset/AssetType.hpp"
+#include "asset/Asset.hpp"
 
 namespace engine {
     class MetaFileHandler {
@@ -16,7 +16,7 @@ namespace engine {
         static AssetMetadata get(const std::filesystem::path& asset_path);
 
     private:
-        static AssetType deduce_asset_type(const std::filesystem::path& filepath);
+        static Asset deduce_asset_type(const std::filesystem::path& filepath);
         static std::filesystem::path find_shader_source(const std::filesystem::path& compiled_path);
     };
 }

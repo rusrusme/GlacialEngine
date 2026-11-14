@@ -8,7 +8,7 @@
 #include <filesystem>
 #include <unordered_map>
 
-#include "asset/AssetType.hpp"
+#include "asset/Asset.hpp"
 #include "core/Log.hpp"
 #include "render/Mesh.hpp"
 #include "render/rhi/Texture.hpp"

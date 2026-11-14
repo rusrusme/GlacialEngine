@@ -7,7 +7,7 @@
 
 #include "Config.hpp"
 #include "asset/AssetManager.hpp"
-#include "asset/AssetType.hpp"
+#include "asset/Asset.hpp"
 #include "core/Log.hpp"
 #include "core/SystemContext.hpp"
 #include "rime/RimeEditor.hpp"

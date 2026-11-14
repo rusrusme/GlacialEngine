@@ -196,7 +196,7 @@ namespace editor {
 
         bool found_any = false;
         for (const auto& [handle, meta] : context.assets.registry()) {
-            const bool is_mesh = (meta.type == AssetType::MESH);
+            const bool is_mesh = (meta.type == Asset::MESH);
             const bool is_user_model = !meta.filepath.string().starts_with("primitive://");
 
             if (is_mesh && is_user_model) {

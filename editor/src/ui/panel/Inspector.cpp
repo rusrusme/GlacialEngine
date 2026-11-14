@@ -294,7 +294,7 @@ namespace editor {
 
             if (ImGui::BeginCombo("##MeshCombo", current_label.c_str())) {
                 for (const auto& [handle, meta] : context.assets.registry()) {
-                    if (meta.type != AssetType::MESH) continue;
+                    if (meta.type != Asset::MESH) continue;
                     const bool is_selected = (mesh_comp.handle == handle);
                     std::string item_name = meta.filepath.filename().string();
                     if (ImGui::Selectable(item_name.c_str(), is_selected)) {
@@ -335,7 +335,7 @@ namespace editor {
                     material.texture_handle = {0};
                 }
                 for (const auto& [handle, meta] : context.assets.registry()) {
-                    if (meta.type != AssetType::TEXTURE_2D) continue;
+                    if (meta.type != Asset::TEXTURE_2D) continue;
                     const bool is_selected = (material.texture_handle == handle);
                     if (ImGui::Selectable(meta.filepath.filename().string().c_str(), is_selected)) {
                         material.texture_handle = handle;
@@ -349,7 +349,7 @@ namespace editor {
                 if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("ASSET_BROWSER_ITEM")) {
                     AssetHandle dropped_handle = *static_cast<const AssetHandle*>(payload->Data);
                     const auto& meta = context.assets.metadata(dropped_handle);
-                    if (meta.valid() && meta.type == AssetType::TEXTURE_2D) {
+                    if (meta.valid() && meta.type == Asset::TEXTURE_2D) {
                         material.texture_handle = dropped_handle;
                     }
                 }
@@ -370,7 +370,7 @@ namespace editor {
                     audio.filepath = "";
                 }
                 for (const auto& [handle, meta] : context.assets.registry()) {
-                    if (meta.type != AssetType::AUDIO) continue;
+                    if (meta.type != Asset::AUDIO) continue;
                     const bool is_selected = (audio.sound_handle == handle);
                     if (ImGui::Selectable(meta.filepath.filename().string().c_str(), is_selected)) {
                         audio.sound_handle = handle;

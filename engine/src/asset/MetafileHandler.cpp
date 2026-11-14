@@ -16,7 +16,7 @@ namespace engine {
         meta.filepath = asset_path;
         meta.type = deduce_asset_type(asset_path);
 
-        if (meta.type == AssetType::NONE) {
+        if (meta.type == Asset::NONE) {
             return meta;
         }
         const std::filesystem::path meta_path = asset_path.string() + ".meta";
@@ -81,60 +81,58 @@ namespace engine {
         return meta;
     }
 
-    AssetType MetaFileHandler::deduce_asset_type(const std::filesystem::path& filepath) {
+    Asset MetaFileHandler::deduce_asset_type(const std::filesystem::path& filepath) {
         const std::string ext = util::to_lowercase(filepath.extension().string());
 
         if (ext == ".png" || ext == ".jpg" || ext == ".jpeg" || ext == ".tga") {
-            return AssetType::TEXTURE_2D;
+            return Asset::TEXTURE_2D;
         }
         if (ext == ".glb" || ext == ".gltf") {
-            return AssetType::MESH;
+            return Asset::MESH;
         }
         if (ext == ".vert" || ext == ".frag" || ext == ".geom" || ext == ".glsl") {
-            return AssetType::SHADER;
+            return Asset::SHADER;
         }
         if (ext == ".gshader" || ext == ".gsb") {
-            return AssetType::SHADER;
+            return Asset::SHADER;
         }
         if (ext == ".mat") {
-            return AssetType::MATERIAL;
+            return Asset::MATERIAL;
         }
         if (ext == ".wav" || ext == ".mp3" || ext == ".ogg" || ext == ".flac") {
-            return AssetType::AUDIO;
+            return Asset::AUDIO;
         }
         if (ext == ".ttf") {
-            return AssetType::FONT;
+            return Asset::FONT;
         }
         if (ext == ".gscript") {
-            return AssetType::SCRIPT;
+            return Asset::SCRIPT;
         }
         if (ext == ".gscene") {
-            return AssetType::SCENE;
+            return Asset::SCENE;
         }
-        return AssetType::NONE;
+        return Asset::NONE;
     }
 
     std::filesystem::path MetaFileHandler::find_shader_source(const std::filesystem::path& compiled_path) {
-        std::string path_str = compiled_path.generic_string();
-
-        if (path_str.ends_with(".gsb")) {
-            path_str.replace(path_str.length() - 5, 5, ".gshader");
+        std::filesystem::path source_path = compiled_path;
+        if (util::to_lowercase(source_path.extension().string()) == ".gsb") {
+            source_path.replace_extension(".gshader");
         }
 
+        std::string path_str = source_path.generic_string();
         constexpr std::string_view compiled_segment = "compiled/";
-        if (const size_t pos = path_str.find(compiled_segment); pos != std::string::npos) {
+        if (const size_t pos = path_str.find(compiled_segment);
+            pos != std::string::npos && (pos == 0 || path_str[pos - 1] == '/')) {
             path_str.erase(pos, compiled_segment.length());
+
+            if (std::filesystem::path candidate(path_str); std::filesystem::exists(candidate)) {
+                return candidate;
+            }
         }
 
-        std::filesystem::path candidate(path_str);
-        if (std::filesystem::exists(candidate)) {
-            return candidate;
-        }
-
-        std::filesystem::path sibling = compiled_path;
-        sibling.replace_extension(".gshader");
-        if (std::filesystem::exists(sibling)) {
-            return sibling;
+        if (std::filesystem::exists(source_path)) {
+            return source_path;
         }
 
         return {};

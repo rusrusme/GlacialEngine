@@ -22,7 +22,7 @@ namespace engine {
             AssetHandle handle(fixed_id);
             AssetMetadata meta{
                 .handle   = handle,
-                .type     = AssetType::MESH,
+                .type     = Asset::MESH,
                 .filepath = path
             };
             asset_registry_[handle] = meta;
@@ -110,7 +110,7 @@ namespace engine {
         }
 
         const auto& meta = metadata(handle);
-        if (!meta.valid() || meta.type != AssetType::MESH) {
+        if (!meta.valid() || meta.type != Asset::MESH) {
             return nullptr;
         }
 
@@ -172,7 +172,7 @@ namespace engine {
         }
 
         const auto& meta = metadata(handle);
-        if (!meta.valid() || meta.type != AssetType::TEXTURE_2D) {
+        if (!meta.valid() || meta.type != Asset::TEXTURE_2D) {
             return nullptr;
         }
 

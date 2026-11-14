@@ -14,7 +14,7 @@
 #include <utility>
 #include <vector>
 
-#include "asset/AssetType.hpp"
+#include "asset/Asset.hpp"
 #include "asset/UUID.hpp"
 #include "math/AABB.hpp"
 
