@@ -13,7 +13,7 @@ namespace engine {
     class GLPipelineState {
     public:
         GLPipelineState() = default;
-        explicit GLPipelineState(PipelineStateDesc  desc);
+        explicit GLPipelineState(PipelineStateDesc desc);
         ~GLPipelineState();
 
         GLPipelineState(const GLPipelineState&) = delete;

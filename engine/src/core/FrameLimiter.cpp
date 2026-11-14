@@ -16,27 +16,28 @@
 
 namespace {
     HANDLE create_timer() {
-        #ifndef CREATE_WAITABLE_TIMER_HIGH_RESOLUTION
-        #define CREATE_WAITABLE_TIMER_HIGH_RESOLUTION 0x00000002
-        #endif
 
-        HANDLE timer = CreateWaitableTimerExW(nullptr, nullptr, CREATE_WAITABLE_TIMER_HIGH_RESOLUTION, TIMER_ALL_ACCESS);
+#ifndef CREATE_WAITABLE_TIMER_HIGH_RESOLUTION
+#define CREATE_WAITABLE_TIMER_HIGH_RESOLUTION 0x00000002
+#endif
+
+HANDLE timer = CreateWaitableTimerExW(nullptr, nullptr, CREATE_WAITABLE_TIMER_HIGH_RESOLUTION, TIMER_ALL_ACCESS);
         if (!timer) {
             timer = CreateWaitableTimerW(nullptr, FALSE, nullptr);
         }
         return timer;
     }
 
-    void wait(HANDLE timer, const double seconds) {
-        if (!timer || seconds <= 0.0) return;
+void wait(HANDLE timer, const double seconds) {
+    if (!timer || seconds <= 0.0) return;
 
-        LARGE_INTEGER due_time;
-        due_time.QuadPart = -static_cast<LONGLONG>(seconds * 10'000'000.0);
+    LARGE_INTEGER due_time;
+    due_time.QuadPart = -static_cast<LONGLONG>(seconds * 10'000'000.0);
 
-        if (SetWaitableTimer(timer, &due_time, 0, nullptr, nullptr, FALSE)) {
-            WaitForSingleObject(timer, INFINITE);
-        }
+    if (SetWaitableTimer(timer, &due_time, 0, nullptr, nullptr, FALSE)) {
+        WaitForSingleObject(timer, INFINITE);
     }
+}
 }
 #endif
 

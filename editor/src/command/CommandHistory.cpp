@@ -100,13 +100,15 @@ namespace editor {
 
         if (current_index_ < history_.size()) {
             history_.erase(history_.begin() + static_cast<std::ptrdiff_t>(current_index_), history_.end());
-            if (clean_index_ && *clean_index_ >= current_index_) {
+            if (clean_index_&& * clean_index_ >= current_index_)
+            {
                 clean_index_ = std::nullopt;
             }
         }
 
         if (current_index_ > 0 && history_[current_index_ - 1]->merge(*transaction)) {
-            if (clean_index_ && *clean_index_ == current_index_) {
+            if (clean_index_&& * clean_index_ == current_index_)
+            {
                 clean_index_ = std::nullopt;
             }
             return;

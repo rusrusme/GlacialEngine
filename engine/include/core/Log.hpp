@@ -47,8 +47,8 @@ namespace engine {
         std::string to_lowercase(std::string str);
         std::string to_uppercase(std::string str);
         // In-place
-        void to_lowercase_inplace(std::string& str);
-        void to_uppercase_inplace(std::string& str);
+        void to_lowercase_inplace(std::string & str);
+        void to_uppercase_inplace(std::string & str);
     }
 }
 

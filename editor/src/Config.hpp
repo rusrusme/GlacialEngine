@@ -42,7 +42,7 @@ namespace editor::config {
         s_is_loaded = true;
     }
 
-    template <typename T>
+    template<typename T>
     T get_value(const std::string& key, const T default_value = T{}) {
         if (!s_is_loaded) load();
 
@@ -98,7 +98,7 @@ namespace editor::config {
         return default_value;
     }
 
-    template <typename T>
+    template<typename T>
     void set_value(const std::string& key, const T& value) {
         if constexpr (std::is_same_v<T, std::string>) {
             s_config_cache[key] = value;

@@ -29,13 +29,14 @@ namespace editor {
         float grid_scale{1.0f};
         float fade_distance{150.0f};
     };
+
     static_assert(sizeof(GridUniformData) % 16 == 0, "GridUniformData must be 16-byte aligned");
 
     class ViewportGrid {
     public:
         void init(SystemContext& context);
-        void render(SystemContext& context, 
-                    const Camera& camera, 
+        void render(SystemContext& context,
+                    const Camera& camera,
                     Framebuffer* target_framebuffer = nullptr);
 
         void set_scale(float scale) { scale_ = scale; }

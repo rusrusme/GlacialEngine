@@ -123,7 +123,7 @@ namespace editor {
                     auto& history = context.get<CommandHistory>();
                     Transaction tx("Transform Entity", history);
                     history.record(std::make_unique<ChangeTransformCommand>(entity.uuid(), initial_transform_, tc), context);
-                    }
+                }
             }
             was_using_gizmo_ = false;
         }

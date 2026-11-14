@@ -42,7 +42,8 @@ namespace engine {
         glEnable(GL_MULTISAMPLE);
     }
 
-    void GLDevice::shutdown() { /* Placeholder for future */ }
+    void GLDevice::shutdown() { /* Placeholder for future */
+    }
 
     // Factory Implementationen
     Unique<GLVertexBuffer> GLDevice::create_vertex_buffer(size_t size, const void* data) const {

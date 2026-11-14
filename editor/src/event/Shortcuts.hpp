@@ -62,8 +62,8 @@ namespace editor {
                          KeyModifier modifiers = None,
                          ShortcutContext context = ShortcutContext::Global);
         static std::optional<Action> find_action(KeyCode key,
-                                                       KeyModifier active_modifier = None,
-                                                       ShortcutContext current_context = ShortcutContext::Global);
+                                                 KeyModifier active_modifier = None,
+                                                 ShortcutContext current_context = ShortcutContext::Global);
 
         static std::string_view text(Action action);
 

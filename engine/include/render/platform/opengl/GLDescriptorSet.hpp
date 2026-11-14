@@ -73,5 +73,4 @@ namespace engine {
         Vector<TextureBinding> texture_bindings_;
         Vector<ImageBinding> image_bindings_;
     };
-
 }

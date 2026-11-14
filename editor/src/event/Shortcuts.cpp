@@ -9,10 +9,10 @@
 
 namespace editor {
     void Shortcuts::bind(Action action,
-                               std::string_view name,
-                               KeyCode key,
-                               KeyModifier modifiers,
-                               ShortcutContext context) {
+                         std::string_view name,
+                         KeyCode key,
+                         KeyModifier modifiers,
+                         ShortcutContext context) {
         for (const auto& existing : s_bindings) {
             if (existing.key == key && existing.modifiers == modifiers) {
                 if (existing.context == context) {
@@ -38,8 +38,8 @@ namespace editor {
     }
 
     std::optional<Action> Shortcuts::find_action(KeyCode key,
-                                                             KeyModifier active_modifier,
-                                                             ShortcutContext current_context) {
+                                                 KeyModifier active_modifier,
+                                                 ShortcutContext current_context) {
         const KeyBinding* global_candidate = nullptr;
 
         for (const auto& binding : s_bindings) {

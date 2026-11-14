@@ -49,6 +49,6 @@ namespace editor {
     }
 
     std::unique_ptr<Command> CommandBatch::clone() const {
-        return std::make_unique<CommandBatch>(*this);
+        return std::make_unique < CommandBatch > (*this);
     }
 }

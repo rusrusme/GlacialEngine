@@ -21,7 +21,7 @@ namespace engine {
     #error "Unsupported Window Backend"
     #endif
 
-    using EventCallbackFunc = std::function<void(Event&)>;
+    using EventCallbackFunc = std::function<void(Event &)>;
 
     struct WindowNativeData {
         std::string title;

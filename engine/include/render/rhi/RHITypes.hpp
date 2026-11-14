@@ -101,9 +101,9 @@ namespace engine {
     // GShader does not support set = X
 
     // enum class DescriptorSetIndex : uint32_t {
-        // Frame    = 0, // Set 0: Per-Frame Uniforms (FrameData UBO, Time, View/Proj)
-        // Pass     = 1, // Set 1: Per-Pass Resources (Shadow Maps, G-Buffers, Light Lists)
-        // Material = 2  // Set 2: Per-Material Data (Albedo, Normal, Roughness)
+    // Frame    = 0, // Set 0: Per-Frame Uniforms (FrameData UBO, Time, View/Proj)
+    // Pass     = 1, // Set 1: Per-Pass Resources (Shadow Maps, G-Buffers, Light Lists)
+    // Material = 2  // Set 2: Per-Material Data (Albedo, Normal, Roughness)
     // };
 
     struct DrawArraysIndirectCommand {

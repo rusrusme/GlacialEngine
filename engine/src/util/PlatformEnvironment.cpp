@@ -30,7 +30,7 @@ namespace engine::platform {
             "call \"%i\\VC\\Auxiliary\\Build\\vcvars64.bat\" >nul 2>&1 && set"
             ")\"";
 
-        std::array<char, 512> buffer{};
+        std::array < char, 512 > buffer{};
         std::string result;
 
         std::unique_ptr<FILE, decltype(&_pclose)> pipe(_popen(cmd, "r"), _pclose);

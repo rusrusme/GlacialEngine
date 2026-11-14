@@ -201,7 +201,7 @@ namespace engine {
         // asset_manager_.init();
 
         // context_ = std::make_unique<SystemContext>(
-            // Spezifischer Kontext ohne Fenster-/Render-Referenz
+        // Spezifischer Kontext ohne Fenster-/Render-Referenz
         // );
 
         init(*context_);

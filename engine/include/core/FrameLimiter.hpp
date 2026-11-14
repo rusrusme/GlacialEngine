@@ -11,8 +11,8 @@ namespace engine {
         FrameLimiter();
         ~FrameLimiter();
 
-        FrameLimiter(const FrameLimiter &) = delete;
-        FrameLimiter & operator = (const FrameLimiter &) = delete;
+        FrameLimiter(const FrameLimiter&) = delete;
+        FrameLimiter& operator =(const FrameLimiter&) = delete;
 
         void limit();
 

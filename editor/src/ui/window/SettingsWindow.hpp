@@ -5,8 +5,6 @@
 
 #pragma once
 
-
-
 #include "ui/UIComponent.hpp"
 
 namespace editor {

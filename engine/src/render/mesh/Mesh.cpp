@@ -88,7 +88,7 @@ namespace engine {
             20, 21, 22, 22, 23, 20  // Left
         };
 
-        return std::make_shared<Mesh>(device, vertices, indices);
+        return std::make_shared < Mesh > (device, vertices, indices);
     }
 
     Shared<Mesh> Mesh::create_plane(const RHIDevice& device) {
@@ -105,7 +105,7 @@ namespace engine {
             2, 3, 0
         };
 
-        return std::make_shared<Mesh>(device, vertices, indices);
+        return std::make_shared < Mesh > (device, vertices, indices);
     }
 
     Shared<Mesh> Mesh::create_circle(const RHIDevice& device, uint32_t segments) {
@@ -154,7 +154,7 @@ namespace engine {
             indices.push_back(next);
         }
 
-        return std::make_shared<Mesh>(device, vertices, indices);
+        return std::make_shared < Mesh > (device, vertices, indices);
     }
 
     Shared<Mesh> Mesh::create_sphere(const RHIDevice& device, uint32_t latitude_segments, uint32_t longitude_segments) {
@@ -214,7 +214,7 @@ namespace engine {
             }
         }
 
-        return std::make_shared<Mesh>(device, vertices, indices);
+        return std::make_shared < Mesh > (device, vertices, indices);
     }
 
     Shared<Mesh> Mesh::create_cylinder(const RHIDevice& device, uint32_t segments) {
@@ -329,7 +329,7 @@ namespace engine {
             indices.push_back(bottom_ring_start + i);
         }
 
-        return std::make_shared<Mesh>(device, vertices, indices);
+        return std::make_shared < Mesh > (device, vertices, indices);
     }
 
     Shared<Mesh> Mesh::create_pyramid(const RHIDevice& device) {
@@ -380,6 +380,6 @@ namespace engine {
             13, 14, 15
         };
 
-        return std::make_shared<Mesh>(device, vertices, indices);
+        return std::make_shared < Mesh > (device, vertices, indices);
     }
 }

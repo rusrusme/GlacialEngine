@@ -12,9 +12,9 @@
 
 namespace engine {
     Window::Window(std::string title, const AppSpecs& specs) : data_{
-        .title  = std::move(title),
-        .width  = config::video::WINDOW_WIDTH,
-        .height = config::video::WINDOW_HEIGHT,
+        .title           = std::move(title),
+        .width           = config::video::WINDOW_WIDTH,
+        .height          = config::video::WINDOW_HEIGHT,
         .custom_titlebar = specs.custom_titlebar
     } {
         CORE_INFO("Creating window: '{0}' ({1}x{2})", data_.title, data_.width, data_.height);

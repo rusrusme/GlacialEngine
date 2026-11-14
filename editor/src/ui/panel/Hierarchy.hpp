@@ -18,7 +18,8 @@ namespace editor {
             selected_entity = entity;
             if (selected_entity && selected_entity.has_component<IDComponent>()) {
                 selected_uuid = selected_entity.get_component<IDComponent>().id;
-            } else {
+            }
+            else {
                 selected_uuid = 0;
             }
         }

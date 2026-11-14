@@ -27,7 +27,7 @@ namespace editor {
         bool sync_project_directory(SystemContext& context);
 
         [[nodiscard]] ShortcutContext shortcut_context() const override { return ShortcutContext::AssetBrowser; }
-        
+
     private:
         void render_header();
         void render_assets_view(SystemContext& context);

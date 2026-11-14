@@ -17,7 +17,7 @@ namespace engine {
 
         const Vector<uint8_t> bin = gshader::GShaderCompiler::compile_source(source, active_backend);
         if (bin.empty()) {
-            return {.valid = false, .error_message = "Shader compilation failed for " + name };
+            return {.valid = false, .error_message = "Shader compilation failed for " + name};
         }
         return GShaderLoader::load_from_memory(bin);
     }
@@ -25,13 +25,13 @@ namespace engine {
     LoadedShaderData ShaderCompiler::compile_file(const std::filesystem::path& source) {
         if (!std::filesystem::exists(source)) {
             CORE_ERROR("[ShaderCompiler] File does not exist: '{}'", source.string());
-            return { .valid = false, .error_message = "File does not exist: " + source.string() };
+            return {.valid = false, .error_message = "File does not exist: " + source.string()};
         }
 
         std::ifstream file(source);
         if (!file.is_open()) {
             CORE_ERROR("[ShaderCompiler] Failed to open file: '{}'", source.string());
-            return { .valid = false, .error_message = "Failed to open file: " + source.string() };
+            return {.valid = false, .error_message = "Failed to open file: " + source.string()};
         }
 
         const std::string content((std::istreambuf_iterator(file)), std::istreambuf_iterator<char>());
@@ -39,17 +39,17 @@ namespace engine {
 
         const Vector<uint8_t> bin = gshader::GShaderCompiler::compile_source(content, active_backend, source.parent_path());
         if (bin.empty()) {
-            return { .valid = false, .error_message = "Shader compilation failed for " + source.string() };
+            return {.valid = false, .error_message = "Shader compilation failed for " + source.string()};
         }
         return GShaderLoader::load_from_memory(bin);
     }
 
     gshader::RenderBackend ShaderCompiler::native_backend(const RendererBackend backend) {
         switch (backend) {
-            case RendererBackend::OpenGL: return gshader::RenderBackend::OpenGL;
-            case RendererBackend::Vulkan: return gshader::RenderBackend::Vulkan;
-            case RendererBackend::DX12:   return gshader::RenderBackend::DX12;
-            default:                      return gshader::RenderBackend::OpenGL;
+            case RendererBackend::OpenGL : return gshader::RenderBackend::OpenGL;
+            case RendererBackend::Vulkan : return gshader::RenderBackend::Vulkan;
+            case RendererBackend::DX12 : return gshader::RenderBackend::DX12;
+            default : return gshader::RenderBackend::OpenGL;
         }
     }
 }

@@ -81,17 +81,23 @@ namespace engine {
             std::shared_ptr<Mesh> primitive = nullptr;
             if (path_str == "primitive://cube") {
                 primitive = Mesh::create_cube(*device_);
-            } else if (path_str == "primitive://plane") {
+            }
+            else if (path_str == "primitive://plane") {
                 primitive = Mesh::create_plane(*device_);
-            } else if (path_str == "primitive://circle") {
+            }
+            else if (path_str == "primitive://circle") {
                 primitive = Mesh::create_circle(*device_);
-            } else if (path_str == "primitive://sphere") {
+            }
+            else if (path_str == "primitive://sphere") {
                 primitive = Mesh::create_sphere(*device_);
-            } else if (path_str == "primitive://cylinder") {
+            }
+            else if (path_str == "primitive://cylinder") {
                 primitive = Mesh::create_cylinder(*device_);
-            } else if (path_str == "primitive://pyramid") {
+            }
+            else if (path_str == "primitive://pyramid") {
                 primitive = Mesh::create_pyramid(*device_);
-            } else {
+            }
+            else {
                 CORE_ERROR("[AssetManager] Unknown primitive type: '{0}'", path_str);
                 return nullptr;
             }

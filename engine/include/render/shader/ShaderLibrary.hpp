@@ -16,10 +16,12 @@
 namespace engine {
     struct StringHash {
         using is_transparent = void;
+
         size_t operator()(std::string_view sv) const {
             return std::hash<std::string_view>{}(sv);
         }
     };
+
     using ShaderMap = std::unordered_map<std::string, Shared<Shader>, StringHash, std::equal_to<>>;
 
     class ShaderLibrary {

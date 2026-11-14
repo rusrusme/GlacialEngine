@@ -72,4 +72,4 @@ target_compile_definitions(Editor PRIVATE ENGINE_DIR="${CMAKE_SOURCE_DIR}")
 
 if (TARGET Scripts)
     add_dependencies(Editor Scripts)
-endif()
+endif ()
