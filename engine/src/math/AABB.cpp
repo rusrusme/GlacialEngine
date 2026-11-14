@@ -3,7 +3,7 @@
 // All rights reserved.
 //
 
-#include "physics/AABB.hpp"
+#include "math/AABB.hpp"
 
 #include "math/Ray.hpp"
 

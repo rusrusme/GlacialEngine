@@ -10,7 +10,7 @@
 #include <string>
 #include <glm/glm.hpp>
 
-#include "physics/AABB.hpp"
+#include "math/AABB.hpp"
 #include "render/rhi/Buffer.hpp"
 #include "render/rhi/BufferLayout.hpp"
 #include "render/rhi/RHIDevice.hpp"
