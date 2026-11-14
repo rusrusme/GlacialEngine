@@ -1,5 +1,4 @@
-# templates/default/CMakeLists.txt
-cmake_minimum_required(VERSION 3.20)
+cmake_minimum_required(VERSION 3.21)
 project(${PROJECT_NAME} LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 20)
@@ -10,7 +9,14 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/bin")
 set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/bin")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/bin")
 
-add_subdirectory(basis)
+include(FetchContent)
+FetchContent_Declare(
+        GlacialEngine
+        GIT_REPOSITORY https://github.com/rusrusme/GlacialEngine.git
+        GIT_TAG dev
+        GIT_SHALLOW TRUE
+)
+FetchContent_MakeAvailable(GlacialEngine)
 
 file(GLOB_RECURSE GAME_SOURCES CONFIGURE_DEPENDS "src/*.cpp" "src/*.hpp" "src/*.h")
 
@@ -20,7 +26,4 @@ add_executable(${PROJECT_NAME} ${GAME_SOURCES})
 target_include_directories(${PROJECT_NAME} PRIVATE src)
 
 # Link against engine core
-target_link_libraries(${PROJECT_NAME} PRIVATE BasisEngine::Engine)
-
-# Copy game assets post-build
-link_assets(${PROJECT_NAME} "${CMAKE_CURRENT_SOURCE_DIR}/assets")
+target_link_libraries(${PROJECT_NAME} PRIVATE Glacial::Engine)

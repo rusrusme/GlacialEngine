@@ -6,7 +6,6 @@
 #pragma once
 
 #include "core/Layer.hpp"
-#include "project/scene/system/CameraSystem.hpp"
 
 class GameLayer : public engine::Layer {
 public:
@@ -15,7 +14,4 @@ public:
     void on_update(engine::SystemContext& context, float delta_time) override;
     void on_render(engine::SystemContext& context, float delta_time) override;
     void on_event(engine::SystemContext& context, engine::Event& event) override;
-
-private:
-    engine::CameraSystem camera_system_;
 };

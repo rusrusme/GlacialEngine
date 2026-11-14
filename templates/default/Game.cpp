@@ -5,14 +5,16 @@
 
 #include "Game.hpp"
 
+#include <GlacialEngine.hpp>
+
 #include "GameLayer.hpp"
 
 Game::Game() : Application("Game") {
-    auto game_layer = std::make_unique<GameLayer>();
-    push_layer(std::move(game_layer));
+    push_layer(std::make_unique<GameLayer>());
 }
 
-Game::~Game() = default;
+void Game::init(engine::SystemContext& context) {
+}
 
 int main() {
     Game game;

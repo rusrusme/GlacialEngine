@@ -10,5 +10,8 @@
 class Game : public engine::Application {
 public:
     Game();
-    ~Game() override;
+
+protected:
+    void init(engine::SystemContext& context) override;
 };
+
