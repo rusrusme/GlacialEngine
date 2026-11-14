@@ -7,7 +7,7 @@
 
 #include <filesystem>
 
-#include "AssetType.hpp"
+#include "asset/AssetType.hpp"
 
 namespace engine {
     class MetaFileHandler {

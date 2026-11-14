@@ -3,7 +3,7 @@
 // All rights reserved.
 //
 
-#include "asset/MetafileHandler.hpp"
+#include "MetafileHandler.hpp"
 #include <fstream>
 
 #include "core/Log.hpp"

@@ -5,7 +5,7 @@
 
 #include <asset/AssetManager.hpp>
 
-#include "asset/MetafileHandler.hpp"
+#include "MetafileHandler.hpp"
 #include "core/Log.hpp"
 #include "render/mesh/MeshLoader.hpp"
 
