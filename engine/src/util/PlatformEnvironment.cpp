@@ -3,7 +3,7 @@
 // All rights reserved.
 //
 
-#include "util/PlatformEnvironment.hpp"
+#include "PlatformEnvironment.hpp"
 
 #if defined(_WIN32)
 #include <windows.h>
