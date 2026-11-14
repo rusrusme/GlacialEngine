@@ -8,16 +8,24 @@
 #include <functional>
 
 #include "core/Config.hpp"
-#include "core/WindowSystem.hpp"
 
 #include "event/WindowEvents.hpp"
 
 namespace engine {
     struct AppSpecs;
 
+    struct WindowNativeData {
+        std::string title;
+        int width = 0;
+        int height = 0;
+        std::function<void(Event&)> event_callback = nullptr;
+        bool titlebar_hovered = false;
+        bool custom_titlebar = false;
+    };
+
     class Window {
     public:
-        using EventCallbackFunc = std::function<void(Event &)>;
+        using EventCallbackFunc = std::function<void(Event&)>;
 
         explicit Window(std::string title, const AppSpecs& specs);
         ~Window();

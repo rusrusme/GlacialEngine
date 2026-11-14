@@ -5,9 +5,6 @@
 
 #include "debug/ImguiSystem.hpp"
 
-#include "input/Input.hpp"
-#include "input/KeyCodes.hpp"
-
 #ifdef ENABLE_IMGUI
 
 #if defined(WINDOW_BACKEND_GLFW)
@@ -27,10 +24,13 @@
 #endif
 
 #include "core/Application.hpp"
+#include "core/WindowSystem.hpp"
 #include "debug/ImguiPlatform.hpp"
 #include "event/Event.hpp"
 #include "event/KeyEvents.hpp"
 #include "event/MouseEvents.hpp"
+#include "input/Input.hpp"
+#include "input/KeyCodes.hpp"
 
 namespace engine {
     void ImguiSystem::on_attach(void* window, const char* glsl_version) {

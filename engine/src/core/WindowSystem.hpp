@@ -6,11 +6,12 @@
 #pragma once
 
 #include <functional>
-#include <string>
 
 #include "event/Event.hpp"
 
 namespace engine {
+    struct WindowNativeData;
+
     enum class GraphicsFramework { GLFW, SDL };
 
     #if defined(WINDOW_BACKEND_GLFW)
@@ -22,15 +23,6 @@ namespace engine {
     #endif
 
     using EventCallbackFunc = std::function<void(Event &)>;
-
-    struct WindowNativeData {
-        std::string title;
-        int width = 0;
-        int height = 0;
-        EventCallbackFunc event_callback = nullptr;
-        bool titlebar_hovered = false;
-        bool custom_titlebar = false;
-    };
 
     namespace window {
         bool init(GraphicsFramework framework = GraphicsFramework::GLFW);

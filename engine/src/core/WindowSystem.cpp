@@ -3,11 +3,12 @@
 // All rights reserved.
 //
 
-#include "core/WindowSystem.hpp"
+#include "WindowSystem.hpp"
 
 #include <GLFW/glfw3.h>
 
 #include "core/Log.hpp"
+#include "core/Window.hpp"
 #include "event/KeyEvents.hpp"
 #include "event/MouseEvents.hpp"
 #include "event/WindowEvents.hpp"

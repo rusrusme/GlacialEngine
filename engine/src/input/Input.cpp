@@ -5,6 +5,7 @@
 
 #include "input/Input.hpp"
 #include "core/Application.hpp"
+#include "core/WindowSystem.hpp"
 
 namespace engine {
     bool Input::mouse_captured() {

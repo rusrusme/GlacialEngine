@@ -8,11 +8,11 @@
 
 #include "core/Application.hpp"
 
+#include "WindowSystem.hpp"
 #include "core/Config.hpp"
 #include "core/FrameLimiter.hpp"
 #include "core/Log.hpp"
 #include "core/Timestep.hpp"
-#include "core/WindowSystem.hpp"
 #include "debug/ImguiLayer.hpp"
 #include "event/EventQueue.hpp"
 #include "event/WindowEvents.hpp"

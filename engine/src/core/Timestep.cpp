@@ -7,7 +7,7 @@
 
 #include <GLFW/glfw3.h>
 
-#include "core/WindowSystem.hpp"
+#include "WindowSystem.hpp"
 
 namespace engine {
     float Clock::update() {
