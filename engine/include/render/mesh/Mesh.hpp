@@ -6,6 +6,7 @@
 #pragma once
 
 #include <cstdint>
+#include <span>
 #include <string>
 #include <glm/glm.hpp>
 

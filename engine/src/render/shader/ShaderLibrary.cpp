@@ -5,10 +5,10 @@
 
 #include "render/ShaderLibrary.hpp"
 
-#include "core/Log.hpp"
-
 #include <mutex>
 #include <ranges>
+
+#include "core/Log.hpp"
 
 namespace engine {
     void ShaderLibrary::add(const std::string& name, const Shared<Shader>& shader) {

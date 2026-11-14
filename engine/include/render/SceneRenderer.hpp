@@ -5,25 +5,28 @@
 
 #pragma once
 
+#include <memory>
 #include <glm/glm.hpp>
 
 #include "render/RenderObject.hpp"
 #include "render/camera/Camera.hpp"
-#include "render/pass/MainOpaquePass.hpp"
+#include "render/rhi/Buffer.hpp"
 #include "render/rhi/CommandBuffer.hpp"
+#include "render/rhi/DescriptorSet.hpp"
 #include "render/rhi/Framebuffer.hpp"
 #include "render/rhi/RHIDevice.hpp"
 #include "render/rhi/Texture.hpp"
 
 namespace engine {
+    class MainOpaquePass;
     struct FrameUniformData;
     class Scene;
     struct SystemContext;
 
     class SceneRenderer {
     public:
-        SceneRenderer() = default;
-        ~SceneRenderer() = default;
+        SceneRenderer();
+        ~SceneRenderer();
 
         SceneRenderer(const SceneRenderer&) = delete;
         SceneRenderer& operator=(const SceneRenderer&) = delete;
@@ -53,7 +56,7 @@ namespace engine {
                           Framebuffer* target_framebuffer = nullptr);
 
     private:
-        MainOpaquePass opaque_pass_{};
+        std::unique_ptr<MainOpaquePass> opaque_pass_{};
 
         Unique<UniformBuffer> frame_ubo_{nullptr};
         Unique<DescriptorSet> frame_descriptor_set_{nullptr};

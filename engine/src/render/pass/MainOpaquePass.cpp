@@ -3,7 +3,7 @@
 // All rights reserved.
 //
 
-#include "render/pass/MainOpaquePass.hpp"
+#include "MainOpaquePass.hpp"
 
 #include "render/ShaderData.hpp"
 #include "render/mesh/Mesh.hpp"

@@ -5,9 +5,8 @@
 
 #include "ShaderCompiler.hpp"
 
-#include "gshader/GShaderCompiler.hpp"
-
 #include "core/Log.hpp"
+#include "gshader/GShaderCompiler.hpp"
 #include "render/rhi/RHIDevice.hpp"
 #include "render/rhi/RHITypes.hpp"
 

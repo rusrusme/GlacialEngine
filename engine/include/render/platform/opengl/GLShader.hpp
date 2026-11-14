@@ -9,9 +9,9 @@
 #include <string>
 #include <unordered_map>
 
-#include "render/shader/GShaderLoader.hpp"
-
 namespace engine {
+    struct LoadedShaderData;
+
     class GLShader {
     public:
         GLShader() = default;

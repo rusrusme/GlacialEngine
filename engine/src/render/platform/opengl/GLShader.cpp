@@ -12,6 +12,7 @@
 
 #include "core/Log.hpp"
 #include "render/rhi/RHITypes.hpp"
+#include "render/shader/GShaderLoader.hpp"
 #include "render/shader/ShaderCompiler.hpp"
 
 namespace engine {

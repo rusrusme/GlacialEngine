@@ -11,7 +11,7 @@
 #include <string>
 #include <string_view>
 
-#include <gshader/GShader.hpp>
+#include "gshader/GShader.hpp"
 #include "render/rhi/RHITypes.hpp"
 
 namespace engine {

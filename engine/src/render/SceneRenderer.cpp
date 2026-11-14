@@ -9,12 +9,19 @@
 #include "core/SystemContext.hpp"
 #include "project/scene/ecs/Entity.hpp"
 #include "render/ShaderData.hpp"
+#include "render/pass/MainOpaquePass.hpp"
 #include "render/rhi/RenderContext.hpp"
 #include "util/Instrumentor.hpp"
 
 namespace engine {
+    SceneRenderer::SceneRenderer()
+        : opaque_pass_(std::make_unique<MainOpaquePass>()) {
+    }
+
+    SceneRenderer::~SceneRenderer() = default;
+
     void SceneRenderer::init(const RHIDevice& device) {
-        opaque_pass_.init(device);
+        opaque_pass_->init(device);
 
         frame_ubo_ = device.create_uniform_buffer(sizeof(FrameUniformData), 0);
         frame_descriptor_set_ = device.create_descriptor_set();
@@ -24,7 +31,7 @@ namespace engine {
     }
 
     void SceneRenderer::shutdown() {
-        opaque_pass_.shutdown();
+        opaque_pass_->shutdown();
 
         frame_descriptor_set_.reset();
         frame_ubo_.reset();
@@ -37,7 +44,7 @@ namespace engine {
     }
 
     void SceneRenderer::end_scene(CommandBuffer& cb, Framebuffer& target_framebuffer) {
-        opaque_pass_.execute(cb, target_framebuffer, *frame_descriptor_set_, opaque_queue_);
+        opaque_pass_->execute(cb, target_framebuffer, *frame_descriptor_set_, opaque_queue_);
     }
 
     void SceneRenderer::submit(const RenderObject& object) {
