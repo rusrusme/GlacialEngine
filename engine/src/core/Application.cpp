@@ -3,14 +3,16 @@
 // All rights reserved.
 //
 
+#include "core/Application.hpp"
+
 #include <ranges>
 #include <utility>
 
-#include "core/Application.hpp"
-
+#include "FrameLimiter.hpp"
 #include "WindowSystem.hpp"
 #include "core/Config.hpp"
-#include "FrameLimiter.hpp"
+#include "core/Layer.hpp"
+#include "core/LayerStack.hpp"
 #include "core/Log.hpp"
 #include "core/Timestep.hpp"
 #include "debug/ImguiLayer.hpp"
@@ -22,10 +24,14 @@
 #include "util/PlatformEnvironment.hpp"
 
 namespace engine {
-    Application::Application(std::string title) : title_(std::move(title)) {
+    Application::Application(std::string title)
+        : title_(std::move(title)),
+          layers_(std::make_unique<LayerStack>()) {
         PROFILE_BEGIN_SESSION("Engine Profile");
         instance_ = this;
     }
+
+    Application::~Application() = default;
 
     int Application::run() {
         PROFILE_FUNCTION();
@@ -81,7 +87,7 @@ namespace engine {
         PROFILE_END();
 
         CORE_INFO("Attaching application layers");
-        for (const auto& layer : layers_) {
+        for (const auto& layer : *layers_) {
             layer->on_attach(*context_);
         }
 
@@ -100,7 +106,7 @@ namespace engine {
             audio_system_.on_update(*context_, delta_time);
 
             PROFILE_START("Application::run - Update");
-            for (const auto& layer : layers_) {
+            for (const auto& layer : *layers_) {
                 layer->on_update(*context_, delta_time);
             }
             PROFILE_END();
@@ -109,7 +115,7 @@ namespace engine {
             // Render pass
             PROFILE_START("Application::run - Render");
             render_context_.begin_frame();
-            for (const auto& layer : layers_) {
+            for (const auto& layer : *layers_) {
                 layer->on_render(*context_, delta_time);
             }
             render_context_.end_frame();
@@ -129,7 +135,7 @@ namespace engine {
         }
         // In reverse
         CORE_INFO("Detaching application layers");
-        for (auto& layer : std::views::reverse(layers_)) {
+        for (auto& layer : std::views::reverse(*layers_)) {
             layer->on_detach(*context_);
         }
 
@@ -152,7 +158,7 @@ namespace engine {
         });
 
         // From top to bottom
-        for (auto& layer : std::views::reverse(layers_)) {
+        for (auto& layer : std::views::reverse(*layers_)) {
             if (event.handled) {
                 break; // Event consumed
             }
@@ -161,11 +167,11 @@ namespace engine {
     }
 
     void Application::push_layer(std::unique_ptr<Layer> layer) {
-        layers_.push_layer(std::move(layer));
+        layers_->push_layer(std::move(layer));
     }
 
     void Application::push_overlay(std::unique_ptr<Layer> overlay) {
-        layers_.push_overlay(std::move(overlay));
+        layers_->push_overlay(std::move(overlay));
     }
 
     void Application::shutdown() {
@@ -207,7 +213,7 @@ namespace engine {
         init(*context_);
 
         CORE_INFO("Attaching server layers");
-        for (const auto& layer : layers_) {
+        for (const auto& layer : *layers_) {
             layer->on_attach(*context_);
         }
 
@@ -215,7 +221,7 @@ namespace engine {
         while (running_) {
             const float delta_time = clock.update();
 
-            for (const auto& layer : layers_) {
+            for (const auto& layer : *layers_) {
                 layer->on_update(*context_, delta_time);
             }
 

@@ -5,9 +5,10 @@
 
 #pragma once
 
+#include <string>
+
 #include "asset/AssetManager.hpp"
 #include "audio/AudioSystem.hpp"
-#include "core/LayerStack.hpp"
 #include "core/SystemContext.hpp"
 #include "core/Window.hpp"
 #include "project/scene/SceneManager.hpp"
@@ -16,6 +17,9 @@
 #include "render/shader/ShaderLibrary.hpp"
 
 namespace engine {
+    class Layer;
+    class LayerStack;
+
     struct AppSpecs {
         bool custom_titlebar{false};
         bool headless{false};
@@ -24,7 +28,7 @@ namespace engine {
     class Application {
     public:
         explicit Application(std::string title = config::ENGINE_TITLE);
-        virtual ~Application() = default;
+        virtual ~Application();
 
         int run();
         void close() { running_ = false; }
@@ -49,7 +53,7 @@ namespace engine {
         std::string title_;
         std::unique_ptr<Window> window_;
 
-        LayerStack layers_;
+        std::unique_ptr<LayerStack> layers_;
         AppSpecs specs_;
 
         // Core Subsystems
