@@ -3,7 +3,7 @@
 // All rights reserved.
 //
 
-#include "render/camera/CameraSystem.hpp"
+#include "CameraSystem.hpp"
 
 #include "event/Event.hpp"
 #include "event/WindowEvents.hpp"
