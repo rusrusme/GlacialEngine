@@ -5,6 +5,10 @@
 
 #pragma once
 
+#include <filesystem>
+#include <memory>
+#include <string>
+
 namespace engine {
     struct ProjectConfig {
         std::string name{};

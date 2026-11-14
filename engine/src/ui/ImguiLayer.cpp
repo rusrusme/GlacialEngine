@@ -17,7 +17,11 @@ namespace engine {
         #endif
     }
 
-    void ImguiLayer::on_detach(SystemContext& context) { ImguiSystem::on_detach(); }
+    void ImguiLayer::on_detach(SystemContext& context) {
+        #ifdef ENABLE_IMGUI
+        ImguiSystem::on_detach();
+        #endif
+    }
 
     void ImguiLayer::on_render(SystemContext& context, float delta_time) {
         #ifdef ENABLE_IMGUI
@@ -35,5 +39,9 @@ namespace engine {
         #endif
     }
 
-    void ImguiLayer::on_event(SystemContext& context, Event& event) { ImguiSystem::on_event(context, event); }
+    void ImguiLayer::on_event(SystemContext& context, Event& event) {
+        #ifdef ENABLE_IMGUI
+        ImguiSystem::on_event(context, event);
+        #endif
+    }
 }

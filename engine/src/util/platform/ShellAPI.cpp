@@ -14,12 +14,9 @@
 namespace engine::platform {
     void ShellAPI::open_url(const std::string& url) {
         #if defined(_WIN32)
-        return win32::open_url(url);
+        win32::open_url(url);
         #elif defined(__linux__)
-        // return linux_platform::open_file(filter);
-        return "";
-        #else
-        return "";
+        // TODO: xdg-open
         #endif
     }
 }

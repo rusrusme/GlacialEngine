@@ -10,6 +10,7 @@
 #include "WindowSystem.hpp"
 #include "core/Application.hpp"
 #include "core/Config.hpp"
+#include "core/Log.hpp"
 
 namespace engine {
     Window::Window(std::string title, const AppSpecs& specs) : data_{

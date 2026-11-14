@@ -5,7 +5,7 @@
 
 #pragma once
 
-#include "../../include/core/Layer.hpp"
+#include "core/Layer.hpp"
 
 namespace engine {
     struct SystemContext;
