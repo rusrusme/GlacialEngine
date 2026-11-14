@@ -10,7 +10,7 @@
 
 #include "WindowSystem.hpp"
 #include "core/Config.hpp"
-#include "core/FrameLimiter.hpp"
+#include "FrameLimiter.hpp"
 #include "core/Log.hpp"
 #include "core/Timestep.hpp"
 #include "debug/ImguiLayer.hpp"

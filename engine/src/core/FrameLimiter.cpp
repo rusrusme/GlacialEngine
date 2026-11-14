@@ -3,7 +3,7 @@
 // All rights reserved.
 //
 
-#include "core/FrameLimiter.hpp"
+#include "FrameLimiter.hpp"
 
 #include "core/Config.hpp"
 #include "core/Timestep.hpp"
