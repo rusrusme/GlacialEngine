@@ -6,10 +6,34 @@
 #pragma once
 
 #include "project/scene/Scene.hpp"
-#include "project/scene/SceneState.hpp"
-#include "project/scene/SimulationState.hpp"
 
 namespace engine {
+    enum class SceneState {
+        Edit = 0,
+        Play,
+        Pause
+    };
+
+    class SimulationState {
+    public:
+        SimulationState() = default;;
+        ~SimulationState() = default;;
+
+        void on_update(float delta_time);
+
+        void play();
+        void pause();
+        void stop();
+
+        [[nodiscard]] SceneState state() const;
+        [[nodiscard]] float time() const;
+
+    private:
+        SceneState state_{SceneState::Edit};
+
+        float simulation_time_ = 0.0f;
+    };
+
     class SceneManager {
     public:
         static inline const std::string DEFAULT_SCENE = "Untitled Scene";

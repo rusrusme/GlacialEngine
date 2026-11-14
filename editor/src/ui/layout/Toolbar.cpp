@@ -7,7 +7,6 @@
 
 #include "core/SystemContext.hpp"
 #include "project/scene/SceneManager.hpp"
-#include "project/scene/SceneState.hpp"
 #include "ui/Icons.hpp"
 
 namespace editor {
