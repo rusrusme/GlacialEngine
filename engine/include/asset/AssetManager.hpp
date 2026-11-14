@@ -6,7 +6,6 @@
 #pragma once
 
 #include <filesystem>
-#include <stb_image.h>
 #include <unordered_map>
 
 #include "asset/AssetType.hpp"

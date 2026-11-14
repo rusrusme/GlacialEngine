@@ -3,7 +3,9 @@
 // All rights reserved.
 //
 
-#include <asset/AssetManager.hpp>
+#include "asset/AssetManager.hpp"
+
+#include <stb_image.h>
 
 #include "MetafileHandler.hpp"
 #include "core/Log.hpp"
