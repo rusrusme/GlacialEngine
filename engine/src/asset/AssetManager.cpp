@@ -8,7 +8,6 @@
 #include <asset/MetafileHandler.hpp>
 
 #include "core/Log.hpp"
-#include "render/gpu/TextureSystem.hpp"
 
 namespace engine {
     void AssetManager::scan_directory(const std::filesystem::path& asset_directory) {

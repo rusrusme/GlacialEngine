@@ -3,7 +3,7 @@
 // All rights reserved.
 //
 
-#include "render/gpu/HZBGenerator.hpp"
+#include "HZBGenerator.hpp"
 
 #include <algorithm>
 

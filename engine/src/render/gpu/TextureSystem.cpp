@@ -3,7 +3,7 @@
 // All rights reserved.
 //
 
-#include "render/gpu/TextureSystem.hpp"
+#include "TextureSystem.hpp"
 
 #include <cassert>
 #include <stb_image.h>

@@ -3,7 +3,7 @@
 // All rights reserved.
 //
 
-#include "render/gpu/MaterialSystem.hpp"
+#include "MaterialSystem.hpp"
 
 #include <algorithm>
 #include <cassert>

@@ -3,7 +3,7 @@
 // All rights reserved.
 //
 
-#include "render/gpu/GPUCuller.hpp"
+#include "GPUCuller.hpp"
 
 #include <memory>
 

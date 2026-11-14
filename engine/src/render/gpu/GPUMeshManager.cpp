@@ -3,7 +3,7 @@
 // All rights reserved.
 //
 
-#include "render/gpu/GPUMeshManager.hpp"
+#include "GPUMeshManager.hpp"
 
 #include <cassert>
 #include <glm/geometric.hpp>
