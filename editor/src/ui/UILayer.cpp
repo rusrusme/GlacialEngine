@@ -49,7 +49,7 @@ namespace editor {
             &debug_panel_,
             &viewport_panel_,
             &history_panel_,
-            &rime_panel
+            // &rime_panel
         };
 
         for (auto* component : ui_components_) {
@@ -170,9 +170,9 @@ namespace editor {
                 case Action::ToggleSettings :
                     settings_window_.toggle_visible();
                     return true;
-                case Action::ToggleRime :
-                    rime_panel.toggle_visible();
-                    return true;
+                // case Action::ToggleRime :
+                    // rime_panel.toggle_visible();
+                    // return true;
 
                 case Action::CreateEntity : {
                     hierarchy_panel_.create_entity();
@@ -228,7 +228,7 @@ namespace editor {
         hierarchy_panel_.on_render_ui(context);
         inspector_panel_.on_render_ui(context);
 
-        rime_panel.on_render_ui(context);
+        // rime_panel.on_render_ui(context);
         viewport_panel_.on_render_ui(context);
 
         history_panel_.on_render_ui(context);

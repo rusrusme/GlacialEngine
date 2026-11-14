@@ -41,7 +41,7 @@ namespace editor {
         void on_imgui_render(SystemContext& context, float delta_time) override;
 
     private:
-        std::array<UIComponent*, 12> ui_components_{};
+        std::array<UIComponent*, 11> ui_components_{};
 
         DockspaceLayout layout_;
         Titlebar titlebar_;
@@ -54,7 +54,7 @@ namespace editor {
         DebugPanel debug_panel_;
         ViewportPanel viewport_panel_;
         HistoryPanel history_panel_;
-        RimeEditorPanel rime_panel;
+        // RimeEditorPanel rime_panel;
 
         inline static ImFont* s_code_font = nullptr;
     };
