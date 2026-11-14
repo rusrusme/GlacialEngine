@@ -5,8 +5,8 @@
 
 #include "MainOpaquePass.hpp"
 
+#include "render/Mesh.hpp"
 #include "render/ShaderData.hpp"
-#include "render/mesh/Mesh.hpp"
 
 // TODO if material has double_sided -> pipeline state no cull!
 namespace engine {

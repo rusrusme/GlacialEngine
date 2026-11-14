@@ -10,7 +10,7 @@
 
 #include "asset/AssetType.hpp"
 #include "core/Log.hpp"
-#include "render/mesh/Mesh.hpp"
+#include "render/Mesh.hpp"
 #include "render/rhi/Texture.hpp"
 
 namespace engine {

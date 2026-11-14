@@ -8,7 +8,7 @@
 #include <vector>
 #include <glm/gtc/constants.hpp>
 
-#include "render/mesh/Mesh.hpp"
+#include "render/Mesh.hpp"
 
 namespace engine {
     Mesh::Mesh(

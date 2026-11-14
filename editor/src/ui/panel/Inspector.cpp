@@ -13,7 +13,7 @@
 #include "command/Transaction.hpp"
 #include "core/SystemContext.hpp"
 #include "glm/gtc/type_ptr.hpp"
-#include "render/mesh/Mesh.hpp"
+#include "render/Mesh.hpp"
 #include "ui/panel/Hierarchy.hpp"
 
 namespace {

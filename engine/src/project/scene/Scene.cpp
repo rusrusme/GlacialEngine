@@ -12,7 +12,6 @@
 #include "core/Log.hpp"
 #include "project/scene/ecs/Entity.hpp"
 #include "render/camera/CameraSystem.hpp"
-#include "render/mesh/Mesh.hpp"
 #include "script/ScriptRegistry.hpp"
 #include "util/Instrumentor.hpp"
 
