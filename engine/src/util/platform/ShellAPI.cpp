@@ -3,12 +3,12 @@
 // All rights reserved.
 //
 
-#include "platform/ShellAPI.hpp"
+#include "util/platform/ShellAPI.hpp"
 
 #if defined(_WIN32)
 #include "win32/Win32Shell.hpp"
 #elif defined(__linux__)
-#include "platform/linux/LinuxShell.hpp"
+#include "linux/LinuxShell.hpp"
 #endif
 
 namespace engine::platform {

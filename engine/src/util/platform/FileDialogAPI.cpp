@@ -3,12 +3,12 @@
 // All rights reserved.
 //
 
-#include "platform/FileDialogAPI.hpp"
+#include "util/platform/FileDialogAPI.hpp"
 
 #if defined(_WIN32)
 #include "win32/Win32FileDialog.hpp"
 #elif defined(__linux__)
-#include "platform/linux/LinuxFileDialog.hpp"
+#include "linux/LinuxFileDialog.hpp"
 #endif
 
 namespace engine::platform {

@@ -8,9 +8,9 @@
 #include "core/Application.hpp"
 #include "event/EditorEvents.hpp"
 #include "event/EventQueue.hpp"
-#include "platform/ShellAPI.hpp"
 #include "project/scene/SceneManager.hpp"
 #include "ui/Icons.hpp"
+#include "util/platform/ShellAPI.hpp"
 
 namespace editor {
     void Titlebar::on_init(SystemContext& context) {

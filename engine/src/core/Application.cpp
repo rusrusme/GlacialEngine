@@ -20,7 +20,7 @@
 #include "render/rhi/RenderContext.hpp"
 #include "script/ScriptEngine.hpp"
 #include "util/Instrumentor.hpp"
-#include "util/PlatformEnvironment.hpp"
+#include "util/platform/PlatformEnvironment.hpp"
 
 namespace engine {
     Application::Application(std::string title)

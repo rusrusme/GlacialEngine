@@ -5,6 +5,8 @@
 
 #pragma once
 
+#include <string>
+
 namespace engine::platform {
     class ShellAPI {
     public:
