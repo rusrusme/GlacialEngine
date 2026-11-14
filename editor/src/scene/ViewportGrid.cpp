@@ -6,8 +6,8 @@
 #include "scene/ViewportGrid.hpp"
 
 #include "core/Log.hpp"
+#include "render/ShaderLibrary.hpp"
 #include "render/rhi/RenderContext.hpp"
-#include "render/shader/ShaderLibrary.hpp"
 
 namespace editor {
     void ViewportGrid::init(SystemContext& context) {

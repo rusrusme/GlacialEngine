@@ -3,7 +3,7 @@
 // All rights reserved.
 //
 
-#include "render/shader/GShaderLoader.hpp"
+#include "GShaderLoader.hpp"
 
 #include "render/rhi/RHITypes.hpp"
 

@@ -13,8 +13,8 @@
 #include "core/Window.hpp"
 #include "project/scene/SceneManager.hpp"
 #include "render/SceneRenderer.hpp"
+#include "render/ShaderLibrary.hpp"
 #include "render/rhi/RenderContext.hpp"
-#include "render/shader/ShaderLibrary.hpp"
 
 namespace engine {
     class Layer;

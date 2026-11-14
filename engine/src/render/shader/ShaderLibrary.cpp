@@ -3,7 +3,7 @@
 // All rights reserved.
 //
 
-#include "render/shader/ShaderLibrary.hpp"
+#include "render/ShaderLibrary.hpp"
 
 #include "core/Log.hpp"
 

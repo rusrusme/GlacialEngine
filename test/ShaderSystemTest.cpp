@@ -8,7 +8,7 @@
 #include <cassert>
 
 #include "core/Log.hpp"
-#include "render/shader/ShaderLibrary.hpp"
+#include "render/ShaderLibrary.hpp"
 
 void ShaderTestLayer::on_attach(engine::SystemContext& context) {
     engine::ShaderLibrary shader_lib;

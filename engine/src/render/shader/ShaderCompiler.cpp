@@ -3,7 +3,7 @@
 // All rights reserved.
 //
 
-#include "render/shader/ShaderCompiler.hpp"
+#include "ShaderCompiler.hpp"
 
 #include "gshader/GShaderCompiler.hpp"
 
