@@ -6,7 +6,7 @@
 #define CGLTF_IMPLEMENTATION
 #include <cgltf.h>
 
-#include "render/mesh/MeshLoader.hpp"
+#include "MeshLoader.hpp"
 
 #include <algorithm>
 
