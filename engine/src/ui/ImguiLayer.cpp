@@ -3,9 +3,11 @@
 // All rights reserved.
 //
 
-#include "debug/ImguiLayer.hpp"
+#include "ui/ImguiLayer.hpp"
 
-#include "debug/ImguiSystem.hpp"
+#include "ImguiSystem.hpp"
+#include "core/Window.hpp"
+#include "render/rhi/RenderContext.hpp"
 
 namespace engine {
     void ImguiLayer::on_attach(SystemContext& context) {

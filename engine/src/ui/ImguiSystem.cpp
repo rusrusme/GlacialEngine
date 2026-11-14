@@ -3,7 +3,7 @@
 // All rights reserved.
 //
 
-#include "debug/ImguiSystem.hpp"
+#include "ImguiSystem.hpp"
 
 #ifdef ENABLE_IMGUI
 

@@ -8,8 +8,6 @@
 #include <glm/vec4.hpp>
 
 #include "core/Layer.hpp"
-#include "core/Window.hpp"
-#include "render/rhi/RenderContext.hpp"
 
 struct ImFont;
 
@@ -20,7 +18,7 @@ namespace engine {
     class ImguiLayer : public Layer {
     public:
         ImguiLayer() : Layer("Imgui Layer") {}
-        explicit ImguiLayer(std::string_view name) : Layer(name.data()) {}
+        explicit ImguiLayer(std::string_view name) : Layer(std::string(name)) {}
         ~ImguiLayer() override = default;
 
         void on_attach(SystemContext& context) override;

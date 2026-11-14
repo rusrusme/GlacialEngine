@@ -15,7 +15,6 @@
 #include "core/LayerStack.hpp"
 #include "core/Log.hpp"
 #include "core/Timestep.hpp"
-#include "debug/ImguiLayer.hpp"
 #include "event/EventQueue.hpp"
 #include "event/WindowEvents.hpp"
 #include "render/rhi/RenderContext.hpp"
