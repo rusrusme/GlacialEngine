@@ -25,7 +25,7 @@
 
 #include "core/Application.hpp"
 #include "core/WindowSystem.hpp"
-#include "debug/ImguiPlatform.hpp"
+#include "ImguiPlatform.hpp"
 #include "event/Event.hpp"
 #include "event/KeyEvents.hpp"
 #include "event/MouseEvents.hpp"

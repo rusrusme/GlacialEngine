@@ -5,6 +5,8 @@
 
 #include "debug/ImguiLayer.hpp"
 
+#include "debug/ImguiSystem.hpp"
+
 namespace engine {
     void ImguiLayer::on_attach(SystemContext& context) {
         #ifdef ENABLE_IMGUI
@@ -12,6 +14,8 @@ namespace engine {
         s_font = static_cast<ImFont*>(ImguiSystem::s_font);
         #endif
     }
+
+    void ImguiLayer::on_detach(SystemContext& context) { ImguiSystem::on_detach(); }
 
     void ImguiLayer::on_render(SystemContext& context, float delta_time) {
         #ifdef ENABLE_IMGUI
@@ -28,4 +32,6 @@ namespace engine {
         ImguiSystem::end_frame();
         #endif
     }
+
+    void ImguiLayer::on_event(SystemContext& context, Event& event) { ImguiSystem::on_event(context, event); }
 }

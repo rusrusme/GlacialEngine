@@ -9,7 +9,6 @@
 
 #include "core/Layer.hpp"
 #include "core/Window.hpp"
-#include "debug/ImguiSystem.hpp"
 #include "render/rhi/RenderContext.hpp"
 
 struct ImFont;
@@ -25,13 +24,11 @@ namespace engine {
         ~ImguiLayer() override = default;
 
         void on_attach(SystemContext& context) override;
+        void on_detach(SystemContext& context) override;
 
-        void on_detach(SystemContext& context) override { ImguiSystem::on_detach(); }
         void on_update(SystemContext& context, float delta_time) override {}
-
         void on_render(SystemContext& context, float delta_time) override;
-
-        void on_event(SystemContext& context, Event& event) override { ImguiSystem::on_event(context, event); }
+        void on_event(SystemContext& context, Event& event) override;
 
         void set_clear_backbuffer(bool enable) { clear_depth_and_color_ = enable; }
         void set_clear_color(const glm::vec4& color) { clear_color_ = color; }
