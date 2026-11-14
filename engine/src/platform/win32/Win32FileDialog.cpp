@@ -3,7 +3,7 @@
 // All rights reserved.
 //
 
-#include "platform/win32/Win32FileDialog.hpp"
+#include "Win32FileDialog.hpp"
 
 #ifdef _WIN32
 #include <windows.h>

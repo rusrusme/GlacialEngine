@@ -3,7 +3,7 @@
 // All rights reserved.
 //
 
-#include "platform/win32/Win32Shell.hpp"
+#include "Win32Shell.hpp"
 
 #ifdef _WIN32
 #include <windows.h>

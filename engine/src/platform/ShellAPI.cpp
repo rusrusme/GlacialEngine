@@ -6,7 +6,7 @@
 #include "platform/ShellAPI.hpp"
 
 #if defined(_WIN32)
-#include "platform/win32/Win32Shell.hpp"
+#include "win32/Win32Shell.hpp"
 #elif defined(__linux__)
 #include "platform/linux/LinuxShell.hpp"
 #endif

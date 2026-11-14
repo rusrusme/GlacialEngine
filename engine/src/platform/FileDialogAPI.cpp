@@ -6,7 +6,7 @@
 #include "platform/FileDialogAPI.hpp"
 
 #if defined(_WIN32)
-#include "platform/win32/Win32FileDialog.hpp"
+#include "win32/Win32FileDialog.hpp"
 #elif defined(__linux__)
 #include "platform/linux/LinuxFileDialog.hpp"
 #endif
