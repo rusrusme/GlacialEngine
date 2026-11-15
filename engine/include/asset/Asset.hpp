@@ -55,11 +55,11 @@ namespace engine {
         AssetHandle handle{0};
         AssetType type = Asset::NONE;
         std::filesystem::path filepath;
-        std::filesystem::path shader_source_filepath; // gbs -> gshader
+        std::filesystem::path compiled_filepath; // gbs -> gshader
         bool runtime_only{false};
 
         [[nodiscard]] bool valid() const { return handle != 0 && type.valid(); }
-        [[nodiscard]] bool has_source() const { return !shader_source_filepath.empty(); }
+        [[nodiscard]] bool has_source() const { return !compiled_filepath.empty(); }
     };
 }
 

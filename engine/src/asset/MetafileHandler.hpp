@@ -29,7 +29,7 @@ namespace engine {
         };
 
         static const ExtensionEntry* find_extension(const std::filesystem::path& path);
-        static std::filesystem::path find_shader_source(const std::filesystem::path& compiled_path);
+        static std::filesystem::path find_compiled_shader(const std::filesystem::path& source_path);
 
         inline static std::unordered_map<std::string, ExtensionEntry> extensions_{};
         inline static bool defaults_registered{false};

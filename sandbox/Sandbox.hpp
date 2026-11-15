@@ -11,4 +11,7 @@ class Sandbox : public engine::Application {
 public:
     Sandbox();
     ~Sandbox() override;
+
+protected:
+    void init(engine::SystemContext& context) override;
 };

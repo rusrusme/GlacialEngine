@@ -64,7 +64,7 @@ namespace engine {
         render_context_.init(*window_);
 
         audio_system_.init();
-        asset_manager_.init(render_context_.device());
+        asset_manager_.init(render_context_.device(), shader_library_);
         scene_renderer_.init(render_context_.device());
 
         context_ = std::make_unique<SystemContext>(

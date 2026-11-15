@@ -10,12 +10,14 @@
 #include "asset/MetafileHandler.hpp"
 #include "core/Log.hpp"
 #include "render/Mesh.hpp"
+#include "render/ShaderLibrary.hpp"
 #include "render/mesh/MeshLoader.hpp"
 #include "render/rhi/Texture.hpp"
 
 namespace engine {
-    void AssetManager::init(RHIDevice& device) {
+    void AssetManager::init(RHIDevice& device, ShaderLibrary& shaders) {
         device_ = &device;
+        shaders_ = &shaders;
         MetafileHandler::register_defaults();
         register_primitives();
 
@@ -80,6 +82,42 @@ namespace engine {
             }
 
             return texture;
+        });
+
+        register_loader<Shader>([](const AssetManager& assets, const AssetMetadata& meta) -> std::shared_ptr<Shader> {
+            if (meta.type != Asset::SHADER) return nullptr;
+
+            ShaderLibrary* shader_lib = assets.shaders();
+            if (!shader_lib) {
+                CORE_ERROR("[AssetManager] Cannot load Shader: ShaderLibrary is not initialized");
+                return nullptr;
+            }
+
+            std::filesystem::path binary_path = meta.compiled_filepath;
+            if (binary_path.empty()) {
+                binary_path = meta.filepath;
+                binary_path.replace_extension(".gsb");
+            }
+
+            // Optional: compile on demand if .gsb is missing or stale
+            std::error_code ec;
+            const bool needs_compile = !std::filesystem::exists(binary_path, ec) ||
+                std::filesystem::last_write_time(meta.filepath, ec) > std::filesystem::last_write_time(binary_path, ec);
+
+            if (needs_compile) {
+                // TODO
+            }
+
+            if (!std::filesystem::exists(binary_path, ec)) {
+                CORE_WARN("[AssetManager] Compiled shader binary not found for '{0}'", meta.filepath.string());
+                return nullptr;
+            }
+
+            auto shader = shader_lib->load(meta.filepath.generic_string(), binary_path.string());
+            if (!shader) {
+                CORE_ERROR("[AssetManager] Failed to load shader from '{0}'", binary_path.string());
+            }
+            return shader;
         });
     }
 
@@ -179,9 +217,9 @@ namespace engine {
         return meta.valid() ? meta.filepath : std::filesystem::path{};
     }
 
-    std::filesystem::path AssetManager::source_path(AssetHandle handle) const {
+    std::filesystem::path AssetManager::compiled_path(AssetHandle handle) const {
         const auto& meta = metadata(handle);
-        return meta.valid() ? meta.shader_source_filepath : std::filesystem::path{};
+        return meta.valid() ? meta.compiled_filepath : std::filesystem::path{};
     }
 
     std::filesystem::path AssetManager::normalize_path(const std::filesystem::path& filepath) {

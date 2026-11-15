@@ -17,12 +17,14 @@
 #include "render/rhi/RHIDevice.hpp"
 
 namespace engine {
+    class ShaderLibrary;
+
     class AssetManager {
     public:
         template<typename T>
         using Loader = std::function<std::shared_ptr<T>(AssetManager&, const AssetMetadata&)>;
 
-        void init(RHIDevice& device);
+        void init(RHIDevice& device, ShaderLibrary& shaders);
 
         void scan_directory(const std::filesystem::path& asset_directory, bool generate_meta = true);
 
@@ -102,12 +104,13 @@ namespace engine {
         void clear();
 
         [[nodiscard]] RHIDevice* device() const { return device_; }
+        [[nodiscard]] ShaderLibrary* shaders() const { return shaders_; }
         [[nodiscard]] bool contains(AssetHandle handle) const { return asset_registry_.contains(handle); }
         [[nodiscard]] const AssetMetadata& metadata(AssetHandle handle) const;
         [[nodiscard]] const AssetMetadata& metadata(const std::filesystem::path& filepath) const;
         [[nodiscard]] AssetHandle handle(const std::filesystem::path& filepath) const;
         [[nodiscard]] std::filesystem::path path(AssetHandle handle) const;
-        [[nodiscard]] std::filesystem::path source_path(AssetHandle handle) const;
+        [[nodiscard]] std::filesystem::path compiled_path(AssetHandle handle) const;
         [[nodiscard]] const std::unordered_map<AssetHandle, AssetMetadata>& registry() const { return asset_registry_; }
 
     private:
@@ -151,6 +154,7 @@ namespace engine {
         using ErasedLoader = std::function<std::shared_ptr<void>(AssetManager&, const AssetMetadata&)>;
 
         RHIDevice* device_{nullptr};
+        ShaderLibrary* shaders_{nullptr};
         bool primitives_registered_{false};
 
         std::unordered_map<AssetHandle, AssetMetadata> asset_registry_;

@@ -22,6 +22,14 @@ void SandboxLayer::on_attach(SystemContext& context) {
 
     auto scene = context.scenes.create("Sandbox Scene");
 
+    if (auto test_shader = context.assets.get<Shader>("assets/shaders/OpaqueMesh.gshader")) {
+        CORE_INFO("[Sandbox] Loaded test shader (handle: {0})",
+                  static_cast<uint64_t>(context.assets.handle("assets/shaders/OpaqueMesh.gshader")));
+    }
+    else {
+        CORE_ERROR("[Sandbox] Failed to load test shader!");
+    }
+
     {
         auto ground = scene->create_entity("Ground");
         ground.add_component<MeshComponent>(context.assets.handle("primitive://plane"));

@@ -25,7 +25,6 @@ namespace engine {
         register_extension(".gltf", Asset::MESH, "Mesh");
 
         register_extension(".gshader", Asset::SHADER, "Shader");
-        register_extension(".gsb", Asset::SHADER, "Shader");
 
         register_extension(".mat", Asset::MATERIAL, "Material");
 
@@ -68,8 +67,12 @@ namespace engine {
             meta.type = ext_entry->type;
         }
 
+        const bool is_gshader = util::to_lowercase(meta.filepath.extension().string()) == ".gshader";
+        if (is_gshader) {
+            meta.compiled_filepath = find_compiled_shader(meta.filepath);
+        }
+
         const std::filesystem::path meta_path = meta.filepath.string() + ".meta";
-        bool needs_save = false;
 
         if (std::filesystem::exists(meta_path)) {
             std::ifstream in(meta_path);
@@ -83,19 +86,7 @@ namespace engine {
                         meta.type = AssetType(root["asset"]["type"].get<std::string>());
                     }
 
-                    if (root["asset"].contains("source")) {
-                        meta.shader_source_filepath = root["asset"]["source"].get<std::string>();
-                    }
-                    else if (util::to_lowercase(meta.filepath.extension().string()) == ".gsb") {
-                        meta.shader_source_filepath = find_shader_source(meta.filepath);
-                        if (!meta.shader_source_filepath.empty()) {
-                            needs_save = true;
-                        }
-                    }
-
-                    if (!needs_save || !generate_missing) {
-                        return meta;
-                    }
+                    return meta;
                 }
                 catch (const std::exception& e) {
                     CORE_ERROR("Failed to parse metafile: {0} ({1})", meta_path.string(), e.what());
@@ -109,9 +100,6 @@ namespace engine {
 
         if (meta.handle == 0) {
             meta.handle = AssetHandle();
-            if (util::to_lowercase(meta.filepath.extension().string()) == ".gsb") {
-                meta.shader_source_filepath = find_shader_source(meta.filepath);
-            }
         }
 
         const std::string type_name = ext_entry ? ext_entry->name : "Unknown";
@@ -121,10 +109,6 @@ namespace engine {
             {"handle", static_cast<uint64_t>(meta.handle)},
             {"type", type_name}
         };
-
-        if (!meta.shader_source_filepath.empty()) {
-            root["asset"]["source"] = meta.shader_source_filepath.generic_string();
-        }
 
         if (std::ofstream out(meta_path); out.is_open()) {
             out << root.dump(4);
@@ -149,25 +133,26 @@ namespace engine {
         return nullptr;
     }
 
-    std::filesystem::path MetafileHandler::find_shader_source(const std::filesystem::path& compiled_path) {
-        std::filesystem::path source_path = compiled_path;
-        if (util::to_lowercase(source_path.extension().string()) == ".gsb") {
-            source_path.replace_extension(".gshader");
+    std::filesystem::path MetafileHandler::find_compiled_shader(const std::filesystem::path& source_path) {
+        if (util::to_lowercase(source_path.extension().string()) != ".gshader") {
+            return {};
         }
 
-        std::string path_str = source_path.generic_string();
-        constexpr std::string_view compiled_segment = "compiled/";
-        if (const size_t pos = path_str.find(compiled_segment);
+        std::filesystem::path sibling = source_path;
+        sibling.replace_extension(".gsb");
+        if (std::filesystem::exists(sibling)) {
+            return sibling.lexically_normal();
+        }
+
+        std::string path_str = sibling.generic_string();
+        constexpr std::string_view shaders_segment = "shaders/";
+        if (const size_t pos = path_str.find(shaders_segment);
             pos != std::string::npos && (pos == 0 || path_str[pos - 1] == '/')) {
-            path_str.erase(pos, compiled_segment.length());
+            path_str.insert(pos + shaders_segment.length(), "compiled/");
 
             if (std::filesystem::path candidate(path_str); std::filesystem::exists(candidate)) {
-                return candidate;
+                return candidate.lexically_normal();
             }
-        }
-
-        if (std::filesystem::exists(source_path)) {
-            return source_path;
         }
 
         return {};

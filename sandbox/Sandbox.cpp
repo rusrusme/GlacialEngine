@@ -13,6 +13,9 @@ Sandbox::Sandbox() : Application("Sandbox") {
 
 Sandbox::~Sandbox() = default;
 
+void Sandbox::init(SystemContext& context) {
+}
+
 int main() {
     Sandbox sandbox;
     sandbox.run();
