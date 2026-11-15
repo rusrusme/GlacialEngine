@@ -8,6 +8,7 @@
 #include <stb_image.h>
 
 #include "asset/MetafileHandler.hpp"
+#include "audio/AudioSystem.hpp"
 #include "core/Log.hpp"
 #include "render/Mesh.hpp"
 #include "render/ShaderLibrary.hpp"
@@ -15,9 +16,10 @@
 #include "render/rhi/Texture.hpp"
 
 namespace engine {
-    void AssetManager::init(RHIDevice& device, ShaderLibrary& shaders) {
+    void AssetManager::init(RHIDevice& device, ShaderLibrary& shaders, AudioSystem& audio) {
         device_ = &device;
         shaders_ = &shaders;
+        audio_ = &audio;
         MetafileHandler::register_defaults();
         register_primitives();
 
@@ -119,6 +121,8 @@ namespace engine {
             }
             return shader;
         });
+
+        // TODO Material, Font, Audio
     }
 
     void AssetManager::scan_directory(const std::filesystem::path& asset_directory, bool generate_meta) {

@@ -17,6 +17,7 @@
 #include "render/rhi/RHIDevice.hpp"
 
 namespace engine {
+    class AudioSystem;
     class ShaderLibrary;
 
     class AssetManager {
@@ -24,7 +25,7 @@ namespace engine {
         template<typename T>
         using Loader = std::function<std::shared_ptr<T>(AssetManager&, const AssetMetadata&)>;
 
-        void init(RHIDevice& device, ShaderLibrary& shaders);
+        void init(RHIDevice& device, ShaderLibrary& shaders, AudioSystem& audio);
 
         void scan_directory(const std::filesystem::path& asset_directory, bool generate_meta = true);
 
@@ -105,6 +106,7 @@ namespace engine {
 
         [[nodiscard]] RHIDevice* device() const { return device_; }
         [[nodiscard]] ShaderLibrary* shaders() const { return shaders_; }
+        [[nodiscard]] AudioSystem* audio() const { return audio_; }
         [[nodiscard]] bool contains(AssetHandle handle) const { return asset_registry_.contains(handle); }
         [[nodiscard]] const AssetMetadata& metadata(AssetHandle handle) const;
         [[nodiscard]] const AssetMetadata& metadata(const std::filesystem::path& filepath) const;
@@ -155,6 +157,7 @@ namespace engine {
 
         RHIDevice* device_{nullptr};
         ShaderLibrary* shaders_{nullptr};
+        AudioSystem* audio_{nullptr};
         bool primitives_registered_{false};
 
         std::unordered_map<AssetHandle, AssetMetadata> asset_registry_;
