@@ -5,7 +5,8 @@
 
 #include "project/scene/SceneSerializer.hpp"
 
-#include <future>
+#include <fstream>
+#include <thread>
 
 #include "asset/AssetManager.hpp"
 #include "core/Log.hpp"
@@ -141,7 +142,7 @@ namespace engine {
         // MeshComponent
         if (entity.has_component<MeshComponent>()) {
             auto& mc = entity.get_component<MeshComponent>();
-            std::string path = assets.path_from_asset_handle(mc.handle).string();
+            std::string path = assets.path(mc.handle).generic_string();
             entity_json["mesh"] = {
                 {"handle", static_cast<uint64_t>(mc.handle)},
                 {"path", path}
@@ -213,8 +214,8 @@ namespace engine {
             if (m.contains("handle")) {
                 handle = AssetHandle(m["handle"].get<uint64_t>());
             }
-            if (!assets.valid_asset(handle) && m.contains("path")) {
-                handle = assets.asset_handle_from_path(m["path"].get<std::string>());
+            if (!assets.contains(handle) && m.contains("path")) {
+                handle = assets.handle(m["path"].get<std::string>());
             }
             entity.add_component<MeshComponent>(handle);
         }

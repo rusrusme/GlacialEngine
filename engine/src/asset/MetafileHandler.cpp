@@ -4,24 +4,62 @@
 //
 
 #include "MetafileHandler.hpp"
+
 #include <fstream>
+#include <nlohmann/json.hpp>
 
 #include "core/Log.hpp"
 
 using json = nlohmann::json;
 
 namespace engine {
-    AssetMetadata MetaFileHandler::get(const std::filesystem::path& asset_path) {
-        AssetMetadata meta;
-        meta.filepath = asset_path;
-        meta.type = deduce_asset_type(asset_path);
+    void MetafileHandler::register_defaults() {
+        if (defaults_registered) return;
+        defaults_registered = true;
 
-        if (meta.type == Asset::NONE) {
-            return meta;
+        register_extension(".png", Asset::TEXTURE_2D, "Texture2D");
+        register_extension(".jpg", Asset::TEXTURE_2D, "Texture2D");
+        register_extension(".jpeg", Asset::TEXTURE_2D, "Texture2D");
+
+        register_extension(".glb", Asset::MESH, "Mesh");
+        register_extension(".gltf", Asset::MESH, "Mesh");
+
+        register_extension(".gshader", Asset::SHADER, "Shader");
+        register_extension(".gsb", Asset::SHADER, "Shader");
+
+        register_extension(".mat", Asset::MATERIAL, "Material");
+
+        register_extension(".wav", Asset::AUDIO, "Audio");
+        register_extension(".mp3", Asset::AUDIO, "Audio");
+        register_extension(".ogg", Asset::AUDIO, "Audio");
+        register_extension(".flac", Asset::AUDIO, "Audio");
+
+        register_extension(".ttf", Asset::FONT, "Font");
+
+        register_extension(".gscript", Asset::SCRIPT, "Script");
+        register_extension(".gscene", Asset::SCENE, "Scene");
+    }
+
+    void MetafileHandler::register_extension(std::string_view extension, AssetType type, std::string_view type_name) {
+        std::string key = util::to_lowercase(std::string(extension));
+        if (!key.empty() && key[0] != '.') {
+            key.insert(key.begin(), '.');
         }
-        const std::filesystem::path meta_path = asset_path.string() + ".meta";
+        extensions_[std::move(key)] = ExtensionEntry{.type = type, .name = std::string(type_name)};
+    }
 
+    AssetMetadata MetafileHandler::resolve(const std::filesystem::path& asset_path, bool generate_missing) {
+        AssetMetadata meta;
+        meta.filepath = asset_path.lexically_normal();
+
+        const ExtensionEntry* ext_entry = find_extension(meta.filepath);
+        if (ext_entry) {
+            meta.type = ext_entry->type;
+        }
+
+        const std::filesystem::path meta_path = meta.filepath.string() + ".meta";
         bool needs_save = false;
+
         if (std::filesystem::exists(meta_path)) {
             std::ifstream in(meta_path);
             if (in.is_open()) {
@@ -30,19 +68,21 @@ namespace engine {
                     in >> root;
                     meta.handle = AssetHandle(root["asset"]["handle"].get<uint64_t>());
 
-                    if (root["asset"].contains("source")) {
-                        meta.source_filepath = root["asset"]["source"].get<std::string>();
+                    if (root["asset"].contains("type")) {
+                        meta.type = AssetType(root["asset"]["type"].get<std::string>());
                     }
-                    else if (asset_path.extension() == ".gsb") {
-                        meta.source_filepath = find_shader_source(asset_path);
-                        if (!meta.source_filepath.empty()) {
+
+                    if (root["asset"].contains("source")) {
+                        meta.shader_source_filepath = root["asset"]["source"].get<std::string>();
+                    }
+                    else if (util::to_lowercase(meta.filepath.extension().string()) == ".gsb") {
+                        meta.shader_source_filepath = find_shader_source(meta.filepath);
+                        if (!meta.shader_source_filepath.empty()) {
                             needs_save = true;
                         }
                     }
 
-                    if (!needs_save) {
-                        CORE_TRACE("Loaded existing metadata for '{0}' [Handle: {1}]",
-                                   asset_path.string(), static_cast<uint64_t>(meta.handle));
+                    if (!needs_save || !generate_missing) {
                         return meta;
                     }
                 }
@@ -52,69 +92,53 @@ namespace engine {
             }
         }
 
+        if (!meta.type.valid() || !generate_missing) {
+            return meta;
+        }
+
         if (meta.handle == 0) {
             meta.handle = AssetHandle();
-            if (asset_path.extension() == ".gsb") {
-                meta.source_filepath = find_shader_source(asset_path);
+            if (util::to_lowercase(meta.filepath.extension().string()) == ".gsb") {
+                meta.shader_source_filepath = find_shader_source(meta.filepath);
             }
         }
 
+        const std::string type_name = ext_entry ? ext_entry->name : "Unknown";
+
         json root;
-        auto handle = static_cast<uint64_t>(meta.handle);
-        std::string type(asset_type_to_string(meta.type));
         root["asset"] = {
-            {"handle", handle},
-            {"type", type}
+            {"handle", static_cast<uint64_t>(meta.handle)},
+            {"type", type_name}
         };
 
-        if (!meta.source_filepath.empty()) {
-            root["asset"]["source"] = meta.source_filepath.generic_string();
+        if (!meta.shader_source_filepath.empty()) {
+            root["asset"]["source"] = meta.shader_source_filepath.generic_string();
         }
 
         if (std::ofstream out(meta_path); out.is_open()) {
             out << root.dump(4);
-            CORE_TRACE("Created/Updated metadata for {0} asset from {1}", util::to_lowercase(type), meta.filepath.string());
+            CORE_TRACE("Created/Updated metadata for {0} asset from {1}",
+                       util::to_lowercase(type_name), meta.filepath.string());
         }
         else {
             CORE_ERROR("Failed to write metadata file to disk: '{0}'", meta_path.string());
         }
+
         return meta;
     }
 
-    Asset MetaFileHandler::deduce_asset_type(const std::filesystem::path& filepath) {
-        const std::string ext = util::to_lowercase(filepath.extension().string());
-
-        if (ext == ".png" || ext == ".jpg" || ext == ".jpeg" || ext == ".tga") {
-            return Asset::TEXTURE_2D;
+    const MetafileHandler::ExtensionEntry* MetafileHandler::find_extension(const std::filesystem::path& path) {
+        if (!defaults_registered) {
+            register_defaults();
         }
-        if (ext == ".glb" || ext == ".gltf") {
-            return Asset::MESH;
+        const std::string ext = util::to_lowercase(path.extension().string());
+        if (const auto it = extensions_.find(ext); it != extensions_.end()) {
+            return &it->second;
         }
-        if (ext == ".vert" || ext == ".frag" || ext == ".geom" || ext == ".glsl") {
-            return Asset::SHADER;
-        }
-        if (ext == ".gshader" || ext == ".gsb") {
-            return Asset::SHADER;
-        }
-        if (ext == ".mat") {
-            return Asset::MATERIAL;
-        }
-        if (ext == ".wav" || ext == ".mp3" || ext == ".ogg" || ext == ".flac") {
-            return Asset::AUDIO;
-        }
-        if (ext == ".ttf") {
-            return Asset::FONT;
-        }
-        if (ext == ".gscript") {
-            return Asset::SCRIPT;
-        }
-        if (ext == ".gscene") {
-            return Asset::SCENE;
-        }
-        return Asset::NONE;
+        return nullptr;
     }
 
-    std::filesystem::path MetaFileHandler::find_shader_source(const std::filesystem::path& compiled_path) {
+    std::filesystem::path MetafileHandler::find_shader_source(const std::filesystem::path& compiled_path) {
         std::filesystem::path source_path = compiled_path;
         if (util::to_lowercase(source_path.extension().string()) == ".gsb") {
             source_path.replace_extension(".gshader");

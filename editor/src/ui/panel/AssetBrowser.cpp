@@ -451,7 +451,7 @@ namespace editor {
 
             // TODO add support for .gscene etc
 
-            AssetHandle handle = context.assets.asset_handle_from_path(path);
+            AssetHandle handle = context.assets.handle(path);
             if (handle != 0 && ImGui::BeginDragDropSource()) {
                 ImGui::SetDragDropPayload("ASSET_BROWSER_ITEM", &handle, sizeof(AssetHandle));
                 ImGui::Text("Assign %s", filename.c_str());
@@ -522,7 +522,7 @@ namespace editor {
 
             // TODO add support for .gscene etc
 
-            AssetHandle handle = context.assets.asset_handle_from_path(path);
+            AssetHandle handle = context.assets.handle(path);
             if (handle != 0 && is_row_hovered && ImGui::BeginDragDropSource()) {
                 ImGui::SetDragDropPayload("ASSET_BROWSER_ITEM", &handle, sizeof(AssetHandle));
                 ImGui::Text("Assign %s", filename.c_str());

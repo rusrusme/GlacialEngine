@@ -235,9 +235,9 @@ namespace editor {
         if (!scene) return;
         if (menu_item_with_icon(label, type)) {
             auto entity = scene->create_entity(label);
-            auto handle = context.assets.asset_handle_from_path(path);
+            auto asset_handle = context.assets.handle(path);
 
-            entity.add_component<MeshComponent>(handle);
+            entity.add_component<MeshComponent>(asset_handle);
             entity.add_component<MaterialComponent>(glm::vec4{1.0f, 0.5f, 0.2f, 1.0f});
             entity.add_component<BoxColliderComponent>();
             record_entity_creation(entity, context);

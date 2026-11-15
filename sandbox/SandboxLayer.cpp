@@ -24,26 +24,28 @@ void SandboxLayer::on_attach(SystemContext& context) {
 
     {
         auto ground = scene->create_entity("Ground");
-        auto ground_mesh = context.assets.asset_handle_from_path("primitive://plane");
-        ground.add_component<MeshComponent>(ground_mesh);
+        ground.add_component<MeshComponent>(context.assets.handle("primitive://plane"));
 
         auto& ground_transform = ground.get_component<TransformComponent>();
         ground_transform.scale = {100.0f, 1.0f, 100.0f};
 
         auto& ground_mat = ground.add_component<MaterialComponent>();
         ground_mat.color = glm::vec4(0.2f, 0.2f, 0.22f, 1.0f);
+    }
 
-        const auto car_asset = context.assets.asset_handle_from_path("assets/models/red_car.glb");
-
+    {
         auto car = scene->create_entity("Vehicle");
 
         auto& transform = car.get_component<TransformComponent>();
         transform.position = {1.0f, 0.0f, 1.0f};
-        car.add_component<MeshComponent>(car_asset);
+
+        car.add_component<MeshComponent>(context.assets.handle("assets/models/red_car.glb"));
+
         auto& material = car.add_component<MaterialComponent>();
         material.color = glm::vec4(1.0f);
         material.metallic = 0.0f;
         material.roughness = 1.0f;
+
         car.add_component<RigidBodyComponent>();
     }
 

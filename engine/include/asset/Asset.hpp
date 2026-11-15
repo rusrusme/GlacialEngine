@@ -8,60 +8,64 @@
 #include <filesystem>
 #include <string>
 #include <string_view>
+
 #include "UUID.hpp"
 
 namespace engine {
     using AssetHandle = UUID;
 
-    enum class Asset : uint16_t {
-        NONE = 0,
-        TEXTURE_2D,
-        TEXTURE_3D,
-        MESH,
-        MATERIAL,
-        SHADER,
-        AUDIO,
-        FONT,
-        SCRIPT,
-        SCENE
+    struct AssetType {
+        uint64_t id{0};
+
+        constexpr AssetType() = default;
+        constexpr explicit AssetType(uint64_t id) : id(id) {}
+        constexpr AssetType(std::string_view name) : id(hash_name(name)) {}
+
+        [[nodiscard]] constexpr bool valid() const { return id != 0; }
+        constexpr bool operator==(const AssetType&) const = default;
+
+    private:
+        static constexpr uint64_t hash_name(std::string_view name) {
+            if (name.empty() || name == "None") {
+                return 0;
+            }
+            uint64_t hash = 14695981039346656037ULL;
+            for (unsigned char c : name) {
+                hash ^= c;
+                hash *= 1099511628211ULL;
+            }
+            return hash == 0 ? 1 : hash;
+        }
     };
 
-    constexpr std::string_view asset_type_to_string(const Asset type) {
-        switch (type) {
-            case Asset::TEXTURE_2D : return "Texture2D";
-            case Asset::TEXTURE_3D : return "Texture3D";
-            case Asset::MESH : return "Mesh";
-            case Asset::MATERIAL : return "Material";
-            case Asset::SHADER : return "Shader";
-            case Asset::AUDIO : return "Audio";
-            case Asset::FONT : return "Font";
-            case Asset::SCRIPT : return "Script";
-            case Asset::SCENE : return "Scene";
-            case Asset::NONE :
-            default : return "None";
-        }
-    }
-
-    constexpr Asset string_to_asset_type(const std::string_view type_str) {
-        if (type_str == "Texture2D") return Asset::TEXTURE_2D;
-        if (type_str == "Texture3D") return Asset::TEXTURE_3D;
-        if (type_str == "Mesh") return Asset::MESH;
-        if (type_str == "Material") return Asset::MATERIAL;
-        if (type_str == "Shader") return Asset::SHADER;
-        if (type_str == "Audio") return Asset::AUDIO;
-        if (type_str == "Font") return Asset::FONT;
-        if (type_str == "Script") return Asset::SCRIPT;
-        if (type_str == "Scene") return Asset::SCENE;
-        return Asset::NONE;
+    namespace Asset {
+        inline constexpr AssetType NONE{};
+        inline constexpr AssetType TEXTURE_2D{"Texture2D"};
+        inline constexpr AssetType TEXTURE_3D{"Texture3D"};
+        inline constexpr AssetType MESH{"Mesh"};
+        inline constexpr AssetType MATERIAL{"Material"};
+        inline constexpr AssetType SHADER{"Shader"};
+        inline constexpr AssetType AUDIO{"Audio"};
+        inline constexpr AssetType FONT{"Font"};
+        inline constexpr AssetType SCRIPT{"Script"};
+        inline constexpr AssetType SCENE{"Scene"};
     }
 
     struct AssetMetadata {
         AssetHandle handle{0};
-        Asset type = Asset::NONE;
+        AssetType type = Asset::NONE;
         std::filesystem::path filepath;
-        std::filesystem::path source_filepath; // gbs -> gshader
+        std::filesystem::path shader_source_filepath; // gbs -> gshader
+        bool runtime_only{false};
 
-        [[nodiscard]] bool valid() const { return handle != 0 && type != Asset::NONE; }
-        [[nodiscard]] bool has_source() const { return !source_filepath.empty(); }
+        [[nodiscard]] bool valid() const { return handle != 0 && type.valid(); }
+        [[nodiscard]] bool has_source() const { return !shader_source_filepath.empty(); }
     };
 }
+
+template<>
+struct std::hash<engine::AssetType> {
+    std::size_t operator()(const engine::AssetType& type) const noexcept {
+        return std::hash<uint64_t>{}(type.id);
+    }
+};

@@ -8,9 +8,11 @@
 #include "asset/AssetManager.hpp"
 #include "core/SystemContext.hpp"
 #include "project/scene/ecs/Entity.hpp"
+#include "render/Mesh.hpp"
 #include "render/ShaderData.hpp"
 #include "render/pass/MainOpaquePass.hpp"
 #include "render/rhi/RenderContext.hpp"
+#include "render/rhi/Texture.hpp"
 #include "util/Instrumentor.hpp"
 
 namespace engine {
@@ -148,22 +150,16 @@ namespace engine {
                 metallic = material.metallic;
                 roughness = material.roughness;
 
-                if (material.texture_handle != AssetHandle(0)) {
-                    if (auto texture_asset = context.assets.get<Texture2D>(material.texture_handle)) {
-                        albedo_texture = texture_asset.get();
-                    }
+                if (auto texture_asset = context.assets.get<Texture2D>(material.texture_handle)) {
+                    albedo_texture = texture_asset.get();
                 }
 
-                if (material.normal_texture_handle != AssetHandle(0)) {
-                    if (auto normal_asset = context.assets.get<Texture2D>(material.normal_texture_handle)) {
-                        normal_texture = normal_asset.get();
-                    }
+                if (auto normal_asset = context.assets.get<Texture2D>(material.normal_texture_handle)) {
+                    normal_texture = normal_asset.get();
                 }
 
-                if (material.metallic_roughness_texture_handle != AssetHandle(0)) {
-                    if (auto mr_asset = context.assets.get<Texture2D>(material.metallic_roughness_texture_handle)) {
-                        metallic_roughness_texture = mr_asset.get();
-                    }
+                if (auto mr_asset = context.assets.get<Texture2D>(material.metallic_roughness_texture_handle)) {
+                    metallic_roughness_texture = mr_asset.get();
                 }
             }
 
