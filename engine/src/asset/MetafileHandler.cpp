@@ -48,6 +48,17 @@ namespace engine {
         extensions_[std::move(key)] = ExtensionEntry{.type = type, .name = std::string(type_name)};
     }
 
+    bool MetafileHandler::is_asset_file(const std::filesystem::path& filepath) {
+        if (filepath.extension() == ".meta") {
+            return false;
+        }
+        if (find_extension(filepath) != nullptr) {
+            return true;
+        }
+        std::error_code ec;
+        return std::filesystem::exists(filepath.string() + ".meta", ec);
+    }
+
     AssetMetadata MetafileHandler::resolve(const std::filesystem::path& asset_path, bool generate_missing) {
         AssetMetadata meta;
         meta.filepath = asset_path.lexically_normal();

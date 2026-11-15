@@ -17,6 +17,7 @@ namespace engine {
     public:
         static void register_defaults();
         static void register_extension(std::string_view extension, AssetType type, std::string_view type_name);
+        static bool is_asset_file(const std::filesystem::path& filepath);
 
         /** @brief Loads existing metadata or creates a new .meta file if generate_missing is true. */
         static AssetMetadata resolve(const std::filesystem::path& asset_path, bool generate_missing = true);

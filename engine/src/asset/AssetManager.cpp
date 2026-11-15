@@ -97,7 +97,7 @@ namespace engine {
         for (const auto& entry : std::filesystem::recursive_directory_iterator(asset_directory)) {
             if (!entry.is_regular_file()) continue;
             const auto& file_path = entry.path();
-            if (file_path.extension() == ".meta") continue;
+            if (!MetafileHandler::is_asset_file(file_path)) continue;
 
             AssetMetadata metadata = MetafileHandler::resolve(file_path, generate_meta);
             if (metadata.valid()) {
@@ -117,7 +117,7 @@ namespace engine {
                            file_path.string(), static_cast<uint64_t>(metadata.handle));
             }
             else {
-                CORE_WARN("Skipped asset '{0}': Failed to deduce type or parse metadata", file_path.string());
+                CORE_WARN("Skipped asset '{0}': Failed to parse or generate metadata", file_path.string());
                 skipped_count++;
             }
         }
